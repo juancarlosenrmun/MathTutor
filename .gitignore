@@ -1,0 +1,20 @@
+# Obsidian: estado local de cada dispositivo
+brain/.obsidian/workspace.json
+brain/.obsidian/workspaces.json
+brain/.obsidian/cache
+brain/.trash/
+# Secretos
+.env
+*.local
+# Java y Node
+target/
+build/
+node_modules/
+.idea/
+.vscode/
+# LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
