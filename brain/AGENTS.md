@@ -28,8 +28,22 @@ Al terminar cada petición, sin que se pida:
 - Objetivo de cobertura: 100 % de líneas y ramas del código del sprint, medido con JaCoCo (backend) y la herramienta equivalente en cliente JS. Build falla por debajo del umbral. Exclusiones solo para código generado o de arranque, listadas y justificadas en el informe.
 - Pruebas deterministas: el LLM y Symja se simulan en pruebas unitarias; pruebas de integración con Testcontainers (PostgreSQL+pgvector).
 - Elemento hecho = criterios de aceptación cumplidos + pruebas automatizadas + integrado en la rama principal.
-- Git: commits pequeños por UC/EN, rama por sprint, CI en verde antes de integrar.
+- Git: commits pequeños por UC/EN, CI en verde antes de fusionar en `DEV`.Cada commit empieza por el nombre de la rama entre corchetes `[Rama]`. Ver sección «Ramas».
 
 ## Estilo
 - Respuestas breves, resultados directos. Código y documentación en español; identificadores en inglés.
 - Ante conflicto entre este archivo y una petición puntual del usuario, prevalece la petición, y se anota en el registro.
+
+## Ramas
+- `main`: estable. Nunca se desarrolla ni se documenta directamente en ella.
+- `DEV`: sale de `main`. Es la rama de desarrollo (código, pruebas, configuración, CI).
+  - Se trabaja directamente en `DEV` o en ramas que salen de `DEV` (p. ej. `dev/s01-uc-01-auth`, `dev/s01-en-04-spike`) y se fusionan de vuelta en `DEV`.
+- `DOC`: sale de `main`. Es la rama de documentación: `README.md`, documentación técnica y todo lo relacionado.
+  - Se trabaja directamente en `DOC` o en ramas que salen de `DOC` (p. ej. `doc/readme-instalacion`) y se fusionan de vuelta en `DOC`.
+- Al empezar cualquier tarea, comprobar la rama actual (`git branch --show-current`) y cambiar a la que corresponda según el tipo de trabajo.
+- Nunca mezclar código y documentación en la misma rama ni en el mismo commit. Si un cambio de código requiere documentarlo, hacer el commit en `DEV` y el de documentación en `DOC`.
+- Nunca hacer commit ni merge directamente en `main`; la integración a `main` la decide el usuario.
+- Antes de crear una rama, actualizar la rama base (`git pull`).
+- La bóveda `brain/` es documentación de proyecto: se versiona en `DOC`. Excepción: la checklist de `brain/04 Sprints/` y `brain/05 Seguimiento/` se actualiza en `DEV` junto al código que la justifica, para que el estado marcado coincida con el código.
+- Commits pequeños por UC/EN con mensaje `tipo(UC-NN): descripción`.
+- Cada commit empieza por el nombre de la rama entre corchetes `[Rama]`
