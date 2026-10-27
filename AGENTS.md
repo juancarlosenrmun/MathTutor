@@ -16,5 +16,9 @@ Un solo LLM por turno y orquestador determinista. Apuntes en LaTeX (carpeta apun
 
 ## Git
 - Antes de empezar: git pull --rebase.
+<<<<<<< HEAD
 - Commits pequeños, en español y cada commit empieza con `[nombredelarama]`. Al terminar: git push.
+=======
+- Commits pequeños y en español. Al terminar: git push.
+>>>>>>> db583b8cc5a36e1acf1f46eebfc6b5a44a320b31
 - Nunca subas claves ni .env.
