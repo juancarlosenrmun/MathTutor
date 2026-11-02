@@ -18,3 +18,7 @@ node_modules/
 *.out
 *.toc
 *.synctex.gz
+# Claude Code
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
