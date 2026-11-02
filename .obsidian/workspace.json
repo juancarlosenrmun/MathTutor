@@ -202,14 +202,18 @@
     "brain/04 Sprints/Sprint 07.md",
     "brain/04 Sprints/Sprint 05.md",
     "brain/04 Sprints/Sprint 06.md",
+<<<<<<< HEAD
     "brain/04 Sprints/Sprint 04.md",
     "brain/04 Sprints/Sprint 03.md",
     "brain/04 Sprints/Sprint 02.md",
+=======
+>>>>>>> main
     "brain/04 Sprints/Sprint 01.md",
     "brain/04 Sprints",
     "brain/03 Planificación/Riesgos de la planificación.md",
     "brain/03 Planificación/Plan de sprints.md",
     "brain/03 Planificación",
+<<<<<<< HEAD
     "brain/02 Casos de uso/Casos de uso.md",
     "brain/02 Casos de uso",
     "brain/01 Requisitos/Restricciones y alcance.md",
@@ -218,6 +222,17 @@
     "brain/01 Requisitos",
     "brain/00 - Índice.md",
     "brain/_index.md",
+=======
+    "brain/06 Diseño/Diagrama de clases.md",
+    "brain/06 Diseño/Diagrama de dominio.md",
+    "brain/06 Diseño/Arquitectura.md",
+    "brain/06 Diseño",
+    "brain/05 Seguimiento/Progreso global.md",
+    "brain/05 Seguimiento/Registro de iteraciones.md",
+    "brain/05 Seguimiento",
+    "brain/AGENTS.md",
+    "brain/00 - Índice.md",
+>>>>>>> main
     "brain",
     "Sin título.base"
   ]
