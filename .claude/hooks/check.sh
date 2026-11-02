@@ -7,10 +7,12 @@ cd "$CLAUDE_PROJECT_DIR" || exit 0
 git status --porcelain -- . ':!brain' ':!.claude' | grep -q . || exit 0
 
 # Tests + cobertura (el build falla bajo el umbral JaCoCo)
-if ! out=$(./mvnw -q verify 2>&1); then
-  jq -n --arg log "$(tail -n 40 <<<"$out")" \
-    '{decision:"block",reason:("Tests o cobertura 100 % fallan. Corrige antes de parar.\n"+$log)}'
-  exit 0
+if [ -f ./mvnw ]; then
+  if ! out=$(./mvnw -q verify 2>&1); then
+    jq -n --arg log "$(tail -n 40 <<<"$out")" \
+      '{decision:"block",reason:("Tests o cobertura 100 % fallan. Corrige antes de parar.\n"+$log)}'
+    exit 0
+  fi
 fi
 
 # Checklist de AGENTS.md

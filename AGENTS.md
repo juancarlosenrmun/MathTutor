@@ -28,13 +28,6 @@ Al terminar cada petición, sin que se pida:
 - Objetivo de cobertura: 100 % de líneas y ramas del código del sprint, medido con JaCoCo (backend) y la herramienta equivalente en cliente JS. Build falla por debajo del umbral. Exclusiones solo para código generado o de arranque, listadas y justificadas en el informe.
 - Pruebas deterministas: el LLM y Symja se simulan en pruebas unitarias; pruebas de integración con Testcontainers (PostgreSQL+pgvector).
 - Elemento hecho = criterios de aceptación cumplidos + pruebas automatizadas + integrado en la rama principal.
-<<<<<<< HEAD
-- Git: commits pequeños por UC/EN, rama por sprint, CI en verde antes de integrar.
-
-## Estilo
-- Respuestas breves, resultados directos. Código y documentación en español; identificadores en inglés.
-- Ante conflicto entre este archivo y una petición puntual del usuario, prevalece la petición, y se anota en el registro.
-=======
 - Git: commits pequeños por UC/EN, CI en verde antes de fusionar en `DEV`. Ver sección «Ramas».
 
 ## Ramas
@@ -53,4 +46,3 @@ Al terminar cada petición, sin que se pida:
 ## Estilo
 - Respuestas breves, resultados directos. Código y documentación en español; identificadores en inglés.
 - Ante conflicto entre este archivo y una petición puntual del usuario, prevalece la petición, y se anota en el registro.
->>>>>>> main
