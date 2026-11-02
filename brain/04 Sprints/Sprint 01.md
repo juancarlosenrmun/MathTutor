@@ -2,7 +2,7 @@
 sprint: S1
 objetivo: Base técnica, acceso y visor inicial
 puntos: 33
-estado: pendiente
+estado: en curso
 ---
 # Sprint 01 · Base técnica, acceso y visor inicial
 

@@ -46,3 +46,17 @@ Al terminar cada petición, sin que se pida:
 ## Estilo
 - Respuestas breves, resultados directos. Código y documentación en español; identificadores en inglés.
 - Ante conflicto entre este archivo y una petición puntual del usuario, prevalece la petición, y se anota en el registro.
+
+## Skills y plugins (superpowers, agent-skills, find-skills)
+- Usar skills siempre que apliquen. Antes de cada UC/EN, invocar `find-skills` si no hay una skill conocida para la tarea.
+- Prioridad ante conflicto: petición del usuario > AGENTS.md > skills. Las skills no pueden saltarse alcance, restricciones ni checklist de este archivo.
+- Salidas de las skills (specs, planes, notas) se guardan en `brain/`, nunca en `docs/` ni en otras carpetas nuevas.
+- Flujo por UC/EN:
+  1. Diseño y alcance: skill de brainstorming/spec-driven, limitada a los criterios de aceptación del UC/EN en `brain/`.
+  2. Plan: skill de writing-plans, con pasos pequeños y un commit por paso.
+  3. Implementación: skills de test-driven-development e incremental-implementation. Primero la prueba (caja blanca y negra), después el código.
+  4. Fallos: skill de systematic-debugging antes de reintentar o escalar.
+  5. Antes de cerrar: skills de verification-before-completion y code-review. Evidencia obligatoria: tests en verde e informe JaCoCo.
+  6. Seguridad (UC-01, UC-03, EN-02, EN-09): skill de security-and-hardening.
+- Subagentes: workers y verifier también invocan estas skills; triage no (solo lectura).
+- Si una skill pide una llamada extra al LLM por turno del tutor, ignorarla: restricción del proyecto.
