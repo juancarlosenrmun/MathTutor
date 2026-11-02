@@ -28,11 +28,7 @@ Al terminar cada petición, sin que se pida:
 - Objetivo de cobertura: 100 % de líneas y ramas del código del sprint, medido con JaCoCo (backend) y la herramienta equivalente en cliente JS. Build falla por debajo del umbral. Exclusiones solo para código generado o de arranque, listadas y justificadas en el informe.
 - Pruebas deterministas: el LLM y Symja se simulan en pruebas unitarias; pruebas de integración con Testcontainers (PostgreSQL+pgvector).
 - Elemento hecho = criterios de aceptación cumplidos + pruebas automatizadas + integrado en la rama principal.
-- Git: commits pequeños por UC/EN, CI en verde antes de fusionar en `DEV`.Cada commit empieza por el nombre de la rama entre corchetes `[Rama]`. Ver sección «Ramas».
-
-## Estilo
-- Respuestas breves, resultados directos. Código y documentación en español; identificadores en inglés.
-- Ante conflicto entre este archivo y una petición puntual del usuario, prevalece la petición, y se anota en el registro.
+- Git: commits pequeños por UC/EN, CI en verde antes de fusionar en `DEV`. Ver sección «Ramas».
 
 ## Ramas
 - `main`: estable. Nunca se desarrolla ni se documenta directamente en ella.
@@ -46,4 +42,7 @@ Al terminar cada petición, sin que se pida:
 - Antes de crear una rama, actualizar la rama base (`git pull`).
 - La bóveda `brain/` es documentación de proyecto: se versiona en `DOC`. Excepción: la checklist de `brain/04 Sprints/` y `brain/05 Seguimiento/` se actualiza en `DEV` junto al código que la justifica, para que el estado marcado coincida con el código.
 - Commits pequeños por UC/EN con mensaje `tipo(UC-NN): descripción`.
-- Cada commit empieza por el nombre de la rama entre corchetes `[Rama]`
+
+## Estilo
+- Respuestas breves, resultados directos. Código y documentación en español; identificadores en inglés.
+- Ante conflicto entre este archivo y una petición puntual del usuario, prevalece la petición, y se anota en el registro.
