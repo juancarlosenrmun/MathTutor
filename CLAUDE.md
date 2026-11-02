@@ -1,4 +1,4 @@
-@AGENTS.md
+@[[AGENTS]].md
 
 ## Routing (GOAT)
 1. En toda tarea de código, llamar primero al agente triage.
