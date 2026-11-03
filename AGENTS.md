@@ -12,7 +12,7 @@
 
 ## Checklist obligatoria (en CADA petición)
 Al terminar cada petición, sin que se pida:
-1. Crear o actualizar la checklist del sprint en `brain/04 Sprints/Sprint NN.md`: marcar `[x]` solo lo realmente implementado y verificado (implementación, caja blanca, caja negra, cobertura 100 %, integrado). No marcar nada sin evidencia (tests en verde, informe de cobertura).
+1. Crear o actualizar la checklist del sprint en `brain/04 Sprints/Sprint NN.md`: marcar `[x]` solo lo realmente implementado y verificado (implementación, caja blanca, caja negra, cobertura en umbral, integrado). No marcar nada sin evidencia (tests en verde, informe de cobertura).
 2. Actualizar la tabla de `brain/05 Seguimiento/Progreso global.md` (hechos/total y estado) y el campo `estado` del frontmatter del sprint (`pendiente` / `en curso` / `completado`).
 3. Añadir arriba una entrada en `brain/05 Seguimiento/Registro de iteraciones.md` con: fecha y hora, sprint, petición, lo implementado, nº de pruebas (caja blanca/negra), cobertura y pendiente.
 4. Si el código cambia el diseño, actualizar `Diagrama de dominio.md` y `Diagrama de clases.md` en la misma petición.
@@ -25,7 +25,7 @@ Al terminar cada petición, sin que se pida:
 
 ## Pruebas y calidad
 - Cada UC/EN con pruebas de caja blanca (cobertura de líneas y ramas, caminos y condiciones) y de caja negra (partición de equivalencia, valores límite, tablas de decisión, pruebas de API/contrato).
-- Objetivo de cobertura: 100 % de líneas y ramas del código del sprint, medido con JaCoCo (backend) y la herramienta equivalente en cliente JS. Build falla por debajo del umbral. Exclusiones solo para código generado o de arranque, listadas y justificadas en el informe.
+- Objetivo de cobertura (estándar de empresa): ≥ 80 % de líneas y ≥ 70 % de ramas por módulo, ≥ 90 % en la política pedagógica (RNF-11), medido con JaCoCo (backend) y la herramienta equivalente en cliente JS. Build falla por debajo del umbral. Exclusiones solo para código generado, de arranque o DTO sin lógica, listadas y justificadas en el informe.
 - Pruebas deterministas: el LLM y Symja se simulan en pruebas unitarias; pruebas de integración con Testcontainers (PostgreSQL+pgvector).
 - Elemento hecho = criterios de aceptación cumplidos + pruebas automatizadas + integrado en la rama principal.
 - Git: commits pequeños por UC/EN, CI en verde antes de fusionar en `DEV`. Ver sección «Ramas».

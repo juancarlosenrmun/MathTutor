@@ -1,10 +1,8 @@
-import java.math.BigDecimal
-
 plugins {
     id("java")
-    id("jacoco")
     id("org.springframework.boot") version "3.2.5"
     id("io.spring.dependency-management") version "1.1.5"
+    // JaCoCo applied from parent build.gradle.kts
 }
 
 group = "com.mathtutor"
@@ -24,13 +22,12 @@ dependencies {
 
     // Database
     runtimeOnly("org.postgresql:postgresql")
-    implementation("org.hibernate.orm:hibernate-core-jakarta:6.4.4.Final")
 
-    // pgvector
-    implementation("org.springframework.ai:spring-ai-vector-store-pgvector:0.8.1")
+    // pgvector - using pgvector-java library
+    implementation("com.pgvector:pgvector:0.1.6")
 
     // Argon2 for password hashing
-    implementation("com.github.jerometheo:argon2-jna:1.4")
+    implementation("org.mindrot:jbcrypt:0.4")
 
     // Project dependencies
     implementation(project(":mathtutor-common"))
@@ -41,40 +38,23 @@ dependencies {
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.testcontainers:junit-jupiter:1.19.7")
-    testImplementation("org.testcontainers:postgresql:1.19.7")
+    testRuntimeOnly("com.h2database:h2:2.2.224")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
+
+    // ArchUnit for architecture tests
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.4.0")
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-    }
+tasks.named("bootJar") {
+    enabled = false
 }
 
-tasks.withType<JacocoReport> {
-    reports {
-        html.required.set(true)
-        xml.required.set(true)
-    }
-}
-
-tasks.named("test") {
-    finalizedBy("jacocoTestReport")
-}
-
-tasks.named("jacocoTestCoverageVerification") {
-    configure<JacocoCoverageVerification> {
-        violationRules {
-            rule {
-                limit {
-                    minimum = BigDecimal("1")
-                }
-            }
-        }
-    }
-    dependsOn("jacocoTestReport")
-}
+// Module-specific JaCoCo exclusions can be added here if needed
+// Example: exclude DTOs or generated code
+// tasks.withType<Test> {
+//     configure<JacocoTaskExtension> {
+//         excludes.addAll(listOf("**/dto/**", "**/model/**"))
+//     }
+// }

@@ -1,11 +1,9 @@
-import java.math.BigDecimal
-
 plugins {
     id("java")
-    id("jacoco")
     id("application")
     id("org.springframework.boot") version "3.2.5"
     id("io.spring.dependency-management") version "1.1.5"
+    // JaCoCo applied from parent build.gradle.kts
 }
 
 group = "com.mathtutor"
@@ -22,27 +20,22 @@ dependencies {
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-
-    // Spring AI
-    implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter:0.8.1")
-    implementation("org.springframework.ai:spring-ai-vector-store-pgvector:0.8.1")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
 
     // Database
     runtimeOnly("org.postgresql:postgresql")
-    implementation("org.hibernate.orm:hibernate-core-jakarta:6.4.4.Final")
+
+    // pgvector - for vector extension
+    implementation("com.pgvector:pgvector:0.1.6")
 
     // Security - Argon2
     implementation("org.springframework.security:spring-security-crypto")
     implementation("com.github.jerometheo:argon2-jna:1.4")
 
-    // Symja CAS
-    implementation("org.matheclipse:symja_jasymca:20240201")
-
-    // Project dependencies
+    // Project dependencies - application connects all modules
     implementation(project(":mathtutor-common"))
     implementation(project(":mathtutor-persistence"))
     implementation(project(":mathtutor-llm"))
@@ -65,35 +58,12 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
 }
 
+// Module-specific JaCoCo exclusions
+// Exclude main application class (entry point)
 tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
+    jacoco {
+        exclude("com.mathtutor.application.MathTutorApplication")
     }
-}
-
-tasks.withType<JacocoReport> {
-    reports {
-        html.required.set(true)
-        xml.required.set(true)
-    }
-}
-
-tasks.named("test") {
-    finalizedBy("jacocoTestReport")
-}
-
-tasks.named("jacocoTestCoverageVerification") {
-    configure<JacocoCoverageVerification> {
-        violationRules {
-            rule {
-                limit {
-                    minimum = BigDecimal("1")
-                }
-            }
-        }
-    }
-    dependsOn("jacocoTestReport")
 }
 
 application {

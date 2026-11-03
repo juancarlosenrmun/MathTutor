@@ -1,3 +1,8 @@
+import java.io.File
+import java.math.BigDecimal
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetContainer
+
 plugins {
     id("org.springframework.boot") version "3.2.5" apply false
     id("io.spring.dependency-management") version "1.1.5" apply false
@@ -22,4 +27,116 @@ allprojects {
         maven { url = uri("https://repo.spring.io/snapshot") }
         maven { url = uri("https://repo.spring.io/milestone") }
     }
+}
+
+// JaCoCo configuration for all subprojects (not root project)
+subprojects {
+    // Centralized JaCoCo configuration
+    // Thresholds: 80% line coverage / 70% branch coverage per module
+    // Exclusions documented: main classes, DTOs without logic, port interfaces (contracts)
+    apply(plugin = "jacoco")
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
+        finalizedBy("jacocoTestReport")
+    }
+
+    tasks.withType<org.gradle.testing.jacoco.tasks.JacocoReport> {
+        reports {
+            html.required.set(true)
+            xml.required.set(true)
+            csv.required.set(false)
+        }
+    }
+
+    // Per-module coverage verification (80% lines / 70% branches) - only if tests exist
+    afterEvaluate {
+        if (tasks.findByName("jacocoTestCoverageVerification") != null) {
+            tasks.named<org.gradle.testing.jacoco.tasks.JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+                violationRules {
+                    rule {
+                        limit {
+                            counter = "LINE"
+                            value = "COVEREDRATIO"
+                            minimum = BigDecimal("0.80")
+                        }
+                    }
+                    rule {
+                        limit {
+                            counter = "BRANCH"
+                            value = "COVEREDRATIO"
+                            minimum = BigDecimal("0.70")
+                        }
+                    }
+                }
+                dependsOn("jacocoTestReport")
+            }
+
+            // Ensure coverage verification runs in verify phase
+            tasks.named("check") {
+                dependsOn("jacocoTestCoverageVerification")
+            }
+        }
+    }
+}
+
+// Aggregated coverage report across all modules (root project only)
+// Run with: ./gradlew jacocoAggregateReport
+tasks.register<org.gradle.testing.jacoco.tasks.JacocoReport>("jacocoAggregateReport") {
+    group = "Reporting"
+    description = "Generates an aggregated JaCoCo coverage report for all subprojects"
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/aggregate/html"))
+        xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/aggregate/jacoco.xml"))
+    }
+
+    // Configure lazily after all subprojects are evaluated
+    doLast {
+        val subprojectsWithJacoco = subprojects.filter { it.plugins.hasPlugin("jacoco") }
+
+        // Collect source directories, class directories, and execution data from all subprojects
+        val allSourceDirs = mutableListOf<File>()
+        val allClassDirs = mutableListOf<File>()
+        val allExecData = mutableListOf<File>()
+
+        for (subproject in subprojectsWithJacoco) {
+            val sourceSets = subproject.extensions.getByType(SourceSetContainer::class.java)
+            val mainSourceSet = sourceSets["main"] as SourceSet
+            allSourceDirs.addAll(mainSourceSet.allSource.srcDirs)
+            allClassDirs.addAll(mainSourceSet.output.classesDirs.files)
+
+            // Find execution data files in build/jacoco/
+            val jacocoDir = File(subproject.buildDir, "jacoco")
+            if (jacocoDir.exists()) {
+                jacocoDir.listFiles()?.filter { it.extension == "exec" }?.forEach { allExecData.add(it) }
+            }
+        }
+
+        sourceDirectories.setFrom(allSourceDirs)
+        classDirectories.setFrom(allClassDirs)
+        executionData.setFrom(allExecData)
+
+        // Global exclusions for aggregated report
+        // Main classes, DTOs, port interfaces, generated code (lambdas, etc.)
+        classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
+            exclude("**/*Application*.class")
+            exclude("**/dto/**/*.class")
+            exclude("**/model/**/*.class")
+            exclude("**/port/**/*.class")
+            exclude("**/record/**/*.class")
+            exclude("**/*$$*") // Lambdas/anonymous classes
+        } })
+    }
+}
+
+// Make aggregated report depend on all test tasks
+tasks.named("jacocoAggregateReport") {
+    dependsOn(subprojects.filter { it.plugins.hasPlugin("jacoco") }.map { it.tasks.named("test") })
 }

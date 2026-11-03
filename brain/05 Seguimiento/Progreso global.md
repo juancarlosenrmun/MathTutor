@@ -2,7 +2,7 @@
 
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
-| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 0/5 | en curso |
+| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 | completado |
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 0/4 | pendiente |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 0/5 | pendiente |

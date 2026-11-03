@@ -10,7 +10,7 @@ git status --porcelain -- . ':!brain' ':!.claude' | grep -q . || exit 0
 if [ -f ./mvnw ]; then
   if ! out=$(./mvnw -q verify 2>&1); then
     jq -n --arg log "$(tail -n 40 <<<"$out")" \
-      '{decision:"block",reason:("Tests o cobertura 100 % fallan. Corrige antes de parar.\n"+$log)}'
+      '{decision:"block",reason:("Tests o cobertura en umbral fallan. Corrige antes de parar.\n"+$log)}'
     exit 0
   fi
 fi

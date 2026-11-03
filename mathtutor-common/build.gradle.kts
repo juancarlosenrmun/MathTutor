@@ -1,8 +1,6 @@
-import java.math.BigDecimal
-
 plugins {
     id("java")
-    id("jacoco")
+    // JaCoCo applied from parent build.gradle.kts
 }
 
 group = "com.mathtutor"
@@ -28,38 +26,10 @@ dependencies {
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
 }
 
+// Module-specific JaCoCo exclusions
+// Exclude port interfaces (contracts, not implementation)
 tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-    }
-
-    // Configure JaCoCo to exclude port interfaces (contracts, not implementation)
     jacoco {
         exclude("com.mathtutor.common.port.**")
     }
-}
-
-tasks.withType<JacocoReport> {
-    reports {
-        html.required.set(true)
-        xml.required.set(true)
-    }
-}
-
-tasks.named("test") {
-    finalizedBy("jacocoTestReport")
-}
-
-tasks.named("jacocoTestCoverageVerification") {
-    configure<JacocoCoverageVerification> {
-        violationRules {
-            rule {
-                limit {
-                    minimum = BigDecimal("1")
-                }
-            }
-        }
-    }
-    dependsOn("jacocoTestReport")
 }

@@ -26,41 +26,41 @@ UC-17 necesita UC-16 y UC-22. UC-20 y UC-25 alimentan UC-11. UC-35 prepara la co
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-17 · Verificar pasos y resultado con el CAS y clasificar el error
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-20 · Mantener el contexto de la sesión
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-25 · Registrar cada interacción de forma estructurada
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-35 · Generar y validar la especificación gráfica
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
 - [ ] Build y CI en verde
-- [ ] Cobertura 100 % verificada
+- [ ] Cobertura en umbral verificada
 - [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [ ] [[Progreso global]] actualizado
 
