@@ -9,6 +9,8 @@ brain/.trash/
 # Java y Node
 target/
 build/
+.jdk/
+.java/
 node_modules/
 .idea/
 .vscode/
