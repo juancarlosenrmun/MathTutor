@@ -24,3 +24,7 @@ node_modules/
 .claude/settings.local.json
 .claude/worktrees/
 CLAUDE.local.md
+.java/
+.jdk/
+gradle/lib/
+gradle/bin/
