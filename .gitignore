@@ -9,6 +9,8 @@ brain/.trash/
 # Java y Node
 target/
 build/
+.jdk/
+.java/
 node_modules/
 .idea/
 .vscode/
@@ -22,3 +24,13 @@ node_modules/
 .claude/settings.local.json
 .claude/worktrees/
 CLAUDE.local.md
+.java/
+.jdk/
+gradle/lib/
+gradle/bin/
+
+.java/
+.jdk/
+gradle/lib/
+gradle/bin/
+.gradle

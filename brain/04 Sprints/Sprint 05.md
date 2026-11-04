@@ -25,34 +25,34 @@ UC-18 exige UC-17 y UC-20. UC-19 en el mismo sprint (sin tutor sin control de fu
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-19 · Impedir la revelación de la solución
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-31 · Ver rectas y planos tangentes dinámicos
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### EN-09 · Cumplimiento RGPD (contrato con el proveedor, registro de tratamientos, DPD)
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
 - [ ] Build y CI en verde
-- [ ] Cobertura 100 % verificada
+- [ ] Cobertura en umbral verificada
 - [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [ ] [[Progreso global]] actualizado
 

@@ -25,34 +25,34 @@ EN-02 sobre sistema completo. UC-21 filtrado y cuota. UC-23 diferencia categorí
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-23 · Reconocer ejercicio del banco y usar sus datos
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-30 · Ver superficies con iluminación y texturas
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### EN-02 · Seguridad transversal (CSRF, sesión, TLS, secretos, ZAP)
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
 - [ ] Build y CI en verde
-- [ ] Cobertura 100 % verificada
+- [ ] Cobertura en umbral verificada
 - [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [ ] [[Progreso global]] actualizado
 

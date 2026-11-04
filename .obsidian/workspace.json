@@ -1,20 +1,24 @@
 {
   "main": {
-    "id": "aa1fec64e65f92bf",
+    "id": "44b381925acff515",
     "type": "split",
     "children": [
       {
-        "id": "d83b46988b58e45d",
+        "id": "694ee4aefc2f03b6",
         "type": "tabs",
         "children": [
           {
-            "id": "7a8ef58aad469eaa",
+            "id": "188cb24e2d9951ab",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Vista gráfica"
+              "type": "markdown",
+              "state": {
+                "file": "brain/05 Seguimiento/Progreso global.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Progreso global"
             }
           }
         ]
@@ -23,15 +27,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "e83c335c41279a94",
+    "id": "3b8d1d79d1f12bd1",
     "type": "split",
     "children": [
       {
-        "id": "a7f70fe335807c03",
+        "id": "078dcc48bdc96bcf",
         "type": "tabs",
         "children": [
           {
-            "id": "fa99f22d4444ccc0",
+            "id": "386fd7d278b45790",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -46,7 +50,7 @@
             }
           },
           {
-            "id": "b7e66c997a29074c",
+            "id": "f2106743fc1423eb",
             "type": "leaf",
             "state": {
               "type": "search",
@@ -63,7 +67,7 @@
             }
           },
           {
-            "id": "821824e4a2ee23ea",
+            "id": "7de76700b21d9e06",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -79,24 +83,23 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
-    "id": "009def19d854cb17",
+    "id": "4abbf384eb6d0960",
     "type": "split",
     "children": [
       {
-        "id": "2b078fa42b0ba177",
+        "id": "ed20c7c55bca8820",
         "type": "tabs",
         "children": [
           {
-            "id": "72b1e0a7acbba017",
+            "id": "cc778f6c7b85f2f8",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "brain/_index.md",
+                "file": "brain/05 Seguimiento/Progreso global.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -110,12 +113,11 @@
             }
           },
           {
-            "id": "172bb486061e3810",
+            "id": "887a20c354db461a",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "brain/_index.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -124,7 +126,7 @@
             }
           },
           {
-            "id": "5df472efa9c5edd1",
+            "id": "0f81269c7bb06266",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -139,7 +141,7 @@
             }
           },
           {
-            "id": "5d451fdf532198f4",
+            "id": "20a720c8f9d10ef3",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -153,12 +155,11 @@
             }
           },
           {
-            "id": "b789b33e185f9467",
+            "id": "830238fddf9b833f",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "brain/_index.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -171,8 +172,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -185,55 +185,34 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "7a8ef58aad469eaa",
+  "active": "188cb24e2d9951ab",
   "lastOpenFiles": [
-    "AGENTS.md",
-    "brain/AGENTS.md",
-    "brain/06 Diseño/Diagrama de dominio.md",
-    "brain/06 Diseño/Diagrama de clases.md",
-    "brain/06 Diseño/Arquitectura.md",
-    "brain/06 Diseño",
-    "brain/05 Seguimiento/Registro de iteraciones.md",
-    "brain/05 Seguimiento/Progreso global.md",
-    "brain/05 Seguimiento",
-    "brain/04 Sprints/Sprint 10.md",
-    "brain/04 Sprints/Sprint 08.md",
-    "brain/04 Sprints/Sprint 09.md",
-    "brain/04 Sprints/Sprint 07.md",
-    "brain/04 Sprints/Sprint 05.md",
-    "brain/04 Sprints/Sprint 06.md",
-<<<<<<< HEAD
-    "brain/04 Sprints/Sprint 04.md",
-    "brain/04 Sprints/Sprint 03.md",
+    "mathtutor-application/build/tmp/jacocoTestCoverageVerification",
+    "mathtutor-application/build/tmp",
     "brain/04 Sprints/Sprint 02.md",
-=======
->>>>>>> main
+    "mathtutor-application/src/test/resources/db/migration/test-init.sql",
+    "mathtutor-application/src/test/resources/db/migration/test-init.sql.tmp.26016.3a3f9cd45856",
+    "mathtutor-application/src/test/resources/db/migration",
+    "mathtutor-application/src/test/resources/db",
+    "mathtutor-application/src/test/resources",
+    "mathtutor-application/src/test/java/com/mathtutor/application/MathTutorApplicationTest.java",
+    "mathtutor-application/src/main/java/com/mathtutor/application/config/DatabaseConfig.java",
+    "mathtutor-application/src/main/java/com/mathtutor/application/config",
+    "mathtutor-application/src/main/java/com/mathtutor/application/MathTutorApplication.java",
     "brain/04 Sprints/Sprint 01.md",
-    "brain/04 Sprints",
-    "brain/03 Planificación/Riesgos de la planificación.md",
-    "brain/03 Planificación/Plan de sprints.md",
-    "brain/03 Planificación",
-<<<<<<< HEAD
-    "brain/02 Casos de uso/Casos de uso.md",
-    "brain/02 Casos de uso",
-    "brain/01 Requisitos/Restricciones y alcance.md",
-    "brain/01 Requisitos/Requisitos funcionales.md",
-    "brain/01 Requisitos/Requisitos no funcionales.md",
-    "brain/01 Requisitos",
-    "brain/00 - Índice.md",
-    "brain/_index.md",
-=======
-    "brain/06 Diseño/Diagrama de clases.md",
-    "brain/06 Diseño/Diagrama de dominio.md",
-    "brain/06 Diseño/Arquitectura.md",
-    "brain/06 Diseño",
-    "brain/05 Seguimiento/Progreso global.md",
-    "brain/05 Seguimiento/Registro de iteraciones.md",
-    "brain/05 Seguimiento",
-    "brain/AGENTS.md",
-    "brain/00 - Índice.md",
->>>>>>> main
-    "brain",
-    "Sin título.base"
+    "brain/06 Diseño/Plan_EN-01_remaining_modules.md",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/up.gif",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/source.gif",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/sort.gif",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/session.gif",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/report.gif",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/redbar.gif",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/package.gif",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/method.gif",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/group.gif",
+    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/greenbar.gif",
+    "CLAUDE.md",
+    "AGENTS.md",
+    "brain/05 Seguimiento/Progreso global.md"
   ]
 }
