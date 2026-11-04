@@ -187,6 +187,8 @@
   },
   "active": "188cb24e2d9951ab",
   "lastOpenFiles": [
+    "mathtutor-application/build/tmp/jacocoTestCoverageVerification",
+    "mathtutor-application/build/tmp",
     "brain/04 Sprints/Sprint 02.md",
     "mathtutor-application/src/test/resources/db/migration/test-init.sql",
     "mathtutor-application/src/test/resources/db/migration/test-init.sql.tmp.26016.3a3f9cd45856",
@@ -197,7 +199,6 @@
     "mathtutor-application/src/main/java/com/mathtutor/application/config/DatabaseConfig.java",
     "mathtutor-application/src/main/java/com/mathtutor/application/config",
     "mathtutor-application/src/main/java/com/mathtutor/application/MathTutorApplication.java",
-    "mathtutor-application/build.gradle.kts.tmp.26016.3c8b544bbdf0",
     "brain/04 Sprints/Sprint 01.md",
     "brain/06 Diseño/Plan_EN-01_remaining_modules.md",
     "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/up.gif",
