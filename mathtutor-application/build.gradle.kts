@@ -42,7 +42,6 @@ dependencies {
     implementation(project(":mathtutor-llm"))
     implementation(project(":mathtutor-graphics"))
     implementation(project(":mathtutor-tutor"))
-    implementation(project(":mathtutor-web"))
 
     // Lombok
     compileOnly("org.projectlombok:lombok")
@@ -73,9 +72,4 @@ application {
 
 springBoot {
     mainClass.set("com.mathtutor.application.MathTutorApplication")
-}
-
-// Disable JaCoCo coverage verification for this module (only Docker-dependent integration tests)
-tasks.named("jacocoTestCoverageVerification") {
-    enabled = false
 }

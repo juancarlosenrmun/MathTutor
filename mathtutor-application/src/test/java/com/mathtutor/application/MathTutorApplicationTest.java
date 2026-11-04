@@ -1,7 +1,6 @@
 package com.mathtutor.application;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
@@ -11,30 +10,17 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.IOException;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Prueba de integración para verificar que el contexto de la aplicación arranca
  * correctamente con PostgreSQL+pgvector usando Testcontainers.
  * Verifica que la extensión vector existe y los módulos se cablean por interfaces.
- * Se omite si Docker no está disponible (requiere Docker para Testcontainers).
+ * Requiere Docker activo para Testcontainers.
  */
 @SpringBootTest(classes = MathTutorApplication.class)
 @Testcontainers
-@EnabledIf("dockerAvailable")
 class MathTutorApplicationTest {
-
-    static boolean dockerAvailable() {
-        try {
-            // Check if Docker is available by trying to run `docker version`
-            Process process = new ProcessBuilder("docker", "version").redirectErrorStream(true).start();
-            return process.waitFor() == 0;
-        } catch (IOException | InterruptedException e) {
-            return false;
-        }
-    }
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("pgvector/pgvector:pg16")
