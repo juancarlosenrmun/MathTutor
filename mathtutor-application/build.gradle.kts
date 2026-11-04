@@ -50,8 +50,8 @@ dependencies {
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("org.testcontainers:junit-jupiter:1.20.1")
-    testImplementation("org.testcontainers:postgresql:1.20.1")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
+    testImplementation("org.testcontainers:postgresql:1.20.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")

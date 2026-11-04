@@ -33,3 +33,4 @@ gradle/bin/
 .jdk/
 gradle/lib/
 gradle/bin/
+.gradle
