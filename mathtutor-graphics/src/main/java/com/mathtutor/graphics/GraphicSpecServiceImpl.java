@@ -3,6 +3,9 @@ package com.mathtutor.graphics;
 import com.mathtutor.common.port.GraphicSpecService;
 import com.mathtutor.common.dto.GraphicSpec;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Esqueleto de implementación del servicio de especificaciones gráficas.
  * Implementación vacía preparada para UC-27 (WebGL pipeline).
@@ -11,14 +14,14 @@ import com.mathtutor.common.dto.GraphicSpec;
 public class GraphicSpecServiceImpl implements GraphicSpecService {
 
     @Override
-    public GraphicSpec build(GraphicSpec.GraphicType type, String function, GraphicSpec.Domain domain, java.util.List<GraphicSpec.Point> points) {
+    public GraphicSpec build(GraphicSpec.GraphicType type, String function, GraphicSpec.Domain domain, List<GraphicSpec.Point> points) {
         // TODO: Implementar en UC-27 con pipeline WebGL
-        // Por ahora devuelve especificación básica
-        return GraphicSpec.builder()
-            .type(type)
-            .function(function)
-            .domain(domain)
-            .points(points != null ? points : java.util.Collections.emptyList())
-            .build();
+        // Por ahora devuelve especificación básica usando el constructor canónico del record
+        return new GraphicSpec(
+            type,
+            function,
+            domain,
+            points != null ? points : Collections.emptyList()
+        );
     }
 }

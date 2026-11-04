@@ -23,9 +23,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
-    // Security - Argon2
+    // Security - use Spring Security's BCrypt (available in Maven Central)
     implementation("org.springframework.security:spring-security-crypto")
-    implementation("com.github.jerometheo:argon2-jna:1.4")
 
     // Project dependencies
     implementation(project(":mathtutor-common"))

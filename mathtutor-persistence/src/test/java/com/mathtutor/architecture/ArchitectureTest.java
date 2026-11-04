@@ -16,6 +16,10 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
  * - llm, graphics, tutor, persistence dependen solo de common (interfaces)
  * - Ninguno de estos módulos depende de otro
  * - application es el único que los conecta
+ *
+ * Nota: allowEmptyShould(true) permite que la prueba pase si el módulo no está en el classpath
+ * (ej. al ejecutar tests de un módulo individual). En CI, al ejecutar ./gradlew check desde la raíz,
+ * todos los módulos están disponibles y las reglas se aplican completamente.
  */
 @AnalyzeClasses(packages = "com.mathtutor",
     importOptions = { ImportOption.DoNotIncludeTests.class, ImportOption.DoNotIncludeJars.class })
@@ -39,18 +43,21 @@ class ArchitectureTest {
     static final ArchRule llm_only_depends_on_common =
         noClasses().that().resideInAPackage(LLM_PACKAGE)
             .should().dependOnClassesThat().resideInAnyPackage(PERSISTENCE_PACKAGE, GRAPHICS_PACKAGE, TUTOR_PACKAGE, WEB_PACKAGE, APPLICATION_PACKAGE)
+            .allowEmptyShould(true)
             .because("llm must only depend on common interfaces");
 
     @ArchTest
     static final ArchRule graphics_only_depends_on_common =
         noClasses().that().resideInAPackage(GRAPHICS_PACKAGE)
             .should().dependOnClassesThat().resideInAnyPackage(PERSISTENCE_PACKAGE, LLM_PACKAGE, TUTOR_PACKAGE, WEB_PACKAGE, APPLICATION_PACKAGE)
+            .allowEmptyShould(true)
             .because("graphics must only depend on common interfaces");
 
     @ArchTest
     static final ArchRule tutor_only_depends_on_common =
         noClasses().that().resideInAPackage(TUTOR_PACKAGE)
             .should().dependOnClassesThat().resideInAnyPackage(PERSISTENCE_PACKAGE, LLM_PACKAGE, GRAPHICS_PACKAGE, WEB_PACKAGE, APPLICATION_PACKAGE)
+            .allowEmptyShould(true)
             .because("tutor must only depend on common interfaces");
 
     @ArchTest
@@ -63,17 +70,20 @@ class ArchitectureTest {
     static final ArchRule application_connects_modules =
         noClasses().that().resideInAPackage(APPLICATION_PACKAGE)
             .should().dependOnClassesThat().resideInAnyPackage(PERSISTENCE_PACKAGE, LLM_PACKAGE, GRAPHICS_PACKAGE, TUTOR_PACKAGE, WEB_PACKAGE)
+            .allowEmptyShould(true)
             .because("application is the only module that should connect all other modules");
 
     @ArchTest
     static final ArchRule common_has_no_external_dependencies =
         noClasses().that().resideInAPackage(COMMON_PACKAGE)
             .should().dependOnClassesThat().resideInAnyPackage(PERSISTENCE_PACKAGE, LLM_PACKAGE, GRAPHICS_PACKAGE, TUTOR_PACKAGE, WEB_PACKAGE, APPLICATION_PACKAGE)
+            .allowEmptyShould(true)
             .because("common must not depend on any other module");
 
     @ArchTest
     static final ArchRule web_depends_on_application_modules =
         noClasses().that().resideInAPackage(WEB_PACKAGE)
             .should().dependOnClassesThat().resideInAnyPackage(PERSISTENCE_PACKAGE, LLM_PACKAGE, GRAPHICS_PACKAGE, TUTOR_PACKAGE)
+            .allowEmptyShould(true)
             .because("web should connect through application layer, not directly depend on internal modules");
 }

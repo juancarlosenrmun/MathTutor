@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
+import java.util.Collections;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -19,10 +21,14 @@ class LlmGatewayImplTest {
     @Test
     void streamReturnsEmptyFlux() {
         // Given
-        Prompt prompt = Prompt.builder()
-            .system("System prompt")
-            .user("User message")
-            .build();
+        Prompt prompt = new Prompt(
+            "System prompt",
+            "User message",
+            Collections.emptyList(),
+            "",
+            1000,
+            0.7
+        );
 
         // When
         Flux<String> result = gateway.stream(prompt);

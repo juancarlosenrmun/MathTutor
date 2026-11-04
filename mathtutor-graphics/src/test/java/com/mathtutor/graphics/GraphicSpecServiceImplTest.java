@@ -4,6 +4,7 @@ import com.mathtutor.common.dto.GraphicSpec;
 import com.mathtutor.common.port.GraphicSpecService;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,16 +20,11 @@ class GraphicSpecServiceImplTest {
     @Test
     void buildReturnsBasicGraphicSpec() {
         // Given
-        GraphicSpec.GraphicType type = GraphicSpec.GraphicType.FUNCTION_2D;
+        GraphicSpec.GraphicType type = GraphicSpec.GraphicType.CURVA_2D;
         String function = "x^2";
-        GraphicSpec.Domain domain = GraphicSpec.Domain.builder()
-            .xMin(-10.0)
-            .xMax(10.0)
-            .yMin(-5.0)
-            .yMax(50.0)
-            .build();
+        GraphicSpec.Domain domain = new GraphicSpec.Domain(-10.0, 10.0, 100);
         List<GraphicSpec.Point> points = List.of(
-            GraphicSpec.Point.builder().x(0.0).y(0.0).label("origin").build()
+            new GraphicSpec.Point(0.0, 0.0, 0.0)
         );
 
         // When
@@ -36,30 +32,25 @@ class GraphicSpecServiceImplTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getType()).isEqualTo(type);
-        assertThat(result.getFunction()).isEqualTo(function);
-        assertThat(result.getDomain()).isEqualTo(domain);
-        assertThat(result.getPoints()).isEqualTo(points);
+        assertThat(result.type()).isEqualTo(type);
+        assertThat(result.function()).isEqualTo(function);
+        assertThat(result.domain()).isEqualTo(domain);
+        assertThat(result.points()).isEqualTo(points);
     }
 
     @Test
     void buildWithNullPointsReturnsEmptyList() {
         // Given
-        GraphicSpec.GraphicType type = GraphicSpec.GraphicType.FUNCTION_2D;
+        GraphicSpec.GraphicType type = GraphicSpec.GraphicType.CURVA_2D;
         String function = "x";
-        GraphicSpec.Domain domain = GraphicSpec.Domain.builder()
-            .xMin(-10.0)
-            .xMax(10.0)
-            .yMin(-10.0)
-            .yMax(10.0)
-            .build();
+        GraphicSpec.Domain domain = new GraphicSpec.Domain(-10.0, 10.0, 100);
 
         // When
         GraphicSpec result = service.build(type, function, domain, null);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getPoints()).isEmpty();
+        assertThat(result.points()).isEqualTo(Collections.emptyList());
     }
 
     @Test

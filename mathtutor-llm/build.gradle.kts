@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
     implementation(project(":mathtutor-common"))
+    implementation("io.projectreactor:reactor-core")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

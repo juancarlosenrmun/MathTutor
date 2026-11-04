@@ -16,13 +16,13 @@ public class PedagogicalPolicyImpl implements PedagogicalPolicy {
     @Override
     public PedagogicalAction decide(ExerciseRun exerciseRun, ErrorType diagnosis, int attempts) {
         // TODO: Implementar en Sprint 5 con orquestador determinista
-        // Por ahora devuelve acción básica según intentos
+        // Por ahora devuelve acción básica según intentos usando los valores reales de HelpLevel
         if (attempts == 0) {
-            return new PedagogicalAction(HelpLevel.HINT, "Intenta resolver el ejercicio paso a paso.", false, null);
+            return new PedagogicalAction(HelpLevel.CONCEPTUAL, "Intenta resolver el ejercicio paso a paso.", false, null);
         } else if (attempts == 1) {
-            return new PedagogicalAction(HelpLevel.GUIDED_STEP, "Revisa el primer paso de la solución.", false, null);
+            return new PedagogicalAction(HelpLevel.PROCEDIMENTAL, "Revisa el primer paso de la solución.", false, null);
         } else {
-            return new PedagogicalAction(HelpLevel.SOLUTION, "La solución completa se muestra tras múltiples intentos.", true, null);
+            return new PedagogicalAction(HelpLevel.REVELACION, "La solución completa se muestra tras múltiples intentos.", true, null);
         }
     }
 }

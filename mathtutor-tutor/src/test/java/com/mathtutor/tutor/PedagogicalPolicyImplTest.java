@@ -20,13 +20,13 @@ class PedagogicalPolicyImplTest {
     private final PedagogicalPolicy policy = new PedagogicalPolicyImpl();
 
     @Test
-    void firstAttemptReturnsHint() {
+    void firstAttemptReturnsConceptualHint() {
         // Given
         ExerciseRun exerciseRun = new ExerciseRun(
-            1L, "x^2", ExerciseRun.RunState.COMENZADO, 0.0, HelpLevel.NONE, 0,
+            1L, "x^2", ExerciseRun.RunState.COMENZADO, 0.0, HelpLevel.CONCEPTUAL, 0,
             Instant.now(), null, 1L, 1L
         );
-        ErrorType diagnosis = ErrorType.SYNTAX_ERROR;
+        ErrorType diagnosis = ErrorType.NINGUNO;
         int attempts = 0;
 
         // When
@@ -34,18 +34,18 @@ class PedagogicalPolicyImplTest {
 
         // Then
         assertThat(action).isNotNull();
-        assertThat(action.getHelpLevel()).isEqualTo(HelpLevel.HINT);
-        assertThat(action.getMessage()).contains("paso a paso");
+        assertThat(action.helpLevel()).isEqualTo(HelpLevel.CONCEPTUAL);
+        assertThat(action.hint()).contains("paso a paso");
     }
 
     @Test
-    void secondAttemptReturnsGuidedStep() {
+    void secondAttemptReturnsProceduralGuidance() {
         // Given
         ExerciseRun exerciseRun = new ExerciseRun(
-            1L, "x^2", ExerciseRun.RunState.COMENZADO, 0.0, HelpLevel.NONE, 0,
+            1L, "x^2", ExerciseRun.RunState.COMENZADO, 0.0, HelpLevel.CONCEPTUAL, 0,
             Instant.now(), null, 1L, 1L
         );
-        ErrorType diagnosis = ErrorType.SYNTAX_ERROR;
+        ErrorType diagnosis = ErrorType.NINGUNO;
         int attempts = 1;
 
         // When
@@ -53,18 +53,18 @@ class PedagogicalPolicyImplTest {
 
         // Then
         assertThat(action).isNotNull();
-        assertThat(action.getHelpLevel()).isEqualTo(HelpLevel.GUIDED_STEP);
-        assertThat(action.getMessage()).contains("primer paso");
+        assertThat(action.helpLevel()).isEqualTo(HelpLevel.PROCEDIMENTAL);
+        assertThat(action.hint()).contains("primer paso");
     }
 
     @Test
-    void thirdAttemptReturnsSolution() {
+    void thirdAttemptReturnsRevelation() {
         // Given
         ExerciseRun exerciseRun = new ExerciseRun(
-            1L, "x^2", ExerciseRun.RunState.COMENZADO, 0.0, HelpLevel.NONE, 0,
+            1L, "x^2", ExerciseRun.RunState.COMENZADO, 0.0, HelpLevel.CONCEPTUAL, 0,
             Instant.now(), null, 1L, 1L
         );
-        ErrorType diagnosis = ErrorType.SYNTAX_ERROR;
+        ErrorType diagnosis = ErrorType.NINGUNO;
         int attempts = 2;
 
         // When
@@ -72,8 +72,8 @@ class PedagogicalPolicyImplTest {
 
         // Then
         assertThat(action).isNotNull();
-        assertThat(action.getHelpLevel()).isEqualTo(HelpLevel.SOLUTION);
-        assertThat(action.getMessage()).contains("solución completa");
+        assertThat(action.helpLevel()).isEqualTo(HelpLevel.REVELACION);
+        assertThat(action.hint()).contains("solución completa");
     }
 
     @Test
