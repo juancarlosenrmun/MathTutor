@@ -16,10 +16,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Prueba de integración para verificar que el contexto de la aplicación arranca
  * correctamente con PostgreSQL+pgvector usando Testcontainers.
  * Verifica que la extensión vector existe y los módulos se cablean por interfaces.
- * Requiere Docker activo para Testcontainers.
+ * Se omite si Docker no está disponible (disabledWithoutDocker = true).
  */
 @SpringBootTest(classes = MathTutorApplication.class)
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class MathTutorApplicationTest {
 
     @Container

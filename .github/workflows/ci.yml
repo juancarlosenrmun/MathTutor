@@ -28,7 +28,7 @@ jobs:
           gradle-version: '8.5'
 
       - name: Build and test with Gradle
-        run: ./gradlew clean check --no-daemon
+        run: ./gradlew clean check --no-daemon --no-scan
         env:
           # Spring profile for tests with Testcontainers
           SPRING_PROFILES_ACTIVE: test
