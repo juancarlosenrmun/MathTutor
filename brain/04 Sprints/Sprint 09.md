@@ -27,48 +27,48 @@ Carga por debajo de capacidad para absorber desviaciones.
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-24 · Aplicar la progresión pedagógica
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-26 · Degradar a modo solo apuntes si falla el LLM
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-33 · Ver animaciones (secante a tangente, cámara)
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### EN-03 · Logs estructurados y métricas de latencia y tokens
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### EN-08 · Independencia del proveedor LLM
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
 - [ ] Build y CI en verde
-- [ ] Cobertura 100 % verificada
+- [ ] Cobertura en umbral verificada
 - [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [ ] [[Progreso global]] actualizado
 

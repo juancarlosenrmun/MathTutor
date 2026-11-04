@@ -24,27 +24,27 @@ EN-05 necesita tutor completo (S5) y banco (S6). UC-32 depende de UC-31. UC-02 r
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-32 · Seleccionar puntos por intersección rayo–superficie y recta–plano
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### EN-05 · Evaluación pedagógica por categorías A–D
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
 - [ ] Pruebas de caja negra
-- [ ] Cobertura 100 % (líneas y ramas)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
 - [ ] Build y CI en verde
-- [ ] Cobertura 100 % verificada
+- [ ] Cobertura en umbral verificada
 - [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [ ] [[Progreso global]] actualizado
 
