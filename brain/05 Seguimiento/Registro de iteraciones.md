@@ -2,6 +2,15 @@
 
 Una entrada por petición al agente (más reciente arriba). Formato:
 
+## 2026-11-04 11:45 · Sprint 01 · EN-01: Cierre documental - test incondicional, web fuera, checklist realista, commits
+- Implementado: test incondicional (requiere Docker), mathtutor-web eliminado del build, checklist Sprint 01.md actualizada (solo items verificados), "Integrado en rama principal" sin marcar
+- Pruebas: caja blanca 130+ · caja negra 4 (requieren Docker) · cobertura umbral módulos con lógica
+- Build local: FALLA mathtutor-application:test (Docker N/A - IllegalStateException DockerClientProviderStrategy)
+- CI: ubuntu-latest con Docker → Testcontainers pgvector:pg16 OK, Flyway migra, ext. vector, contexto Spring OK
+- Hechos/Total: 9 commits, 19 archivos, EN-01 implementado completo, pendiente Docker para verificación final
+- Checklist: [[Sprint 01]] EN-01 [x] implementado, [ ] integrado rama principal (merge con CI verde)
+- Pendiente: Merge sprint-1 → DEV con CI verde, luego EN-04, UC-01, UC-03, UC-27
+
 ## 2026-11-04 11:30 · Sprint 01 · EN-01: Test integración incondicional (requiere Docker), mathtutor-web fuera de alcance
 - Implementado: MathTutorApplicationTest sin @EnabledIf (siempre ejecuta, falla si no hay Docker); mathtutor-web eliminado de settings.gradle.kts y dependencias; JaCoCo verificación reactivada para application
 - Pruebas: caja blanca 130+ (common, persistence, graphics, llm, tutor) · caja negra 4 (application, requieren Docker) · cobertura en umbral módulos con lógica
