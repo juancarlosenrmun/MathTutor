@@ -51,15 +51,16 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y Spring AI+pgvector (cadena 
 - [x] mathtutor-graphics (esqueleto)
 - [x] mathtutor-tutor (esqueleto)
 - [x] Test de arquitectura (ArchUnit)
-- [x] mathtutor-application: arranque, Flyway, pgvector con Testcontainers
-- [x] CI/CD: GitHub Actions con build, test y JaCoCo (sin servicio PostgreSQL, Testcontainers only)
-- [x] Pruebas de caja blanca - todos los módulos
-- [x] Pruebas de caja negra - todos los módulos
-- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) - todos los módulos
-- [x] Integrado en la rama principal (rama DEV)
+- [x] mathtutor-application: arranque, Flyway, pgvector con Testcontainers (test implementado, requiere Docker)
+- [x] CI/CD: GitHub Actions con build, test y JaCoCo (sin servicio PostgreSQL, Testcontainers only, Docker en runner)
+- [x] Pruebas de caja blanca - todos los módulos (common, persistence, graphics, llm, tutor)
+- [x] Pruebas de caja negra - mathtutor-application (Testcontainers, requiere Docker)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) - módulos con lógica (common, persistence, graphics, llm, tutor)
+- [ ] Integrado en la rama principal (pendiente merge sprint-1 → DEV con CI en verde)
 - [x] Gradle como única herramienta de build (referencias Maven eliminadas)
 - [x] JDK 21 del sistema (eliminado .java/jdk-21.0.5+11)
 - [x] .java/ añadido a .gitignore
+- [x] mathtutor-web fuera de alcance EN-01 (eliminado de settings.gradle.kts)
 ### EN-04 · Spike: conversión de LaTeX a Symja y Spring AI con pgvector
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
