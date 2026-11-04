@@ -26,10 +26,10 @@ dependencies {
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
 }
 
-// Module-specific JaCoCo exclusions
-// Exclude port interfaces (contracts, not implementation)
+// Module-specific JaCoCo exclusions for test execution
+// Exclude port interfaces (contracts, not implementation) - use file path pattern
 tasks.withType<Test> {
     jacoco {
-        exclude("com.mathtutor.common.port.**")
+        exclude("com/mathtutor/common/port/**")
     }
 }

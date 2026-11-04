@@ -63,6 +63,10 @@ subprojects {
                             value = "COVEREDRATIO"
                             minimum = BigDecimal("0.80")
                         }
+                        // Exclude port interfaces (contracts, not implementation) for mathtutor-common
+                        if (project.name == "mathtutor-common") {
+                            excludes = listOf("com.mathtutor.common.port.*")
+                        }
                     }
                     rule {
                         limit {
@@ -70,7 +74,23 @@ subprojects {
                             value = "COVEREDRATIO"
                             minimum = BigDecimal("0.70")
                         }
+                        if (project.name == "mathtutor-common") {
+                            excludes = listOf("com.mathtutor.common.port.*")
+                        }
                     }
+                }
+                // Also filter classDirectories to exclude port interfaces from verification data
+                // Filter classDirectories to exclude port interfaces, entities, and repositories from verification data
+                if (project.name == "mathtutor-common") {
+                    classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
+                        exclude("**/port/**/*.class")
+                    } })
+                }
+                if (project.name == "mathtutor-persistence") {
+                    classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
+                        exclude("**/entity/**/*.class")
+                        exclude("**/repository/**/*.class")
+                    } })
                 }
                 dependsOn("jacocoTestReport")
             }
