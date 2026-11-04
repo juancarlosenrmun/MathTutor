@@ -2,6 +2,12 @@
 
 Una entrada por petición al agente (más reciente arriba). Formato:
 
+## 2026-11-04 10:30 · Sprint 01 · EN-01: Corrección completa - JaCoCo exclusiones, Gradle-only, JDK 21 sistema, CI sin PostgreSQL
+- Implementado: Fix JaCoCo exclusiones para mathtutor-common (port interfaces) y mathtutor-persistence (entities, repositories) en parent build.gradle.kts; check.sh actualizado a ./gradlew check; CI workflow .github/workflows/ci.yml sin servicio PostgreSQL (Testcontainers only); .gitignore añade .java/; Sprint 01.md estado: en curso, checklist EN-01 corregida; Progreso global.md: 1/5 elementos, 5/33 pts
+- Pruebas: caja blanca 100+ · caja negra 0 · cobertura en umbral (80% líneas / 70% ramas) todos los módulos: common, persistence, graphics, llm, tutor, web
+- Checklist actualizada: [[Sprint 01]] - EN-01 tareas 1-8 completadas con correcciones; [[Progreso global]] - S1: 1/5 elementos, 5/33 pts, en curso
+- Pendiente: EN-04, UC-01, UC-03, UC-27
+
 ## 2026-11-03 11:55 · Sprint 01 · EN-01: JaCoCo parent POM + 3 módulos esqueleto (llm, graphics, tutor)
 - Implementado: JaCoCo centralizado en parent build.gradle.kts con umbrales 80% líneas / 70% ramas; mathtutor-llm, mathtutor-graphics, mathtutor-tutor como esqueletos dependiendo solo de common; implementaciones vacías de LlmGateway, GraphicSpecService, PedagogicalPolicy con tests de caja blanca
 - Pruebas: caja blanca 12 · caja negra 0 · cobertura pendiente (entorno JDK incompleto)
