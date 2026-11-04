@@ -71,8 +71,20 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y Spring AI+pgvector (cadena 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
 - [ ] Build y CI en verde
-- [ ] Cobertura en umbral verificada
-- [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
-- [ ] [[Progreso global]] actualizado
+- [x] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones port/entity/repository)
+- [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
+- [x] [[Progreso global]] actualizado
+
+## Verificación de cobertura (JaCoCo XML reports)
+
+| Módulo | Líneas (raw) | Ramas (raw) | Verificación |
+|--------|-------------|-------------|--------------|
+| mathtutor-common | 76.7% | N/A | ✅ Pasa (excluye port/**) |
+| mathtutor-graphics | 100% | 100% | ✅ Pasa |
+| mathtutor-llm | 100% | N/A | ✅ Pasa |
+| mathtutor-persistence | 58.9% | 54.5% | ✅ Pasa (excluye entity/**, repository/**) |
+| mathtutor-tutor | 100% | 100% | ✅ Pasa |
+
+> **Nota**: La cobertura "raw" incluye interfaces/entidades generadas. La tarea `jacocoTestCoverageVerification` aplica exclusiones y pasa en todos los módulos con lógica.
 
 ## Notas de iteración
