@@ -7,8 +7,8 @@ cd "$CLAUDE_PROJECT_DIR" || exit 0
 git status --porcelain -- . ':!brain' ':!.claude' | grep -q . || exit 0
 
 # Tests + cobertura (el build falla bajo el umbral JaCoCo)
-if [ -f ./mvnw ]; then
-  if ! out=$(./mvnw -q verify 2>&1); then
+if [ -f ./gradlew ]; then
+  if ! out=$(./gradlew -q check 2>&1); then
     jq -n --arg log "$(tail -n 40 <<<"$out")" \
       '{decision:"block",reason:("Tests o cobertura en umbral fallan. Corrige antes de parar.\n"+$log)}'
     exit 0
