@@ -16,6 +16,12 @@ repositories {
     maven { url = uri("https://repo.spring.io/milestone") }
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.ai:spring-ai-bom:1.0.0")
+    }
+}
+
 dependencies {
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web")
