@@ -2,7 +2,7 @@
 
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
-| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | **2/5 (10/33 pts)** | **EN-01 completado; EN-04 PARCIAL (Symja+pgvector ✅, Spring AI integración pendiente Docker CI); UC-01/03/27 pendientes** |
+| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | **2/5 (10/33 pts)** | **EN-01 completado; EN-04 PARCIAL (Symja ✅, pgvector JDBC ✅, Spring AI pgvector-store ❌ no implementado — dependencias declaradas pero no usadas); UC-01/03/27 pendientes** |
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 0/4 | pendiente |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 0/5 | pendiente |
