@@ -24,10 +24,9 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * Prueba de integración para PgVectorRetriever con Testcontainers.
  * Usa pgvector/pgvector:pg16 y DeterministicEmbeddingModel (sin LLM real).
- * Se omite si Docker no está disponible (disabledWithoutDocker = true).
  */
 @SpringBootTest
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 class PgVectorRetrieverIntegrationTest {
 
     @Container
