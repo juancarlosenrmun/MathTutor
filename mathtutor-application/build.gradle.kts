@@ -72,10 +72,11 @@ tasks.withType<Test> {
         exclude("com.mathtutor.application.MathTutorApplication")
     }
     // Pass Docker configuration to test JVM for Testcontainers
-    systemProperty("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
-    systemProperty("DOCKER_HOST", "unix:///var/run/docker.sock")
+    // Use environment() instead of systemProperty() so Testcontainers sees them as env vars
+    environment("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
+    environment("DOCKER_HOST", "unix:///var/run/docker.sock")
     // Disable Ryuk (Testcontainers cleanup container) to avoid issues in CI
-    systemProperty("TESTCONTAINERS_RYUK_DISABLED", "true")
+    environment("TESTCONTAINERS_RYUK_DISABLED", "true")
 }
 
 application {
