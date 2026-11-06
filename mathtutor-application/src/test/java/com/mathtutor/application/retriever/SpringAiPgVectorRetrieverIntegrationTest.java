@@ -25,13 +25,12 @@ import static org.assertj.core.api.Assertions.*;
  * Prueba de integración para SpringAiPgVectorRetriever con Testcontainers.
  * Usa pgvector/pgvector:pg16 y SpringAiDeterministicEmbeddingModel (sin LLM real).
  * Perfil: "spring-ai-pgvector" para activar la configuración Spring AI.
- * Se omite si Docker no está disponible (disabledWithoutDocker = true).
  *
  * Esta prueba valida el requisito EN-04: "Spring AI con pgvector"
  * usando la abstracción VectorStore de Spring AI (PgVectorStore).
  */
 @SpringBootTest
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 class SpringAiPgVectorRetrieverIntegrationTest {
 
     @Container
