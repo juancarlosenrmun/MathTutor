@@ -44,6 +44,16 @@ jobs:
         # GitHub Actions runner may not have permission to access /var/run/docker.sock
         run: sudo chmod 666 /var/run/docker.sock
 
+      - name: Debug environment variables
+        run: |
+          echo "=== Shell environment ==="
+          env | grep -E 'DOCKER|TESTCONTAINERS|SPRING_PROFILES'
+          echo "=== Docker socket ==="
+          ls -la /var/run/docker.sock
+          echo "=== Test Docker access ==="
+          docker version
+          docker ps
+
       - name: Build and test with Gradle
         run: ./gradlew clean check --no-daemon --no-scan
 
