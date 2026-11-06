@@ -13,6 +13,13 @@ repositories {
     maven { url = uri("https://repo.spring.io/milestone") }
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.0")
+        mavenBom("org.springframework.ai:spring-ai-bom:1.0.0")
+    }
+}
+
 dependencies {
     implementation(project(":mathtutor-common"))
     implementation("io.projectreactor:reactor-core")
@@ -29,22 +36,20 @@ dependencies {
     // Spring Data JPA for JpaRepository
     implementation("org.springframework.data:spring-data-jpa:3.2.5")
 
-    // Spring AI 1.0.0 GA (disponible en Maven Central desde abril 2024, compatible con Spring Boot 3.2.5)
-    // BOM para gestionar versiones
-    implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0"))
-    // Vector store para pgvector
+    // Vector store para pgvector (version from Spring AI BOM)
     implementation("org.springframework.ai:spring-ai-pgvector-store")
-    // Embedding model (OpenAI, pero usaremos uno fake para tests)
+    // Embedding model (OpenAI, pero usaremos uno fake para tests) (version from Spring AI BOM)
     implementation("org.springframework.ai:spring-ai-openai")
 
-    // Lombok (version from Spring Boot 3.4.0 BOM)
+    // Lombok (explicit version since BOM doesn't resolve for annotationProcessor)
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
-    testImplementation("org.assertj:assertj-core:3.24.2")
+    // Test dependencies - versions managed by Spring Boot BOM via dependencyManagement (except equalsverifier)
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.mockito:mockito-junit-jupiter")
+    testImplementation("org.assertj:assertj-core")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
-    testImplementation("io.projectreactor:reactor-test:3.6.7")
+    testImplementation("io.projectreactor:reactor-test")
 
     // Testcontainers for integration tests
     testImplementation("org.testcontainers:junit-jupiter:1.20.0")
