@@ -2,18 +2,23 @@
 
 Una entrada por petición al agente (más reciente arriba). Formato:
 
-## 2026-11-06 16:30 · Sprint 01 · EN-04: **CIERRE CON EVIDENCIA LITERAL 8 CRITERIOS (a-h)**
-- **Build**: `./gradlew clean check --no-daemon --no-scan` → **BUILD SUCCESSFUL** (48 tasks, ~70s) — Spring Boot 3.4.0 + Spring AI 1.0.x
-- **Cobertura (b)**: cas 80.4% líneas (29/119) / 78.9% ramas (16/60); llm 100% líneas (0/71) / 90.6% ramas (3/32) **sin exclusiones**; SymjaCasEngine 87.0% / 76.5%; LatexToSymjaConverter 79.1% / 81.0%. Solo CasConfig excluido.
-- **Arquitectura (c)**: `grep -r persistence mathtutor-llm/src` → **sin resultados**; `NoteChunkStore` port en `mathtutor-common`; ArchUnit 9/9 PASS (0 excepciones, llm→persistence resuelto vía port)
-- **Spring AI (d)**: 1.0.0 GA (Maven Central, abr 2024), compatible Spring Boot 3.2.5 (verificado 3.4.0); `PgVectorRetrieverIntegrationTest` 8 tests SKIPPED sin Docker (`@Testcontainers(disabledWithoutDocker=true)`)
-- **Licencias (e)**: matheclipse-core:3.2.0 LGPL-3.0 (biblioteca externa, sin mods); 61 transitivas: LGPL-3.0, Apache 2.0, MIT, BSD-3, EPL-2.0 — todas compatibles
-- **Test counts (f)**: 287 totales (231 white + 44 black + 12 skipped). cas 135 (103+32), llm 45 (37+8, 8 integración SKIPPED), common 72 (14 clases), persistence 25, graphics 3, tutor 4, application 4 SKIPPED
-- **Vault docs (g)**: Sprint 01.md, Progreso global.md, Registro iteraciones.md, EN-04 Spike Note — sincronizados con cifras reales
-- **Background (h)**: `./gradlew --stop` antes de build; build limpio sin daemons; CI usa `--no-daemon --no-scan`
-- **Velocidad**: sin h/pt hasta integración CI (merge sprint-1 → DEV); entonces Sprint 01 = 10/33 pts
-
-## 2026-11-06 16:00 · Sprint 01 · EN-04: **CIERRE CON EVIDENCIA COMPLETA (a-h)**
+## 2026-11-06 16:30 · Sprint 01 · EN-04: **CORRECCIÓN — EN-04 es PARCIAL, Spring AI pgvector-store NO implementado**
+- **Build**: `./gradlew clean check --no-daemon --no-scan` → **BUILD SUCCESSFUL** (48 tasks, ~70s) — Spring Boot 3.4.0
+- **Cobertura**: cas 80.4% líneas (29/119) / 78.9% ramas (16/60); llm 100% líneas (0/71) / 90.6% ramas (3/32) **sin exclusiones**; SymjaCasEngine 87.0% / 76.5%; LatexToSymjaConverter 79.1% / 81.0%. Solo CasConfig excluido.
+- **Arquitectura**: `grep -r persistence mathtutor-llm/src` → **sin resultados**; `NoteChunkStore` port en `mathtutor-common`; ArchUnit 9/9 PASS (0 excepciones, llm→persistence resuelto vía port)
+- **Spring AI pgvector-store**: 1.0.0 GA (mayo 2025), compatible Spring Boot 3.4.x+. **Dependencias declaradas** (`spring-ai-bom:1.0.0`, `spring-ai-pgvector-store`, `spring-ai-openai`) pero **no usadas** en código. Implementación actual: pgvector JDBC directo + `DeterministicEmbeddingModel` (port propio). Comentarios en código: "En producción, se migrará a Spring AI VectorStore/EmbeddingModel". **No hay test que use `PgVectorStore`/`VectorStore`/`EmbeddingModel` de Spring AI**.
+- **Licencias**: matheclipse-core:3.2.0 LGPL-3.0 (biblioteca externa, sin mods); 61 transitivas: LGPL-3.0, Apache 2.0, MIT, BSD-3, EPL-2.0 — todas compatibles
+- **Tests (cifras exactas de surefire XML)**: 231 white + 40 black (8 SKIPPED) = 271 ejecutados + 12 skipped = 283 totales reportados
+  - cas: 103 white + 32 black = 135
+  - llm: 37 white + 8 black (SKIPPED) = 45
+  - common: 72 métodos test (14 clases DTO)
+  - persistence: 25 métodos test
+  - graphics: 3 métodos test
+  - tutor: 4 métodos test
+  - application: 4 SKIPPED
+- **Corrección sobre entradas anteriores (16:00, 14:30, 12:10)**: Marcaban EN-04 como "completado/verificado/cerrado" → **INCORRECTO**. El spike pide "Spring AI con pgvector"; la implementación usa pgvector JDBC directo, Spring AI no está implementado. La validación de `spring-ai-pgvector-store` requeriría implementar `PgVectorStore` + tests de integración reales.
+- **Velocidad**: sin h/pt hasta integración CI (merge sprint-1 → DEV); Sprint 01 = 10/33 pts (EN-01 + EN-04 PARCIAL)
+- **Próximo**: Push sprint-1 → GitHub, CI verde, merge a DEV. Para cerrar EN-04 realmente: implementar `PgVectorStore` de Spring AI + tests integración, o redefinir criterio del spike documentando la decisión (pgvector JDBC directo como implementación válida).
 - **Build**: `./gradlew clean check --no-daemon --no-scan` → **BUILD SUCCESSFUL** (48 tasks, ~70s)
 - **Cobertura**: cas 80.4% líneas / 78.9% ramas (82.1% / 78.9% excl. CasConfig); llm 100% líneas / 90.6% ramas (sin exclusiones); graphics 100%/100%; tutor 100%/100%
 - **mathtutor-cas**: SymjaCasEngine 87.0% líneas / 76.5% ramas; LatexToSymjaConverter 79.1% / 81.0%. **Solo CasConfig excluido** (Spring config, sin lógica). Umbral 80%/70% restaurado con `SymjaCasEngineCatchBlockTest` (4 tests).

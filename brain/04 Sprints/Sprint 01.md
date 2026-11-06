@@ -70,26 +70,22 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - [ ] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL; CI pendiente push sprint-1 → GitHub, merge a DEV)
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos (EN-01 completo; **EN-04 PARCIAL** — Spring AI validado en unit tests, integración pendiente Docker; UC-01, UC-03, UC-27 pendientes)
+- [ ] Todos los elementos completos (EN-01 completo; **EN-04 PARCIAL** — Symja ✅, pgvector JDBC ✅, Spring AI pgvector-store ❌ no implementado; UC-01, UC-03, UC-27 pendientes)
 - [ ] Build y CI en verde (local: BUILD SUCCESSFUL; CI: pendiente ejecución en GitHub Actions)
-- [ ] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones documentadas; **llm 100% sin exclusiones**; **cas 80.4% líneas / 78.9% ramas SIN excluir SymjaCasEngine**)
+- [ ] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones documentadas; **llm 100% líneas / 90.6% ramas sin exclusiones**; **cas 80.4% líneas / 78.9% ramas SIN excluir SymjaCasEngine**)
 - [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
-## Evidencia EN-04 (checklist 8 criterios)
+## Estado real EN-04 (Spike: LaTeX→Symja y Spring AI con pgvector)
 
-| Criterio | Evidencia literal |
-|----------|-------------------|
-| (a) Build SUCCESSFUL | `./gradlew clean check --no-daemon --no-scan` → **BUILD SUCCESSFUL** (48 tasks, ~70s) |
-| (b) JaCoCo cobertura exacta | cas: 80.4% líneas (29 missed / 119 covered), 78.9% ramas (16/60); llm: 100% líneas (0/71), 90.6% ramas (3/32); SymjaCasEngine: 87.0% líneas, 76.5% ramas; LatexToSymjaConverter: 79.1% líneas, 81.0% ramas |
-| (c) grep persistence vacío + puerto + ArchUnit | `grep -r persistence mathtutor-llm/src` → sin resultados; `NoteChunkStore` port en `mathtutor-common`; ArchUnit 9/9 PASS (0 excepciones) |
-| (d) Spring AI GA + Boot req + VectorStore test | Spring AI 1.0.0 GA (Maven Central, abr 2024), compatible Spring Boot 3.2.5 (y 3.4.0 verificado); `PgVectorRetrieverIntegrationTest` 8 tests (SKIPPED sin Docker, `@Testcontainers(disabledWithoutDocker=true)`) |
-| (e) matheclipse licencias | `org.matheclipse:matheclipse-core:3.2.0` LGPL-3.0 (biblioteca externa, sin mods); 61 dependencias transitivas: LGPL-3.0, Apache 2.0, MIT, BSD-3-Clause, EPL-2.0 — todas compatibles |
-| (f) Test counts exactos | Total 287 (231 white + 44 black + 12 skipped). cas: 103 white + 32 black = 135; llm: 37 white + 8 black = 45 (8 integración SKIPPED); common: 72 métodos (14 clases); persistence: 25; graphics: 3; tutor: 4; application: 4 SKIPPED |
-| (g) Vault docs coherentes | Sprint 01.md, Progreso global.md, Registro iteraciones.md, EN-04 Spike Note — todos actualizados con cifras reales |
-| (h) Sin procesos background | `./gradlew --stop` antes de build; build limpio sin daemons; CI usa `--no-daemon --no-scan` |
+| Componente | Estado | Evidencia |
+|------------|--------|-----------|
+| LaTeX → Symja (matheclipse-core:3.2.0) | ✅ Completo | 103 tests cas, cobertura 80.4%/78.9% |
+| pgvector JDBC directo (PgVectorRetriever + JdbcTemplate) | ✅ Completo | 37 tests llm unitarios, cobertura 100%/90.6% sin exclusiones |
+| **Spring AI pgvector-store (VectorStore abstraction)** | ❌ **NO implementado** | Dependencias declaradas (`spring-ai-bom:1.0.0`, `spring-ai-pgvector-store`, `spring-ai-openai`) pero **no usadas** en código. Implementación actual usa pgvector JDBC directo + `DeterministicEmbeddingModel` (port propio). Comentarios en `PgVectorRetriever` y `DeterministicEmbeddingModel`: "En producción, se migrará a Spring AI VectorStore/EmbeddingModel". |
+| Integrado en rama principal | ❌ No | Pendiente: push sprint-1 → GitHub, CI verde, merge a DEV |
 
-## Notas de iteración
+> **Clave**: El spike pide "Spring AI con pgvector". La implementación actual usa **pgvector JDBC directo** (sin Spring AI VectorStore). Spring AI 1.0.x está declarado como dependencia (BOM + pgvector-store) para migración futura, pero **no hay código ni test que use `PgVectorStore`, `VectorStore` ni `EmbeddingModel` de Spring AI**. El test de integración `PgVectorRetrieverIntegrationTest` prueba la implementación JDBC directa, no Spring AI.
 
 ## Verificación de cobertura (JaCoCo XML reports - build final)
 
@@ -98,7 +94,7 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 | mathtutor-common | mathtutor-common/build/reports/jacoco/test/jacocoTestReport.xml | 17/56 | 76.7% (raw) | N/A | — | ✅ Pasa (excluye port.*) |
 | **mathtutor-cas** | mathtutor-cas/build/reports/jacoco/test/jacocoTestReport.xml | **29/119** | **80.4%** | **16/60** | **78.9%** | ✅ Pasa (excluye solo CasConfig) |
 | mathtutor-graphics | mathtutor-graphics/build/reports/jacoco/test/jacocoTestReport.xml | 0/3 | 100% | 0/2 | 100% | ✅ Pasa |
-| **mathtutor-llm** | mathtutor-llm/build/reports/jacoco/test/jacocoTestReport.xml | **0/71** | **100%** | **3/29** | **90.6%** | ✅ Pasa (sin exclusiones) |
+| **mathtutor-llm** | mathtutor-llm/build/reports/jacoco/test/jacocoTestReport.xml | **0/71** | **100%** | **3/32** | **90.6%** | ✅ Pasa (sin exclusiones) |
 | mathtutor-persistence | mathtutor-persistence/build/reports/jacoco/test/jacocoTestReport.xml | 49/97 | 49.5% (raw) | 9/16 | 43.8% (raw) | ✅ Pasa (excluye entity/repository/mapper/adapter) |
 | mathtutor-tutor | mathtutor-tutor/build/reports/jacoco/test/jacocoTestReport.xml | 0/6 | 100% | 0/4 | 100% | ✅ Pasa |
 | mathtutor-application | mathtutor-application/build/reports/jacoco/test/jacocoTestReport.xml | 19/23 | 8.1% (raw) | 19/20 | 4.8% (raw) | Excluido (tests integración SKIPPED sin Docker) |
@@ -107,7 +103,8 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 
 ## Notas de iteración
 - **EN-04 Symja verificado**: `org.matheclipse:matheclipse-core:3.2.0` SÍ está en Maven Central (contrario a investigación inicial). Proporciona parseo LaTeX nativo, simplificación simbólica, derivadas (`IExpr.diff()`), integrales (`Integrate()`), evaluación numérica (`evalf()`). Licencia LGPL-3.0 compatible como biblioteca externa.
-- **EN-04 pgvector verificado**: `com.pgvector:pgvector:0.1.6` + `spring-jdbc` funcionan. `DeterministicEmbeddingModel` (384-dim, hash-based) para tests; `PgVectorRetriever` con `JdbcTemplate` + `cosine distance <=>` operador nativo pgvector. Spring AI 1.0.0 GA disponible en Central (abr 2024), compatible Spring Boot 3.2.5.
+- **EN-04 pgvector JDBC verificado**: `com.pgvector:pgvector:0.1.6` + `spring-jdbc` funcionan. `DeterministicEmbeddingModel` (384-dim, hash-based) para tests; `PgVectorRetriever` con `JdbcTemplate` + `cosine distance <=>` operador nativo pgvector.
+- **Spring AI pgvector-store**: dependencias declaradas (`spring-ai-bom:1.0.0`, `spring-ai-pgvector-store`, `spring-ai-openai`) pero **no usadas** en código (migración futura documentada en comentarios). Spring AI 1.0.0 GA (mayo 2025), compatible Spring Boot 3.4.x+. **No validado en este spike** — requiere implementar `PgVectorStore`/`VectorStore` y tests de integración reales.
 - **ArchUnit**: 9 reglas pasan. Excepción resuelta: `mathtutor-llm` usa `NoteChunkStore` port de `common` (no `NoteChunkRepository` de persistence). Test de integración movido a `mathtutor-application`.
 - **Licencias**: Symja LGPL-3.0 (biblioteca, sin modificaciones), pgvector-java Apache 2.0. Todo compatible (61 dependencias transitivas verificadas). exp4j fue evaluado en investigación inicial pero no usado en implementación final.
-- **2026-11-06 16:00**: EN-04 CIERRE CON EVIDENCIA COMPLETA - Build SUCCESSFUL, cas 80.4%/78.9%, llm 100%/90.6%, Symja LGPL-3.0, Spring AI 1.0.0 GA, 287 tests totales (231 white + 44 black + 12 skipped). Pendiente: push sprint-1 → GitHub, CI verde, merge a DEV.
+- **2026-11-06 16:30**: EN-04 **PARCIAL** — Symja ✅, pgvector JDBC ✅, Spring AI pgvector-store ❌ pendiente CI. Build SUCCESSFUL, cas 80.4%/78.9%, llm 100%/90.6%. Pendiente: push sprint-1 → GitHub, CI verde (tests integración con Docker), merge a DEV.
