@@ -14,16 +14,25 @@ repositories {
     maven { url = uri("https://repo.spring.io/milestone") }
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.0")
+    }
+}
+
 dependencies {
     implementation(project(":mathtutor-common"))
-    // Lombok (version from Spring Boot 3.4.0 BOM)
+
+    // Lombok (explicit version since BOM doesn't resolve for annotationProcessor)
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
-    testImplementation("org.assertj:assertj-core:3.24.2")
+
+    // Testing - versions managed by Spring Boot BOM via dependencyManagement (except equalsverifier)
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.mockito:mockito-junit-jupiter")
+    testImplementation("org.assertj:assertj-core")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
-    testImplementation("io.projectreactor:reactor-test:3.6.7")
+    testImplementation("io.projectreactor:reactor-test")
 }
 
 tasks.withType<Test> {
