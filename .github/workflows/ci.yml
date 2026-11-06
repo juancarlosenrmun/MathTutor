@@ -40,6 +40,10 @@ jobs:
       - name: Verify Docker is running
         run: docker version && docker ps
 
+      - name: Fix Docker socket permissions
+        # GitHub Actions runner may not have permission to access /var/run/docker.sock
+        run: sudo chmod 666 /var/run/docker.sock
+
       - name: Build and test with Gradle
         run: ./gradlew clean check --no-daemon --no-scan
 
