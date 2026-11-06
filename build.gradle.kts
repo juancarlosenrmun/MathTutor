@@ -4,8 +4,8 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 
 plugins {
-    id("org.springframework.boot") version "3.2.5" apply false
-    id("io.spring.dependency-management") version "1.1.5" apply false
+    id("org.springframework.boot") version "3.4.0" apply false
+    id("io.spring.dependency-management") version "1.1.6" apply false
     id("org.sonarqube") version "4.2.1.3168" apply false
 }
 

@@ -1,4 +1,4 @@
-package com.mathtutor.llm.retriever;
+package com.mathtutor.application.retriever;
 
 import com.mathtutor.common.dto.NoteChunk;
 import com.mathtutor.common.port.RagRetriever;
