@@ -74,6 +74,10 @@ subprojects {
                             if (project.name == "mathtutor-cas") {
                                 excludes = listOf("com/mathtutor/cas/CasConfig")
                             }
+                            // Exclude entity and repository for mathtutor-persistence (generated code, 0% logic)
+                            if (project.name == "mathtutor-persistence") {
+                                excludes = listOf("com/mathtutor/persistence/entity/**", "com/mathtutor/persistence/repository/**")
+                            }
                         }
                         rule {
                             limit {
@@ -87,10 +91,13 @@ subprojects {
                             if (project.name == "mathtutor-cas") {
                                 excludes = listOf("com/mathtutor/cas/CasConfig")
                             }
+                            if (project.name == "mathtutor-persistence") {
+                                excludes = listOf("com/mathtutor/persistence/entity/**", "com/mathtutor/persistence/repository/**")
+                            }
                         }
                     }
                     // Also filter classDirectories to exclude port interfaces from verification data
-                    // Filter classDirectories to exclude port interfaces, entities, and repositories from verification data
+                    // Filter classDirectories to exclude port interfaces, entities, repositories, mappers, and adapters from verification data
                     if (project.name == "mathtutor-common") {
                         classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
                             exclude("**/port/**/*.class")
@@ -100,6 +107,8 @@ subprojects {
                         classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
                             exclude("**/entity/**/*.class")
                             exclude("**/repository/**/*.class")
+                            exclude("**/mapper/**/*.class")
+                            exclude("**/adapter/**/*.class")
                         } })
                     }
                     if (project.name == "mathtutor-cas") {
