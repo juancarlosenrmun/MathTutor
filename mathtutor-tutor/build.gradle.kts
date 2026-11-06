@@ -1,7 +1,7 @@
 plugins {
     id("java")
-    id("org.springframework.boot")
     id("io.spring.dependency-management")
+    // JaCoCo applied from parent build.gradle.kts
 }
 
 group = "com.mathtutor"
@@ -16,13 +16,14 @@ repositories {
 
 dependencies {
     implementation(project(":mathtutor-common"))
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    // Lombok (version from Spring Boot 3.4.0 BOM)
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:3.4.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
-    testImplementation("io.projectreactor:reactor-test")
+    testImplementation("io.projectreactor:reactor-test:3.6.7")
 }
 
 tasks.withType<Test> {
