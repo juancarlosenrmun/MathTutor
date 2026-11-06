@@ -71,6 +71,11 @@ tasks.withType<Test> {
     jacoco {
         exclude("com.mathtutor.application.MathTutorApplication")
     }
+    // Pass Docker configuration to test JVM for Testcontainers
+    systemProperty("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
+    systemProperty("DOCKER_HOST", "unix:///var/run/docker.sock")
+    // Disable Ryuk (Testcontainers cleanup container) to avoid issues in CI
+    systemProperty("TESTCONTAINERS_RYUK_DISABLED", "true")
 }
 
 application {
