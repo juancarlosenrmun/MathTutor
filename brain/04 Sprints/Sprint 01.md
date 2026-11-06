@@ -72,7 +72,7 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 ## Definición de hecho del sprint
 - [x] Todos los elementos completos (EN-01 completo; **EN-04 VERIFICADO**; UC-01, UC-03, UC-27 pendientes para siguiente sprint)
 - [x] Build y CI en verde (local: BUILD SUCCESSFUL; CI: ubuntu-latest con Docker nativo)
-- [x] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones port/entity/repository/cas-config/cas-engine; application excluido por test Docker; **llm 100% sin exclusiones**)
+- [x] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones port/entity/repository/cas-config; application excluido por test Docker; **llm 100% sin exclusiones**; **cas ≥80% sin exclusiones engine**)
 - [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
@@ -81,13 +81,13 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 | Módulo | Líneas (verificación) | Ramas (verificación) | Estado | Notas |
 |--------|----------------------|---------------------|--------|-------|
 | mathtutor-common | 74.3% (raw) | N/A | ✅ Pasa | Excluye `com.mathtutor.common.port.*` |
-| **mathtutor-cas** | **79% (con exclusiones)** | **77%** | ✅ Pasa | Excluye `CasConfig`, `SymjaCasEngine`; core `LatexToSymjaConverter` 87% |
+| **mathtutor-cas** | **≥80% (con exclusión CasConfig)** | **77%** | ✅ Pasa | Excluye solo `CasConfig`; `SymjaCasEngine` ≥80% (4 tests catch blocks); core `LatexToSymjaConverter` 87% |
 | mathtutor-graphics | 100% | 100% | ✅ Pasa | Sin exclusiones |
 | **mathtutor-llm** | **100%** | **100%** | ✅ Pasa | **Sin exclusiones** (requerido) |
 | mathtutor-persistence | 56% (raw) | 54% (raw) | ✅ Pasa | Excluye `**/entity/**`, `**/repository/**` |
 | mathtutor-tutor | 100% | 100% | ✅ Pasa | Sin exclusiones |
 
-> **Nota**: La cobertura "raw" incluye interfaces/entidades/config. La tarea `jacocoTestCoverageVerification` aplica exclusiones documentadas y pasa en todos los módulos con lógica. mathtutor-llm: 37 tests unitarios cubren lógica core (DeterministicEmbeddingModel, PgVectorRetrieverWhiteBox/BlackBox); 8 tests integración SKIPPED sin Docker.
+> **Nota**: La cobertura "raw" incluye interfaces/entidades/config. La tarea `jacocoTestCoverageVerification` aplica exclusiones documentadas y pasa en todos los módulos con lógica. mathtutor-llm: 37 tests unitarios cubren lógica core (DeterministicEmbeddingModel, PgVectorRetrieverWhiteBox/BlackBox); 8 tests integración SKIPPED sin Docker. mathtutor-cas: umbral restaurado a 80% con `SymjaCasEngineCatchBlockTest` (4 tests).
 
 ## Notas de iteración
 - **EN-04 Symja verificado**: `org.matheclipse:matheclipse-core:3.2.0` SÍ está en Maven Central (contrario a investigación inicial). Proporciona parseo LaTeX nativo, simplificación simbólica, derivadas (`IExpr.diff()`), integrales (`Integrate()`), evaluación numérica (`evalf()`). Licencia LGPL-3.0 compatible como biblioteca externa.
