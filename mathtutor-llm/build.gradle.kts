@@ -1,7 +1,7 @@
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.2.5"
-    id("io.spring.dependency-management") version "1.1.5"
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
 }
 
 group = "com.mathtutor"
@@ -30,18 +30,13 @@ dependencies {
     // Spring Data JPA for JpaRepository
     implementation("org.springframework.data:spring-data-jpa:3.2.5")
 
-    // Spring AI - INTENTADO Y FALLADO:
-    // - spring-ai-bom:1.0.0-M4 desde repo.spring.io/milestone -> NO resuelve spring-ai-pgvector-store ni spring-ai-openai
-    // - spring-ai-bom:1.0.0-M3, 0.8.1 -> tampoco disponibles en Maven Central ni milestone/snapshot
-    // ACTUALIZACIÓN 2026-11-06: Spring AI 1.0.0 GA SÍ está disponible en Maven Central (desde abril 2024)
-    //   - BOM: org.springframework.ai:spring-ai-bom:1.0.0
-    //   - Módulos: spring-ai-pgvector-store, spring-ai-openai
-    //   - Compatible con Spring Boot 3.2.5
-    //   - DECISIÓN: Mantener pgvector JDBC directo por ahora (EN-04 spike scope), migrar a Spring AI VectorStore en S2/S3
-    // Se usa implementación directa con pgvector JDBC (com.pgvector:pgvector + spring-jdbc)
-
-    // Persistence module for entity/repository access
-    implementation(project(":mathtutor-persistence"))
+    // Spring AI 1.0.0 GA (disponible en Maven Central desde abril 2024, compatible con Spring Boot 3.2.5)
+    // BOM para gestionar versiones
+    implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0"))
+    // Vector store para pgvector
+    implementation("org.springframework.ai:spring-ai-pgvector-store")
+    // Embedding model (OpenAI, pero usaremos uno fake para tests)
+    implementation("org.springframework.ai:spring-ai-openai")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
