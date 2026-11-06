@@ -88,9 +88,10 @@ Usar **Symja (matheclipse-core 3.2.0)** como motor CAS completo. Resuelve desde 
 | 1 | `spring-ai-bom:1.0.0-M4` (repo.spring.io/milestone) | ❌ No resuelve `spring-ai-pgvector-store` ni `spring-ai-openai` |
 | 2 | `spring-ai-bom:1.0.0-M3`, `0.8.1` | ❌ No en Maven Central / milestone / snapshot |
 | 3 | **pgvector directo** (`com.pgvector:pgvector:0.1.6` + `spring-jdbc`) | ✅ **Disponible en Maven Central** |
+| 4 | **Spring AI 1.0.0 GA** (`org.springframework.ai:spring-ai-bom:1.0.0`) | ✅ **Disponible en Maven Central (desde abril 2024)**, compatible con Spring Boot 3.2.5 |
 
 ### Decisión final
-Usar **implementación directa con pgvector JDBC** (`JdbcTemplate` + operador `cosine distance <=>`). Sin dependencia de Spring AI.
+Usar **implementación directa con pgvector JDBC** (`JdbcTemplate` + operador `cosine distance <=>`). Spring AI 1.0.0 GA está disponible en Maven Central desde abril 2024 y es compatible con Spring Boot 3.2.5, pero se decide mantener la implementación directa por ahora (alcance EN-04) y migrar a Spring AI VectorStore en S2/S3.
 
 ### Implementación verificada
 - **DeterministicEmbeddingModel**: Embeddings deterministas 384-dim basados en hash (xorshift PRNG), normalizados L2
@@ -127,7 +128,7 @@ Usar **implementación directa con pgvector JDBC** (`JdbcTemplate` + operador `c
 |------------|---------|----------|----------------|----------|
 | **matheclipse-core (Symja)** | 3.2.0 | **LGPL-3.0** | ✅ Como biblioteca externa sin modificaciones | **Usada** |
 | **pgvector-java** | 0.1.6 | Apache 2.0 | ✅ Permisiva | **Usada** |
-| **Spring AI** | N/A | Apache 2.0 | ✅ Permisiva | No disponible en Central |
+| **Spring AI** | 1.0.0 | Apache 2.0 | ✅ Permisiva | **Disponible en Central (desde abril 2024)**, compatible Spring Boot 3.2.5, migración planificada S2/S3 |
 
 **Conclusión licencias**: Symja LGPL-3.0 es compatible al usarse como dependencia externa vía Maven Central sin modificar su código. exp4j (Apache 2.0) fue evaluado en investigación inicial pero descartado por solo evaluación numérica; no forma parte de la implementación final. pgvector-java Apache 2.0 totalmente compatible.
 
@@ -168,10 +169,10 @@ Usar **implementación directa con pgvector JDBC** (`JdbcTemplate` + operador `c
 
 ### Decisiones tomadas
 1. **Symja (matheclipse-core 3.2.0) sobre exp4j** - Symja SÍ está en Maven Central (contrario a investigación inicial), proporciona álgebra simbólica completa
-2. **pgvector JDBC directo sobre Spring AI** - Spring AI no publicado para Spring Boot 3.2.x en repos accesibles
+2. **pgvector JDBC directo sobre Spring AI** - Spring AI 1.0.0 GA SÍ disponible en Maven Central desde abril 2024, compatible con Spring Boot 3.2.5. Se mantiene pgvector JDBC directo por alcance EN-04, migración a Spring AI VectorStore planificada para S2/S3
 3. **Embeddings deterministas para tests** - Sin dependencia externa, deterministas, rápidos, listos para producción swap
 4. **Eliminados `LlmGatewayImpl`, `LlmConfig`, `LlmGatewayImplTest`** - Fuera de alcance EN-04 (pertenecen a UC-04/UC-05 chat con LLM real)
-5. **Umbral JaCoCo cas al 79%** - Exclusiones documentadas: `CasConfig` (config), `SymjaCasEngine` (wrapper). Core `LatexToSymjaConverter` al 87%
+5. **Umbral JaCoCo cas restaurado a 80%** - Exclusión solo `CasConfig` (config Spring, 0% lógica). `SymjaCasEngine` cubierto con tests de catch blocks. Core `LatexToSymjaConverter` al 87%
 
 ### Impacto en sprints futuros
 | Sprint | Impacto |
