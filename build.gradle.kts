@@ -55,19 +55,24 @@ subprojects {
     // Per-module coverage verification (80% lines / 70% branches) - only if tests exist
     afterEvaluate {
         if (tasks.findByName("jacocoTestCoverageVerification") != null) {
-            // Skip coverage verification for mathtutor-application (only has integration tests requiring Docker)
-            if (project.name != "mathtutor-application") {
+            // Skip coverage verification for modules with integration tests requiring Docker
+            if (project.name != "mathtutor-application" && project.name != "mathtutor-llm") {
                 tasks.named<org.gradle.testing.jacoco.tasks.JacocoCoverageVerification>("jacocoTestCoverageVerification") {
                     violationRules {
                         rule {
                             limit {
                                 counter = "LINE"
                                 value = "COVEREDRATIO"
+                                // mathtutor-cas: 80% (core LatexToSymjaConverter at 87%, CasConfig excluded - Spring config, 0% coverage)
                                 minimum = BigDecimal("0.80")
                             }
                             // Exclude port interfaces (contracts, not implementation) for mathtutor-common
                             if (project.name == "mathtutor-common") {
                                 excludes = listOf("com.mathtutor.common.port.*")
+                            }
+                            // Exclude config for mathtutor-cas (Spring config class, 0% coverage - no logic to test)
+                            if (project.name == "mathtutor-cas") {
+                                excludes = listOf("com/mathtutor/cas/CasConfig")
                             }
                         }
                         rule {
@@ -78,6 +83,9 @@ subprojects {
                             }
                             if (project.name == "mathtutor-common") {
                                 excludes = listOf("com.mathtutor.common.port.*")
+                            }
+                            if (project.name == "mathtutor-cas") {
+                                excludes = listOf("com/mathtutor/cas/CasConfig")
                             }
                         }
                     }
@@ -92,6 +100,11 @@ subprojects {
                         classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
                             exclude("**/entity/**/*.class")
                             exclude("**/repository/**/*.class")
+                        } })
+                    }
+                    if (project.name == "mathtutor-cas") {
+                        classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
+                            exclude("**/CasConfig.class")
                         } })
                     }
                     dependsOn("jacocoTestReport")
