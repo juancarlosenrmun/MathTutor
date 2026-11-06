@@ -11,14 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    services:
-      # Start Docker daemon for Testcontainers
-      docker:
-        image: docker:24-dind
-        options: --privileged
-        env:
-          DOCKER_TLS_CERTDIR: ""
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,7 +35,7 @@ jobs:
         env:
           # Spring profiles for tests with Testcontainers (test for unit, spring-ai-pgvector for Spring AI integration)
           SPRING_PROFILES_ACTIVE: test,spring-ai-pgvector
-          # Testcontainers Docker host
+          # Testcontainers Docker host - use host Docker daemon
           TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
           DOCKER_HOST: unix:///var/run/docker.sock
 
