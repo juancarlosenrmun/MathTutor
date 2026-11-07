@@ -13,8 +13,8 @@ jobs:
 
     # Set environment variables at job level so they're inherited by forked test JVMs
     env:
-      # Spring profiles for tests with Testcontainers (test for unit, spring-ai-pgvector for Spring AI integration)
-      SPRING_PROFILES_ACTIVE: test,spring-ai-pgvector
+      # Spring profiles for tests with Testcontainers (spring-ai-pgvector for Spring AI integration)
+      SPRING_PROFILES_ACTIVE: spring-ai-pgvector
       # Testcontainers Docker host - use host Docker daemon
       TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
       DOCKER_HOST: unix:///var/run/docker.sock
