@@ -3,13 +3,10 @@ package com.mathtutor.llm;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.sql.DataSource;
 
 /**
  * Configuración de Spring AI PgVectorStore para tests de integración.
@@ -20,14 +17,18 @@ import javax.sql.DataSource;
 @Profile("spring-ai-pgvector")
 public class SpringAiPgVectorConfig {
 
-    @Autowired
-    private DataSource dataSource;
-
-    @Autowired
-    private EmbeddingModel embeddingModel;
+    @Bean
+    public DeterministicEmbeddingModel deterministicEmbeddingModel() {
+        return new DeterministicEmbeddingModel();
+    }
 
     @Bean
-    public VectorStore vectorStore(JdbcTemplate jdbcTemplate) {
+    public EmbeddingModel springAiEmbeddingModel(DeterministicEmbeddingModel delegate) {
+        return new SpringAiDeterministicEmbeddingModel(delegate);
+    }
+
+    @Bean
+    public VectorStore vectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel) {
         // PgVectorStore builder requiere JdbcTemplate y EmbeddingModel
         return PgVectorStore.builder(jdbcTemplate, embeddingModel)
                 .dimensions(384)

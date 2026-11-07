@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,25 +48,19 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
 
         // Construir filtros por módulo y tema usando Spring AI Filter DSL
         Filter.Expression filter = null;
+        FilterExpressionBuilder.Op combinedOp = null;
 
         if (module != null && !module.trim().isEmpty()) {
-            FilterExpressionBuilder.Op moduleFilter = filterBuilder.eq("module_code", module);
-            filter = (filter == null) ? moduleFilter.build() : filterBuilder.and(moduleFilter, filterBuilder.eq("module_code", module)).build();
+            combinedOp = filterBuilder.eq("module_code", module);
         }
 
         if (topic != null && !topic.trim().isEmpty()) {
-            FilterExpressionBuilder.Op topicFilter = filterBuilder.eq("topic_code", topic);
-            if (filter == null) {
-                filter = topicFilter.build();
-            } else {
-                // Combinar filtros existentes con el nuevo filtro de topic
-                // Reconstruir el filtro combinado
-                FilterExpressionBuilder.Op combined = filterBuilder.and(
-                        filterBuilder.eq("module_code", module != null ? module : ""),
-                        topicFilter
-                );
-                filter = combined.build();
-            }
+            FilterExpressionBuilder.Op topicOp = filterBuilder.eq("topic_code", topic);
+            combinedOp = (combinedOp == null) ? topicOp : filterBuilder.and(combinedOp, topicOp);
+        }
+
+        if (combinedOp != null) {
+            filter = combinedOp.build();
         }
 
         // Búsqueda por similitud con filtro opcional usando SearchRequest
@@ -96,7 +91,7 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
      * Índice manual de documentos (para tests que insertan datos directamente en BD).
      * Convierte NoteChunk del dominio a Document de Spring AI y los añade al VectorStore.
      */
-    public void indexDocuments(List<NoteChunk> chunks) {
+    public void indexDocuments(List<com.mathtutor.persistence.entity.NoteChunk> chunks) {
         if (chunks == null || chunks.isEmpty()) {
             return;
         }
@@ -123,17 +118,18 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
         );
     }
 
-    private Document noteChunkToDocument(NoteChunk chunk) {
+    private Document noteChunkToDocument(com.mathtutor.persistence.entity.NoteChunk chunk) {
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("id", chunk.getId() != null ? chunk.getId() : 0L);
+        metadata.put("type", chunk.getType());
+        metadata.put("source_file", chunk.getSourceFile());
+        metadata.put("module_code", chunk.getModuleCode());
+        metadata.put("topic_code", chunk.getTopicCode());
+        metadata.put("version", chunk.getVersion());
+
         return Document.builder()
-                .text(chunk.content())
-                .metadata(Map.of(
-                        "id", chunk.id(),
-                        "type", chunk.type(),
-                        "source_file", chunk.sourceFile(),
-                        "module_code", chunk.moduleCode(),
-                        "topic_code", chunk.topicCode(),
-                        "version", chunk.version()
-                ))
+                .text(chunk.getContent())
+                .metadata(metadata)
                 .build();
     }
 }
