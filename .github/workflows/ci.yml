@@ -42,7 +42,12 @@ jobs:
 
       - name: Fix Docker socket permissions
         # GitHub Actions runner may not have permission to access /var/run/docker.sock
-        run: sudo chmod 666 /var/run/docker.sock
+        run: |
+          sudo chmod 666 /var/run/docker.sock
+          echo "=== Docker socket after chmod ==="
+          ls -la /var/run/docker.sock
+          # Verify the current user can access it
+          docker version
 
       - name: Debug environment variables
         run: |
