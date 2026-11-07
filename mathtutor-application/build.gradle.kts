@@ -19,6 +19,7 @@ repositories {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.ai:spring-ai-bom:1.0.0")
+        mavenBom("org.testcontainers:testcontainers-bom:1.21.3")
     }
 }
 
@@ -57,8 +58,8 @@ dependencies {
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("org.testcontainers:junit-jupiter:1.21.0")
-    testImplementation("org.testcontainers:postgresql:1.21.0")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
