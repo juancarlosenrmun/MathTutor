@@ -52,8 +52,8 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
 
     // Testcontainers for integration tests
-    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
-    testImplementation("org.testcontainers:postgresql:1.20.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.21.0")
+    testImplementation("org.testcontainers:postgresql:1.21.0")
 }
 
 // Sin exclusiones JaCoCo - objetivo ≥80% líneas / ≥70% ramas con tests unitarios
