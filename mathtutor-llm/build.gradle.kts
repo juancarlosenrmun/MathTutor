@@ -17,6 +17,7 @@ dependencyManagement {
     imports {
         mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.0")
         mavenBom("org.springframework.ai:spring-ai-bom:1.0.0")
+        mavenBom("org.testcontainers:testcontainers-bom:1.21.3")
     }
 }
 
@@ -52,8 +53,8 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
 
     // Testcontainers for integration tests
-    testImplementation("org.testcontainers:junit-jupiter:1.21.0")
-    testImplementation("org.testcontainers:postgresql:1.21.0")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
 }
 
 // Sin exclusiones JaCoCo - objetivo ≥80% líneas / ≥70% ramas con tests unitarios
