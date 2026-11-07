@@ -23,6 +23,9 @@ dependencyManagement {
 dependencies {
     implementation(project(":mathtutor-common"))
 
+    // Spring Context for @Component annotation
+    implementation("org.springframework:spring-context")
+
     // Lombok (explicit version since BOM doesn't resolve for annotationProcessor)
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
