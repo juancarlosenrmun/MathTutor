@@ -60,7 +60,7 @@ jobs:
           docker ps
 
       - name: Build and test with Gradle
-        run: ./gradlew clean check --no-daemon --no-scan --info
+        run: ./gradlew clean check --no-daemon --no-scan
 
       - name: Upload JaCoCo coverage report
         uses: actions/upload-artifact@v4
