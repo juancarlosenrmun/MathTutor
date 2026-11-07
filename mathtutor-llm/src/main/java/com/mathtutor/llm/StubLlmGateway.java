@@ -2,16 +2,14 @@ package com.mathtutor.llm;
 
 import com.mathtutor.common.dto.Prompt;
 import com.mathtutor.common.port.LlmGateway;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 /**
- * Implementación stub de LlmGateway para tests sin perfil Spring AI.
+ * Implementación stub de LlmGateway para tests.
  * Devuelve una respuesta fija para permitir que el contexto arranque.
  */
 @Component
-@Profile("!spring-ai-pgvector")
 public class StubLlmGateway implements LlmGateway {
 
     @Override
