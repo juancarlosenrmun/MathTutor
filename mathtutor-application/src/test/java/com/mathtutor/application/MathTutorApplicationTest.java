@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Se omite si Docker no está disponible (disabledWithoutDocker = true).
  */
 @SpringBootTest(classes = MathTutorApplication.class)
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 class MathTutorApplicationTest {
 
     @Container

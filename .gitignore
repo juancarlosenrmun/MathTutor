@@ -34,3 +34,5 @@ gradle/bin/
 gradle/lib/
 gradle/bin/
 .gradle
+
+.superpowers

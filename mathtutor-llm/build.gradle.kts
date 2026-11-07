@@ -1,7 +1,6 @@
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.2.5"
-    id("io.spring.dependency-management") version "1.1.5"
+    id("io.spring.dependency-management")
 }
 
 group = "com.mathtutor"
@@ -14,21 +13,49 @@ repositories {
     maven { url = uri("https://repo.spring.io/milestone") }
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:3.4.0")
+        mavenBom("org.springframework.ai:spring-ai-bom:1.0.0")
+        mavenBom("org.testcontainers:testcontainers-bom:1.21.4")
+    }
+}
+
 dependencies {
     implementation(project(":mathtutor-common"))
     implementation("io.projectreactor:reactor-core")
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+
+    // pgvector Java client for direct vector operations
+    implementation("com.pgvector:pgvector:0.1.6")
+
+    // Spring JDBC for database operations
+    implementation("org.springframework:spring-jdbc:6.1.6")
+
+    // Spring Context for DI and annotations (@Component, @Configuration, @Bean, @Profile)
+    implementation("org.springframework:spring-context:6.1.6")
+
+    // Spring Data JPA for JpaRepository
+    implementation("org.springframework.data:spring-data-jpa:3.2.5")
+
+    // Vector store para pgvector (version from Spring AI BOM)
+    implementation("org.springframework.ai:spring-ai-pgvector-store")
+    // Embedding model (OpenAI, pero usaremos uno fake para tests) (version from Spring AI BOM)
+    implementation("org.springframework.ai:spring-ai-openai")
+
+    // Lombok (explicit version since BOM doesn't resolve for annotationProcessor)
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
+    // Test dependencies - versions managed by Spring Boot BOM via dependencyManagement (except equalsverifier)
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
-    testImplementation("org.assertj:assertj-core:3.24.2")
+    testImplementation("org.mockito:mockito-junit-jupiter")
+    testImplementation("org.assertj:assertj-core")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
     testImplementation("io.projectreactor:reactor-test")
+
+    // Testcontainers for integration tests
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
 }
 
-tasks.withType<Test> {
-    jacoco {
-        exclude("com.mathtutor.llm.dto.**")
-        exclude("com.mathtutor.llm.config.**")
-    }
-}
+// Sin exclusiones JaCoCo - objetivo ≥80% líneas / ≥70% ramas con tests unitarios
+// tests Docker (@Testcontainers disabledWithoutDocker=true) no cuentan para el umbral

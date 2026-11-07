@@ -11,6 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    # Set environment variables at job level so they're inherited by forked test JVMs
+    env:
+      # Spring profiles for tests with Testcontainers (test for unit, spring-ai-pgvector for Spring AI integration)
+      SPRING_PROFILES_ACTIVE: test,spring-ai-pgvector
+      # Testcontainers Docker host - use host Docker daemon
+      TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
+      DOCKER_HOST: unix:///var/run/docker.sock
+      # Disable Ryuk (Testcontainers cleanup container) to avoid issues in CI
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,11 +37,30 @@ jobs:
         with:
           gradle-version: '8.5'
 
+      - name: Verify Docker is running
+        run: docker version && docker ps
+
+      - name: Fix Docker socket permissions
+        # GitHub Actions runner may not have permission to access /var/run/docker.sock
+        run: |
+          sudo chmod 666 /var/run/docker.sock
+          echo "=== Docker socket after chmod ==="
+          ls -la /var/run/docker.sock
+          # Verify the current user can access it
+          docker version
+
+      - name: Debug environment variables
+        run: |
+          echo "=== Shell environment ==="
+          env | grep -E 'DOCKER|TESTCONTAINERS|SPRING_PROFILES'
+          echo "=== Docker socket ==="
+          ls -la /var/run/docker.sock
+          echo "=== Test Docker access ==="
+          docker version
+          docker ps
+
       - name: Build and test with Gradle
         run: ./gradlew clean check --no-daemon --no-scan
-        env:
-          # Spring profile for tests with Testcontainers
-          SPRING_PROFILES_ACTIVE: test
 
       - name: Upload JaCoCo coverage report
         uses: actions/upload-artifact@v4

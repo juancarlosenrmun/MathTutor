@@ -1,8 +1,8 @@
 plugins {
     id("java")
     id("application")
-    id("org.springframework.boot") version "3.2.5"
-    id("io.spring.dependency-management") version "1.1.5"
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
     // JaCoCo applied from parent build.gradle.kts
 }
 
@@ -14,6 +14,13 @@ repositories {
     mavenCentral()
     maven { url = uri("https://repo.spring.io/snapshot") }
     maven { url = uri("https://repo.spring.io/milestone") }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.ai:spring-ai-bom:1.0.0")
+        mavenBom("org.testcontainers:testcontainers-bom:1.21.4")
+    }
 }
 
 dependencies {
@@ -39,6 +46,7 @@ dependencies {
     // Project dependencies - application connects all modules
     implementation(project(":mathtutor-common"))
     implementation(project(":mathtutor-persistence"))
+    implementation(project(":mathtutor-cas"))
     implementation(project(":mathtutor-llm"))
     implementation(project(":mathtutor-graphics"))
     implementation(project(":mathtutor-tutor"))
@@ -50,8 +58,8 @@ dependencies {
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("org.testcontainers:junit-jupiter:1.20.0")
-    testImplementation("org.testcontainers:postgresql:1.20.0")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
@@ -64,6 +72,17 @@ tasks.withType<Test> {
     jacoco {
         exclude("com.mathtutor.application.MathTutorApplication")
     }
+    // Pass Docker configuration to test JVM for Testcontainers
+    // Use BOTH system properties and environment variables to ensure Testcontainers sees them
+    // Testcontainers checks: 1) env vars, 2) system properties, 3) defaults
+    systemProperty("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
+    systemProperty("DOCKER_HOST", "unix:///var/run/docker.sock")
+    systemProperty("TESTCONTAINERS_RYUK_DISABLED", "true")
+    systemProperty("testcontainers.docker.socket.override", "/var/run/docker.sock")
+    systemProperty("docker.host", "unix:///var/run/docker.sock")
+    environment("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
+    environment("DOCKER_HOST", "unix:///var/run/docker.sock")
+    environment("TESTCONTAINERS_RYUK_DISABLED", "true")
 }
 
 application {
