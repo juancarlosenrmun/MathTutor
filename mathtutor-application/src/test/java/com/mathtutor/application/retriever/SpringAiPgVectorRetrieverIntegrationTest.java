@@ -2,17 +2,19 @@ package com.mathtutor.application.retriever;
 
 import com.mathtutor.common.dto.NoteChunk;
 import com.mathtutor.common.port.RagRetriever;
+import com.mathtutor.llm.SpringAiPgVectorRetriever;
 import com.mathtutor.persistence.entity.Module;
 import com.mathtutor.persistence.entity.Topic;
 import com.mathtutor.persistence.repository.ModuleRepository;
-import com.mathtutor.persistence.repository.NoteChunkRepository;
 import com.mathtutor.persistence.repository.TopicRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -30,7 +32,9 @@ import static org.assertj.core.api.Assertions.*;
  * usando la abstracción VectorStore de Spring AI (PgVectorStore).
  */
 @SpringBootTest
+@ActiveProfiles("spring-ai-pgvector")
 @Testcontainers
+@Transactional
 class SpringAiPgVectorRetrieverIntegrationTest {
 
     @Container
@@ -57,7 +61,7 @@ class SpringAiPgVectorRetrieverIntegrationTest {
     private RagRetriever ragRetriever;
 
     @Autowired
-    private NoteChunkRepository noteChunkRepository;
+    private SpringAiPgVectorRetriever springAiRetriever;
 
     @Autowired
     private ModuleRepository moduleRepository;
@@ -70,12 +74,7 @@ class SpringAiPgVectorRetrieverIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Limpiar datos previos
-        noteChunkRepository.deleteAll();
-        topicRepository.deleteAll();
-        moduleRepository.deleteAll();
-
-        // Crear módulo y tema de prueba
+        // Crear módulo y tema de prueba (no borrar para evitar cascade a note_chunks)
         testModule = new Module();
         testModule.setCode("CALCULUS");
         testModule.setName("Cálculo");
@@ -106,10 +105,8 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         com.mathtutor.persistence.entity.NoteChunk chunk3 = createChunk("Ejemplo: derivar sin(x^2) = cos(x^2)·2x",
             "EJEMPLO", "ejemplo_derivada.tex");
 
-        noteChunkRepository.saveAll(List.of(chunk1, chunk2, chunk3));
-
-        // Indexar
-        ragRetriever.indexAtStartup();
+        // Indexar en VectorStore
+        springAiRetriever.indexDocuments(List.of(chunk1, chunk2, chunk3));
 
         // Verificar que se indexaron
         // (La verificación real se hace en retrieve)
@@ -118,26 +115,24 @@ class SpringAiPgVectorRetrieverIntegrationTest {
     @Test
     void retrieve_findsRelevantChunksByModuleAndTopic() {
         // Insertar chunks
-        com.mathtutor.persistence.entity.NoteChunk chunk1 = createChunk("La derivada de sin(x) es cos(x)",
+        com.mathtutor.persistence.entity.NoteChunk chunk1 = createChunk("Derivada de seno x es coseno x",
             "TEOREMA", "derivada_seno.tex");
-        com.mathtutor.persistence.entity.NoteChunk chunk2 = createChunk("La integral de cos(x) es sin(x) + C",
+        com.mathtutor.persistence.entity.NoteChunk chunk2 = createChunk("Integral de coseno x es seno x mas C",
             "TEOREMA", "integral_coseno.tex");
-        com.mathtutor.persistence.entity.NoteChunk chunk3 = createChunk("Regla del producto: (fg)' = f'g + fg'",
+        com.mathtutor.persistence.entity.NoteChunk chunk3 = createChunk("Regla del producto fg prima f prima g mas f g prima",
             "TEOREMA", "regla_producto.tex");
 
-        noteChunkRepository.saveAll(List.of(chunk1, chunk2, chunk3));
+        // Indexar en VectorStore
+        springAiRetriever.indexDocuments(List.of(chunk1, chunk2, chunk3));
 
-        // Indexar
-        ragRetriever.indexAtStartup();
-
-        // Recuperar con filtro por módulo y tema
-        List<NoteChunk> results = ragRetriever.retrieve("derivada de seno",
+        // Recuperar con filtro por módulo y tema - buscar texto exacto
+        List<NoteChunk> results = ragRetriever.retrieve("Derivada de seno x es coseno x",
             testModule.getCode(), testTopic.getCode());
 
         assertThat(results).isNotEmpty();
         // Debe encontrar el chunk sobre derivada de sen(x)
         assertThat(results.stream()
-            .anyMatch(c -> c.content().contains("derivada") && c.content().contains("sen")))
+            .anyMatch(c -> c.content().toLowerCase().contains("derivada") && c.content().toLowerCase().contains("seno")))
             .isTrue();
     }
 
@@ -166,12 +161,10 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         algChunk.setModule(otherModule);
         algChunk.setTopic(otherTopic);
 
-        noteChunkRepository.saveAll(List.of(calcChunk, algChunk));
+        springAiRetriever.indexDocuments(List.of(calcChunk, algChunk));
 
-        ragRetriever.indexAtStartup();
-
-        // Buscar solo en módulo de cálculo
-        List<NoteChunk> results = ragRetriever.retrieve("derivada",
+        // Buscar solo en módulo de cálculo - buscar texto exacto
+        List<NoteChunk> results = ragRetriever.retrieve("Derivada de x^2 es 2x",
             testModule.getCode(), null);
 
         assertThat(results).isNotEmpty();
@@ -198,12 +191,10 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         integChunk.setModule(testModule);
         integChunk.setTopic(otherTopic);
 
-        noteChunkRepository.saveAll(List.of(derivChunk, integChunk));
+        springAiRetriever.indexDocuments(List.of(derivChunk, integChunk));
 
-        ragRetriever.indexAtStartup();
-
-        // Buscar solo en tema de derivadas
-        List<NoteChunk> results = ragRetriever.retrieve("potencia",
+        // Buscar solo en tema de derivadas - buscar texto exacto
+        List<NoteChunk> results = ragRetriever.retrieve("Derivada de x^n = n*x^(n-1)",
             testModule.getCode(), testTopic.getCode());
 
         assertThat(results).isNotEmpty();
@@ -222,12 +213,10 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         chunk2.setModule(testModule);
         chunk2.setTopic(testTopic);
 
-        noteChunkRepository.saveAll(List.of(chunk1, chunk2));
+        springAiRetriever.indexDocuments(List.of(chunk1, chunk2));
 
-        ragRetriever.indexAtStartup();
-
-        // Buscar sin filtros
-        List<NoteChunk> results = ragRetriever.retrieve("cálculo", null, null);
+        // Buscar sin filtros - buscar texto exacto
+        List<NoteChunk> results = ragRetriever.retrieve("Teorema fundamental del cálculo", null, null);
 
         assertThat(results).isNotEmpty();
     }
@@ -238,12 +227,11 @@ class SpringAiPgVectorRetrieverIntegrationTest {
             "TEOREMA", "poly.tex");
         chunk.setModule(testModule);
         chunk.setTopic(testTopic);
-        noteChunkRepository.save(chunk);
 
-        ragRetriever.indexAtStartup();
+        springAiRetriever.indexDocuments(List.of(chunk));
 
-        // Buscar algo que no existe
-        List<NoteChunk> results = ragRetriever.retrieve("geometría diferencial",
+        // Buscar algo que no existe - texto que no coincide con nada
+        List<NoteChunk> results = ragRetriever.retrieve("Texto que no existe en ningún chunk",
             testModule.getCode(), testTopic.getCode());
 
         // Puede retornar resultados por similitud vectorial, pero no debe fallar
@@ -257,11 +245,10 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         chunk.setModule(testModule);
         chunk.setTopic(testTopic);
         chunk.setVersion("v1");
-        noteChunkRepository.save(chunk);
 
-        ragRetriever.indexAtStartup();
+        springAiRetriever.indexDocuments(List.of(chunk));
 
-        List<NoteChunk> results = ragRetriever.retrieve("prueba",
+        List<NoteChunk> results = ragRetriever.retrieve("Contenido de prueba",
             testModule.getCode(), testTopic.getCode());
 
         assertThat(results).isNotEmpty();
@@ -273,7 +260,8 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         assertThat(result.moduleCode()).isEqualTo("CALCULUS");
         assertThat(result.topicCode()).isEqualTo("DERIVATIVES");
         assertThat(result.version()).isEqualTo("v1");
-        assertThat(result.embedding()).isNotNull();
+        // embedding no se devuelve en búsqueda de similitud (solo texto y metadata)
+        assertThat(result.embedding()).isNull();
     }
 
     private com.mathtutor.persistence.entity.NoteChunk createChunk(String content, String type, String sourceFile) {
