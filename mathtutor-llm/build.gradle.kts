@@ -23,6 +23,7 @@ dependencyManagement {
 
 dependencies {
     implementation(project(":mathtutor-common"))
+    implementation(project(":mathtutor-persistence"))
     implementation("io.projectreactor:reactor-core")
 
     // pgvector Java client for direct vector operations
