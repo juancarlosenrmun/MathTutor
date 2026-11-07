@@ -8,6 +8,7 @@ import com.mathtutor.persistence.repository.ModuleRepository;
 import com.mathtutor.persistence.repository.NoteChunkRepository;
 import com.mathtutor.persistence.repository.TopicRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +25,12 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * Prueba de integración para PgVectorRetriever con Testcontainers.
  * Usa pgvector/pgvector:pg16 y DeterministicEmbeddingModel (sin LLM real).
+ *
+ * DESHABILITADA: Esta prueba verifica la implementación antigua (pgvector JDBC directo - Opción B).
+ * Para EN-04 se usa la Opción A: Spring AI PgVectorStore (ver SpringAiPgVectorRetrieverIntegrationTest).
+ * Esta prueba se mantiene como referencia histórica pero no se ejecuta.
  */
+@Disabled("Opción B (pgvector JDBC directo) deprecada. EN-04 usa Opción A: Spring AI PgVectorStore")
 @SpringBootTest
 @Testcontainers
 class PgVectorRetrieverIntegrationTest {
