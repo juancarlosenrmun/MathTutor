@@ -2,6 +2,7 @@ package com.mathtutor.graphics;
 
 import com.mathtutor.common.port.GraphicSpecService;
 import com.mathtutor.common.dto.GraphicSpec;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  * Implementación vacía preparada para UC-27 (WebGL pipeline).
  * No usa WebGL ni shaders - solo define la estructura.
  */
+@Component
 public class GraphicSpecServiceImpl implements GraphicSpecService {
 
     @Override
