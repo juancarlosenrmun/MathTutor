@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "brain/05 Seguimiento/Progreso global.md",
+                "file": "brain/04 Sprints/Sprint 01.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Progreso global"
+              "title": "Sprint 01"
             }
           }
         ]
@@ -99,7 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "brain/05 Seguimiento/Progreso global.md",
+                "file": "brain/04 Sprints/Sprint 01.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -185,34 +185,36 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "188cb24e2d9951ab",
+  "active": "386fd7d278b45790",
   "lastOpenFiles": [
-    "mathtutor-application/build/tmp/jacocoTestCoverageVerification",
-    "mathtutor-application/build/tmp",
+    "mathtutor-tutor/build/tmp/test",
+    "mathtutor-persistence/build/reports/tests/test/index.html",
+    "mathtutor-persistence/build/test-results/test/TEST-com.mathtutor.persistence.adapter.PasswordEncoderAdapterTest$SecurityParameters.xml",
+    "mathtutor-persistence/build/test-results/test/TEST-com.mathtutor.persistence.adapter.UserRepositoryAdapterTest$RoleMapping.xml",
+    "mathtutor-persistence/build/test-results/test/TEST-com.mathtutor.persistence.adapter.PasswordEncoderAdapterTest$Encode.xml",
+    "mathtutor-persistence/build/test-results/test/TEST-com.mathtutor.persistence.repository.UsageQuotaRepositoryTest.xml",
+    "mathtutor-persistence/build/test-results/test/TEST-com.mathtutor.persistence.repository.AuditLogRepositoryTest.xml",
+    "mathtutor-persistence/build/test-results/test/TEST-com.mathtutor.persistence.repository.TypicalErrorRepositoryTest.xml",
+    "mathtutor-persistence/build/test-results/test/TEST-com.mathtutor.persistence.repository.UserRepositoryTest.xml",
+    "mathtutor-graphics/build/tmp/jacocoTestCoverageVerification/success.txt",
+    "mathtutor-graphics/build/tmp/jacocoTestCoverageVerification",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/up.gif",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/source.gif",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/sort.gif",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/session.gif",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/report.gif",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/redbar.gif",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/package.gif",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/method.gif",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/group.gif",
+    "mathtutor-graphics/build/reports/jacoco/test/html/jacoco-resources/greenbar.gif",
+    "tasks/todo.md",
+    "tasks/plan.md",
+    "brain/05 Seguimiento/Progreso global.md",
     "brain/04 Sprints/Sprint 02.md",
-    "mathtutor-application/src/test/resources/db/migration/test-init.sql",
-    "mathtutor-application/src/test/resources/db/migration/test-init.sql.tmp.26016.3a3f9cd45856",
-    "mathtutor-application/src/test/resources/db/migration",
-    "mathtutor-application/src/test/resources/db",
-    "mathtutor-application/src/test/resources",
-    "mathtutor-application/src/test/java/com/mathtutor/application/MathTutorApplicationTest.java",
-    "mathtutor-application/src/main/java/com/mathtutor/application/config/DatabaseConfig.java",
-    "mathtutor-application/src/main/java/com/mathtutor/application/config",
-    "mathtutor-application/src/main/java/com/mathtutor/application/MathTutorApplication.java",
     "brain/04 Sprints/Sprint 01.md",
     "brain/06 Diseño/Plan_EN-01_remaining_modules.md",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/up.gif",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/source.gif",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/sort.gif",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/session.gif",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/report.gif",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/redbar.gif",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/package.gif",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/method.gif",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/group.gif",
-    "mathtutor-persistence/build/reports/jacoco/test/html/jacoco-resources/greenbar.gif",
     "CLAUDE.md",
-    "AGENTS.md",
-    "brain/05 Seguimiento/Progreso global.md"
+    "AGENTS.md"
   ]
 }

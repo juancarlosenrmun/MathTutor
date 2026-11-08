@@ -23,11 +23,11 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 ## Checklist de implementación
 
 ### UC-01 · Registrarse, iniciar y cerrar sesión
-- [ ] Implementación
-- [ ] Pruebas de caja blanca
-- [ ] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Implementación (RegisterUserUseCase, LoginUseCase, LogoutUseCase, ports, adapters, Spring Security, JWT, REST endpoints)
+- [x] Pruebas de caja blanca (mathtutor-persistence: UserRepositoryAdapterTest, TokenServiceAdapterTest; mathtutor-common: UseCase tests)
+- [x] Pruebas de caja negra (AuthControllerIntegrationTest: 17 tests con Testcontainers pgvector)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) - JaCoCo verification pasa
+- [x] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL)
 
 ### UC-03 · Controlar el acceso por rol y recurso
 - [ ] Implementación
@@ -70,7 +70,7 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - [ ] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL; CI pendiente push sprint-1 → GitHub, merge a DEV)
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos (EN-01 completo; **EN-04 COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**; UC-01, UC-03, UC-27 pendientes)
+- [ ] Todos los elementos completos (EN-01 completo; **EN-04 COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**; UC-01 **COMPLETO** ✅, UC-03, UC-27 pendientes)
 - [ ] Build y CI en verde (local: BUILD SUCCESSFUL; CI: pendiente ejecución en GitHub Actions)
 - [ ] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones documentadas; **llm 100% líneas / 90.6% ramas sin exclusiones**; **cas 80.4% líneas / 78.9% ramas SIN excluir SymjaCasEngine**)
 - [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
