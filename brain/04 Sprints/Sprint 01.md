@@ -29,6 +29,16 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) - JaCoCo verification pasa
 - [x] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL)
 
+**Test Counts (2026-11-09):**
+- Caja blanca: 61 tests
+  - UserRepositoryAdapterTest: 10 tests
+  - PasswordEncoderAdapterTest (TokenServiceAdapter): 18 tests
+  - LoginUseCaseTest: 10 tests
+  - LogoutUseCaseTest: 7 tests
+  - RegisterUserUseCaseTest: 16 tests
+- Caja negra: 17 tests (AuthControllerIntegrationTest con Testcontainers pgvector)
+- Total auth: 78 tests
+
 ### UC-03 · Controlar el acceso por rol y recurso
 - [ ] Implementación
 - [ ] Pruebas de caja blanca
