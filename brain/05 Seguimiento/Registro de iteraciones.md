@@ -21,6 +21,7 @@ Una entrada por petición al agente (más reciente arriba). Formato:
   - Total: 27 tests auth-related + 231 existentes = 258 tests pasan
 - **Velocidad**: UC-01 = 5 pts completados en ~3h (triage + implementación + tests + docs)
 - **Próximo**: UC-03 (control acceso por rol/recurso), UC-27 (visor WebGL)
+- **Hechos/Total**: 1 commit (feat(auth): UC-01), 40 archivos (38 nuevos + 2 docs), 4025 líneas añadidas, build SUCCESSFUL, 258 tests pasan
 
 ## 2026-11-06 16:30 · Sprint 01 · EN-04: **CORRECCIÓN — EN-04 es PARCIAL, Spring AI pgvector-store NO implementado**
 - **Build**: `./gradlew clean check --no-daemon --no-scan` → **BUILD SUCCESSFUL** (48 tasks, ~70s) — Spring Boot 3.4.0
