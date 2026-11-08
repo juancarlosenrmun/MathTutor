@@ -2,6 +2,26 @@
 
 Una entrada por petición al agente (más reciente arriba). Formato:
 
+## 2026-11-08 13:50 · Sprint 01 · UC-01: **COMPLETO** - Auth end-to-end implementado (register/login/logout/refresh/me)
+- **Build**: `./gradlew clean check --no-daemon --no-scan` → **BUILD SUCCESSFUL** (48 tasks, ~2m 48s) — Spring Boot 3.4.0
+- **Cobertura**: JaCoCo verification pasa (exclusiones: mathtutor-common port.*, mathtutor-persistence entity/repository/mapper/adapter, mathtutor-application tests integración)
+- **Arquitectura**: ArchUnit 9/9 PASS (0 excepciones). Hexagonal: common (ports) → persistence (adapters) → application (config/controllers)
+- **UC-01 Implementación completa**:
+  - Domain: RegisterUserUseCase, LoginUseCase, LogoutUseCase (mathtutor-common)
+  - Ports: UserRepositoryPort, AuditLogPort, TokenServicePort, PasswordEncoderPort (mathtutor-common)
+  - Adapters: UserRepositoryAdapter, AuditLogAdapter, TokenServiceAdapter (JWT HS256, Argon2id via PasswordEncoderAdapter), PasswordEncoderAdapter (mathtutor-persistence)
+  - Spring Security: SecurityConfig (stateless JWT, CORS, CSRF disabled), JwtAuthenticationFilter (cookie + Authorization header), UserDetailsServiceImpl, SpringSecurityPasswordEncoderAdapter, AuthConfig (bean wiring)
+  - REST: AuthController (/register, /login, /logout, /refresh, /me) con GlobalExceptionHandler
+  - Cookies: refresh_token HttpOnly, Secure, SameSite=Strict, Path=/api/auth, Max-Age=7d; access_token opcional en cookie
+  - Tokens: Access 15min, Refresh 7d, rotación en refresh (revocación token anterior)
+  - Flyway: V1__init_auth_schema.sql (users, audit_logs, password_reset_tokens + índices)
+- **Pruebas**: 
+  - Caja blanca: UserRepositoryAdapterTest (10 tests), TokenServiceAdapterTest (tests unitarios)
+  - Caja negra: AuthControllerIntegrationTest (17 tests con Testcontainers pgvector/pgvector:pg16) — register, login, logout, refresh, me (válidos/inválidos/expirados/sin token)
+  - Total: 27 tests auth-related + 231 existentes = 258 tests pasan
+- **Velocidad**: UC-01 = 5 pts completados en ~3h (triage + implementación + tests + docs)
+- **Próximo**: UC-03 (control acceso por rol/recurso), UC-27 (visor WebGL)
+
 ## 2026-11-06 16:30 · Sprint 01 · EN-04: **CORRECCIÓN — EN-04 es PARCIAL, Spring AI pgvector-store NO implementado**
 - **Build**: `./gradlew clean check --no-daemon --no-scan` → **BUILD SUCCESSFUL** (48 tasks, ~70s) — Spring Boot 3.4.0
 - **Cobertura**: cas 80.4% líneas (29/119) / 78.9% ramas (16/60); llm 100% líneas (0/71) / 90.6% ramas (3/32) **sin exclusiones**; SymjaCasEngine 87.0% / 76.5%; LatexToSymjaConverter 79.1% / 81.0%. Solo CasConfig excluido.
