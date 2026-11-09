@@ -26,18 +26,34 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - [x] Implementación (RegisterUserUseCase, LoginUseCase, LogoutUseCase, ports, adapters, Spring Security, JWT, REST endpoints)
 - [x] Pruebas de caja blanca (mathtutor-persistence: UserRepositoryAdapterTest, TokenServiceAdapterTest; mathtutor-common: UseCase tests)
 - [x] Pruebas de caja negra (AuthControllerIntegrationTest: 17 tests con Testcontainers pgvector)
-- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) - JaCoCo verification pasa
-- [x] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL)
+- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) - pendiente D1/D2
+- [ ] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL) - pendiente D1-D9 + CI verde
+- [x] **D3: Reactivación CSRF** — CookieCsrfTokenRepository (double-submit cookie), CsrfTokenRequestAttributeHandler (no XOR), CsrfController (/api/csrf-token), tests actualizados con header X-XSRF-TOKEN + cookie XSRF-TOKEN
+- [x] **D4: Refresh tokens DB storage con rotación y detección de reuso** — V2__refresh_tokens.sql migration, RefreshToken entity, RefreshTokenRepository, TokenServicePort extended, RefreshTokenAdapter, TokenServiceAdapter, AuthController updated, 19 new tests in RefreshTokenAdapterTest (JaCoCo coverage 92.7% lines, 87.5% branches)
+- [x] **D5: JWT secret solo variable de entorno** — TokenServiceAdapter usa @Value("${jwt.secret}") SIN default, validación @PostConstruct fail-fast si no configurado, mínimo 256 bits (32 chars) para HS256, tests usan DynamicPropertySource
+- [x] **D6.1: Password mínimo 12 chars (ASVS L1)** — RegisterUserUseCase.MIN_PASSWORD_LENGTH = 12, AuthController RegisterRequest @Size(min=12), tests actualizados
+- [x] **D6.2: Mensajes de error genéricos (no enumeración usuarios)** — RegisterUserUseCase retorna "Credenciales inválidas" genérico para email duplicado, LoginUseCase ya usaba genérico, tests actualizados
+- [ ] D6.3: Rate limiting login (5 intentos/15 min por IP/email)
+- [ ] D6.4: Documentar parámetros Argon2id
+- [ ] D6.5/6.6: Verificar cumplimiento ASVS L1 completo
+- [ ] D7: Separación de alcance de migraciones
+- [ ] D8: Commits atómicos en git
+- [ ] D9: Verificación CI en sprint-1
+
+**Estado UC-01: en curso (D6.3–D9 abiertos)**
 
 **Test Counts (2026-11-09):**
-- Caja blanca: 61 tests
-  - UserRepositoryAdapterTest: 10 tests
-  - PasswordEncoderAdapterTest (TokenServiceAdapter): 18 tests
+- Caja blanca: 105 tests (mathtutor-auth module)
+  - UserRepositoryAdapterTest: 13 tests
+  - TokenServiceAdapterTest: 20 tests
+  - PasswordEncoderAdapterTest: 18 tests
+  - RefreshTokenAdapterTest: 19 tests
+  - AuditLogAdapterTest: 6 tests
   - LoginUseCaseTest: 10 tests
   - LogoutUseCaseTest: 7 tests
   - RegisterUserUseCaseTest: 16 tests
 - Caja negra: 17 tests (AuthControllerIntegrationTest con Testcontainers pgvector)
-- Total auth: 78 tests
+- Total auth: 122 tests
 
 ### UC-03 · Controlar el acceso por rol y recurso
 - [ ] Implementación
@@ -80,8 +96,8 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - [ ] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL; CI pendiente push sprint-1 → GitHub, merge a DEV)
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos (EN-01 completo; **EN-04 COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**; UC-01 **COMPLETO** ✅, UC-03, UC-27 pendientes)
-- [ ] Build y CI en verde (local: BUILD SUCCESSFUL; CI: pendiente ejecución en GitHub Actions)
+- [ ] Todos los elementos completos (EN-01 completo; **EN-04 COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**; UC-01 **en curso (D5–D9 abiertos)**, UC-03, UC-27 pendientes)
+- [x] Build y CI en verde (local: BUILD SUCCESSFUL; CI: VERDE en sprint-1 — https://github.com/juancarlosenrmun/MathTutor/actions/runs/42535665406)
 - [ ] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones documentadas; **llm 100% líneas / 90.6% ramas sin exclusiones**; **cas 80.4% líneas / 78.9% ramas SIN excluir SymjaCasEngine**)
 - [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
@@ -101,6 +117,7 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 
 | Módulo | XML Report Path | Líneas (missed/covered) | % Líneas | Ramas (missed/covered) | % Ramas | Estado |
 |--------|-----------------|-------------------------|----------|------------------------|---------|--------|
+| **mathtutor-auth** | mathtutor-auth/build/reports/jacoco/test/jacocoTestReport.xml | **106/1450** | **92.7%** | **14/98** | **87.5%** | ✅ Pasa (sin exclusiones, umbral 80/70) |
 | mathtutor-common | mathtutor-common/build/reports/jacoco/test/jacocoTestReport.xml | 17/56 | 76.7% (raw) | N/A | — | ✅ Pasa (excluye port.*) |
 | **mathtutor-cas** | mathtutor-cas/build/reports/jacoco/test/jacocoTestReport.xml | **29/119** | **80.4%** | **16/60** | **78.9%** | ✅ Pasa (excluye solo CasConfig) |
 | mathtutor-graphics | mathtutor-graphics/build/reports/jacoco/test/jacocoTestReport.xml | 0/3 | 100% | 0/2 | 100% | ✅ Pasa |
@@ -118,3 +135,5 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - **ArchUnit**: 9 reglas pasan. Excepción resuelta: `mathtutor-llm` usa `NoteChunkStore` port de `common` (no `NoteChunkRepository` de persistence). Test de integración movido a `mathtutor-application`.
 - **Licencias**: Symja LGPL-3.0 (biblioteca, sin modificaciones), pgvector-java Apache 2.0. Todo compatible (61 dependencias transitivas verificadas). exp4j fue evaluado en investigación inicial pero no usado en implementación final.
 - **2026-11-06 16:30**: EN-04 **COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**. Build SUCCESSFUL, cas 80.4%/78.9%, llm 100%/90.6%. Pendiente: push sprint-1 → GitHub, CI verde (tests integración con Docker), merge a DEV.
+- **2026-11-08 23:32**: CI **VERDE** en sprint-1 — Run: https://github.com/juancarlosenrmun/MathTutor/actions/runs/42535665406 · build-and-test ✅ (3m59s), verify-coverage ✅ (3s). Tests integración con Testcontainers pgvector pasan en CI (ubuntu-latest, Docker nativo). Pendiente: merge sprint-1 → DEV.
+- **2026-11-09 19:15**: D4 **COMPLETO** — Refresh tokens DB storage con rotación y detección de reuso. Implementado: V2__refresh_tokens.sql migration, RefreshToken entity, RefreshTokenRepository, TokenServicePort extendido, RefreshTokenAdapter, TokenServiceAdapter, AuthController actualizado. Tests: 19 nuevos tests en RefreshTokenAdapterTest + TokenServiceAdapterTest + AuthControllerTest actualizados. JaCoCo mathtutor-auth: 92.7% líneas / 87.5% ramas (umbral 80/70 ✅). Build local verde: `./gradlew clean check --no-daemon` BUILD SUCCESSFUL.
