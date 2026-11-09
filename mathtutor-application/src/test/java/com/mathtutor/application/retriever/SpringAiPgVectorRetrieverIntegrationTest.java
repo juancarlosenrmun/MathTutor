@@ -55,6 +55,14 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         registry.add("spring.flyway.locations", () -> "classpath:db/migration");
         // Perfil spring-ai-pgvector para activar Spring AI PgVectorStore
         registry.add("spring.profiles.active", () -> "spring-ai-pgvector");
+        // Spring AI configuration - provide dummy values to prevent placeholder resolution errors
+        registry.add("spring.ai.openai.api-key", () -> "test-key");
+        registry.add("spring.ai.vectorstore.pgvector.initialize-schema", () -> "true");
+        registry.add("spring.ai.embedding.model", () -> "text-embedding-ada-002");
+        // JWT configuration for tests (required by TokenServiceAdapter)
+        registry.add("jwt.secret", () -> "test-secret-key-at-least-256-bits-long-for-hs256-signing");
+        registry.add("jwt.access-token-expiration-minutes", () -> "15");
+        registry.add("jwt.refresh-token-expiration-days", () -> "7");
     }
 
     @Autowired

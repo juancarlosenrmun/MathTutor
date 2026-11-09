@@ -38,6 +38,10 @@ class MathTutorApplicationTest {
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("spring.flyway.locations", () -> "classpath:db/migration");
+        // JWT configuration for tests
+        registry.add("jwt.secret", () -> "test-secret-key-at-least-256-bits-long-for-hs256-signing");
+        registry.add("jwt.access-token-expiration-minutes", () -> "15");
+        registry.add("jwt.refresh-token-expiration-days", () -> "7");
     }
 
     @Autowired
