@@ -1,6 +1,7 @@
 package com.mathtutor.common.auth.port;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Puerto para servicio de tokens JWT.
@@ -45,6 +46,68 @@ public interface TokenServicePort {
      * @return claims del token
      */
     Map<String, Object> extractClaims(String token);
+
+    /**
+     * Almacena un refresh token en la base de datos (hash + metadatos).
+     * Genera un familyId nuevo para tracking de rotación.
+     *
+     * @param userId     ID del usuario
+     * @param email      email del usuario
+     * @param role       rol del usuario
+     * @param rawToken   token de refresco en claro (se hasheará con Argon2id)
+     * @return refresh token JWT (el mismo que se pasó como rawToken)
+     */
+    String storeRefreshToken(Long userId, String email, String role, String rawToken);
+
+    /**
+     * Almacena un refresh token en la base de datos con un familyId específico (para rotación).
+     *
+     * @param userId       ID del usuario
+     * @param email        email del usuario
+     * @param role         rol del usuario
+     * @param rawToken     token de refresco en claro
+     * @param familyId     ID de familia existente (para mantener la cadena de rotación)
+     * @return refresh token JWT
+     */
+    String storeRefreshTokenWithFamily(Long userId, String email, String role, String rawToken, String familyId);
+
+    /**
+     * Valida un refresh token contra la base de datos.
+     *
+     * @param rawToken token de refresco en claro
+     * @return resultado de validación con metadatos (userId, email, role, familyId, tokenId)
+     */
+    Optional<TokenValidationResult> validateRefreshToken(String rawToken);
+
+    /**
+     * Revoca un refresh token individual (logout o rotación normal).
+     *
+     * @param tokenId ID del token a revocar (jti del JWT)
+     */
+    void revokeRefreshToken(String tokenId);
+
+    /**
+     * Revoca toda una familia de tokens (detección de reuso - ataque de replay).
+     *
+     * @param familyId ID de la familia a revocar
+     */
+    void revokeTokenFamily(String familyId);
+
+    /**
+     * Limpia tokens de refresco expirados de la base de datos.
+     */
+    void cleanupExpiredTokens();
+
+    /**
+     * Resultado de validación de refresh token.
+     */
+    record TokenValidationResult(
+            Long userId,
+            String email,
+            String role,
+            String familyId,
+            String tokenId
+    ) {}
 
     /**
      * Excepción para tokens inválidos.

@@ -10,7 +10,7 @@ import com.mathtutor.common.port.PasswordEncoderPort;
  */
 public class RegisterUserUseCase {
 
-    private static final int MIN_PASSWORD_LENGTH = 8;
+    private static final int MIN_PASSWORD_LENGTH = 12; // ASVS L1
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
     private final UserRepositoryPort userRepositoryPort;
@@ -46,7 +46,8 @@ public class RegisterUserUseCase {
         // Verificar unicidad de email
         if (userRepositoryPort.existsByEmail(normalizedEmail)) {
             auditLogPort.save(new UserRegistrationFailedEvent(normalizedEmail, "EMAIL_ALREADY_EXISTS"));
-            return Result.fail(Result.ErrorCode.EMAIL_ALREADY_EXISTS, "El email ya está registrado");
+            // Generic error to prevent user enumeration (ASVS L1)
+            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "Credenciales inválidas");
         }
 
         // Hashear contraseña
@@ -90,7 +91,7 @@ public class RegisterUserUseCase {
             return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "Contraseña es obligatoria");
         }
         if (password.length() < MIN_PASSWORD_LENGTH) {
-            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe tener al menos 8 caracteres");
+            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe tener al menos 12 caracteres");
         }
         if (!password.matches(".*[A-Z].*")) {
             return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe contener al menos una mayúscula");
