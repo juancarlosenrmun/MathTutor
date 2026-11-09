@@ -4,6 +4,7 @@ import com.mathtutor.common.auth.domain.LoginUseCase;
 import com.mathtutor.common.auth.domain.LogoutUseCase;
 import com.mathtutor.common.auth.domain.RegisterUserUseCase;
 import com.mathtutor.common.auth.port.AuditLogPort;
+import com.mathtutor.common.auth.port.RateLimitPort;
 import com.mathtutor.common.auth.port.UserRepositoryPort;
 import com.mathtutor.common.port.PasswordEncoderPort;
 import org.springframework.context.annotation.Bean;
@@ -29,9 +30,10 @@ public class AuthConfig {
     public LoginUseCase loginUseCase(
             UserRepositoryPort userRepositoryPort,
             PasswordEncoderPort passwordEncoderPort,
-            AuditLogPort auditLogPort
+            AuditLogPort auditLogPort,
+            RateLimitPort rateLimitPort
     ) {
-        return new LoginUseCase(userRepositoryPort, passwordEncoderPort, auditLogPort);
+        return new LoginUseCase(userRepositoryPort, passwordEncoderPort, auditLogPort, rateLimitPort);
     }
 
     @Bean

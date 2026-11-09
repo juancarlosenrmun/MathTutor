@@ -47,6 +47,7 @@ dependencies {
     // Project dependencies - application connects all modules
     implementation(project(":mathtutor-common"))
     implementation(project(":mathtutor-persistence"))
+    implementation(project(":mathtutor-auth"))
     implementation(project(":mathtutor-cas"))
     implementation(project(":mathtutor-llm"))
     implementation(project(":mathtutor-graphics"))
