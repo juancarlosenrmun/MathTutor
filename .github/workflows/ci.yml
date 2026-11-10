@@ -13,9 +13,10 @@ jobs:
 
     # No Docker env vars needed - integration tests are skipped on CI via @EnabledIfEnvironmentVariable
     # Unit tests use H2 in-memory database, no Docker required.
-    # Disable Ryuk to avoid Docker issues
+    # Disable Testcontainers entirely to prevent any container startup attempts
     env:
       TESTCONTAINERS_RYUK_DISABLED: "true"
+      testcontainers.disabled: "true"
 
     steps:
       - name: Checkout repository
