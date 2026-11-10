@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.*;
  */
 @SpringBootTest(classes = MathTutorApplication.class)
 @ActiveProfiles("spring-ai-pgvector")
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @Transactional
 class SpringAiPgVectorRetrieverIntegrationTest {
 
