@@ -15,12 +15,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication(
     exclude = { FlywayAutoConfiguration.class }, // Flyway se configura manualmente por perfil
     scanBasePackages = { "com.mathtutor.application", "com.mathtutor.common", "com.mathtutor.persistence",
-        "com.mathtutor.llm", "com.mathtutor.graphics", "com.mathtutor.tutor", "com.mathtutor.web" }
+        "com.mathtutor.auth", "com.mathtutor.llm", "com.mathtutor.graphics", "com.mathtutor.tutor", "com.mathtutor.web" }
 )
 @ComponentScan(basePackages = { "com.mathtutor.application", "com.mathtutor.common", "com.mathtutor.persistence",
-    "com.mathtutor.llm", "com.mathtutor.graphics", "com.mathtutor.tutor", "com.mathtutor.web" })
-@EnableJpaRepositories(basePackages = "com.mathtutor.persistence.repository")
-@EntityScan(basePackages = "com.mathtutor.persistence.entity")
+    "com.mathtutor.auth", "com.mathtutor.llm", "com.mathtutor.graphics", "com.mathtutor.tutor", "com.mathtutor.web" })
+@EnableJpaRepositories(basePackages = { "com.mathtutor.persistence.repository", "com.mathtutor.auth.adapter" })
+@EntityScan(basePackages = { "com.mathtutor.persistence.entity" })
 public class MathTutorApplication {
 
     public static void main(String[] args) {

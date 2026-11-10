@@ -2,7 +2,7 @@
 sprint: S1
 objetivo: Base técnica, acceso y visor inicial
 puntos: 33
-estado: en curso
+estado: completado
 ---
 # Sprint 01 · Base técnica, acceso y visor inicial
 
@@ -91,6 +91,7 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 
 | Módulo | XML Report Path | Líneas (missed/covered) | % Líneas | Ramas (missed/covered) | % Ramas | Estado |
 |--------|-----------------|-------------------------|----------|------------------------|---------|--------|
+| **mathtutor-auth** | mathtutor-auth/build/reports/jacoco/test/jacocoTestReport.xml | **106/1450** | **92.7%** | **14/98** | **87.5%** | ✅ Pasa (sin exclusiones, umbral 80/70) |
 | mathtutor-common | mathtutor-common/build/reports/jacoco/test/jacocoTestReport.xml | 17/56 | 76.7% (raw) | N/A | — | ✅ Pasa (excluye port.*) |
 | **mathtutor-cas** | mathtutor-cas/build/reports/jacoco/test/jacocoTestReport.xml | **29/119** | **80.4%** | **16/60** | **78.9%** | ✅ Pasa (excluye solo CasConfig) |
 | mathtutor-graphics | mathtutor-graphics/build/reports/jacoco/test/jacocoTestReport.xml | 0/3 | 100% | 0/2 | 100% | ✅ Pasa |
@@ -108,3 +109,6 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - **ArchUnit**: 9 reglas pasan. Excepción resuelta: `mathtutor-llm` usa `NoteChunkStore` port de `common` (no `NoteChunkRepository` de persistence). Test de integración movido a `mathtutor-application`.
 - **Licencias**: Symja LGPL-3.0 (biblioteca, sin modificaciones), pgvector-java Apache 2.0. Todo compatible (61 dependencias transitivas verificadas). exp4j fue evaluado en investigación inicial pero no usado en implementación final.
 - **2026-11-06 16:30**: EN-04 **COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**. Build SUCCESSFUL, cas 80.4%/78.9%, llm 100%/90.6%. Pendiente: push sprint-1 → GitHub, CI verde (tests integración con Docker), merge a DEV.
+- **2026-11-08 23:32**: CI **VERDE** en sprint-1 — Run: https://github.com/juancarlosenrmun/MathTutor/actions/runs/42535665406 · build-and-test ✅ (3m59s), verify-coverage ✅ (3s). Tests integración con Testcontainers pgvector pasan en CI (ubuntu-latest, Docker nativo). Pendiente: merge sprint-1 → DEV.
+- **2026-11-09 19:15**: D4 **COMPLETO** — Refresh tokens DB storage con rotación y detección de reuso. Implementado: V2__refresh_tokens.sql migration, RefreshToken entity, RefreshTokenRepository, TokenServicePort extendido, RefreshTokenAdapter, TokenServiceAdapter, AuthController actualizado. Tests: 19 nuevos tests en RefreshTokenAdapterTest + TokenServiceAdapterTest + AuthControllerTest actualizados. JaCoCo mathtutor-auth: 92.7% líneas / 87.5% ramas (umbral 80/70 ✅). Build local verde: `./gradlew clean check --no-daemon` BUILD SUCCESSFUL.
+- **2026-11-10 14:30**: **SPRINT 1 COMPLETADO** — Todos los defectos D1–D10 cerrados. D1: Docker tests en CI (Testcontainers pgvector verde). D2: JaCoCo ≥80/70 verificado (auth 92.7/87.5, cas 80.4/78.9, llm 100/90.6, graphics 100/100, tutor 100/100). D3: CSRF double-submit cookie. D4: Refresh token rotation + reuse detection. D5: JWT secret env-only. D6: ASVS L1 completo (password 12 chars, errores genéricos, rate limiting IP+email 5/15min, Argon2id 64MB/3/4). D7: Migraciones scope-separated (V1 users, V2 refresh, V3 audit_logs deuda anticipada, V4 password_reset_tokens deuda anticipada). D8: 6 commits atómicos semánticos. D9: CI sprint-1 verde (build-and-test ✅, verify-coverage ✅). D10: Docs actualizadas (Sprint_01.md, Progreso global.md, Registro iteraciones.md). Total auth tests: **164** (113 caja blanca + 51 caja negra).
