@@ -74,10 +74,8 @@ subprojects {
                             if (project.name == "mathtutor-cas") {
                                 excludes = listOf("com/mathtutor/cas/CasConfig")
                             }
-                            // Exclude SecurityConfig for mathtutor-auth (Spring config class, 0% coverage - no logic to test)
-                            if (project.name == "mathtutor-auth") {
-                                excludes = listOf("com/mathtutor/auth/config/SecurityConfig")
-                            }
+                            // SecurityConfig now has 19 unit tests (SecurityConfigCsrfMatcherTest) covering requiresCsrfProtection() static method
+                            // No exclusion needed - branch coverage 71.3% > 70% threshold
                             // Exclude entity and repository for mathtutor-persistence (generated code, 0% logic)
                             if (project.name == "mathtutor-persistence") {
                                 excludes = listOf("com/mathtutor/persistence/entity/**", "com/mathtutor/persistence/repository/**")
@@ -120,11 +118,7 @@ subprojects {
                             exclude("**/CasConfig.class")
                         } })
                     }
-                    if (project.name == "mathtutor-auth") {
-                        classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
-                            exclude("**/config/SecurityConfig.class")
-                        } })
-                    }
+                    // SecurityConfig no longer excluded from classDirectories - has testable static method with 19 unit tests
                     dependsOn("jacocoTestReport")
                 }
 
