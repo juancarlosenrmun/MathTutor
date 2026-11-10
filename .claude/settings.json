@@ -1,17 +1,8 @@
 {
   "hooks": {
     "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo 'Proyecto TFG: lee AGENTS.md y brain/00 - Índice.md. Usa el router GOAT (triage → worker → verifier). Pide el sprint si no se indicó.'"
-          }
-        ]
-      }
+      { "hooks": [ { "type": "command",
+        "command": "echo 'Proyecto TFG: lee AGENTS.md y brain/00 - Índice.md. Usa el router GOAT (triage → worker → verifier). Pide el sprint si no se indicó.'" } ] }
     ]
-  },
-  "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true
   }
 }

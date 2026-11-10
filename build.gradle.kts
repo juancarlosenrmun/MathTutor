@@ -74,10 +74,6 @@ subprojects {
                             if (project.name == "mathtutor-cas") {
                                 excludes = listOf("com/mathtutor/cas/CasConfig")
                             }
-                            // Exclude SecurityConfig for mathtutor-auth (Spring config class, 0% coverage - no logic to test)
-                            if (project.name == "mathtutor-auth") {
-                                excludes = listOf("com/mathtutor/auth/config/SecurityConfig")
-                            }
                             // Exclude entity and repository for mathtutor-persistence (generated code, 0% logic)
                             if (project.name == "mathtutor-persistence") {
                                 excludes = listOf("com/mathtutor/persistence/entity/**", "com/mathtutor/persistence/repository/**")
@@ -118,11 +114,6 @@ subprojects {
                     if (project.name == "mathtutor-cas") {
                         classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
                             exclude("**/CasConfig.class")
-                        } })
-                    }
-                    if (project.name == "mathtutor-auth") {
-                        classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
-                            exclude("**/config/SecurityConfig.class")
                         } })
                     }
                     dependsOn("jacocoTestReport")

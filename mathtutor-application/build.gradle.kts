@@ -47,7 +47,6 @@ dependencies {
     // Project dependencies - application connects all modules
     implementation(project(":mathtutor-common"))
     implementation(project(":mathtutor-persistence"))
-    implementation(project(":mathtutor-auth"))
     implementation(project(":mathtutor-cas"))
     implementation(project(":mathtutor-llm"))
     implementation(project(":mathtutor-graphics"))
@@ -66,8 +65,6 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
     testImplementation("io.projectreactor:reactor-test")
-    // JUnit Platform Launcher required for Gradle JVM Test Suite
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
 }
 
 // Module-specific JaCoCo exclusions
@@ -87,17 +84,6 @@ tasks.withType<Test> {
     environment("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
     environment("DOCKER_HOST", "unix:///var/run/docker.sock")
     environment("TESTCONTAINERS_RYUK_DISABLED", "true")
-
-    // JVM Test Suite workaround: configure fork options to avoid EOFException on Windows
-    // Use a dedicated fork with isolated classloader
-    maxParallelForks = 1
-    forkEvery = 100
-    jvmArgs = listOf("-Xmx2g", "-XX:+UseSerialGC", "-Dtestcontainers.ryuk.disabled=true", "-Dorg.testcontainers.ryuk.disabled=true")
-    // Ensure test results are written immediately
-    testLogging {
-        events("passed", "skipped", "failed")
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-    }
 }
 
 application {

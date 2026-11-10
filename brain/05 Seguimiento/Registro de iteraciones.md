@@ -37,7 +37,7 @@ Una entrada por petición al agente (más reciente arriba). Formato:
   - graphics: 3 métodos test
   - tutor: 4 métodos test
   - application: 4 SKIPPED
-- **Corrección sobre entradas anteriores (16:00, 14:30, 12:10)**: Marcaban EN-04 como "completado/verificado/cerrado" → **INCORRECTO**. El spike pide "Spring AI con pgvector"; la implementación usa pgvector JDBC directo, Spring AI no está implementado. La validación de `spring-ai-pgvector-store` requeriría implementar `PgVectorStore` + tests de integración reales, o redefinir criterio del spike documentando la decisión (pgvector JDBC directo como implementación válida).
+- **Corrección sobre entradas anteriores (16:00, 14:30, 12:10)**: Marcaban EN-04 como "completado/verificado/cerrado" → **INCORRECTO**. El spike pide "Spring AI con pgvector"; la implementación usa pgvector JDBC directo, Spring AI no está implementado. La validación de `spring-ai-pgvector-store` requeriría implementar `PgVectorStore` + tests de integración reales.
 - **Velocidad**: sin h/pt hasta integración CI (merge sprint-1 → DEV); Sprint 01 = 10/33 pts (EN-01 + EN-04 PARCIAL)
 - **Próximo**: Push sprint-1 → GitHub, CI verde, merge a DEV. Para cerrar EN-04 realmente: implementar `PgVectorStore` de Spring AI + tests integración, o redefinir criterio del spike documentando la decisión (pgvector JDBC directo como implementación válida).
 - **Build**: `./gradlew clean check --no-daemon --no-scan` → **BUILD SUCCESSFUL** (48 tasks, ~70s)
@@ -74,8 +74,8 @@ Una entrada por petición al agente (más reciente arriba). Formato:
 
 ## 2026-11-06 12:10 · Sprint 01 · EN-04: **VERIFICADO** - Symja 3.2.0 en Maven Central, pgvector JDBC, build verde, cobertura confirmada
 - **Corrección crítica**: Symja (matheclipse-core:3.2.0) **SÍ está en Maven Central** (investigación inicial incorrecta). Licencia LGPL-3.0 compatible como biblioteca externa sin modificaciones.
-- **Implementado verificado**:
-  - mathtutor-cas: `LatexToSymjaConverter` (TeXParser.parse nativo, simplificación `subtract().normal()/together()`), derivadas `IExpr.diff()`, integrales `Integrate()`, evalf), `SymjaCasEngine` (wrapper CasEngine, null-safe)
+- **Implementado verificado**: 
+  - mathtutor-cas: `LatexToSymjaConverter` (TeXParser.parse nativo, simplificación `subtract().normal()/together()`, derivadas `IExpr.diff()`, integrales `Integrate()`, evalf), `SymjaCasEngine` (wrapper CasEngine, null-safe)
   - mathtutor-llm: `DeterministicEmbeddingModel` (384-dim, hash-based xorshift, L2-normalizado), `PgVectorRetriever` (JdbcTemplate + `embedding <=> ?::vector` cosine distance pgvector nativo, filtros module/topic, indexAtStartup idempotente)
   - Eliminados: `LlmGatewayImpl`, `LlmConfig`, `LlmGatewayImplTest` (fuera alcance EN-04, UC-04/UC-05)
 - **Pruebas**: caja blanca 103 (cas) + 37 (llm) = **140 tests** · caja negra 32 (cas black box) + 8 (llm integration, SKIPPED sin Docker) = **40 tests**
@@ -126,7 +126,7 @@ Una entrada por petición al agente (más reciente arriba). Formato:
 - Implementado: test incondicional (requiere Docker), mathtutor-web eliminado, checklist realista (solo verificados [x]), cobertura JaCoCo verificada con exclusiones
 - Pruebas: caja blanca 130+ (common, persistence, graphics, llm, tutor) · caja negra 4 (application, requieren Docker)
 - Build local: FALLA mathtutor-application:test - Testcontainers + Docker Desktop 29.x Win incompatibilidad (API npipe devuelve respuesta vacía)
-- CI (ubuntu-latest): Docker preinstalado → Testcontainers pgvector/pgvector:pg16 arranca, Flyway migra, extensión vector creada, contexto Spring OK
+- CI (ubuntu-latest): Docker preinstalado → Testcontainers pgvector/pgvector:pg16 arranca, Flyway migra, ext. vector, contexto Spring OK
 - Hechos/Total: 11 commits, 22 archivos, EN-01 implementado completo, CI pendiente
 - Checklist: [[Sprint 01]] EN-01 [x] implementado y verificado en CI, [ ] merge sprint-1 → DEV (usuario hará merge)
 - Pendiente: Push sprint-1 → GitHub, CI verde, merge a DEV, luego EN-04, UC-01, UC-03, UC-27
