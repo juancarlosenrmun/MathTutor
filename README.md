@@ -73,4 +73,4 @@ npx skills list
 
 - [Skills del proyecto](docs/SKILLS.md)
 - [AGENTS.md](AGENTS.md) — Instrucciones base del agente
-- [brain/](brain/) — Bóveda de contexto (requisitos, sprints, diseño, seguimiento)
+- [brain/](brain/) — Bóveda de contexto (requisitos, sprints, diseño, seguimiento)# CI trigger
