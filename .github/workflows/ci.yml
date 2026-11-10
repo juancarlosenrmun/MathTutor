@@ -13,13 +13,14 @@ jobs:
 
     # Set environment variables at job level so they're inherited by forked test JVMs
     env:
-      # Spring profiles for tests with Testcontainers (spring-ai-pgvector for Spring AI integration)
-      SPRING_PROFILES_ACTIVE: spring-ai-pgvector
       # Testcontainers Docker host - use host Docker daemon
       TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
       DOCKER_HOST: unix:///var/run/docker.sock
       # Disable Ryuk (Testcontainers cleanup container) to avoid issues in CI
       TESTCONTAINERS_RYUK_DISABLED: "true"
+      # Do NOT activate spring-ai-pgvector profile on CI - Testcontainers integration tests
+      # require Docker and are meant for local development. They are skipped locally when
+      # Docker is not available (disabledWithoutDocker=true). On CI, we run unit tests only.
 
     steps:
       - name: Checkout repository
