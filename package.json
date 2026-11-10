@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "gitleaks": "^1.0.0"
+  }
+}

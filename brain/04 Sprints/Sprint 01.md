@@ -2,7 +2,7 @@
 sprint: S1
 objetivo: Base técnica, acceso y visor inicial
 puntos: 33
-estado: completado
+estado: en curso
 ---
 # Sprint 01 · Base técnica, acceso y visor inicial
 
@@ -110,11 +110,11 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - [ ] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL; CI pendiente push sprint-1 → GitHub, merge a DEV)
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos (EN-01 completo; **EN-04 COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**; UC-01 **en curso (D5–D9 abiertos)**, UC-03, UC-27 pendientes)
-- [x] Build y CI en verde (local: BUILD SUCCESSFUL; CI: VERDE en sprint-1 — https://github.com/juancarlosenrmun/MathTutor/actions/runs/42535665406)
+- [ ] Todos los elementos completos (EN-01 completo; **EN-04 COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**; **UC-01 ✅ (D1–D10 cerrados)**, UC-03, UC-27 pendientes para S2)
+- [ ] Build y CI en verde (local: BUILD SUCCESSFUL; CI: pendiente verificación en sprint-1)
 - [ ] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones documentadas; **llm 100% líneas / 90.6% ramas sin exclusiones**; **cas 80.4% líneas / 78.9% ramas SIN excluir SymjaCasEngine**)
 - [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
-- [x] [[Progreso global]] actualizado
+- [ ] [[Progreso global]] actualizado
 
 ## Estado real EN-04 (Spike: LaTeX→Symja y Spring AI con pgvector)
 
@@ -123,7 +123,7 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 | LaTeX → Symja (matheclipse-core:3.2.0) | ✅ Completo | 103 tests cas, cobertura 80.4%/78.9% |
 | pgvector JDBC directo (PgVectorRetriever + JdbcTemplate) | ✅ Completo | 37 tests llm unitarios, cobertura 100%/90.6% sin exclusiones |
 | **Spring AI pgvector-store (VectorStore abstraction)** | ✅ **Completo** | `SpringAiPgVectorConfig` (PgVectorStore builder), `SpringAiDeterministicEmbeddingModel` (EmbeddingModel adapter), `SpringAiPgVectorRetriever` (VectorStore-based RagRetriever), **SpringAiPgVectorRetrieverIntegrationTest** (8 tests, Testcontainers pgvector/pgvector:pg16, perfil `spring-ai-pgvector`). Spring AI 1.0.0 GA + Spring Boot 3.4.0 validados. |
-| Integrado en rama principal | ❌ No | Pendiente: push sprint-1 → GitHub, CI verde, merge a DEV |
+| Integrado en rama principal | ❌ No | Pendiente: push sprint-1 → GitHub, **CI verde verificado**, merge a DEV |
 
 > **Clave**: El spike pide "Spring AI con pgvector". Ahora se implementa **Option A**: Spring AI PgVectorStore con `VectorStore` abstraction, `EmbeddingModel` adapter, y tests de integración reales con Testcontainers. La implementación JDBC directa (`PgVectorRetriever`) se mantiene como alternativa/legacy. Tests de integración en `mathtutor-application` usan perfil `spring-ai-pgvector` para activar la configuración Spring AI.
 
@@ -151,4 +151,4 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - **2026-11-06 16:30**: EN-04 **COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**. Build SUCCESSFUL, cas 80.4%/78.9%, llm 100%/90.6%. Pendiente: push sprint-1 → GitHub, CI verde (tests integración con Docker), merge a DEV.
 - **2026-11-08 23:32**: CI **VERDE** en sprint-1 — Run: https://github.com/juancarlosenrmun/MathTutor/actions/runs/42535665406 · build-and-test ✅ (3m59s), verify-coverage ✅ (3s). Tests integración con Testcontainers pgvector pasan en CI (ubuntu-latest, Docker nativo). Pendiente: merge sprint-1 → DEV.
 - **2026-11-09 19:15**: D4 **COMPLETO** — Refresh tokens DB storage con rotación y detección de reuso. Implementado: V2__refresh_tokens.sql migration, RefreshToken entity, RefreshTokenRepository, TokenServicePort extendido, RefreshTokenAdapter, TokenServiceAdapter, AuthController actualizado. Tests: 19 nuevos tests en RefreshTokenAdapterTest + TokenServiceAdapterTest + AuthControllerTest actualizados. JaCoCo mathtutor-auth: 92.7% líneas / 87.5% ramas (umbral 80/70 ✅). Build local verde: `./gradlew clean check --no-daemon` BUILD SUCCESSFUL.
-- **2026-11-10 14:30**: **SPRINT 1 COMPLETADO** — Todos los defectos D1–D10 cerrados. D1: Docker tests en CI (Testcontainers pgvector verde). D2: JaCoCo ≥80/70 verificado (auth 92.7/87.5, cas 80.4/78.9, llm 100/90.6, graphics 100/100, tutor 100/100). D3: CSRF double-submit cookie. D4: Refresh token rotation + reuse detection. D5: JWT secret env-only. D6: ASVS L1 completo (password 12 chars, errores genéricos, rate limiting IP+email 5/15min, Argon2id 64MB/3/4). D7: Migraciones scope-separated (V1 users, V2 refresh, V3 audit_logs deuda anticipada, V4 password_reset_tokens deuda anticipada). D8: 6 commits atómicos semánticos. D9: CI sprint-1 verde (build-and-test ✅, verify-coverage ✅). D10: Docs actualizadas (Sprint_01.md, Progreso global.md, Registro iteraciones.md). Total auth tests: **164** (113 caja blanca + 51 caja negra).
+- **2026-11-10 14:30**: **SPRINT 1 EN CURSO** — Defectos D1–D10 cerrados localmente. D1: Docker tests locales (Testcontainers pgvector verde). D2: JaCoCo ≥80/70 verificado (auth 84.0%/71.3%, cas 80.4%/78.9%, llm 100%/90.6%, graphics 100%/100%, tutor 100%/100%). D3: CSRF double-submit cookie. D4: Refresh token rotation + reuse detection. D5: JWT secret env-only. D6: ASVS L1 completo (password 12 chars, errores genéricos, rate limiting IP+email 5/15min, Argon2id 64MB/3/4). D7: Migraciones scope-separated (V1 users, V2 refresh, V3 audit_logs deuda anticipada, V4 password_reset_tokens deuda anticipada) + docs en docs/migrations/. D8: Git rebase verificado en temp-rebase-verify-final. D9: CI sprint-1 pendiente verificación (testcontainers.disabled: true). D10: Docs actualizadas (Sprint_01.md, Progreso global.md). Total auth tests: **164** (113 caja blanca + 51 caja negra). **Pendiente: CI verde verificado → merge sprint-1 → DEV**.
