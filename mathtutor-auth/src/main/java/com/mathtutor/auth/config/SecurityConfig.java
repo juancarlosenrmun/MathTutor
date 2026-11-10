@@ -3,6 +3,7 @@ package com.mathtutor.auth.config;
 import com.mathtutor.auth.adapter.TokenServiceAdapter;
 import com.mathtutor.auth.filter.JwtAuthenticationFilter;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Configuración de seguridad Spring Security para la API REST.
@@ -41,10 +43,38 @@ public class SecurityConfig {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
+    // CSRF configuration constants
+    private static final Set<String> CSRF_IGNORED_PATHS = Set.of("/api/auth/register", "/api/csrf-token");
+    private static final Set<String> SAFE_METHODS = Set.of("GET", "HEAD", "TRACE", "OPTIONS");
+
     private final TokenServiceAdapter tokenServiceAdapter;
 
     public SecurityConfig(TokenServiceAdapter tokenServiceAdapter) {
         this.tokenServiceAdapter = tokenServiceAdapter;
+    }
+
+    /**
+     * Determina si una petición requiere protección CSRF.
+     * <p>
+     * Reglas:
+     * <ul>
+     *   <li>Endpoints públicos ignorados ({@link #CSRF_IGNORED_PATHS}) nunca requieren CSRF</li>
+     *   <li>Métodos HTTP seguros ({@link #SAFE_METHODS}) nunca requieren CSRF</li>
+     *   <li>Cualquier otro endpoint con método no seguro (POST, PUT, DELETE, PATCH) requiere CSRF</li>
+     * </ul>
+     *
+     * @param request la petición HTTP entrante
+     * @return {@code true} si la petición requiere validación CSRF, {@code false} en caso contrario
+     */
+    public static boolean requiresCsrfProtection(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        // Ignorar CSRF para endpoints públicos
+        if (CSRF_IGNORED_PATHS.contains(uri)) {
+            return false;
+        }
+        // Comportamiento por defecto: no requerir CSRF para métodos seguros
+        String method = request.getMethod();
+        return !SAFE_METHODS.contains(method);
     }
 
     @PostConstruct
@@ -66,17 +96,7 @@ public class SecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(csrfTokenRequestHandler)
                         // Custom matcher que combina: ignorar paths específicos + solo métodos no seguros requieren CSRF
-                        .requireCsrfProtectionMatcher(request -> {
-                            String uri = request.getRequestURI();
-                            // Ignorar CSRF para endpoints públicos
-                            if ("/api/auth/register".equals(uri) || "/api/csrf-token".equals(uri)) {
-                                return false;
-                            }
-                            // Comportamiento por defecto: no requerir CSRF para métodos seguros (GET, HEAD, TRACE, OPTIONS)
-                            String method = request.getMethod();
-                            boolean require = !("GET".equals(method) || "HEAD".equals(method) || "TRACE".equals(method) || "OPTIONS".equals(method));
-                            return require;
-                        })
+                        .requireCsrfProtectionMatcher(SecurityConfig::requiresCsrfProtection)
                 )
                 // CORS configurado
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

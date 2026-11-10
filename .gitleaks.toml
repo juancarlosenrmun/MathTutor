@@ -1,0 +1,23 @@
+[allowlist]
+description = "Allow test files and common false positives"
+paths = [
+    '(?i).*[Tt]est.*\.java$',
+    '(?i).*/test/.*',
+    '(?i).*/tests/.*',
+    '.*\.md$',
+    '.*\.txt$',
+    '.*\.json$',
+    '.*\.xml$',
+    '.*\.yml$',
+    '.*\.yaml$',
+]
+
+# Allow common test patterns
+regexes = [
+    'password1234',
+    'test-secret-key',
+    'test-key',
+    'dummy',
+    'example',
+    'placeholder',
+]
