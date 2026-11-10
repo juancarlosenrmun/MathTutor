@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -389,13 +390,17 @@ class RefreshTokenAdapterTest {
         @DisplayName("Debe llamar a repositorio para borrar tokens expirados")
         void shouldCallRepositoryToDeleteExpiredTokens() {
             // Given
-            Instant now = Instant.now();
+            Instant beforeCall = Instant.now();
 
             // When
             adapter.cleanupExpiredTokens();
 
             // Then
-            verify(refreshTokenRepository).deleteByExpiresAtBefore(now);
+            Instant afterCall = Instant.now();
+            ArgumentCaptor<Instant> captor = ArgumentCaptor.forClass(Instant.class);
+            verify(refreshTokenRepository).deleteByExpiresAtBefore(captor.capture());
+            Instant captured = captor.getValue();
+            assertThat(captured).isBetween(beforeCall, afterCall);
         }
     }
 
