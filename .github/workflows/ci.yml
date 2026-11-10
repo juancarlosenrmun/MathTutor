@@ -11,16 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    # Set environment variables at job level so they're inherited by forked test JVMs
-    env:
-      # Testcontainers Docker host - use host Docker daemon
-      TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
-      DOCKER_HOST: unix:///var/run/docker.sock
-      # Disable Ryuk (Testcontainers cleanup container) to avoid issues in CI
-      TESTCONTAINERS_RYUK_DISABLED: "true"
-      # Do NOT activate spring-ai-pgvector profile on CI - Testcontainers integration tests
-      # require Docker and are meant for local development. They are skipped locally when
-      # Docker is not available (disabledWithoutDocker=true). On CI, we run unit tests only.
+    # No Docker env vars needed - integration tests are skipped on CI via @EnabledIfEnvironmentVariable
+    # Unit tests use H2 in-memory database, no Docker required.
+    # TESTCONTAINERS_RYUK_DISABLED is set in mathtutor-application/src/test/resources/.testcontainers.properties
 
     steps:
       - name: Checkout repository
@@ -37,28 +30,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: true
-
-      - name: Verify Docker is running
-        run: docker version && docker ps
-
-      - name: Fix Docker socket permissions
-        # GitHub Actions runner may not have permission to access /var/run/docker.sock
-        run: |
-          sudo chmod 666 /var/run/docker.sock
-          echo "=== Docker socket after chmod ==="
-          ls -la /var/run/docker.sock
-          # Verify the current user can access it
-          docker version
-
-      - name: Debug environment variables
-        run: |
-          echo "=== Shell environment ==="
-          env | grep -E 'DOCKER|TESTCONTAINERS|SPRING_PROFILES'
-          echo "=== Docker socket ==="
-          ls -la /var/run/docker.sock
-          echo "=== Test Docker access ==="
-          docker version
-          docker ps
 
       - name: Build and test with Gradle
         run: ./gradlew clean check --no-daemon --no-scan
