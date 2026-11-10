@@ -41,9 +41,7 @@ public sealed interface Result<T> permits Result.Success, Result.Failure {
         /** Token inválido o expirado */
         INVALID_TOKEN,
         /** Token de refresco revocado */
-        REFRESH_TOKEN_REVOKED,
-        /** Demasiadas peticiones (rate limit excedido) */
-        TOO_MANY_REQUESTS
+        REFRESH_TOKEN_REVOKED
     }
 
     /**

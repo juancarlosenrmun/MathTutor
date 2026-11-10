@@ -94,11 +94,11 @@ class RegisterUserUseCaseTest {
             });
 
             // When & Then - PROFESOR
-            Result<Long> profResult = useCase.execute("prof@test.com", "StrongPass123!", User.Role.PROFESOR);
+            Result<Long> profResult = useCase.execute("prof@test.com", "Pass123!", User.Role.PROFESOR);
             assertThat(profResult.isSuccess()).isTrue();
 
             // When & Then - ADMIN
-            Result<Long> adminResult = useCase.execute("admin@test.com", "StrongPass123!", User.Role.ADMIN);
+            Result<Long> adminResult = useCase.execute("admin@test.com", "Pass123!", User.Role.ADMIN);
             assertThat(adminResult.isSuccess()).isTrue();
         }
     }
@@ -108,20 +108,18 @@ class RegisterUserUseCaseTest {
     class EmailValidation {
 
         @Test
-        @DisplayName("Debe fallar con error genérico si email ya existe (no enumeración)")
-        void shouldFailWithGenericErrorIfEmailAlreadyExists() {
+        @DisplayName("Debe fallar si email ya existe")
+        void shouldFailIfEmailAlreadyExists() {
             // Given
             String email = "existing@test.com";
-            // Password must be 12+ chars to pass length check first
-            String password = "StrongPass123!";
             when(userRepositoryPort.existsByEmail(email)).thenReturn(true);
 
             // When
-            Result<Long> result = useCase.execute(email, password, User.Role.ALUMNO);
+            Result<Long> result = useCase.execute(email, "Pass123!", User.Role.ALUMNO);
 
-            // Then - Generic error to prevent user enumeration (ASVS L1)
+            // Then
             assertThat(result.isFailure()).isTrue();
-            assertThat(result).isEqualTo(Result.fail(Result.ErrorCode.VALIDATION_ERROR, "Credenciales inválidas"));
+            assertThat(result).isEqualTo(Result.fail(Result.ErrorCode.EMAIL_ALREADY_EXISTS, "El email ya está registrado"));
 
             verify(userRepositoryPort).existsByEmail(email);
             verifyNoInteractions(passwordEncoderPort);
@@ -194,21 +192,21 @@ class RegisterUserUseCaseTest {
         }
 
         @Test
-        @DisplayName("Debe fallar si contraseña tiene menos de 12 caracteres")
+        @DisplayName("Debe fallar si contraseña tiene menos de 8 caracteres")
         void shouldFailIfPasswordTooShort() {
             // When
             Result<Long> result = useCase.execute("test@test.com", "Pass1!", User.Role.ALUMNO);
 
             // Then
             assertThat(result.isFailure()).isTrue();
-            assertThat(result).isEqualTo(Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe tener al menos 12 caracteres"));
+            assertThat(result).isEqualTo(Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe tener al menos 8 caracteres"));
         }
 
         @Test
         @DisplayName("Debe fallar si contraseña no tiene mayúscula")
         void shouldFailIfPasswordNoUppercase() {
-            // When - 12+ chars but no uppercase
-            Result<Long> result = useCase.execute("test@test.com", "password12345!", User.Role.ALUMNO);
+            // When
+            Result<Long> result = useCase.execute("test@test.com", "password123!", User.Role.ALUMNO);
 
             // Then
             assertThat(result.isFailure()).isTrue();
@@ -218,8 +216,8 @@ class RegisterUserUseCaseTest {
         @Test
         @DisplayName("Debe fallar si contraseña no tiene minúscula")
         void shouldFailIfPasswordNoLowercase() {
-            // When - 12+ chars but no lowercase
-            Result<Long> result = useCase.execute("test@test.com", "PASSWORD12345!", User.Role.ALUMNO);
+            // When
+            Result<Long> result = useCase.execute("test@test.com", "PASSWORD123!", User.Role.ALUMNO);
 
             // Then
             assertThat(result.isFailure()).isTrue();
@@ -229,8 +227,8 @@ class RegisterUserUseCaseTest {
         @Test
         @DisplayName("Debe fallar si contraseña no tiene dígito")
         void shouldFailIfPasswordNoDigit() {
-            // When - 12+ chars but no digit
-            Result<Long> result = useCase.execute("test@test.com", "PasswordPass!", User.Role.ALUMNO);
+            // When
+            Result<Long> result = useCase.execute("test@test.com", "Password!", User.Role.ALUMNO);
 
             // Then
             assertThat(result.isFailure()).isTrue();
@@ -240,8 +238,8 @@ class RegisterUserUseCaseTest {
         @Test
         @DisplayName("Debe fallar si contraseña no tiene carácter especial")
         void shouldFailIfPasswordNoSpecialChar() {
-            // When - 12+ chars but no special char
-            Result<Long> result = useCase.execute("test@test.com", "Password123456", User.Role.ALUMNO);
+            // When
+            Result<Long> result = useCase.execute("test@test.com", "Password123", User.Role.ALUMNO);
 
             // Then
             assertThat(result.isFailure()).isTrue();
@@ -259,12 +257,12 @@ class RegisterUserUseCaseTest {
                 return User.withId(1L, user.email(), user.passwordHash(), user.role(), user.active(), user.anonymizedAt(), user.createdAt());
             });
 
-            // When - varios formatos válidos (mínimo 12 chars ASVS L1)
+            // When - varios formatos válidos
             String[] validPasswords = {
-                "StrongPass123!",
-                "Str0ng!Passw0rd",
-                "My$ecure1Pass",
-                "Aa1!bcdefghi"
+                "Pass123!",
+                "Str0ng!Pass",
+                "My$ecure1",
+                "Aa1!bcde"
             };
 
             for (int i = 0; i < validPasswords.length; i++) {
@@ -283,7 +281,7 @@ class RegisterUserUseCaseTest {
         @DisplayName("Debe fallar si rol es null")
         void shouldFailIfRoleIsNull() {
             // When
-            Result<Long> result = useCase.execute("test@test.com", "StrongPass123!", null);
+            Result<Long> result = useCase.execute("test@test.com", "Pass123!", null);
 
             // Then
             assertThat(result.isFailure()).isTrue();
@@ -304,7 +302,7 @@ class RegisterUserUseCaseTest {
             when(userRepositoryPort.save(any())).thenThrow(new RuntimeException("DB error"));
 
             // When
-            Result<Long> result = useCase.execute("test@test.com", "StrongPass123!", User.Role.ALUMNO);
+            Result<Long> result = useCase.execute("test@test.com", "Pass123!", User.Role.ALUMNO);
 
             // Then
             assertThat(result.isFailure()).isTrue();

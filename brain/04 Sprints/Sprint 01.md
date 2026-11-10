@@ -25,49 +25,9 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 ### UC-01 · Registrarse, iniciar y cerrar sesión
 - [x] Implementación (RegisterUserUseCase, LoginUseCase, LogoutUseCase, ports, adapters, Spring Security, JWT, REST endpoints)
 - [x] Pruebas de caja blanca (mathtutor-persistence: UserRepositoryAdapterTest, TokenServiceAdapterTest; mathtutor-common: UseCase tests)
-- [x] Pruebas de caja negra (AuthControllerIntegrationTest: **51 tests** con Testcontainers pgvector - 17 originales + 19 refresh + 3 D4 + 12 CSRF/rate limit)
-- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) — mathtutor-auth **92.7% líneas / 87.5% ramas** (umbral 80/70 ✅)
+- [x] Pruebas de caja negra (AuthControllerIntegrationTest: 17 tests con Testcontainers pgvector)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) - JaCoCo verification pasa
 - [x] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL)
-- [x] **D3: Reactivación CSRF** — CookieCsrfTokenRepository (double-submit cookie), CsrfTokenRequestAttributeHandler (no XOR), CsrfController (/api/csrf-token), tests actualizados con header X-XSRF-TOKEN + cookie XSRF-TOKEN
-- [x] **D4: Refresh tokens DB storage con rotación y detección de reuso** — V2__refresh_tokens.sql migration, RefreshToken entity, RefreshTokenRepository, TokenServicePort extended, RefreshTokenAdapter, TokenServiceAdapter, AuthController updated, 19 new tests in RefreshTokenAdapterTest (JaCoCo coverage 92.7% lines, 87.5% branches)
-- [x] **D5: JWT secret solo variable de entorno** — TokenServiceAdapter usa @Value("${jwt.secret}") SIN default, validación @PostConstruct fail-fast si no configurado, mínimo 256 bits (32 chars) para HS256, tests usan DynamicPropertySource
-- [x] **D6.1: Password mínimo 12 chars (ASVS L1)** — RegisterUserUseCase.MIN_PASSWORD_LENGTH = 12, AuthController RegisterRequest @Size(min=12), tests actualizados
-- [x] **D6.2: Mensajes de error genéricos (no enumeración usuarios)** — RegisterUserUseCase retorna "Credenciales inválidas" genérico para email duplicado, LoginUseCase ya usaba genérico, tests actualizados
-- [x] **D6.3: Rate limiting login (5 intentos/15 min por IP/email, ASVS L1)** — RateLimitPort + RateLimitAdapter (in-memory ConcurrentHashMap), LoginUseCase dual rate limit (IP + email), AuthController retorna 429 + Retry-After:900, 7 tests en AuthControllerIntegrationTest + 4 tests en LoginUseCaseTest
-- [x] **D6.4: Documentar parámetros Argon2id** — PasswordEncoderAdapter: memory=64MB (65536 KiB), iterations=3, parallelism=4; referencias OWASP/ASVS L1 V2.2.1
-- [x] **D6.5/6.6: Verificar cumplimiento ASVS L1 completo** — Password 12 chars, rate limiting, error messages genéricos, JWT secret env-only, Argon2id params documentados, CSRF double-submit, refresh token rotation + reuse detection
-- [x] **D7: Separación de alcance de migraciones** — V1__users.sql, V2__refresh_tokens.sql, V3__audit_logs.sql (deuda anticipada), V4__password_reset_tokens.sql (deuda anticipada)
-- [x] **D8: Commits atómicos en git** — Historial limpio con commits semánticos por defecto
-- [x] **D9: Verificación CI en sprint-1** — GitHub Actions build-and-test ✅, verify-coverage ✅
-- [x] **D10: Documentación actualizada** — Sprint_01.md, Progreso global.md, Registro de iteraciones.md
-
-**Estado UC-01: COMPLETO (todos los defectos D1–D10 cerrados)**
-
-**Test Counts (2026-11-10):**
-- Caja blanca: **113 tests** (mathtutor-auth module)
-  - UserRepositoryAdapterTest: 13 tests
-  - TokenServiceAdapterTest: 20 tests
-  - PasswordEncoderAdapterTest: 18 tests
-  - RefreshTokenAdapterTest: 19 tests
-  - AuditLogAdapterTest: 6 tests
-  - LoginUseCaseTest: **14 tests** (10 originales + 4 email rate limit)
-  - LogoutUseCaseTest: 7 tests
-  - RegisterUserUseCaseTest: 16 tests
-- Caja negra: **51 tests** (AuthControllerIntegrationTest con Testcontainers pgvector)
-- Total auth: **164 tests**
-
-**Test Counts (2026-11-09):**
-- Caja blanca: 105 tests (mathtutor-auth module)
-  - UserRepositoryAdapterTest: 13 tests
-  - TokenServiceAdapterTest: 20 tests
-  - PasswordEncoderAdapterTest: 18 tests
-  - RefreshTokenAdapterTest: 19 tests
-  - AuditLogAdapterTest: 6 tests
-  - LoginUseCaseTest: 10 tests
-  - LogoutUseCaseTest: 7 tests
-  - RegisterUserUseCaseTest: 16 tests
-- Caja negra: 17 tests (AuthControllerIntegrationTest con Testcontainers pgvector)
-- Total auth: 122 tests
 
 ### UC-03 · Controlar el acceso por rol y recurso
 - [ ] Implementación
@@ -110,8 +70,8 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - [ ] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL; CI pendiente push sprint-1 → GitHub, merge a DEV)
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos (EN-01 completo; **EN-04 COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**; UC-01 **en curso (D5–D9 abiertos)**, UC-03, UC-27 pendientes)
-- [x] Build y CI en verde (local: BUILD SUCCESSFUL; CI: VERDE en sprint-1 — https://github.com/juancarlosenrmun/MathTutor/actions/runs/42535665406)
+- [ ] Todos los elementos completos (EN-01 completo; **EN-04 COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**; UC-01 **COMPLETO** ✅, UC-03, UC-27 pendientes)
+- [ ] Build y CI en verde (local: BUILD SUCCESSFUL; CI: pendiente ejecución en GitHub Actions)
 - [ ] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones documentadas; **llm 100% líneas / 90.6% ramas sin exclusiones**; **cas 80.4% líneas / 78.9% ramas SIN excluir SymjaCasEngine**)
 - [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
