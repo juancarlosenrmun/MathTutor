@@ -52,6 +52,8 @@ dependencies {
     testImplementation("org.assertj:assertj-core")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
     testImplementation("io.projectreactor:reactor-test")
+    // JUnit Platform Launcher required for Gradle JVM Test Suite
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
 
     // Testcontainers for integration tests
     testImplementation("org.testcontainers:junit-jupiter")

@@ -35,6 +35,8 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter")
     testImplementation("org.assertj:assertj-core")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
+    // JUnit Platform Launcher required for Gradle JVM Test Suite
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
 }
 
 tasks.withType<Test> {
