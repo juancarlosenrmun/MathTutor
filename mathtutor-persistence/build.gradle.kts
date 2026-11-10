@@ -26,6 +26,14 @@ dependencies {
     // pgvector - using pgvector-java library
     implementation("com.pgvector:pgvector:0.1.6")
 
+    // Argon2id for password hashing (RNF-05)
+    implementation("de.mkammerer:argon2-jvm:2.11")
+
+    // JWT for token service (RNF-05, RNF-11)
+    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+
     // Project dependencies
     implementation(project(":mathtutor-common"))
 
