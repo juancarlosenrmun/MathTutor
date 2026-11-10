@@ -13,7 +13,9 @@ jobs:
 
     # No Docker env vars needed - integration tests are skipped on CI via @EnabledIfEnvironmentVariable
     # Unit tests use H2 in-memory database, no Docker required.
-    # TESTCONTAINERS_RYUK_DISABLED is set in mathtutor-application/src/test/resources/.testcontainers.properties
+    # Disable Ryuk to avoid Docker issues
+    env:
+      TESTCONTAINERS_RYUK_DISABLED: "true"
 
     steps:
       - name: Checkout repository
