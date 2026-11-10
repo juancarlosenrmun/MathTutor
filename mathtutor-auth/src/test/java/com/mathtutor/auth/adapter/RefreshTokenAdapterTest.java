@@ -15,6 +15,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +29,9 @@ import static org.mockito.Mockito.*;
 /**
  * Tests para RefreshTokenAdapter.
  * Verifica almacenamiento, validación, rotación y detección de reuso de refresh tokens.
+ * <p>
+ * Refresh tokens usan SHA-256 para hash indexado (token aleatorio 256 bits).
+ * Argon2id (via PasswordEncoderPort) se usa SOLO para contraseñas.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("RefreshTokenAdapter")
@@ -38,13 +44,30 @@ class RefreshTokenAdapterTest {
     private UserRepository userRepository;
 
     @Mock
-    private PasswordEncoderPort passwordEncoder;
+    private PasswordEncoderPort passwordEncoder; // No se usa para refresh tokens, solo para contraseñas
 
     private RefreshTokenAdapter adapter;
 
     @BeforeEach
     void setUp() {
         adapter = new RefreshTokenAdapter(refreshTokenRepository, userRepository, passwordEncoder);
+    }
+
+    /**
+     * Calcula SHA-256 hex para usar en tests (mirror del método privado del adapter).
+     */
+    private static String sha256Hex(String rawToken) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(rawToken.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(64);
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
     }
 
     @Nested
@@ -56,10 +79,9 @@ class RefreshTokenAdapterTest {
         void shouldStoreWithNewFamilyIdAndReturnRawToken() {
             // Given
             String rawToken = "raw-refresh-token-jwt";
-            String encodedHash = "argon2id$hash$value";
-            when(passwordEncoder.encode(rawToken)).thenReturn(encodedHash);
+            String expectedHash = sha256Hex(rawToken);
 
-            RefreshToken savedToken = new RefreshToken(encodedHash, 1L, "family-123", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
+            RefreshToken savedToken = new RefreshToken(expectedHash, 1L, "family-123", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
             savedToken.setId(1L);
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(savedToken);
 
@@ -68,9 +90,10 @@ class RefreshTokenAdapterTest {
 
             // Then
             assertThat(result).isEqualTo(rawToken);
-            verify(passwordEncoder).encode(rawToken);
+            // passwordEncoder NO debe llamarse para refresh tokens
+            verify(passwordEncoder, never()).encode(anyString());
             verify(refreshTokenRepository).save(argThat(token ->
-                    token.getTokenHash().equals(encodedHash) &&
+                    token.getTokenHash().equals(expectedHash) &&
                     token.getUserId() == 1L &&
                     token.getFamilyId() != null &&
                     !token.getFamilyId().isBlank() &&
@@ -82,7 +105,6 @@ class RefreshTokenAdapterTest {
         @DisplayName("Debe generar familyId único en cada llamada")
         void shouldGenerateUniqueFamilyIdEachCall() {
             // Given
-            when(passwordEncoder.encode(anyString())).thenReturn("hash");
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(invocation -> {
                 RefreshToken t = invocation.getArgument(0);
                 t.setId(1L);
@@ -97,6 +119,7 @@ class RefreshTokenAdapterTest {
             assertThat(result1).isEqualTo("token1");
             assertThat(result2).isEqualTo("token2");
             verify(refreshTokenRepository, times(2)).save(any(RefreshToken.class));
+            verify(passwordEncoder, never()).encode(anyString());
         }
     }
 
@@ -110,10 +133,9 @@ class RefreshTokenAdapterTest {
             // Given
             String rawToken = "raw-refresh-token-jwt";
             String familyId = "existing-family-456";
-            String encodedHash = "argon2id$hash$value";
-            when(passwordEncoder.encode(rawToken)).thenReturn(encodedHash);
+            String expectedHash = sha256Hex(rawToken);
 
-            RefreshToken savedToken = new RefreshToken(encodedHash, 1L, familyId, Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
+            RefreshToken savedToken = new RefreshToken(expectedHash, 1L, familyId, Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
             savedToken.setId(2L);
             when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(savedToken);
 
@@ -122,9 +144,9 @@ class RefreshTokenAdapterTest {
 
             // Then
             assertThat(result).isEqualTo(rawToken);
-            verify(passwordEncoder).encode(rawToken);
+            verify(passwordEncoder, never()).encode(anyString());
             verify(refreshTokenRepository).save(argThat(token ->
-                    token.getTokenHash().equals(encodedHash) &&
+                    token.getTokenHash().equals(expectedHash) &&
                     token.getUserId() == 1L &&
                     token.getFamilyId().equals(familyId)
             ));
@@ -140,7 +162,7 @@ class RefreshTokenAdapterTest {
         void shouldReturnValidationResultWhenTokenValid() {
             // Given
             String rawToken = "valid-raw-token";
-            String tokenHash = "argon2id$hash$value";
+            String tokenHash = sha256Hex(rawToken);
             String familyId = "family-123";
             Instant now = Instant.now();
             Instant expiresAt = now.plusSeconds(7 * 24 * 60 * 60);
@@ -149,8 +171,7 @@ class RefreshTokenAdapterTest {
             tokenEntity.setId(42L);
             tokenEntity.setRevoked(false);
 
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(true);
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(tokenEntity));
 
             User userEntity = User.builder()
                     .id(1L)
@@ -172,24 +193,24 @@ class RefreshTokenAdapterTest {
             assertThat(validation.role()).isEqualTo("ALUMNO");
             assertThat(validation.familyId()).isEqualTo(familyId);
             assertThat(validation.tokenId()).isEqualTo("42");
+            verify(passwordEncoder, never()).matches(anyString(), anyString());
         }
 
         @Test
-        @DisplayName("Debe retornar empty cuando token no coincide con ningún hash")
-        void shouldReturnEmptyWhenTokenDoesNotMatchAnyHash() {
+        @DisplayName("Debe retornar empty cuando token no existe en BD")
+        void shouldReturnEmptyWhenTokenDoesNotExist() {
             // Given
             String rawToken = "invalid-token";
-            String tokenHash = "argon2id$hash$value";
+            String tokenHash = sha256Hex(rawToken);
 
-            RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, "family-1", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(false);
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.empty());
 
             // When
             Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
 
             // Then
             assertThat(result).isEmpty();
+            verify(passwordEncoder, never()).matches(anyString(), anyString());
         }
 
         @Test
@@ -197,7 +218,7 @@ class RefreshTokenAdapterTest {
         void shouldReturnEmptyWhenTokenAlreadyRevoked() {
             // Given
             String rawToken = "revoked-token";
-            String tokenHash = "argon2id$hash$value";
+            String tokenHash = sha256Hex(rawToken);
             String familyId = "family-reuse";
 
             RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, familyId, Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
@@ -205,8 +226,7 @@ class RefreshTokenAdapterTest {
             tokenEntity.setRevoked(true); // Ya revocado
             tokenEntity.setRevokedAt(Instant.now());
 
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(true);
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(tokenEntity));
 
             // When
             Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
@@ -222,11 +242,10 @@ class RefreshTokenAdapterTest {
         void shouldReturnEmptyWhenTokenExpired() {
             // Given
             String rawToken = "expired-token";
-            String tokenHash = "argon2id$hash$value";
+            String tokenHash = sha256Hex(rawToken);
 
             RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, "family-1", Instant.now().minusSeconds(3600), Instant.now()); // Expirado hace 1 hora
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(true);
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(tokenEntity));
 
             // When
             Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
@@ -241,11 +260,12 @@ class RefreshTokenAdapterTest {
         void shouldReturnEmptyWhenUserNotFound() {
             // Given
             String rawToken = "valid-token";
-            String tokenHash = "argon2id$hash$value";
+            String tokenHash = sha256Hex(rawToken);
 
             RefreshToken tokenEntity = new RefreshToken(tokenHash, 999L, "family-1", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(true);
+            tokenEntity.setId(999L);
+            tokenEntity.setRevoked(false);
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(tokenEntity));
             when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
             // When
@@ -256,49 +276,15 @@ class RefreshTokenAdapterTest {
         }
 
         @Test
-        @DisplayName("Debe manejar excepción de passwordEncoder.matches y continuar con siguiente token")
-        void shouldHandleExceptionInMatchesAndContinue() {
-            // Given
-            String rawToken = "valid-token";
-            String badHash = "bad-hash";
-            String goodHash = "argon2id$hash$value";
-
-            RefreshToken badToken = new RefreshToken(badHash, 1L, "family-1", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            RefreshToken goodToken = new RefreshToken(goodHash, 2L, "family-2", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            goodToken.setId(2L);
-            goodToken.setRevoked(false);
-
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(badToken, goodToken));
-            when(passwordEncoder.matches(rawToken, badHash)).thenThrow(new RuntimeException("Invalid hash format"));
-            when(passwordEncoder.matches(rawToken, goodHash)).thenReturn(true);
-
-            User userEntity = User.builder()
-                    .id(2L)
-                    .email("test2@example.com")
-                    .passwordHash("pwd")
-                    .role(User.Role.PROFESOR)
-                    .active(true)
-                    .build();
-            when(userRepository.findById(2L)).thenReturn(Optional.of(userEntity));
-
-            // When
-            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
-
-            // Then
-            assertThat(result).isPresent();
-            assertThat(result.get().userId()).isEqualTo(2L);
-            assertThat(result.get().email()).isEqualTo("test2@example.com");
-            assertThat(result.get().role()).isEqualTo("PROFESOR");
-        }
-
-        @Test
         @DisplayName("Debe retornar empty cuando BD está vacía")
         void shouldReturnEmptyWhenDatabaseEmpty() {
             // Given
-            when(refreshTokenRepository.findAll()).thenReturn(List.of());
+            String rawToken = "any-token";
+            String tokenHash = sha256Hex(rawToken);
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.empty());
 
             // When
-            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken("any-token");
+            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
 
             // Then
             assertThat(result).isEmpty();
@@ -460,6 +446,125 @@ class RefreshTokenAdapterTest {
             // Then
             assertThat(result).isPresent();
             assertThat(result.get().getId()).isEqualTo(1L);
+        }
+    }
+
+    @Nested
+    @DisplayName("isRefreshTokenRevoked()")
+    class IsRefreshTokenRevoked {
+
+        @Test
+        @DisplayName("Debe retornar true si token existe y está revocado")
+        void shouldReturnTrueWhenTokenExistsAndRevoked() {
+            // Given
+            String rawToken = "revoked-token";
+            String tokenHash = sha256Hex(rawToken);
+
+            RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, "family-1", Instant.now().plusSeconds(3600), Instant.now());
+            tokenEntity.setRevoked(true);
+
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(tokenEntity));
+
+            // When
+            boolean result = adapter.isRefreshTokenRevoked(rawToken);
+
+            // Then
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("Debe retornar false si token no existe")
+        void shouldReturnFalseWhenTokenNotExists() {
+            // Given
+            String rawToken = "non-existent-token";
+            String tokenHash = sha256Hex(rawToken);
+
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.empty());
+
+            // When
+            boolean result = adapter.isRefreshTokenRevoked(rawToken);
+
+            // Then
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("Debe retornar false si token existe pero no está revocado")
+        void shouldReturnFalseWhenTokenExistsButNotRevoked() {
+            // Given
+            String rawToken = "active-token";
+            String tokenHash = sha256Hex(rawToken);
+
+            RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, "family-1", Instant.now().plusSeconds(3600), Instant.now());
+            tokenEntity.setRevoked(false);
+
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(tokenEntity));
+
+            // When
+            boolean result = adapter.isRefreshTokenRevoked(rawToken);
+
+            // Then
+            assertThat(result).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("getFamilyIdForRevokedToken()")
+    class GetFamilyIdForRevokedToken {
+
+        @Test
+        @DisplayName("Debe retornar familyId si token existe y está revocado")
+        void shouldReturnFamilyIdWhenTokenRevoked() {
+            // Given
+            String rawToken = "revoked-token";
+            String tokenHash = sha256Hex(rawToken);
+            String familyId = "family-reuse";
+
+            RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, familyId, Instant.now().plusSeconds(3600), Instant.now());
+            tokenEntity.setRevoked(true);
+
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(tokenEntity));
+
+            // When
+            String result = adapter.getFamilyIdForRevokedToken(rawToken);
+
+            // Then
+            assertThat(result).isEqualTo(familyId);
+        }
+
+        @Test
+        @DisplayName("Debe retornar null si token no existe")
+        void shouldReturnNullWhenTokenNotExists() {
+            // Given
+            String rawToken = "non-existent-token";
+            String tokenHash = sha256Hex(rawToken);
+
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.empty());
+
+            // When
+            String result = adapter.getFamilyIdForRevokedToken(rawToken);
+
+            // Then
+            assertThat(result).isNull();
+        }
+
+        @Test
+        @DisplayName("Debe retornar null si token existe pero no está revocado")
+        void shouldReturnNullWhenTokenNotRevoked() {
+            // Given
+            String rawToken = "active-token";
+            String tokenHash = sha256Hex(rawToken);
+
+            RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, "family-1", Instant.now().plusSeconds(3600), Instant.now());
+            tokenEntity.setRevoked(false);
+
+            when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(tokenEntity));
+
+            // When
+            String result = adapter.getFamilyIdForRevokedToken(rawToken);
+
+            // Then
+            assertThat(result).isNull();
         }
     }
 }

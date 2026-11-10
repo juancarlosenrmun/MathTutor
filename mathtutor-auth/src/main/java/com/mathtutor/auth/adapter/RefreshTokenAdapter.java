@@ -10,6 +10,9 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,18 +20,53 @@ import java.util.UUID;
 /**
  * Adaptador para almacenamiento de refresh tokens en base de datos.
  * Implementa rotación de tokens con family tracking y detección de reuso (revocación de familia completa).
+ * <p>
+ * Refresh tokens son aleatorios de 256 bits → hash SHA-256 para búsqueda indexada + comparación en tiempo constante.
+ * Argon2id se usa SOLO para contraseñas (baja entropía). No para tokens de alta entropía.
  */
 @Component
 public class RefreshTokenAdapter {
 
     private final RefreshTokenRepository repository;
     private final UserRepository userRepository;
-    private final PasswordEncoderPort passwordEncoder;
+    private final PasswordEncoderPort passwordEncoder; // Solo para contraseñas, no para refresh tokens
 
     public RefreshTokenAdapter(RefreshTokenRepository repository, UserRepository userRepository, PasswordEncoderPort passwordEncoder) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    /**
+     * Calcula SHA-256 del token (hex, 64 chars).
+     * Usado para búsqueda indexada en BD (token_hash único).
+     */
+    private static String sha256Hex(String rawToken) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(rawToken.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(64);
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
+    }
+
+    /**
+     * Comparación en tiempo constante de dos hashes hex.
+     */
+    private static boolean constantTimeEquals(String a, String b) {
+        if (a == null || b == null || a.length() != b.length()) {
+            return false;
+        }
+        int result = 0;
+        for (int i = 0; i < a.length(); i++) {
+            result |= a.charAt(i) ^ b.charAt(i);
+        }
+        return result == 0;
     }
 
     /**
@@ -51,8 +89,8 @@ public class RefreshTokenAdapter {
      */
     @Transactional
     public String storeRefreshTokenWithFamily(Long userId, String email, String role, String rawToken, String familyId) {
-        // Hash del token con Argon2id
-        String tokenHash = passwordEncoder.encode(rawToken);
+        // Hash SHA-256 para búsqueda indexada (token aleatorio 256 bits → Argon2id innecesario)
+        String tokenHash = sha256Hex(rawToken);
 
         Instant now = Instant.now();
         Instant expiresAt = now.plusSeconds(7 * 24 * 60 * 60); // 7 días
@@ -64,47 +102,52 @@ public class RefreshTokenAdapter {
 
     /**
      * Valida un refresh token contra la BD.
-     * Verifica: hash coincide, no revocado, no expirado.
+     * Busca por token_hash (SHA-256) → verifica hash en tiempo constante → chequea revocado/expirado.
      * <p>
      * Read-only transacción: solo lectura. La detección de reuso se maneja
      * en el endpoint /refresh, no aquí.
      */
     @Transactional(readOnly = true)
     public Optional<TokenServicePort.TokenValidationResult> validateRefreshToken(String rawToken) {
-        // Buscar todos los tokens y verificar hash
-        var allTokens = repository.findAll();
+        String tokenHash = sha256Hex(rawToken);
+        var tokenOpt = repository.findByTokenHash(tokenHash);
 
-        for (var token : allTokens) {
-            try {
-                if (passwordEncoder.matches(rawToken, token.getTokenHash())) {
-                    // Verificar no revocado
-                    if (token.isRevoked()) {
-                        // Token ya revocado - no revocar familia aquí (solo en /refresh)
-                        return Optional.empty();
-                    }
-                    // Verificar no expirado
-                    if (token.getExpiresAt().isBefore(Instant.now())) {
-                        return Optional.empty();
-                    }
-
-                    // Obtener email y role del usuario
-                    var userOpt = userRepository.findById(token.getUserId());
-                    String email = userOpt.map(User::getEmail).orElse("");
-                    String role = userOpt.map(u -> u.getRole().name()).orElse("");
-
-                    return Optional.of(new TokenServicePort.TokenValidationResult(
-                        token.getUserId(),
-                        email,
-                        role,
-                        token.getFamilyId(),
-                        token.getId().toString()
-                    ));
-                }
-            } catch (Exception e) {
-                // Hash inválido, continuar con siguiente
-            }
+        if (tokenOpt.isEmpty()) {
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        var token = tokenOpt.get();
+
+        // Verificación en tiempo constante (defensa en profundidad)
+        if (!constantTimeEquals(token.getTokenHash(), tokenHash)) {
+            return Optional.empty();
+        }
+
+        // Verificar no revocado
+        if (token.isRevoked()) {
+            return Optional.empty();
+        }
+        // Verificar no expirado
+        if (token.getExpiresAt().isBefore(Instant.now())) {
+            return Optional.empty();
+        }
+
+        // Obtener email y role del usuario
+        var userOpt = userRepository.findById(token.getUserId());
+        if (userOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        User user = userOpt.get();
+        String email = user.getEmail();
+        String role = user.getRole().name();
+
+        return Optional.of(new TokenServicePort.TokenValidationResult(
+            token.getUserId(),
+            email,
+            role,
+            token.getFamilyId(),
+            token.getId().toString()
+        ));
     }
 
     /**
@@ -161,18 +204,9 @@ public class RefreshTokenAdapter {
      */
     @Transactional(readOnly = true)
     public boolean isRefreshTokenRevoked(String rawToken) {
-        var allTokens = repository.findAll();
-
-        for (var token : allTokens) {
-            try {
-                if (passwordEncoder.matches(rawToken, token.getTokenHash())) {
-                    return token.isRevoked();
-                }
-            } catch (Exception e) {
-                // Hash inválido, continuar con siguiente
-            }
-        }
-        return false;
+        String tokenHash = sha256Hex(rawToken);
+        var tokenOpt = repository.findByTokenHash(tokenHash);
+        return tokenOpt.map(RefreshToken::isRevoked).orElse(false);
     }
 
     /**
@@ -183,19 +217,8 @@ public class RefreshTokenAdapter {
      */
     @Transactional(readOnly = true)
     public String getFamilyIdForRevokedToken(String rawToken) {
-        var allTokens = repository.findAll();
-
-        for (var token : allTokens) {
-            try {
-                if (passwordEncoder.matches(rawToken, token.getTokenHash())) {
-                    if (token.isRevoked()) {
-                        return token.getFamilyId();
-                    }
-                }
-            } catch (Exception e) {
-                // Hash inválido, continuar con siguiente
-            }
-        }
-        return null;
+        String tokenHash = sha256Hex(rawToken);
+        var tokenOpt = repository.findByTokenHash(tokenHash);
+        return tokenOpt.filter(RefreshToken::isRevoked).map(RefreshToken::getFamilyId).orElse(null);
     }
 }
