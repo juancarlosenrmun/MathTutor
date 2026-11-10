@@ -11,6 +11,13 @@ import java.util.Optional;
  * Caso de uso para inicio de sesión.
  * Busca usuario activo, verifica contraseña y publica evento de auditoría.
  * Incluye rate limiting para prevenir ataques de fuerza bruta (ASVS L1).
+ * <p>
+ * Rate limiting dual:
+ * <ul>
+ *   <li>IP-based: previene ataques distribuidos (botnets)</li>
+ *   <li>Email-based: previene credential stuffing contra cuentas específicas</li>
+ * </ul>
+ * Ambos usan mismo límite: 5 intentos / 15 min (ASVS L1).
  */
 public class LoginUseCase {
 
@@ -37,7 +44,7 @@ public class LoginUseCase {
      *
      * @param email    email del usuario
      * @param password contraseña en texto plano
-     * @param ipAddress dirección IP del cliente (para auditoría)
+     * @param ipAddress dirección IP del cliente (para auditoría y rate limiting IP)
      * @return Result con LoginResult (userId, role) o error
      */
     public Result<LoginResult> execute(String email, String password, String ipAddress) {
@@ -54,11 +61,20 @@ public class LoginUseCase {
 
         // Rate limiting por IP (ASVS L1: 5 intentos / 15 min)
         // Usamos IP para no revelar si el email existe (previene enumeración)
-        String rateLimitKey = "login:ip:" + ipAddress;
-        System.out.println("LoginUseCase.execute: rateLimitKey=" + rateLimitKey);
-        if (!rateLimitPort.tryConsume(rateLimitKey, MAX_LOGIN_ATTEMPTS, LOGIN_WINDOW)) {
+        String ipRateLimitKey = "login:ip:" + ipAddress;
+        System.out.println("LoginUseCase.execute: ipRateLimitKey=" + ipRateLimitKey);
+        if (!rateLimitPort.tryConsume(ipRateLimitKey, MAX_LOGIN_ATTEMPTS, LOGIN_WINDOW)) {
             auditLogPort.save(new UserLoginFailedEvent(normalizedEmail, "RATE_LIMIT_EXCEEDED", ipAddress));
             return Result.fail(Result.ErrorCode.TOO_MANY_REQUESTS, "Demasiados intentos de login. Intente de nuevo en 15 minutos.");
+        }
+
+        // Rate limiting por email (ASVS L1: 5 intentos / 15 min)
+        // Previene credential stuffing contra cuentas específicas
+        String emailRateLimitKey = "login:email:" + normalizedEmail;
+        System.out.println("LoginUseCase.execute: emailRateLimitKey=" + emailRateLimitKey);
+        if (!rateLimitPort.tryConsume(emailRateLimitKey, MAX_LOGIN_ATTEMPTS, LOGIN_WINDOW)) {
+            auditLogPort.save(new UserLoginFailedEvent(normalizedEmail, "RATE_LIMIT_EXCEEDED_EMAIL", ipAddress));
+            return Result.fail(Result.ErrorCode.TOO_MANY_REQUESTS, "Demasiados intentos para esta cuenta. Intente de nuevo en 15 minutos.");
         }
 
         // Buscar usuario activo
@@ -76,8 +92,9 @@ public class LoginUseCase {
             return Result.fail(Result.ErrorCode.INVALID_PASSWORD, "Credenciales inválidas");
         }
 
-        // Login exitoso - resetear rate limit para esta IP
-        rateLimitPort.reset(rateLimitKey);
+        // Login exitoso - resetear rate limits para esta IP y email
+        rateLimitPort.reset(ipRateLimitKey);
+        rateLimitPort.reset(emailRateLimitKey);
 
         // Éxito - publicar evento
         auditLogPort.save(new UserLoggedInEvent(user.id(), normalizedEmail, ipAddress));

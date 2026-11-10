@@ -65,6 +65,9 @@ public class RefreshTokenAdapter {
     /**
      * Valida un refresh token contra la BD.
      * Verifica: hash coincide, no revocado, no expirado.
+     * <p>
+     * Read-only transacción: solo lectura. La detección de reuso se maneja
+     * en el endpoint /refresh, no aquí.
      */
     @Transactional(readOnly = true)
     public Optional<TokenServicePort.TokenValidationResult> validateRefreshToken(String rawToken) {
@@ -76,8 +79,7 @@ public class RefreshTokenAdapter {
                 if (passwordEncoder.matches(rawToken, token.getTokenHash())) {
                     // Verificar no revocado
                     if (token.isRevoked()) {
-                        // DETECCIÓN DE REUSO: Token ya revocado pero se intenta usar -> revocar familia completa
-                        revokeTokenFamily(token.getFamilyId());
+                        // Token ya revocado - no revocar familia aquí (solo en /refresh)
                         return Optional.empty();
                     }
                     // Verificar no expirado
@@ -149,5 +151,51 @@ public class RefreshTokenAdapter {
     @Transactional(readOnly = true)
     public Optional<RefreshToken> findActiveByUserId(Long userId) {
         return repository.findByUserIdAndRevokedFalse(userId).stream().findFirst();
+    }
+
+    /**
+     * Verifica si un refresh token existe en BD pero está revocado (indicando reuso).
+     *
+     * @param rawToken token de refresco en claro
+     * @return true si el token existe y está revocado
+     */
+    @Transactional(readOnly = true)
+    public boolean isRefreshTokenRevoked(String rawToken) {
+        var allTokens = repository.findAll();
+
+        for (var token : allTokens) {
+            try {
+                if (passwordEncoder.matches(rawToken, token.getTokenHash())) {
+                    return token.isRevoked();
+                }
+            } catch (Exception e) {
+                // Hash inválido, continuar con siguiente
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Obtiene el familyId de un refresh token revocado (para revocar la familia completa).
+     *
+     * @param rawToken token de refresco en claro
+     * @return familyId si el token existe y está revocado, null en caso contrario
+     */
+    @Transactional(readOnly = true)
+    public String getFamilyIdForRevokedToken(String rawToken) {
+        var allTokens = repository.findAll();
+
+        for (var token : allTokens) {
+            try {
+                if (passwordEncoder.matches(rawToken, token.getTokenHash())) {
+                    if (token.isRevoked()) {
+                        return token.getFamilyId();
+                    }
+                }
+            } catch (Exception e) {
+                // Hash inválido, continuar con siguiente
+            }
+        }
+        return null;
     }
 }

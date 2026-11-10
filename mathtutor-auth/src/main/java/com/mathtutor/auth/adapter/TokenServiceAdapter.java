@@ -226,4 +226,14 @@ public class TokenServiceAdapter implements TokenServicePort {
     public void cleanupExpiredTokens() {
         refreshTokenAdapter.cleanupExpiredTokens();
     }
+
+    @Override
+    public boolean isRefreshTokenRevoked(String rawToken) {
+        return refreshTokenAdapter.isRefreshTokenRevoked(rawToken);
+    }
+
+    @Override
+    public String getFamilyIdForRevokedToken(String rawToken) {
+        return refreshTokenAdapter.getFamilyIdForRevokedToken(rawToken);
+    }
 }

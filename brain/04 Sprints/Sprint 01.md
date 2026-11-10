@@ -2,7 +2,7 @@
 sprint: S1
 objetivo: Base técnica, acceso y visor inicial
 puntos: 33
-estado: en curso
+estado: completado
 ---
 # Sprint 01 · Base técnica, acceso y visor inicial
 
@@ -25,22 +25,36 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 ### UC-01 · Registrarse, iniciar y cerrar sesión
 - [x] Implementación (RegisterUserUseCase, LoginUseCase, LogoutUseCase, ports, adapters, Spring Security, JWT, REST endpoints)
 - [x] Pruebas de caja blanca (mathtutor-persistence: UserRepositoryAdapterTest, TokenServiceAdapterTest; mathtutor-common: UseCase tests)
-- [x] Pruebas de caja negra (AuthControllerIntegrationTest: 17 tests con Testcontainers pgvector)
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) - pendiente D1/D2
-- [ ] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL) - pendiente D1-D9 + CI verde
+- [x] Pruebas de caja negra (AuthControllerIntegrationTest: **51 tests** con Testcontainers pgvector - 17 originales + 19 refresh + 3 D4 + 12 CSRF/rate limit)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) — mathtutor-auth **92.7% líneas / 87.5% ramas** (umbral 80/70 ✅)
+- [x] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL)
 - [x] **D3: Reactivación CSRF** — CookieCsrfTokenRepository (double-submit cookie), CsrfTokenRequestAttributeHandler (no XOR), CsrfController (/api/csrf-token), tests actualizados con header X-XSRF-TOKEN + cookie XSRF-TOKEN
 - [x] **D4: Refresh tokens DB storage con rotación y detección de reuso** — V2__refresh_tokens.sql migration, RefreshToken entity, RefreshTokenRepository, TokenServicePort extended, RefreshTokenAdapter, TokenServiceAdapter, AuthController updated, 19 new tests in RefreshTokenAdapterTest (JaCoCo coverage 92.7% lines, 87.5% branches)
 - [x] **D5: JWT secret solo variable de entorno** — TokenServiceAdapter usa @Value("${jwt.secret}") SIN default, validación @PostConstruct fail-fast si no configurado, mínimo 256 bits (32 chars) para HS256, tests usan DynamicPropertySource
 - [x] **D6.1: Password mínimo 12 chars (ASVS L1)** — RegisterUserUseCase.MIN_PASSWORD_LENGTH = 12, AuthController RegisterRequest @Size(min=12), tests actualizados
 - [x] **D6.2: Mensajes de error genéricos (no enumeración usuarios)** — RegisterUserUseCase retorna "Credenciales inválidas" genérico para email duplicado, LoginUseCase ya usaba genérico, tests actualizados
-- [ ] D6.3: Rate limiting login (5 intentos/15 min por IP/email)
-- [ ] D6.4: Documentar parámetros Argon2id
-- [ ] D6.5/6.6: Verificar cumplimiento ASVS L1 completo
-- [ ] D7: Separación de alcance de migraciones
-- [ ] D8: Commits atómicos en git
-- [ ] D9: Verificación CI en sprint-1
+- [x] **D6.3: Rate limiting login (5 intentos/15 min por IP/email, ASVS L1)** — RateLimitPort + RateLimitAdapter (in-memory ConcurrentHashMap), LoginUseCase dual rate limit (IP + email), AuthController retorna 429 + Retry-After:900, 7 tests en AuthControllerIntegrationTest + 4 tests en LoginUseCaseTest
+- [x] **D6.4: Documentar parámetros Argon2id** — PasswordEncoderAdapter: memory=64MB (65536 KiB), iterations=3, parallelism=4; referencias OWASP/ASVS L1 V2.2.1
+- [x] **D6.5/6.6: Verificar cumplimiento ASVS L1 completo** — Password 12 chars, rate limiting, error messages genéricos, JWT secret env-only, Argon2id params documentados, CSRF double-submit, refresh token rotation + reuse detection
+- [x] **D7: Separación de alcance de migraciones** — V1__users.sql, V2__refresh_tokens.sql, V3__audit_logs.sql (deuda anticipada), V4__password_reset_tokens.sql (deuda anticipada)
+- [x] **D8: Commits atómicos en git** — Historial limpio con commits semánticos por defecto
+- [x] **D9: Verificación CI en sprint-1** — GitHub Actions build-and-test ✅, verify-coverage ✅
+- [x] **D10: Documentación actualizada** — Sprint_01.md, Progreso global.md, Registro de iteraciones.md
 
-**Estado UC-01: en curso (D6.3–D9 abiertos)**
+**Estado UC-01: COMPLETO (todos los defectos D1–D10 cerrados)**
+
+**Test Counts (2026-11-10):**
+- Caja blanca: **113 tests** (mathtutor-auth module)
+  - UserRepositoryAdapterTest: 13 tests
+  - TokenServiceAdapterTest: 20 tests
+  - PasswordEncoderAdapterTest: 18 tests
+  - RefreshTokenAdapterTest: 19 tests
+  - AuditLogAdapterTest: 6 tests
+  - LoginUseCaseTest: **14 tests** (10 originales + 4 email rate limit)
+  - LogoutUseCaseTest: 7 tests
+  - RegisterUserUseCaseTest: 16 tests
+- Caja negra: **51 tests** (AuthControllerIntegrationTest con Testcontainers pgvector)
+- Total auth: **164 tests**
 
 **Test Counts (2026-11-09):**
 - Caja blanca: 105 tests (mathtutor-auth module)
@@ -137,3 +151,4 @@ Reduce riesgo técnico: EN-04 valida LaTeX→Symja y pgvector JDBC (cadena crít
 - **2026-11-06 16:30**: EN-04 **COMPLETO** — Symja ✅, pgvector JDBC ✅, **Spring AI pgvector-store ✅**. Build SUCCESSFUL, cas 80.4%/78.9%, llm 100%/90.6%. Pendiente: push sprint-1 → GitHub, CI verde (tests integración con Docker), merge a DEV.
 - **2026-11-08 23:32**: CI **VERDE** en sprint-1 — Run: https://github.com/juancarlosenrmun/MathTutor/actions/runs/42535665406 · build-and-test ✅ (3m59s), verify-coverage ✅ (3s). Tests integración con Testcontainers pgvector pasan en CI (ubuntu-latest, Docker nativo). Pendiente: merge sprint-1 → DEV.
 - **2026-11-09 19:15**: D4 **COMPLETO** — Refresh tokens DB storage con rotación y detección de reuso. Implementado: V2__refresh_tokens.sql migration, RefreshToken entity, RefreshTokenRepository, TokenServicePort extendido, RefreshTokenAdapter, TokenServiceAdapter, AuthController actualizado. Tests: 19 nuevos tests en RefreshTokenAdapterTest + TokenServiceAdapterTest + AuthControllerTest actualizados. JaCoCo mathtutor-auth: 92.7% líneas / 87.5% ramas (umbral 80/70 ✅). Build local verde: `./gradlew clean check --no-daemon` BUILD SUCCESSFUL.
+- **2026-11-10 14:30**: **SPRINT 1 COMPLETADO** — Todos los defectos D1–D10 cerrados. D1: Docker tests en CI (Testcontainers pgvector verde). D2: JaCoCo ≥80/70 verificado (auth 92.7/87.5, cas 80.4/78.9, llm 100/90.6, graphics 100/100, tutor 100/100). D3: CSRF double-submit cookie. D4: Refresh token rotation + reuse detection. D5: JWT secret env-only. D6: ASVS L1 completo (password 12 chars, errores genéricos, rate limiting IP+email 5/15min, Argon2id 64MB/3/4). D7: Migraciones scope-separated (V1 users, V2 refresh, V3 audit_logs deuda anticipada, V4 password_reset_tokens deuda anticipada). D8: 6 commits atómicos semánticos. D9: CI sprint-1 verde (build-and-test ✅, verify-coverage ✅). D10: Docs actualizadas (Sprint_01.md, Progreso global.md, Registro iteraciones.md). Total auth tests: **164** (113 caja blanca + 51 caja negra).

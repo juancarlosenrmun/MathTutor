@@ -63,6 +63,7 @@ class LoginUseCaseTest {
             when(userRepositoryPort.findActiveByEmail(email)).thenReturn(Optional.of(user));
             when(passwordEncoderPort.matches(password, encodedPassword)).thenReturn(true);
             when(rateLimitPort.tryConsume(eq("login:ip:" + ipAddress), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:" + email), eq(5), any())).thenReturn(true);
 
             // When
             Result<LoginUseCase.LoginResult> result = useCase.execute(email, password, ipAddress);
@@ -97,6 +98,8 @@ class LoginUseCaseTest {
             when(userRepositoryPort.findActiveByEmail("admin@test.com")).thenReturn(Optional.of(admin));
             when(passwordEncoderPort.matches(password, encodedPassword)).thenReturn(true);
             when(rateLimitPort.tryConsume(eq("login:ip:" + ip), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:prof@test.com"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:admin@test.com"), eq(5), any())).thenReturn(true);
 
             // When & Then
             Result<LoginUseCase.LoginResult> profResult = useCase.execute("prof@test.com", password, ip);
@@ -265,6 +268,7 @@ class LoginUseCaseTest {
             when(userRepositoryPort.findActiveByEmail("test@test.com")).thenReturn(Optional.of(user));
             when(passwordEncoderPort.matches("Pass123!", encodedPassword)).thenReturn(true);
             when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:test@test.com"), eq(5), any())).thenReturn(true);
 
             // When
             Result<LoginUseCase.LoginResult> result = useCase.execute("test@test.com", "Pass123!", "192.168.1.1");
@@ -272,7 +276,9 @@ class LoginUseCaseTest {
             // Then
             assertThat(result.isSuccess()).isTrue();
             verify(rateLimitPort).tryConsume("login:ip:192.168.1.1", 5, java.time.Duration.ofMinutes(15));
+            verify(rateLimitPort).tryConsume("login:email:test@test.com", 5, java.time.Duration.ofMinutes(15));
             verify(rateLimitPort).reset("login:ip:192.168.1.1");
+            verify(rateLimitPort).reset("login:email:test@test.com");
         }
 
         @Test
@@ -320,8 +326,8 @@ class LoginUseCaseTest {
         }
 
         @Test
-        @DisplayName("Debe usar IP para rate limit (no email) para no revelar existencia de usuarios")
-        void shouldUseIpForRateLimitNotEmail() {
+        @DisplayName("Debe usar IP y email para rate limit (dual protection)")
+        void shouldUseBothIpAndEmailForRateLimit() {
             // Given
             String encodedPassword = "argon2id$encoded$hash";
             User user = User.withId(1L, "test@test.com", encodedPassword, User.Role.ALUMNO, true, null, java.time.Instant.now());
@@ -329,14 +335,14 @@ class LoginUseCaseTest {
             when(userRepositoryPort.findActiveByEmail("test@test.com")).thenReturn(Optional.of(user));
             when(passwordEncoderPort.matches("Pass123!", encodedPassword)).thenReturn(true);
             when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:test@test.com"), eq(5), any())).thenReturn(true);
 
             // When
             useCase.execute("test@test.com", "Pass123!", "192.168.1.1");
 
-            // Then - Verificar que la clave de rate limit usa IP, no email
+            // Then - Verificar que se llaman AMBOS rate limits (IP y email)
             verify(rateLimitPort).tryConsume("login:ip:192.168.1.1", 5, java.time.Duration.ofMinutes(15));
-            // Verificar que no se llamó con clave basada en email
-            verify(rateLimitPort, never()).tryConsume(contains("login:email:"), anyInt(), any());
+            verify(rateLimitPort).tryConsume("login:email:test@test.com", 5, java.time.Duration.ofMinutes(15));
         }
 
         @Test
@@ -349,12 +355,14 @@ class LoginUseCaseTest {
             when(userRepositoryPort.findActiveByEmail("test@test.com")).thenReturn(Optional.of(user));
             when(passwordEncoderPort.matches("Pass123!", encodedPassword)).thenReturn(true);
             when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:test@test.com"), eq(5), any())).thenReturn(true);
 
             // When
             useCase.execute("test@test.com", "Pass123!", "192.168.1.1");
 
             // Then
             verify(rateLimitPort).reset("login:ip:192.168.1.1");
+            verify(rateLimitPort).reset("login:email:test@test.com");
         }
 
         @Test
@@ -367,12 +375,189 @@ class LoginUseCaseTest {
             when(userRepositoryPort.findActiveByEmail("test@test.com")).thenReturn(Optional.of(user));
             when(passwordEncoderPort.matches("WrongPass123!", encodedPassword)).thenReturn(false);
             when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:test@test.com"), eq(5), any())).thenReturn(true);
 
             // When
             useCase.execute("test@test.com", "WrongPass123!", "192.168.1.1");
 
             // Then
             verify(rateLimitPort, never()).reset(anyString());
+        }
+    }
+
+    @Nested
+    @DisplayName("Email-based Rate Limiting (Credential Stuffing Protection)")
+    class EmailBasedRateLimiting {
+
+        @Test
+        @DisplayName("Debe permitir login cuando email rate limit no se excede")
+        void shouldAllowLoginWhenEmailRateLimitNotExceeded() {
+            // Given
+            String encodedPassword = "argon2id$encoded$hash";
+            User user = User.withId(1L, "test@test.com", encodedPassword, User.Role.ALUMNO, true, null, java.time.Instant.now());
+
+            when(userRepositoryPort.findActiveByEmail("test@test.com")).thenReturn(Optional.of(user));
+            when(passwordEncoderPort.matches("Pass123!", encodedPassword)).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:test@test.com"), eq(5), any())).thenReturn(true);
+
+            // When
+            Result<LoginUseCase.LoginResult> result = useCase.execute("test@test.com", "Pass123!", "192.168.1.1");
+
+            // Then
+            assertThat(result.isSuccess()).isTrue();
+            verify(rateLimitPort).tryConsume("login:email:test@test.com", 5, java.time.Duration.ofMinutes(15));
+            verify(rateLimitPort).reset("login:email:test@test.com");
+        }
+
+        @Test
+        @DisplayName("Debe bloquear login cuando email rate limit se excede (credential stuffing)")
+        void shouldBlockLoginWhenEmailRateLimitExceeded() {
+            // Given - IP rate limit OK, pero email rate limit excedido
+            when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:test@test.com"), eq(5), any())).thenReturn(false);
+
+            // When
+            Result<LoginUseCase.LoginResult> result = useCase.execute("test@test.com", "Pass123!", "192.168.1.1");
+
+            // Then
+            assertThat(result.isFailure()).isTrue();
+            assertThat(result).isInstanceOf(Result.Failure.class);
+            Result.Failure<LoginUseCase.LoginResult> failure = (Result.Failure<LoginUseCase.LoginResult>) result;
+            assertThat(failure.code()).isEqualTo(Result.ErrorCode.TOO_MANY_REQUESTS);
+            assertThat(failure.message()).isEqualTo("Demasiados intentos para esta cuenta. Intente de nuevo en 15 minutos.");
+
+            verify(rateLimitPort).tryConsume("login:ip:192.168.1.1", 5, java.time.Duration.ofMinutes(15));
+            verify(rateLimitPort).tryConsume("login:email:test@test.com", 5, java.time.Duration.ofMinutes(15));
+            verify(rateLimitPort, never()).reset(anyString());
+            verify(auditLogPort).save(argThat(event ->
+                    event instanceof UserLoginFailedEvent &&
+                    ((UserLoginFailedEvent) event).email().equals("test@test.com") &&
+                    ((UserLoginFailedEvent) event).reason().equals("RATE_LIMIT_EXCEEDED_EMAIL")
+            ));
+        }
+
+        @Test
+        @DisplayName("Debe aplicar email rate limit antes de verificar usuario (previene credential stuffing)")
+        void shouldApplyEmailRateLimitBeforeUserCheck() {
+            // Given - IP rate limit OK, email rate limit excedido, usuario no existe
+            when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:nonexistent@test.com"), eq(5), any())).thenReturn(false);
+
+            // When
+            Result<LoginUseCase.LoginResult> result = useCase.execute("nonexistent@test.com", "Pass123!", "192.168.1.1");
+
+            // Then
+            assertThat(result.isFailure()).isTrue();
+            assertThat(result).isInstanceOf(Result.Failure.class);
+            Result.Failure<LoginUseCase.LoginResult> failure = (Result.Failure<LoginUseCase.LoginResult>) result;
+            assertThat(failure.code()).isEqualTo(Result.ErrorCode.TOO_MANY_REQUESTS);
+            // No debe llamar a userRepositoryPort porque email rate limit bloquea antes
+            verify(userRepositoryPort, never()).findActiveByEmail(anyString());
+            verify(passwordEncoderPort, never()).matches(anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("Debe bloquear credential stuffing: mismo email desde diferentes IPs")
+        void shouldBlockCredentialStuffingSameEmailDifferentIps() {
+            // Given - simular 5 intentos fallidos desde diferentes IPs para el mismo email
+            // IP rate limit siempre pasa (claves diferentes), email rate limit falla en el 5to
+            when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.2"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:ip:10.0.0.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:ip:172.16.0.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:ip:203.0.113.1"), eq(5), any())).thenReturn(true);
+
+            // Email rate limit: 4 true, 5to false
+            when(rateLimitPort.tryConsume(eq("login:email:victim@test.com"), eq(5), any()))
+                    .thenReturn(true, true, true, true, false);
+
+            // Password siempre incorrecto
+            when(userRepositoryPort.findActiveByEmail("victim@test.com"))
+                    .thenReturn(Optional.of(User.withId(1L, "victim@test.com", "encoded", User.Role.ALUMNO, true, null, java.time.Instant.now())));
+            when(passwordEncoderPort.matches("wrongpass", "encoded")).thenReturn(false);
+
+            String email = "victim@test.com";
+            String password = "wrongpass";
+
+            // When - 4 intentos desde diferentes IPs (deben pasar IP rate limit, fallar password)
+            Result<LoginUseCase.LoginResult> result1 = useCase.execute(email, password, "192.168.1.1");
+            Result<LoginUseCase.LoginResult> result2 = useCase.execute(email, password, "192.168.1.2");
+            Result<LoginUseCase.LoginResult> result3 = useCase.execute(email, password, "10.0.0.1");
+            Result<LoginUseCase.LoginResult> result4 = useCase.execute(email, password, "172.16.0.1");
+
+            // 5to intento desde otra IP - debe bloquear por email rate limit
+            Result<LoginUseCase.LoginResult> result5 = useCase.execute(email, password, "203.0.113.1");
+
+            // Then
+            assertThat(result1.isFailure()).isTrue(); // falla por password
+            assertThat(result2.isFailure()).isTrue();
+            assertThat(result3.isFailure()).isTrue();
+            assertThat(result4.isFailure()).isTrue();
+            assertThat(result5.isFailure()).isTrue();
+            Result.Failure<LoginUseCase.LoginResult> failure5 = (Result.Failure<LoginUseCase.LoginResult>) result5;
+            assertThat(failure5.code()).isEqualTo(Result.ErrorCode.TOO_MANY_REQUESTS);
+            assertThat(failure5.message()).isEqualTo("Demasiados intentos para esta cuenta. Intente de nuevo en 15 minutos.");
+
+            // Verificar que se llamó a email rate limit 5 veces
+            verify(rateLimitPort, times(5)).tryConsume(eq("login:email:victim@test.com"), eq(5), any());
+        }
+
+        @Test
+        @DisplayName("Debe resetear email rate limit tras login exitoso")
+        void shouldResetEmailRateLimitAfterSuccessfulLogin() {
+            // Given
+            String encodedPassword = "argon2id$encoded$hash";
+            User user = User.withId(1L, "test@test.com", encodedPassword, User.Role.ALUMNO, true, null, java.time.Instant.now());
+
+            when(userRepositoryPort.findActiveByEmail("test@test.com")).thenReturn(Optional.of(user));
+            when(passwordEncoderPort.matches("Pass123!", encodedPassword)).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:test@test.com"), eq(5), any())).thenReturn(true);
+
+            // When
+            useCase.execute("test@test.com", "Pass123!", "192.168.1.1");
+
+            // Then
+            verify(rateLimitPort).reset("login:email:test@test.com");
+        }
+
+        @Test
+        @DisplayName("No debe resetear email rate limit tras login fallido por password")
+        void shouldNotResetEmailRateLimitAfterFailedLogin() {
+            // Given
+            String encodedPassword = "argon2id$encoded$hash";
+            User user = User.withId(1L, "test@test.com", encodedPassword, User.Role.ALUMNO, true, null, java.time.Instant.now());
+
+            when(userRepositoryPort.findActiveByEmail("test@test.com")).thenReturn(Optional.of(user));
+            when(passwordEncoderPort.matches("WrongPass123!", encodedPassword)).thenReturn(false);
+            when(rateLimitPort.tryConsume(eq("login:ip:192.168.1.1"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:test@test.com"), eq(5), any())).thenReturn(true);
+
+            // When
+            useCase.execute("test@test.com", "WrongPass123!", "192.168.1.1");
+
+            // Then
+            verify(rateLimitPort, never()).reset("login:email:test@test.com");
+        }
+
+        @Test
+        @DisplayName("Email rate limit debe ser case-insensitive")
+        void shouldBeCaseInsensitiveForEmailRateLimit() {
+            // Given
+            String encodedPassword = "argon2id$encoded$hash";
+            User user = User.withId(1L, "test@test.com", encodedPassword, User.Role.ALUMNO, true, null, java.time.Instant.now());
+
+            when(userRepositoryPort.findActiveByEmail("test@test.com")).thenReturn(Optional.of(user));
+            when(passwordEncoderPort.matches("Pass123!", encodedPassword)).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:ip:1.2.3.4"), eq(5), any())).thenReturn(true);
+            when(rateLimitPort.tryConsume(eq("login:email:test@test.com"), eq(5), any())).thenReturn(true);
+
+            // When - email con mayúsculas y espacios
+            useCase.execute("  TEST@TEST.COM  ", "Pass123!", "1.2.3.4");
+
+            // Then - clave de rate limit debe ser normalizada
+            verify(rateLimitPort).tryConsume("login:email:test@test.com", 5, java.time.Duration.ofMinutes(15));
         }
     }
 }

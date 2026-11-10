@@ -11,9 +11,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementación en memoria de RateLimitPort usando ConcurrentHashMap.
- * Para producción considerar Redis o base de datos distribuida.
  *
- * Límite por defecto ASVS L1: 5 intentos por 15 minutos por IP/email.
+ * <p><strong>Limitación importante:</strong> Esta implementación es <strong>in-memory</strong>
+ * y <strong>NO es adecuada para despliegues multi-instancia</strong> (clúster, Kubernetes, etc.)
+ * porque cada instancia mantiene su propio contador independiente.</p>
+ *
+ * <p>Para producción con múltiples instancias, se debe usar una implementación distribuida
+ * basada en Redis (ej. <code>RedisRateLimitAdapter</code>) o base de datos compartida.</p>
+ *
+ * <p>Límite por defecto ASVS L1: 5 intentos por 15 minutos por IP/email.</p>
  */
 @Component
 public class RateLimitAdapter implements RateLimitPort {

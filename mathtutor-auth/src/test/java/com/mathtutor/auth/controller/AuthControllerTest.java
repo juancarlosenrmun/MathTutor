@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -574,6 +575,258 @@ class AuthControllerTest {
                     .andExpect(status().isCreated())
                     .andExpect(cookie().httpOnly("refresh_token", true))
                     .andExpect(cookie().secure("refresh_token", true));
+        }
+    }
+
+    @Nested
+    @DisplayName("X-Forwarded-For y Trusted Proxy (IP Spoofing Protection)")
+    class TrustedProxyAndXForwardedFor {
+
+        /**
+         * Controller con trusted proxies configurados (simula app.trusted-proxies=10.0.0.0/8)
+         */
+        private AuthController controllerWithTrustedProxies;
+        private MockMvc mockMvcWithTrustedProxies;
+
+        @BeforeEach
+        void setUpTrustedProxy() {
+            // Usar reflexión para establecer trustedProxyCidrs
+            controllerWithTrustedProxies = new AuthController(
+                    registerUserUseCase, loginUseCase, logoutUseCase, tokenServiceAdapter);
+            // Configurar trusted proxies manualmente para test
+            // 10.0.0.0/8 cubre 10.x.x.x
+            try {
+                java.lang.reflect.Field field = AuthController.class.getDeclaredField("trustedProxyCidrs");
+                field.setAccessible(true);
+                field.set(controllerWithTrustedProxies, List.of("10.0.0.0/8"));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            mockMvcWithTrustedProxies = MockMvcBuilders.standaloneSetup(controllerWithTrustedProxies).build();
+        }
+
+        @Test
+        @DisplayName("Sin trusted proxies: debe ignorar X-Forwarded-For y usar remoteAddr (anti-spoofing)")
+        void shouldIgnoreXForwardedForWhenNoTrustedProxies() throws Exception {
+            // Given - controller SIN trusted proxies (default)
+            LoginUseCase.LoginResult loginResult = new LoginUseCase.LoginResult(1L, User.Role.ALUMNO);
+            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("192.168.1.100")))
+                    .thenReturn(Result.ok(loginResult));
+            when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString()))
+                    .thenReturn("access-token");
+            when(tokenServiceAdapter.storeRefreshToken(anyLong(), anyString(), anyString(), anyString()))
+                    .thenReturn("refresh-token");
+
+            // When - request con X-Forwarded-For spoofeado, remoteAddr = 192.168.1.100
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                        "email": "test@example.com",
+                                        "password": "password1234"
+                                    }
+                                    """)
+                            .with(request -> {
+                                request.setRemoteAddr("192.168.1.100");
+                                request.addHeader("X-Forwarded-For", "203.0.113.50"); // IP spoofeada
+                                return request;
+                            }))
+                    .andExpect(status().isOk());
+
+            // Then - debe usar remoteAddr (192.168.1.100), NO X-Forwarded-For
+            verify(loginUseCase).execute("test@example.com", "password1234", "192.168.1.100");
+        }
+
+        @Test
+        @DisplayName("Sin trusted proxies: debe ignorar X-Real-IP y usar remoteAddr")
+        void shouldIgnoreXRealIpWhenNoTrustedProxies() throws Exception {
+            // Given
+            LoginUseCase.LoginResult loginResult = new LoginUseCase.LoginResult(1L, User.Role.ALUMNO);
+            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("192.168.1.100")))
+                    .thenReturn(Result.ok(loginResult));
+            when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString()))
+                    .thenReturn("access-token");
+            when(tokenServiceAdapter.storeRefreshToken(anyLong(), anyString(), anyString(), anyString()))
+                    .thenReturn("refresh-token");
+
+            // When - request con X-Real-IP spoofeado
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                        "email": "test@example.com",
+                                        "password": "password1234"
+                                    }
+                                    """)
+                            .with(request -> {
+                                request.setRemoteAddr("192.168.1.100");
+                                request.addHeader("X-Real-IP", "203.0.113.50"); // IP spoofeada
+                                return request;
+                            }))
+                    .andExpect(status().isOk());
+
+            // Then - debe usar remoteAddr
+            verify(loginUseCase).execute("test@example.com", "password1234", "192.168.1.100");
+        }
+
+        @Test
+        @DisplayName("Con trusted proxy: debe usar X-Forwarded-For cuando request viene de proxy de confianza")
+        void shouldUseXForwardedForWhenTrustedProxy() throws Exception {
+            // Given - controller CON trusted proxy 10.0.0.0/8
+            LoginUseCase.LoginResult loginResult = new LoginUseCase.LoginResult(1L, User.Role.ALUMNO);
+            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("203.0.113.50")))
+                    .thenReturn(Result.ok(loginResult));
+            when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString()))
+                    .thenReturn("access-token");
+            when(tokenServiceAdapter.storeRefreshToken(anyLong(), anyString(), anyString(), anyString()))
+                    .thenReturn("refresh-token");
+
+            // When - request viene de 10.0.0.5 (en rango 10.0.0.0/8) con X-Forwarded-For
+            mockMvcWithTrustedProxies.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                        "email": "test@example.com",
+                                        "password": "password1234"
+                                    }
+                                    """)
+                            .with(request -> {
+                                request.setRemoteAddr("10.0.0.5"); // Proxy de confianza
+                                request.addHeader("X-Forwarded-For", "203.0.113.50, 10.0.0.5");
+                                return request;
+                            }))
+                    .andExpect(status().isOk());
+
+            // Then - debe usar la primera IP de X-Forwarded-For (cliente original)
+            verify(loginUseCase).execute("test@example.com", "password1234", "203.0.113.50");
+        }
+
+        @Test
+        @DisplayName("Con trusted proxy: debe ignorar X-Forwarded-For si request NO viene de proxy de confianza")
+        void shouldIgnoreXForwardedForWhenUntrustedProxy() throws Exception {
+            // Given - controller CON trusted proxy 10.0.0.0/8
+            LoginUseCase.LoginResult loginResult = new LoginUseCase.LoginResult(1L, User.Role.ALUMNO);
+            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("192.168.1.100")))
+                    .thenReturn(Result.ok(loginResult));
+            when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString()))
+                    .thenReturn("access-token");
+            when(tokenServiceAdapter.storeRefreshToken(anyLong(), anyString(), anyString(), anyString()))
+                    .thenReturn("refresh-token");
+
+            // When - request viene de 192.168.1.100 (NO en rango 10.0.0.0/8) con X-Forwarded-For
+            mockMvcWithTrustedProxies.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                        "email": "test@example.com",
+                                        "password": "password1234"
+                                    }
+                                    """)
+                            .with(request -> {
+                                request.setRemoteAddr("192.168.1.100"); // NO es proxy de confianza
+                                request.addHeader("X-Forwarded-For", "203.0.113.50");
+                                return request;
+                            }))
+                    .andExpect(status().isOk());
+
+            // Then - debe ignorar X-Forwarded-For y usar remoteAddr
+            verify(loginUseCase).execute("test@example.com", "password1234", "192.168.1.100");
+        }
+
+        @Test
+        @DisplayName("Con trusted proxy: debe usar X-Real-IP cuando request viene de proxy de confianza")
+        void shouldUseXRealIpWhenTrustedProxy() throws Exception {
+            // Given
+            LoginUseCase.LoginResult loginResult = new LoginUseCase.LoginResult(1L, User.Role.ALUMNO);
+            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("203.0.113.50")))
+                    .thenReturn(Result.ok(loginResult));
+            when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString()))
+                    .thenReturn("access-token");
+            when(tokenServiceAdapter.storeRefreshToken(anyLong(), anyString(), anyString(), anyString()))
+                    .thenReturn("refresh-token");
+
+            // When - request de proxy de confianza con X-Real-IP
+            mockMvcWithTrustedProxies.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                        "email": "test@example.com",
+                                        "password": "password1234"
+                                    }
+                                    """)
+                            .with(request -> {
+                                request.setRemoteAddr("10.0.0.5");
+                                request.addHeader("X-Real-IP", "203.0.113.50");
+                                return request;
+                            }))
+                    .andExpect(status().isOk());
+
+            // Then
+            verify(loginUseCase).execute("test@example.com", "password1234", "203.0.113.50");
+        }
+
+        @Test
+        @DisplayName("Debe usar primera IP de X-Forwarded-For cuando hay múltiples (client, proxy1, proxy2)")
+        void shouldUseFirstIpInXForwardedForChain() throws Exception {
+            // Given
+            LoginUseCase.LoginResult loginResult = new LoginUseCase.LoginResult(1L, User.Role.ALUMNO);
+            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("198.51.100.1")))
+                    .thenReturn(Result.ok(loginResult));
+            when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString()))
+                    .thenReturn("access-token");
+            when(tokenServiceAdapter.storeRefreshToken(anyLong(), anyString(), anyString(), anyString()))
+                    .thenReturn("refresh-token");
+
+            // When - X-Forwarded-For con cadena completa
+            mockMvcWithTrustedProxies.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                        "email": "test@example.com",
+                                        "password": "password1234"
+                                    }
+                                    """)
+                            .with(request -> {
+                                request.setRemoteAddr("10.0.0.1");
+                                request.addHeader("X-Forwarded-For", "198.51.100.1, 192.0.2.1, 10.0.0.1");
+                                return request;
+                            }))
+                    .andExpect(status().isOk());
+
+            // Then - primera IP es el cliente original
+            verify(loginUseCase).execute("test@example.com", "password1234", "198.51.100.1");
+        }
+
+        @Test
+        @DisplayName("Localhost (127.0.0.1) siempre de confianza para desarrollo")
+        void shouldTrustLocalhostForDevelopment() throws Exception {
+            // Given - controller SIN trusted proxies configurados
+            LoginUseCase.LoginResult loginResult = new LoginUseCase.LoginResult(1L, User.Role.ALUMNO);
+            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("203.0.113.50")))
+                    .thenReturn(Result.ok(loginResult));
+            when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString()))
+                    .thenReturn("access-token");
+            when(tokenServiceAdapter.storeRefreshToken(anyLong(), anyString(), anyString(), anyString()))
+                    .thenReturn("refresh-token");
+
+            // When - request desde localhost con X-Forwarded-For
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                        "email": "test@example.com",
+                                        "password": "password1234"
+                                    }
+                                    """)
+                            .with(request -> {
+                                request.setRemoteAddr("127.0.0.1");
+                                request.addHeader("X-Forwarded-For", "203.0.113.50");
+                                return request;
+                            }))
+                    .andExpect(status().isOk());
+
+            // Then - localhost siempre de confianza en desarrollo
+            verify(loginUseCase).execute("test@example.com", "password1234", "203.0.113.50");
         }
     }
 }

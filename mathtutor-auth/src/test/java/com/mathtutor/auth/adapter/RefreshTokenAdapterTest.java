@@ -192,8 +192,8 @@ class RefreshTokenAdapterTest {
         }
 
         @Test
-        @DisplayName("Debe retornar empty y revocar familia cuando token ya está revocado (detección de reuso)")
-        void shouldReturnEmptyAndRevokeFamilyWhenTokenAlreadyRevoked() {
+        @DisplayName("Debe retornar empty cuando token ya está revocado (detección de reuso se maneja en endpoint /refresh)")
+        void shouldReturnEmptyWhenTokenAlreadyRevoked() {
             // Given
             String rawToken = "revoked-token";
             String tokenHash = "argon2id$hash$value";
@@ -206,14 +206,14 @@ class RefreshTokenAdapterTest {
 
             when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
             when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(true);
-            // revokeTokenFamily se llama internamente
 
             // When
             Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
 
-            // Then
+            // Then - validateRefreshToken es readOnly, solo retorna empty para tokens revocados
+            // La revocación de familia se hace en el endpoint /refresh (AuthController)
             assertThat(result).isEmpty();
-            verify(refreshTokenRepository).revokeFamily(eq(familyId), any(Instant.class));
+            verify(refreshTokenRepository, never()).revokeFamily(anyString(), any(Instant.class));
         }
 
         @Test
