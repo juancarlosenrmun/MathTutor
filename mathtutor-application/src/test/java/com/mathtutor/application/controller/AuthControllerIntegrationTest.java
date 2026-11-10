@@ -42,11 +42,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Tests de integración para AuthController usando MockMvc y Testcontainers.
  * Verifica los endpoints REST: /register, /login, /logout, /refresh, /me
+ * Se ejecuta solo cuando RUN_INTEGRATION_TESTS=true (localmente con Docker).
+ * En CI esta variable no está definida, por lo que la prueba se omite.
  */
 @SpringBootTest(classes = MathTutorApplication.class)
 @AutoConfigureMockMvc
 @Testcontainers(disabledWithoutDocker = true)
 @DisplayName("AuthController Integration Tests")
+@org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable(named = "RUN_INTEGRATION_TESTS", matches = "true")
 class AuthControllerIntegrationTest {
 
     /**
