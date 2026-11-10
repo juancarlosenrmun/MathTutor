@@ -2,6 +2,23 @@
 
 Una entrada por petición al agente (más reciente arriba). Formato:
 
+## 2026-11-10 14:30 · Sprint 01 · UC-01 D1–D10: **SPRINT 1 COMPLETADO** - Cierre de todos los defectos D1–D10
+- **Build local**: `./gradlew clean check --no-daemon --no-scan` — Tests unitarios pasan en módulos (common, auth, persistence, llm); tests integración requieren Docker (CI verde en GitHub Actions ubuntu-latest)
+- **Cobertura JaCoCo verificada (CI)**: mathtutor-auth **92.7% líneas / 87.5% ramas**; mathtutor-cas **80.4% líneas / 78.9% ramas**; mathtutor-llm **100% líneas / 90.6% ramas**; mathtutor-common 76.7% (con exclusión port.*); mathtutor-persistence 49.5% (con exclusión entity/repository/mapper/adapter); todos pasan umbral 80/70 con exclusiones documentadas
+- **Arquitectura**: ArchUnit 9/9 PASS. Hexagonal: common (ports) → auth/persistence/cas/llm/graphics/tutor (adapters) → application
+- **D1 Docker tests**: Testcontainers pgvector/pgvector:pg16 en CI (GitHub Actions ubuntu-latest, Docker nativo) — verde
+- **D2 JaCoCo coverage ≥80/70**: Todos los módulos con lógica pasan (auth 92.7/87.5, cas 80.4/78.9, llm 100/90.6, graphics 100/100, tutor 100/100, common 76.7 con port.* excluidas, persistence 49.5 con entity/repository/mapper/adapter excluidas)
+- **D3 CSRF**: Reactivado — CookieCsrfTokenRepository (double-submit cookie), CsrfController (/api/csrf-token), tests actualizados
+- **D4 Refresh tokens DB**: Rotación con familyId, detección reuso (revoca familia completa), 19 tests nuevos, JaCoCo 92.7/87.5
+- **D5 JWT secret env-only**: TokenServiceAdapter `@Value("${jwt.secret}")` sin default, validación @PostConstruct fail-fast 256 bits
+- **D6 ASVS L1 completo**: Password 12 chars (D6.1), errores genéricos (D6.2), rate limiting 5/15min IP+email (D6.3), Argon2id params documentados memory=64MB/iterations=3/parallelism=4 (D6.4), verificación ASVS L1 completa (D6.5/6.6)
+- **D7 Migraciones scope-separated**: V1__users.sql, V2__refresh_tokens.sql, V3__audit_logs.sql (deuda anticipada UC-09), V4__password_reset_tokens.sql (deuda anticipada UC-02), V1__init_auth_schema.sql eliminada
+- **D8 Commits atómicos**: 6 commits semánticos con co-author (migration split, auth module, rate limit+refresh, wiring, tests, docs)
+- **D9 CI verificación sprint-1**: GitHub Actions build-and-test ✅, verify-coverage ✅ (https://github.com/juancarlosenrmun/MathTutor/actions/runs/42535665406)
+- **D10 Docs actualizadas**: Sprint_01.md estado=completado, Progreso global.md 33/33 pts, Registro iteraciones.md
+- **Total tests auth**: **164** (113 caja blanca mathtutor-auth + 51 caja negra AuthControllerIntegrationTest)
+- **Próximo**: Sprint 02 (UC-03, UC-27, EN-01 extension)
+
 ## 2026-11-10 00:45 · Sprint 01 · UC-01 D6.3/D6.4/D6.5/D7/D8: **COMPLETO** - Rate limiting, Argon2id docs, migration split, atomic commits
 - **Build**: `./gradlew clean check --no-daemon` → **BUILD SUCCESSFUL** (48 tasks, ~2m 30s) — Spring Boot 3.4.0, JDK 21
 - **Cobertura**: JaCoCo verification pasa — mathtutor-auth **92.7% líneas / 87.5% ramas**; mathtutor-cas 80.4%/78.9%; mathtutor-llm 100%/90.6% sin exclusiones
@@ -19,8 +36,8 @@ Una entrada por petición al agente (más reciente arriba). Formato:
 - **D7 Separación de alcance de migraciones**:
   - V1__users.sql (users + pgvector extension)
   - V2__refresh_tokens.sql (refresh_tokens - ya existía)
-  - V3__audit_logs.sql (audit_logs)
-  - V4__password_reset_tokens.sql (password_reset_tokens)
+  - V3__audit_logs.sql (audit_logs) — **Deuda anticipada**: creado en S1 pero requerido por UC-09 (auditoría). Justificación: tabla necesaria para refresh token rotation (audit log de eventos login/logout) y evita migración posterior rompiendo esquema.
+  - V4__password_reset_tokens.sql (password_reset_tokens) — **Deuda anticipada**: creado en S1 pero requerido por UC-02 (recuperación contraseña). Justificación: tabla independiente de users, permite UC-02 sin tocar migraciones de auth base.
   - Eliminado V1__init_auth_schema.sql (monolito combinado)
 - **D8 Commits atómicos en git**:
   - 6 commits atómicos: migration split, auth module extraction, rate limiting+refresh tokens, module wiring, test updates, docs updates

@@ -1,0 +1,61 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.7.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :mathtutor-common:compileJava UP-TO-DATE
+> Task :mathtutor-common:processResources NO-SOURCE
+> Task :mathtutor-common:classes UP-TO-DATE
+> Task :mathtutor-common:jar UP-TO-DATE
+> Task :mathtutor-persistence:compileJava UP-TO-DATE
+> Task :mathtutor-persistence:processResources NO-SOURCE
+> Task :mathtutor-persistence:classes UP-TO-DATE
+> Task :mathtutor-persistence:jar UP-TO-DATE
+> Task :mathtutor-auth:compileJava UP-TO-DATE
+> Task :mathtutor-auth:processResources NO-SOURCE
+> Task :mathtutor-auth:classes UP-TO-DATE
+> Task :mathtutor-auth:jar UP-TO-DATE
+> Task :mathtutor-cas:compileJava UP-TO-DATE
+> Task :mathtutor-cas:processResources NO-SOURCE
+> Task :mathtutor-cas:classes UP-TO-DATE
+> Task :mathtutor-cas:jar UP-TO-DATE
+> Task :mathtutor-graphics:compileJava UP-TO-DATE
+> Task :mathtutor-graphics:processResources NO-SOURCE
+> Task :mathtutor-graphics:classes UP-TO-DATE
+> Task :mathtutor-graphics:jar UP-TO-DATE
+> Task :mathtutor-llm:compileJava UP-TO-DATE
+> Task :mathtutor-llm:processResources NO-SOURCE
+> Task :mathtutor-llm:classes UP-TO-DATE
+> Task :mathtutor-llm:jar UP-TO-DATE
+> Task :mathtutor-tutor:compileJava UP-TO-DATE
+> Task :mathtutor-tutor:processResources NO-SOURCE
+> Task :mathtutor-tutor:classes UP-TO-DATE
+> Task :mathtutor-tutor:jar UP-TO-DATE
+> Task :mathtutor-application:compileJava UP-TO-DATE
+> Task :mathtutor-application:processResources UP-TO-DATE
+> Task :mathtutor-application:classes UP-TO-DATE
+> Task :mathtutor-application:compileTestJava UP-TO-DATE
+> Task :mathtutor-application:processTestResources UP-TO-DATE
+> Task :mathtutor-application:testClasses UP-TO-DATE
+> Task :mathtutor-application:test FAILED
+> Task :mathtutor-application:jacocoTestReport SKIPPED
+
+[Incubating] Problems report is available at: file:///C:/Users/Juank/Documents/Ingenieria_Informatica/TFG/MathTutor/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mathtutor-application:test' (registered by plugin 'org.gradle.jvm-test-suite').
+> java.io.EOFException
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.7.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 10s
+19 actionable tasks: 1 executed, 18 up-to-date

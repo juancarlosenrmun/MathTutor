@@ -1,5 +1,6 @@
 package com.mathtutor.application.retriever;
 
+import com.mathtutor.application.MathTutorApplication;
 import com.mathtutor.common.dto.NoteChunk;
 import com.mathtutor.common.port.RagRetriever;
 import com.mathtutor.llm.SpringAiPgVectorRetriever;
@@ -31,7 +32,7 @@ import static org.assertj.core.api.Assertions.*;
  * Esta prueba valida el requisito EN-04: "Spring AI con pgvector"
  * usando la abstracción VectorStore de Spring AI (PgVectorStore).
  */
-@SpringBootTest
+@SpringBootTest(classes = MathTutorApplication.class)
 @ActiveProfiles("spring-ai-pgvector")
 @Testcontainers
 @Transactional

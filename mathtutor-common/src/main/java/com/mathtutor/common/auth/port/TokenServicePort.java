@@ -99,6 +99,22 @@ public interface TokenServicePort {
     void cleanupExpiredTokens();
 
     /**
+     * Verifica si un refresh token existe en BD pero está revocado (indicando reuso).
+     *
+     * @param rawToken token de refresco en claro
+     * @return true si el token existe y está revocado
+     */
+    boolean isRefreshTokenRevoked(String rawToken);
+
+    /**
+     * Obtiene el familyId de un refresh token revocado (para revocar la familia completa).
+     *
+     * @param rawToken token de refresco en claro
+     * @return familyId si el token existe y está revocado, null en caso contrario
+     */
+    String getFamilyIdForRevokedToken(String rawToken);
+
+    /**
      * Resultado de validación de refresh token.
      */
     record TokenValidationResult(
