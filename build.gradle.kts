@@ -7,6 +7,8 @@ plugins {
     id("org.springframework.boot") version "3.4.0" apply false
     id("io.spring.dependency-management") version "1.1.6" apply false
     id("org.sonarqube") version "4.2.1.3168" apply false
+    id("com.github.jk1.dependency-license-report") version "3.1.5" apply false
+    id("info.solidsoft.pitest") version "1.19.0" apply false
 }
 
 group = "com.mathtutor"
@@ -16,6 +18,7 @@ repositories {
     mavenCentral()
     maven { url = uri("https://repo.spring.io/snapshot") }
     maven { url = uri("https://repo.spring.io/milestone") }
+    maven { url = uri("https://jitpack.io") }
 }
 
 allprojects {
@@ -26,11 +29,17 @@ allprojects {
         mavenCentral()
         maven { url = uri("https://repo.spring.io/snapshot") }
         maven { url = uri("https://repo.spring.io/milestone") }
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
 // JaCoCo configuration for all subprojects (not root project)
 subprojects {
+    // Apply license report plugin to all subprojects
+    apply(plugin = "com.github.jk1.dependency-license-report")
+    // Apply PIT mutation testing plugin to all subprojects
+    apply(plugin = "info.solidsoft.pitest")
+
     // Centralized JaCoCo configuration
     // Thresholds: 80% line coverage / 70% branch coverage per module
     // Exclusions documented: main classes, DTOs without logic, port interfaces (contracts)
@@ -167,7 +176,7 @@ tasks.register<org.gradle.testing.jacoco.tasks.JacocoReport>("jacocoAggregateRep
             allClassDirs.addAll(mainSourceSet.output.classesDirs.files)
 
             // Find execution data files in build/jacoco/
-            val jacocoDir = File(subproject.buildDir, "jacoco")
+            val jacocoDir = File(subproject.layout.buildDirectory.get().asFile, "jacoco")
             if (jacocoDir.exists()) {
                 jacocoDir.listFiles()?.filter { it.extension == "exec" }?.forEach { allExecData.add(it) }
             }
@@ -194,3 +203,7 @@ tasks.register<org.gradle.testing.jacoco.tasks.JacocoReport>("jacocoAggregateRep
 tasks.named("jacocoAggregateReport") {
     dependsOn(subprojects.filter { it.plugins.hasPlugin("jacoco") }.map { it.tasks.named("test") })
 }
+
+// realApiTest task is configured per-module in each module's build.gradle.kts
+// Only mathtutor-llm has real-api tagged tests (SpringAiGoogleAiStudioEmbeddingModelRealApiTest)
+// Other modules don't need this task

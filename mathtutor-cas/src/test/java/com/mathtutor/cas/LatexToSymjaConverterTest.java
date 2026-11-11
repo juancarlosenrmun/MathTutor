@@ -385,32 +385,37 @@ class LatexToSymjaConverterTest {
     }
 
     @Test
-    @DisplayName("areEquivalent - tolerancia numérica 1e-9: diferencia constante < 1e-9 ES falso positivo DOCUMENTADO")
-    void areEquivalentNumericToleranceFalsePositiveDocumented() {
+    @DisplayName("areEquivalent - CORREGIDO: diferencia constante NO es equivalencia")
+    void areEquivalentConstantDifferenceRejected() {
         // Diferencia 1e-8 > 1e-9 => NO equivalente (correcto)
         assertThat(converter.areEquivalent("x", "x+0.00000001")).isFalse();
 
-        // LIMITACIÓN CONOCIDA (falso positivo documentado):
-        // Diferencia constante < 1e-9 en TODOS los puntos de prueba => se considera equivalente
-        // evaluateNumerically usa 9 puntos fijos (-2 a 5) y tolerancia 1e-9
-        // x vs x+1e-10 difiere en 1e-10 en todos los puntos => FALSO POSITIVO
-        // Esto es aceptable para uso pedagógico (diferencias < 1e-9 son irrelevantes)
-        boolean falsePositive = converter.areEquivalent("x", "x+0.0000000001");
-        // Documentamos el comportamiento actual: retorna true (falso positivo conocido)
-        assertThat(falsePositive).isTrue();
+        // CORREGIDO: Diferencia constante < 1e-9 (ej: 1e-10) ya NO es falso positivo
+        // evaluateNumerically ahora rechaza diferencias constantes no nulas
+        assertThat(converter.areEquivalent("x", "x+0.0000000001")).isFalse();
+
+        // También rechazar diferencias constantes negativas
+        assertThat(converter.areEquivalent("x", "x-0.0000000001")).isFalse();
+        // Y constantes no triviales
+        assertThat(converter.areEquivalent("2*x", "2*x+1e-10")).isFalse();
     }
 
     @Test
-    @DisplayName("areEquivalent - casos frontera: NaN e Infinity no causan falso positivo")
-    void areEquivalentHandlesNaNAndInfinityNoFalsePositive() {
+    @DisplayName("areEquivalent - CORREGIDO: dominios disjuntos NO causan falso positivo")
+    void areEquivalentDisjointDomainsNoFalsePositive() {
         // 1/x vs 1/x son equivalentes (ambos NaN/Infinity en x=0)
         assertThat(converter.areEquivalent("1/x", "1/x")).isTrue();
+
         // 1/x vs 1/(x+1) NO son equivalentes (diferentes puntos de singularidad)
         assertThat(converter.areEquivalent("1/x", "1/(x+1)")).isFalse();
-        // sqrt(x) vs sqrt(-x) - SOLO se evalúan en x=0 (único punto donde ambos definidos)
-        // LIMITACIÓN CONOCIDA: retorna true (falso positivo) porque solo hay 1 punto válido
-        // donde ambos son 0. En uso real, el dominio debería validarse antes.
-        boolean sqrtFalsePositive = converter.areEquivalent("\\sqrt{x}", "\\sqrt{-x}");
-        assertThat(sqrtFalsePositive).isTrue(); // Documentado como limitación
+
+        // sqrt(x) vs sqrt(-x) - CORREGIDO: ya NO es falso positivo
+        // Ambos solo definidos en x=0 (único punto común), pero evaluateNumerically
+        // ahora requiere al menos 2 puntos de evaluación válida
+        assertThat(converter.areEquivalent("\\sqrt{x}", "\\sqrt{-x}")).isFalse();
+
+        // También verificar funciones con dominios que solo se solapan en 1 punto
+        // ln(x) vs ln(-x) - solo solapan en nada (dominio vacío en común)
+        assertThat(converter.areEquivalent("\\ln(x)", "\\ln(-x)")).isFalse();
     }
 }

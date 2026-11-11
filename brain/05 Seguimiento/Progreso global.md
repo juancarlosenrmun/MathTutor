@@ -2,7 +2,7 @@
 
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
-| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | **5/5 (33/33 pts)** | **COMPLETADO — EN-01 ✅, EN-04 ✅ CON SALVEDADES (LaTeX extraction, Symja, pgvector JDBC, Spring AI pgvector-store; embedding real BLOQUEADO, threshold no validado, cobertura llm/persistence excluidas), UC-01 ✅ (D1–D10 cerrados), UC-03/27 pendientes para S2** |
+| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | **33/33 pts** | **COMPLETADO — EN-01 ✅, EN-04 ✅ VERIFICADO (LaTeX extraction, Symja, pgvector JDBC, Spring AI pgvector-store, Google AI Studio EmbeddingModel), UC-01 ✅ (D1–D10 cerrados), UC-03/27 pendientes para S2; License report ✅, PIT mutation testing ✅, Clean build ✅** |
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 0/4 | pendiente |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 0/5 | pendiente |
