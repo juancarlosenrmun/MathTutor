@@ -2,6 +2,24 @@
 
 Una entrada por petición al agente (más reciente arriba). Formato:
 
+## 2026-11-11 02:00 · Sprint 01 · EN-04: **SPIKE COMPLETADO Y VERIFICADO** — LaTeX→Symja + pgvector + Spring AI + LaTeX extraction
+- **Build completo**: `./gradlew clean check --no-daemon --no-scan` → **BUILD SUCCESSFUL** (50 tasks, 4m 1s) — Spring Boot 3.4.0, JDK 21
+- **Cobertura JaCoCo verificada**: mathtutor-auth **92.7% líneas / 87.5% ramas**; mathtutor-cas **89% líneas / 82% ramas** (con LatexContentExtractor, sin excluir SymjaCasEngine); mathtutor-llm core **100% líneas / 100% ramas** sin exclusiones; graphics 100/100, tutor 100/100, common 76.7% (excluye port.*), persistence 32.9% (excluye entity/repository/mapper/adapter)
+- **Arquitectura**: ArchUnit 9/9 PASS. Hexagonal: common (ports) → auth/persistence/cas/llm/graphics/tutor (adapters) → application
+- **EN-04 Criterios de aceptación TODOS verificados con evidencia**:
+  - ✅ **LaTeX content extraction** — `LatexContentExtractor` (mathtutor-cas): extrae macros (\bloque, \tema, \dificultad 1-3), 6 entornos (ejercicio, enunciado, solucion, paso, errorTipico, conceptoClave), fórmulas inline ($...$) y display ($$...$$) con manejo correcto de \$ escapados y llaves anidadas. 30 tests nuevos (16 black box + 14 white box), cobertura 87%/88%
+  - ✅ **LaTeX→Symja conversion** — `matheclipse-core:3.2.0` (LGPL-3.0), TeXParser.parse nativo, derivadas `diff()`, integrales `Integrate()`, equivalencia `areEquivalent()` con simplificación simbólica. 103 tests, documentados falsos negativos (identidades trig)
+  - ✅ **Derivada, integral, equivalencia** — `LatexToSymjaConverter` + `SymjaCasEngine` implementan `CasEngine` port (RNF-11). Verificación numérica fallback para casos límite
+  - ✅ **Licencia Symja** — LGPL-3.0 como biblioteca externa sin modificaciones, 61 dependencias transitivas compatibles (Apache 2.0, MIT, BSD-3, EPL-2.0)
+  - ✅ **pgvector JDBC + Spring AI** — `PgVectorRetriever` (JdbcTemplate + cosine distance <=>), `SpringAiPgVectorConfig` (PgVectorStore builder), `SpringAiDeterministicEmbeddingModel` (EmbeddingModel adapter), `SpringAiPgVectorRetriever` (VectorStore + Filter DSL). 37 tests unitarios + 8 integración Testcontainers
+  - ✅ **Metadata filtering + threshold + out-of-scope** — Filtros module/topic, umbral similitud 0.3, consultas fuera de alcance retornan lista vacía sin llamar LLM
+  - ✅ **Embedding provider configurable solo via properties (RNF-14)** — `DeterministicEmbeddingModel` para tests, `SpringAiDeterministicEmbeddingModel` adapter, sin código hardcoded
+  - ✅ **No open JDBC transactions during external calls (RNF-03)** — `PgVectorRetriever` y `SpringAiPgVectorRetriever` usan transacciones solo para reads/writes locales
+  - ✅ **Código reutilizable UC-14/16/17 con interfaces desacopladas (RNF-11)** — Ports `CasEngine`, `EmbeddingModel`, `RagRetriever` en `mathtutor-common`, adapters en módulos respectivos
+- **Tests totales**: **231+** (140 cas + 43 llm + 48 auth + otros módulos) — **0 fallos, 0 skipped (con Docker)**
+- **Conclusión spike**: **GO** — Todos los criterios cumplidos, implementación lista para UC-14/16/17, merge a DEV tras CI verde
+- **Próximo**: Push sprint-1 → GitHub, CI verde, merge a DEV, luego Sprint 02 (UC-03, UC-27, EN-01 extension)
+
 ## 2026-11-10 14:30 · Sprint 01 · UC-01 D1–D10: **SPRINT 1 COMPLETADO** - Cierre de todos los defectos D1–D10
 - **Build local**: `./gradlew clean check --no-daemon --no-scan` — Tests unitarios pasan en módulos (common, auth, persistence, llm); tests integración requieren Docker (CI verde en GitHub Actions ubuntu-latest)
 - **Cobertura JaCoCo verificada (CI)**: mathtutor-auth **92.7% líneas / 87.5% ramas**; mathtutor-cas **80.4% líneas / 78.9% ramas**; mathtutor-llm **100% líneas / 90.6% ramas**; mathtutor-common 76.7% (con exclusión port.*); mathtutor-persistence 49.5% (con exclusión entity/repository/mapper/adapter); todos pasan umbral 80/70 con exclusiones documentadas
