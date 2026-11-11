@@ -1,0 +1,596 @@
+{
+  "version": "1.0",
+  "description": "Corpus de casos LaTeX → Symja para validación de conversión y equivalencia",
+  "categories": {
+    "derivatives": {
+      "description": "Derivadas básicas y compuestas",
+      "cases": [
+        {
+          "id": "deriv_01",
+          "latex": "x^2",
+          "symja": "x^2",
+          "expectedEquivalent": "x^2"
+        },
+        {
+          "id": "deriv_02",
+          "latex": "2*x",
+          "symja": "2*x",
+          "expectedEquivalent": "2*x"
+        },
+        {
+          "id": "deriv_03",
+          "latex": "Cos[x]",
+          "symja": "Cos[x]",
+          "expectedEquivalent": "Cos[x]"
+        },
+        {
+          "id": "deriv_04",
+          "latex": "Exp[x]",
+          "symja": "Exp[x]",
+          "expectedEquivalent": "Exp[x]"
+        },
+        {
+          "id": "deriv_05",
+          "latex": "1/x",
+          "symja": "1/x",
+          "expectedEquivalent": "1/x"
+        },
+        {
+          "id": "deriv_06",
+          "latex": "(x+1)^2",
+          "symja": "(x+1)^2",
+          "expectedEquivalent": "x^2+2*x+1"
+        },
+        {
+          "id": "deriv_07",
+          "latex": "3*x^2+2",
+          "symja": "3*x^2+2",
+          "expectedEquivalent": "3*x^2+2"
+        },
+        {
+          "id": "deriv_08",
+          "latex": "1/(2*Sqrt[x])",
+          "symja": "1/(2*Sqrt[x])",
+          "expectedEquivalent": "1/(2*Sqrt[x])"
+        }
+      ],
+      "negatives": [
+        {
+          "id": "deriv_neg_01",
+          "latex": "x^2",
+          "notEquivalentTo": "x^3"
+        },
+        {
+          "id": "deriv_neg_02",
+          "latex": "Sin[x]",
+          "notEquivalentTo": "Cos[x]"
+        },
+        {
+          "id": "deriv_neg_03",
+          "latex": "2*x",
+          "notEquivalentTo": "3*x"
+        }
+      ]
+    },
+    "integrals": {
+      "description": "Integrales indefinidas y definidas",
+      "cases": [
+        {
+          "id": "int_01",
+          "latex": "x^2/2",
+          "symja": "x^2/2",
+          "expectedEquivalent": "x^2/2"
+        },
+        {
+          "id": "int_02",
+          "latex": "x^3/3",
+          "symja": "x^3/3",
+          "expectedEquivalent": "x^3/3"
+        },
+        {
+          "id": "int_03",
+          "latex": "-Cos[x]",
+          "symja": "-Cos[x]",
+          "expectedEquivalent": "-Cos[x]"
+        },
+        {
+          "id": "int_04",
+          "latex": "Exp[x]",
+          "symja": "Exp[x]",
+          "expectedEquivalent": "Exp[x]"
+        },
+        {
+          "id": "int_05",
+          "latex": "Log[x]",
+          "symja": "Log[x]",
+          "expectedEquivalent": "Log[x]"
+        },
+        {
+          "id": "int_06",
+          "latex": "1/3",
+          "symja": "1/3",
+          "expectedEquivalent": "1/3"
+        },
+        {
+          "id": "int_07",
+          "latex": "2",
+          "symja": "2",
+          "expectedEquivalent": "2"
+        },
+        {
+          "id": "int_08",
+          "latex": "Sin[x]-x*Cos[x]",
+          "symja": "Sin[x]-x*Cos[x]",
+          "expectedEquivalent": "Sin[x]-x*Cos[x]"
+        }
+      ],
+      "negatives": [
+        {
+          "id": "int_neg_01",
+          "latex": "x^2/2",
+          "notEquivalentTo": "x^2"
+        },
+        {
+          "id": "int_neg_02",
+          "latex": "Sin[x]",
+          "notEquivalentTo": "Cos[x]"
+        }
+      ]
+    },
+    "powers": {
+      "description": "Potencias y reglas de exponentes",
+      "cases": [
+        {
+          "id": "pow_01",
+          "latex": "(x^2)^3",
+          "symja": "(x^2)^3",
+          "expectedEquivalent": "x^6"
+        },
+        {
+          "id": "pow_02",
+          "latex": "x^2*x^3",
+          "symja": "x^2*x^3",
+          "expectedEquivalent": "x^5"
+        },
+        {
+          "id": "pow_03",
+          "latex": "x^5/x^2",
+          "symja": "x^5/x^2",
+          "expectedEquivalent": "x^3"
+        },
+        {
+          "id": "pow_04",
+          "latex": "x^(-2)",
+          "symja": "x^(-2)",
+          "expectedEquivalent": "1/x^2"
+        },
+        {
+          "id": "pow_05",
+          "latex": "x^(1/2)",
+          "symja": "x^(1/2)",
+          "expectedEquivalent": "x^(1/2)"
+        },
+        {
+          "id": "pow_06",
+          "latex": "(2*x)^3",
+          "symja": "(2*x)^3",
+          "expectedEquivalent": "8*x^3"
+        },
+        {
+          "id": "pow_07",
+          "latex": "x^0",
+          "symja": "x^0",
+          "expectedEquivalent": "1"
+        },
+        {
+          "id": "pow_08",
+          "latex": "x^(1/3)",
+          "symja": "x^(1/3)",
+          "expectedEquivalent": "x^(1/3)"
+        }
+      ],
+      "negatives": [
+        {
+          "id": "pow_neg_01",
+          "latex": "x^2",
+          "notEquivalentTo": "x^3"
+        },
+        {
+          "id": "pow_neg_02",
+          "latex": "x^2*x^3",
+          "notEquivalentTo": "x^6"
+        }
+      ]
+    },
+    "roots": {
+      "description": "Raíces y radicales",
+      "cases": [
+        {
+          "id": "root_01",
+          "latex": "Sqrt[x]",
+          "symja": "Sqrt[x]",
+          "expectedEquivalent": "Sqrt[x]"
+        },
+        {
+          "id": "root_02",
+          "latex": "Sqrt[x^2]",
+          "symja": "Sqrt[x^2]",
+          "expectedEquivalent": "Sqrt[x^2]"
+        },
+        {
+          "id": "root_03",
+          "latex": "Sqrt[4*x^2]",
+          "symja": "Sqrt[4*x^2]",
+          "expectedEquivalent": "Sqrt[4*x^2]"
+        },
+        {
+          "id": "root_04",
+          "latex": "(x^3)^(1/3)",
+          "symja": "(x^3)^(1/3)",
+          "expectedEquivalent": "(x^3)^(1/3)"
+        },
+        {
+          "id": "root_05",
+          "latex": "Sqrt[x]*Sqrt[y]",
+          "symja": "Sqrt[x]*Sqrt[y]",
+          "expectedEquivalent": "Sqrt[x]*Sqrt[y]"
+        },
+        {
+          "id": "root_06",
+          "latex": "Sqrt[x]/Sqrt[y]",
+          "symja": "Sqrt[x]/Sqrt[y]",
+          "expectedEquivalent": "Sqrt[x]/Sqrt[y]"
+        },
+        {
+          "id": "root_07",
+          "latex": "Sqrt[a^2+b^2]",
+          "symja": "Sqrt[a^2+b^2]",
+          "expectedEquivalent": "Sqrt[a^2+b^2]"
+        },
+        {
+          "id": "root_08",
+          "latex": "x^(1/2)",
+          "symja": "x^(1/2)",
+          "expectedEquivalent": "x^(1/2)"
+        }
+      ],
+      "negatives": [
+        {
+          "id": "root_neg_01",
+          "latex": "Sqrt[x]",
+          "notEquivalentTo": "Sqrt[-x]"
+        },
+        {
+          "id": "root_neg_02",
+          "latex": "Sqrt[x^2]",
+          "notEquivalentTo": "x"
+        }
+      ]
+    },
+    "trigonometric": {
+      "description": "Funciones trigonométricas e identidades",
+      "cases": [
+        {
+          "id": "trig_01",
+          "latex": "Sin[x]^2+Cos[x]^2",
+          "symja": "Sin[x]^2+Cos[x]^2",
+          "expectedEquivalent": "Sin[x]^2+Cos[x]^2"
+        },
+        {
+          "id": "trig_02",
+          "latex": "Tan[x]",
+          "symja": "Tan[x]",
+          "expectedEquivalent": "Tan[x]"
+        },
+        {
+          "id": "trig_03",
+          "latex": "Sin[2*x]",
+          "symja": "Sin[2*x]",
+          "expectedEquivalent": "Sin[2*x]"
+        },
+        {
+          "id": "trig_04",
+          "latex": "Cos[x]^2",
+          "symja": "Cos[x]^2",
+          "expectedEquivalent": "Cos[x]^2"
+        },
+        {
+          "id": "trig_05",
+          "latex": "Sin[x+y]",
+          "symja": "Sin[x+y]",
+          "expectedEquivalent": "Sin[x+y]"
+        },
+        {
+          "id": "trig_06",
+          "latex": "Sec[x]",
+          "symja": "Sec[x]",
+          "expectedEquivalent": "Sec[x]"
+        },
+        {
+          "id": "trig_07",
+          "latex": "Csc[x]",
+          "symja": "Csc[x]",
+          "expectedEquivalent": "Csc[x]"
+        },
+        {
+          "id": "trig_08",
+          "latex": "Cot[x]",
+          "symja": "Cot[x]",
+          "expectedEquivalent": "Cot[x]"
+        }
+      ],
+      "negatives": [
+        {
+          "id": "trig_neg_01",
+          "latex": "Sin[x]",
+          "notEquivalentTo": "Cos[x]"
+        },
+        {
+          "id": "trig_neg_02",
+          "latex": "Sin[x]^2",
+          "notEquivalentTo": "Cos[x]^2"
+        }
+      ]
+    },
+    "logarithms_exponentials": {
+      "description": "Logaritmos y exponenciales",
+      "cases": [
+        {
+          "id": "logexp_01",
+          "latex": "Exp[Log[x]]",
+          "symja": "Exp[Log[x]]",
+          "expectedEquivalent": "Exp[Log[x]]"
+        },
+        {
+          "id": "logexp_02",
+          "latex": "Log[Exp[x]]",
+          "symja": "Log[Exp[x]]",
+          "expectedEquivalent": "Log[Exp[x]]"
+        },
+        {
+          "id": "logexp_03",
+          "latex": "Log[x*y]",
+          "symja": "Log[x*y]",
+          "expectedEquivalent": "Log[x*y]"
+        },
+        {
+          "id": "logexp_04",
+          "latex": "Log[x/y]",
+          "symja": "Log[x/y]",
+          "expectedEquivalent": "Log[x/y]"
+        },
+        {
+          "id": "logexp_05",
+          "latex": "Log[x^a]",
+          "symja": "Log[x^a]",
+          "expectedEquivalent": "Log[x^a]"
+        },
+        {
+          "id": "logexp_06",
+          "latex": "Exp[x+y]",
+          "symja": "Exp[x+y]",
+          "expectedEquivalent": "Exp[x+y]"
+        },
+        {
+          "id": "logexp_07",
+          "latex": "Log[x]/Log[a]",
+          "symja": "Log[x]/Log[a]",
+          "expectedEquivalent": "Log[x]/Log[a]"
+        },
+        {
+          "id": "logexp_08",
+          "latex": "Exp[-x]",
+          "symja": "Exp[-x]",
+          "expectedEquivalent": "Exp[-x]"
+        }
+      ],
+      "negatives": [
+        {
+          "id": "logexp_neg_01",
+          "latex": "Log[x]",
+          "notEquivalentTo": "Log[-x]"
+        },
+        {
+          "id": "logexp_neg_02",
+          "latex": "Exp[x]",
+          "notEquivalentTo": "Exp[-x]"
+        }
+      ]
+    },
+    "fractions": {
+      "description": "Fracciones y simplificación algebraica",
+      "cases": [
+        {
+          "id": "frac_01",
+          "latex": "(x^2-1)/(x-1)",
+          "symja": "(x^2-1)/(x-1)",
+          "expectedEquivalent": "(x^2-1)/(x-1)"
+        },
+        {
+          "id": "frac_02",
+          "latex": "a/b+c/d",
+          "symja": "a/b+c/d",
+          "expectedEquivalent": "a/b+c/d"
+        },
+        {
+          "id": "frac_03",
+          "latex": "(a/b)/(c/d)",
+          "symja": "(a/b)/(c/d)",
+          "expectedEquivalent": "(a/b)/(c/d)"
+        },
+        {
+          "id": "frac_04",
+          "latex": "x^2/x",
+          "symja": "x^2/x",
+          "expectedEquivalent": "x^2/x"
+        },
+        {
+          "id": "frac_05",
+          "latex": "1/x+1/y",
+          "symja": "1/x+1/y",
+          "expectedEquivalent": "1/x+1/y"
+        },
+        {
+          "id": "frac_06",
+          "latex": "2*x/4",
+          "symja": "2*x/4",
+          "expectedEquivalent": "2*x/4"
+        },
+        {
+          "id": "frac_07",
+          "latex": "(x+y)/(x-y)",
+          "symja": "(x+y)/(x-y)",
+          "expectedEquivalent": "(x+y)/(x-y)"
+        },
+        {
+          "id": "frac_08",
+          "latex": "Sin[x]/Cos[x]",
+          "symja": "Sin[x]/Cos[x]",
+          "expectedEquivalent": "Sin[x]/Cos[x]"
+        }
+      ],
+      "negatives": [
+        {
+          "id": "frac_neg_01",
+          "latex": "x/y",
+          "notEquivalentTo": "y/x"
+        },
+        {
+          "id": "frac_neg_02",
+          "latex": "1/x",
+          "notEquivalentTo": "x"
+        }
+      ]
+    },
+    "two_variable_functions": {
+      "description": "Funciones de dos variables",
+      "cases": [
+        {
+          "id": "2var_01",
+          "latex": "x^2+y^2",
+          "symja": "x^2+y^2",
+          "expectedEquivalent": "x^2+y^2"
+        },
+        {
+          "id": "2var_02",
+          "latex": "x*y",
+          "symja": "x*y",
+          "expectedEquivalent": "y*x"
+        },
+        {
+          "id": "2var_03",
+          "latex": "Sin[x]*Cos[y]",
+          "symja": "Sin[x]*Cos[y]",
+          "expectedEquivalent": "Sin[x]*Cos[y]"
+        },
+        {
+          "id": "2var_04",
+          "latex": "Exp[x+y]",
+          "symja": "Exp[x+y]",
+          "expectedEquivalent": "Exp[x+y]"
+        },
+        {
+          "id": "2var_05",
+          "latex": "Log[x*y]",
+          "symja": "Log[x*y]",
+          "expectedEquivalent": "Log[x*y]"
+        },
+        {
+          "id": "2var_06",
+          "latex": "x^2*y+x*y^2",
+          "symja": "x^2*y+x*y^2",
+          "expectedEquivalent": "x^2*y+x*y^2"
+        },
+        {
+          "id": "2var_07",
+          "latex": "x/y+y/x",
+          "symja": "x/y+y/x",
+          "expectedEquivalent": "x/y+y/x"
+        },
+        {
+          "id": "2var_08",
+          "latex": "Sqrt[x^2+y^2]",
+          "symja": "Sqrt[x^2+y^2]",
+          "expectedEquivalent": "Sqrt[x^2+y^2]"
+        }
+      ],
+      "negatives": [
+        {
+          "id": "2var_neg_01",
+          "latex": "x+y",
+          "notEquivalentTo": "x-y"
+        },
+        {
+          "id": "2var_neg_02",
+          "latex": "x*y",
+          "notEquivalentTo": "x+y"
+        }
+      ]
+    },
+    "partial_derivatives": {
+      "description": "Derivadas parciales",
+      "cases": [
+        {
+          "id": "partial_01",
+          "latex": "2*x",
+          "symja": "2*x",
+          "expectedEquivalent": "2*x"
+        },
+        {
+          "id": "partial_02",
+          "latex": "2*y",
+          "symja": "2*y",
+          "expectedEquivalent": "2*y"
+        },
+        {
+          "id": "partial_03",
+          "latex": "y",
+          "symja": "y",
+          "expectedEquivalent": "y"
+        },
+        {
+          "id": "partial_04",
+          "latex": "x",
+          "symja": "x",
+          "expectedEquivalent": "x"
+        },
+        {
+          "id": "partial_05",
+          "latex": "y*Exp[x*y]",
+          "symja": "y*Exp[x*y]",
+          "expectedEquivalent": "y*Exp[x*y]"
+        },
+        {
+          "id": "partial_06",
+          "latex": "x*Exp[x*y]",
+          "symja": "x*Exp[x*y]",
+          "expectedEquivalent": "x*Exp[x*y]"
+        },
+        {
+          "id": "partial_07",
+          "latex": "2",
+          "symja": "2",
+          "expectedEquivalent": "2"
+        },
+        {
+          "id": "partial_08",
+          "latex": "1",
+          "symja": "1",
+          "expectedEquivalent": "1"
+        }
+      ],
+      "negatives": [
+        {
+          "id": "partial_neg_01",
+          "latex": "2*x",
+          "notEquivalentTo": "2*y"
+        },
+        {
+          "id": "partial_neg_02",
+          "latex": "y",
+          "notEquivalentTo": "x"
+        }
+      ]
+    }
+  }
+}

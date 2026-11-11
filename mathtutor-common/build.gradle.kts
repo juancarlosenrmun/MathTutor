@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("com.github.jk1.dependency-license-report")
     // JaCoCo applied from parent build.gradle.kts
 }
 
@@ -26,6 +27,8 @@ dependencies {
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
     // JUnit Platform Launcher required for Gradle JVM Test Suite
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
+    // PIT mutation testing - JUnit 5 plugin
+    testRuntimeOnly("org.pitest:pitest-junit5-plugin:1.2.3")
 }
 
 // Module-specific JaCoCo exclusions for test execution

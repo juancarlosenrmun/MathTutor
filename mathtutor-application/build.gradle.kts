@@ -3,6 +3,7 @@ plugins {
     id("application")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
+    id("com.github.jk1.dependency-license-report")
     // JaCoCo applied from parent build.gradle.kts
 }
 
@@ -68,6 +69,8 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     // JUnit Platform Launcher required for Gradle JVM Test Suite
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
+    // PIT mutation testing - JUnit 5 plugin
+    testRuntimeOnly("org.pitest:pitest-junit5-plugin:1.2.3")
 }
 
 // Module-specific JaCoCo exclusions
@@ -106,4 +109,51 @@ application {
 
 springBoot {
     mainClass.set("com.mathtutor.application.MathTutorApplication")
+}
+
+// realApiTest task: runs tests tagged with "real-api" only if GOOGLE_AI_API_KEY is set
+tasks.register("realApiTest", Test::class) {
+    group = "Verification"
+    description = "Runs real API integration tests (requires GOOGLE_AI_API_KEY env var)"
+
+    // Explicitly configure test class directories and classpath from test source set
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags("real-api")
+    }
+
+    // Load .env file from project root and set GOOGLE_AI_API_KEY as system property for test JVM
+    doFirst {
+        val rootDir = project.rootProject.projectDir
+        val envFile = file("$rootDir/.env")
+        var apiKey: String? = null
+        if (envFile.exists()) {
+            envFile.readLines().forEach { rawLine ->
+                val line = rawLine.trim()
+                if (line.isNotEmpty() && !line.startsWith("#")) {
+                    val parts = line.split("=", limit = 2)
+                    if (parts.size == 2) {
+                        val key = parts[0]
+                        val value = parts[1]
+                        systemProperty(key, value)
+                        environment(key, value)
+                        if (key == "GOOGLE_AI_API_KEY") {
+                            apiKey = value
+                        }
+                    }
+                }
+            }
+        }
+        // Also check system env and system properties
+        if (apiKey == null) {
+            apiKey = System.getenv("GOOGLE_AI_API_KEY") ?: systemProperties["GOOGLE_AI_API_KEY"]?.toString()
+        }
+        logger.lifecycle("realApiTest: GOOGLE_AI_API_KEY = ${if (apiKey != null) "SET (len=${apiKey.length})" else "NOT SET"}")
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            logger.lifecycle("Skipping realApiTest: GOOGLE_AI_API_KEY not set. Set it in .env or environment to run real API tests.")
+            enabled = false
+        }
+    }
 }

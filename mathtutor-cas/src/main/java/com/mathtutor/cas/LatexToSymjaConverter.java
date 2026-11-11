@@ -132,11 +132,14 @@ public class LatexToSymjaConverter {
 
     /**
      * Evalúa dos expresiones numéricamente en varios puntos.
+     * Rechaza diferencias constantes (ej: x vs x+1e-10) y dominios disjuntos.
      */
     private boolean evaluateNumerically(IExpr expr1, IExpr expr2) {
         try {
             double[] testPoints = {-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 3.0, 5.0};
             boolean anyValidEvaluation = false;
+            double diffSum = 0.0;
+            int validCount = 0;
 
             for (double x : testPoints) {
                 try {
@@ -153,16 +156,37 @@ public class LatexToSymjaConverter {
                     }
 
                     anyValidEvaluation = true;
+                    double diff = val1 - val2;
+                    diffSum += diff;
+                    validCount++;
 
-                    if (Math.abs(val1 - val2) > 1e-9) {
+                    // Diferencia absoluta > tolerancia en CUALQUIER punto → no equivalente
+                    if (Math.abs(diff) > 1e-9) {
                         return false;
                     }
                 } catch (Exception e) {
+                    // Punto no evaluable (ej: sqrt(-1)) → saltar, no cuenta como válido
                     continue;
                 }
             }
 
-            return anyValidEvaluation;
+            // Debe haber al menos 2 puntos de evaluación válida para considerar equivalente
+            // Esto evita falsos positivos con dominios disjuntos (ej: sqrt(x) vs sqrt(-x) solo x=0)
+            if (validCount < 2) {
+                return false;
+            }
+
+            // Rechazar diferencia constante no nula (ej: x vs x + 1e-10 en todos los puntos)
+            // Si la diferencia es constante y ≠ 0, no son equivalentes
+            double avgDiff = diffSum / validCount;
+            if (Math.abs(avgDiff) > 1e-12) {
+                // Verificar si la diferencia es constante en todos los puntos válidos
+                // (si la varianza de las diferencias es ~0)
+                // Para simplificar: si avgDiff ≠ 0, no son equivalentes
+                return false;
+            }
+
+            return true;
 
         } catch (Exception e) {
             log.debug("Error in numeric evaluation: {}", e.getMessage());

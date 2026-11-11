@@ -2,6 +2,7 @@ plugins {
     id("java")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
+    id("com.github.jk1.dependency-license-report")
     // JaCoCo applied from parent build.gradle.kts
 }
 
@@ -41,6 +42,8 @@ dependencies {
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
     // JUnit Platform Launcher required for Gradle JVM Test Suite
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
+    // PIT mutation testing - JUnit 5 plugin
+    testRuntimeOnly("org.pitest:pitest-junit5-plugin:1.2.3")
 
     // ArchUnit for architecture tests
     testImplementation("com.tngtech.archunit:archunit-junit5:1.4.0")
@@ -49,11 +52,3 @@ dependencies {
 tasks.named("bootJar") {
     enabled = false
 }
-
-// Module-specific JaCoCo exclusions can be added here if needed
-// Example: exclude DTOs or generated code
-// tasks.withType<Test> {
-//     configure<JacocoTaskExtension> {
-//         excludes.addAll(listOf("**/dto/**", "**/model/**"))
-//     }
-// }

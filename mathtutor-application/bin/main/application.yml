@@ -2,6 +2,10 @@ spring:
   application:
     name: mathtutor
 
+  # Cargar .env si existe (opcional, no falla si no está)
+  config:
+    import: "optional:file:.env[.properties]"
+
   # Perfil de desarrollo con PostgreSQL local (Docker Compose)
   profiles:
     active: dev
@@ -42,6 +46,13 @@ spring:
       api-key: ${SPRING_AI_OPENAI_API_KEY:}
     ollama:
       base-url: ${SPRING_AI_OLLAMA_BASE_URL:http://localhost:11434}
+    google:
+      ai-studio:
+        api-key: ${GOOGLE_AI_API_KEY:}
+        embedding-model: ${GOOGLE_AI_EMBEDDING_MODEL:gemini-embedding-001}
+        embedding-dimensions: 768
+        max-retries: 3
+        max-requests-per-minute: 60
 
 ---
 
