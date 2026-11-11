@@ -157,6 +157,68 @@ class LatexContentExtractorWhiteBoxTest {
     }
 
     @Test
+    @DisplayName("MUTATION TEST: regex sin lookbehind captura $ escapados como fórmulas (debe fallar si regex rota)")
+    void mutationTestEscapedDollarsCaught() {
+        // Este test está diseñado para FALLAR si el regex inline se rompe a \\$(.*?)\\$
+        // (sin negative lookbehind). Verifica que el test SÍ detecta la mutación.
+        String tex = """
+                \\bloque{Test}
+                \\tema{Test}
+                \\dificultad{1}
+                \\begin{ejercicio}
+                Precio: \\$100 y \\$200. Fórmula: $x^2$
+                \\end{ejercicio}
+                """;
+
+        LatexContentExtractor.ExtractionResult result = extractor.extract(tex);
+
+        // Con regex CORRECTO: solo ["x^2"]
+        // Con regex ROTO (sin lookbehind): captura ["100 y ", "x^2"] o similar
+        // Este test DEBE pasar con implementación correcta
+        assertThat(result.getFormulas()).containsExactly("x^2");
+        // Verificación adicional: NO debe contener fragmentos de precios
+        assertThat(result.getFormulas()).noneMatch(f -> f.contains("100") || f.contains("200") || f.contains("Precio"));
+    }
+
+    @Test
+    @DisplayName("MUTATION TEST: regex sin lookbehind falla con múltiples $ escapados")
+    void mutationTestMultipleEscapedDollars() {
+        String tex = """
+                \\bloque{Test}
+                \\tema{Test}
+                \\dificultad{1}
+                \\begin{ejercicio}
+                Costo: \\$50, impuesto: \\$5, total: \\$55. Fórmula: $y = x + 1$
+                \\end{ejercicio}
+                """;
+
+        LatexContentExtractor.ExtractionResult result = extractor.extract(tex);
+
+        // Con regex CORRECTO: solo ["y = x + 1"]
+        // Con regex ROTO: capturaría fragmentos entre $ escapados
+        assertThat(result.getFormulas()).containsExactly("y = x + 1");
+        assertThat(result.getFormulas()).noneMatch(f -> f.contains("50") || f.contains("5") || f.contains("55"));
+    }
+
+    @Test
+    @DisplayName("MUTATION TEST: regex sin lookbehind falla con $ escapado al final")
+    void mutationTestEscapedDollarAtEnd() {
+        String tex = """
+                \\bloque{Test}
+                \\tema{Test}
+                \\dificultad{1}
+                \\begin{ejercicio}
+                Precio \\$100. Fórmula $z^2$
+                \\end{ejercicio}
+                """;
+
+        LatexContentExtractor.ExtractionResult result = extractor.extract(tex);
+
+        assertThat(result.getFormulas()).containsExactly("z^2");
+        assertThat(result.getFormulas()).noneMatch(f -> f.contains("100") || f.contains("Precio"));
+    }
+
+    @Test
     @DisplayName("extract: no captura $$ como fórmula inline")
     void extractDoesNotCaptureDoubleDollarAsInline() {
         String tex = """

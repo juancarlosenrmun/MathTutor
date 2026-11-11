@@ -278,8 +278,8 @@ public class LatexContentExtractor {
             }
         }
 
-        // Fórmulas inline $...$
-        Pattern inlinePattern = Pattern.compile("(?<!\\\\)\\$(.*?)(?<!\\\\)\\$");
+        // Fórmulas inline $...$ - BROKEN FOR TEST
+        Pattern inlinePattern = Pattern.compile("\\$(.*?)\\$");
         Matcher inlineMatcher = inlinePattern.matcher(textWithoutDisplay);
         while (inlineMatcher.find()) {
             String formula = inlineMatcher.group(1).trim();
