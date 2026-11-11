@@ -42,6 +42,8 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-pgvector-store")
     // Embedding model (OpenAI, pero usaremos uno fake para tests) (version from Spring AI BOM)
     implementation("org.springframework.ai:spring-ai-openai")
+    // Ollama embedding model for local embeddings (version from Spring AI BOM)
+    implementation("org.springframework.ai:spring-ai-ollama")
 
     // Lombok (explicit version since BOM doesn't resolve for annotationProcessor)
     compileOnly("org.projectlombok:lombok:1.18.34")
