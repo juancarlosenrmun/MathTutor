@@ -41,7 +41,7 @@ Al terminar cada petición, sin que se pida:
 - Nunca hacer commit ni merge directamente en `main`; la integración a `main` la decide el usuario.
 - Antes de crear una rama, actualizar la rama base (`git pull`).
 - La bóveda `brain/` es documentación de proyecto: se versiona en `DOC`. Excepción: la checklist de `brain/04 Sprints/` y `brain/05 Seguimiento/` se actualiza en `DEV` junto al código que la justifica, para que el estado marcado coincida con el código.
-- Commits pequeños por UC/EN con mensaje `tipo(UC-NN): descripción`.
+- Commits pequeños por UC/EN con mensaje `tipo(UC-NN): descripción`. NO CO-FIRMES LOS COMMITS
 
 ## Estilo
 - Respuestas breves, resultados directos. Código y documentación en español; identificadores en inglés.
