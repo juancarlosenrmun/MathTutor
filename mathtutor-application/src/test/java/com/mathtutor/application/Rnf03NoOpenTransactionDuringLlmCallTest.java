@@ -79,6 +79,8 @@ class Rnf03NoOpenTransactionDuringLlmCallTest {
         registry.add("spring.flyway.locations", () -> "classpath:db/migration");
         registry.add("spring.profiles.active", () -> "spring-ai-pgvector,deterministic");
         registry.add("spring.ai.vectorstore.pgvector.initialize-schema", () -> "true");
+        // Lower similarity threshold for deterministic embeddings test
+        registry.add("tutor.rag.similarity-threshold", () -> "0.01");
         // JWT configuration for tests
         registry.add("jwt.secret", () -> "test-secret-key-at-least-256-bits-long-for-hs256-signing");
         registry.add("jwt.access-token-expiration-minutes", () -> "15");

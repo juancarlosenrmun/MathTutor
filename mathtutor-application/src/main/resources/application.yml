@@ -10,6 +10,14 @@ spring:
   profiles:
     active: dev
 
+# RAG Configuration
+tutor:
+  rag:
+    # Umbral de similitud coseno para búsqueda vectorial (0.0-1.0).
+    # Obligatorio: debe estar configurado. Recomendado 0.7 (distancia coseno < 0.3).
+    # Se valida al arrancar: falla rápido si no configurado o fuera de rango.
+    similarity-threshold: 0.7
+
 ---
 
 spring:

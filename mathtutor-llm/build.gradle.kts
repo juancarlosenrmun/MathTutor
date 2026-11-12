@@ -36,6 +36,12 @@ dependencies {
     // Spring Context for DI and annotations (@Component, @Configuration, @Bean, @Profile)
     implementation("org.springframework:spring-context:6.1.6")
 
+    // Spring Boot Autoconfigure for @ConfigurationProperties, @EnableConfigurationProperties
+    implementation("org.springframework.boot:spring-boot-autoconfigure")
+
+    // Validation API for @Validated, @NotNull, @DecimalMin, @DecimalMax
+    implementation("jakarta.validation:jakarta.validation-api:3.1.1")
+
     // Spring Data JPA for JpaRepository
     implementation("org.springframework.data:spring-data-jpa:3.2.5")
 
