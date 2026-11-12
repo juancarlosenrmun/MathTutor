@@ -52,6 +52,12 @@ dependencies {
     // Ollama embedding model for local embeddings (version from Spring AI BOM)
     implementation("org.springframework.ai:spring-ai-ollama")
 
+    // Spring WebFlux for WebClient (streaming)
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    // Jackson for JSON parsing in streaming responses
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+
     // Lombok (explicit version since BOM doesn't resolve for annotationProcessor)
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
