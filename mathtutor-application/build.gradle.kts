@@ -103,6 +103,13 @@ tasks.withType<Test> {
     }
 }
 
+// Exclude real-api tagged tests from regular test run (they require GOOGLE_AI_API_KEY)
+tasks.named<Test>("test") {
+    useJUnitPlatform {
+        excludeTags("real-api")
+    }
+}
+
 application {
     mainClass.set("com.mathtutor.application.MathTutorApplication")
 }
