@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.*;
  * usando la abstracción VectorStore de Spring AI (PgVectorStore).
  */
 @SpringBootTest(classes = MathTutorApplication.class)
-@ActiveProfiles("spring-ai-pgvector")
+@ActiveProfiles({"spring-ai-pgvector", "deterministic"})
 @Testcontainers(disabledWithoutDocker = true)
 @Transactional
 class SpringAiPgVectorRetrieverIntegrationTest {
@@ -54,12 +54,14 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("spring.flyway.locations", () -> "classpath:db/migration");
-        // Perfil spring-ai-pgvector para activar Spring AI PgVectorStore
-        registry.add("spring.profiles.active", () -> "spring-ai-pgvector");
+        // Perfil spring-ai-pgvector + deterministic para activar Spring AI PgVectorStore con embedding determinista
+        registry.add("spring.profiles.active", () -> "spring-ai-pgvector,deterministic");
         // Spring AI configuration - provide dummy values to prevent placeholder resolution errors
         registry.add("spring.ai.openai.api-key", () -> "test-key");
         registry.add("spring.ai.vectorstore.pgvector.initialize-schema", () -> "true");
         registry.add("spring.ai.embedding.model", () -> "text-embedding-ada-002");
+        // Lower similarity threshold for deterministic embeddings test
+        registry.add("tutor.rag.similarity-threshold", () -> "0.01");
         // JWT configuration for tests (required by TokenServiceAdapter)
         registry.add("jwt.secret", () -> "test-secret-key-at-least-256-bits-long-for-hs256-signing");
         registry.add("jwt.access-token-expiration-minutes", () -> "15");

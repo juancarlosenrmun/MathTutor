@@ -52,6 +52,12 @@ dependencies {
     // Ollama embedding model for local embeddings (version from Spring AI BOM)
     implementation("org.springframework.ai:spring-ai-ollama")
 
+    // Spring WebFlux for WebClient (streaming)
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    // Jackson for JSON parsing in streaming responses
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+
     // Lombok (explicit version since BOM doesn't resolve for annotationProcessor)
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
@@ -69,6 +75,8 @@ dependencies {
     // Testcontainers for integration tests
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
+    // H2 database for embedded testing
+    testImplementation("com.h2database:h2")
 }
 
 // Sin exclusiones JaCoCo - objetivo ≥80% líneas / ≥70% ramas con tests unitarios
@@ -148,3 +156,4 @@ tasks.register("realApiTest", Test::class) {
         }
     }
 }
+

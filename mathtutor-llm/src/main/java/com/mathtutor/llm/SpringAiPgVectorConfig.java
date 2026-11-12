@@ -58,18 +58,6 @@ public class SpringAiPgVectorConfig {
         return new SpringAiGoogleAiStudioEmbeddingModel(apiKey, embeddingModel, dimensions, maxRetries, maxRequestsPerMinute);
     }
 
-    @Bean
-    @Profile("!ollama & !openai & !google-ai-studio & !deterministic")
-    public DeterministicEmbeddingModel deterministicEmbeddingModel() {
-        return new DeterministicEmbeddingModel();
-    }
-
-    @Bean
-    @Profile("!ollama & !openai & !google-ai-studio & !deterministic")
-    public EmbeddingModel springAiEmbeddingModel(DeterministicEmbeddingModel delegate) {
-        return new SpringAiDeterministicEmbeddingModel(delegate);
-    }
-
     /**
      * Perfil "deterministic": usa DeterministicEmbeddingModel envuelto con retraso
      * para simular latencia de LLM real (tests RNF-03).
@@ -86,6 +74,15 @@ public class SpringAiPgVectorConfig {
     public EmbeddingModel springAiSlowEmbeddingModel(SlowDeterministicEmbeddingModel delegate) {
         return new SpringAiDeterministicEmbeddingModel(delegate);
     }
+
+    /**
+     * No default embedding model bean - application must start with one of:
+     * - ollama
+     * - openai
+     * - google-ai-studio
+     * - deterministic (for RNF-03 tests)
+     * This ensures fail-fast if no provider profile is active.
+     */
 
     @Bean
     public VectorStore vectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel) {

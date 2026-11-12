@@ -593,4 +593,71 @@
       ]
     }
   }
+},
+"limits_series": {
+  "description": "Límites y series",
+  "cases": [
+    {
+      "id": "limit_01",
+      "latex": "x",
+      "symja": "x",
+      "expectedEquivalent": "x"
+    },
+    {
+      "id": "limit_02",
+      "latex": "Sin[x]/x",
+      "symja": "Sin[x]/x",
+      "expectedEquivalent": "Sin[x]/x"
+    },
+    {
+      "id": "limit_03",
+      "latex": "(1+1/x)^x",
+      "symja": "(1+1/x)^x",
+      "expectedEquivalent": "(1+1/x)^x"
+    },
+    {
+      "id": "limit_04",
+      "latex": "Log[1+x]",
+      "symja": "Log[1+x]",
+      "expectedEquivalent": "Log[1+x]"
+    },
+    {
+      "id": "limit_05",
+      "latex": "Exp[x]-1",
+      "symja": "Exp[x]-1",
+      "expectedEquivalent": "Exp[x]-1"
+    },
+    {
+      "id": "limit_06",
+      "latex": "x*Log[x]",
+      "symja": "x*Log[x]",
+      "expectedEquivalent": "x*Log[x]"
+    },
+    {
+      "id": "limit_07",
+      "latex": "(x^2-1)/(x-1)",
+      "symja": "(x^2-1)/(x-1)",
+      "expectedEquivalent": "x+1"
+    },
+    {
+      "id": "series_01",
+      "latex": "1+x+x^2/2+x^3/6",
+      "symja": "1+x+x^2/2+x^3/6",
+      "expectedEquivalent": "1+x+x^2/2+x^3/6"
+    }
+  ],
+  "negatives": [
+    {
+      "id": "limit_neg_01",
+      "latex": "Sin[x]/x",
+      "notEquivalentTo": "Cos[x]"
+    },
+    {
+      "id": "limit_neg_02",
+      "latex": "Log[1+x]",
+      "notEquivalentTo": "x"
+    }
+  ]
+}
+}
 }
