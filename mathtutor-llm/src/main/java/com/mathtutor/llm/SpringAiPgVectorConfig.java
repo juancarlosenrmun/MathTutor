@@ -21,6 +21,7 @@ import org.springframework.util.Assert;
  * - "spring-ai-pgvector" + "openai": usa OpenAiEmbeddingModel (requiere API key en OPENAI_API_KEY)
  * - "spring-ai-pgvector" + "google-ai-studio": usa Google AI Studio (Gemini text-embedding-004, 768 dim)
  * - "spring-ai-pgvector" (solo): usa DeterministicEmbeddingModel para tests sin claves API (384 dim)
+ * - "spring-ai-pgvector" + "deterministic": usa SlowDeterministicEmbeddingModel para tests RNF-03 (2s delay)
  */
 @Configuration
 @Profile("spring-ai-pgvector")
