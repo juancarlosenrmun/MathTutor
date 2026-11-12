@@ -5,6 +5,7 @@ import com.mathtutor.common.port.NoteChunkStore;
 import com.mathtutor.common.port.RagRetriever;
 import com.mathtutor.llm.DeterministicEmbeddingModel;
 import com.mathtutor.llm.PgVectorRetriever;
+import com.mathtutor.llm.RagProperties;
 import com.pgvector.PGvector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,11 +44,15 @@ class PgVectorRetrieverWhiteBoxTest {
     @Mock
     private JdbcTemplate jdbcTemplate;
 
+    @Mock(lenient = true)
+    private RagProperties ragProperties;
+
     private PgVectorRetriever retriever;
 
     @BeforeEach
     void setUp() {
-        retriever = new PgVectorRetriever(noteChunkStore, embeddingModel, jdbcTemplate);
+        when(ragProperties.toCosineDistance()).thenReturn(0.3);
+        retriever = new PgVectorRetriever(noteChunkStore, embeddingModel, jdbcTemplate, ragProperties);
     }
 
     @Test
@@ -102,14 +107,15 @@ class PgVectorRetrieverWhiteBoxTest {
         assertThat(sql).contains("embedding <=> ?::vector AS distance");
         assertThat(sql).contains("module_code = ?");
         assertThat(sql).contains("topic_code = ?");
-        assertThat(sql).contains("embedding <=> ?::vector < 0.3");
+        assertThat(sql).contains("embedding <=> ?::vector < ?");
         assertThat(sql).contains("ORDER BY distance ASC LIMIT 10");
 
-        assertThat(params).hasSize(4);
+        assertThat(params).hasSize(5);
         assertThat(params[0]).isInstanceOf(PGvector.class);
         assertThat(params[1]).isEqualTo("CALC");
         assertThat(params[2]).isEqualTo("DERIV");
         assertThat(params[3]).isInstanceOf(PGvector.class);
+        assertThat(params[4]).isEqualTo(0.3);
     }
 
     @Test
@@ -138,7 +144,10 @@ class PgVectorRetrieverWhiteBoxTest {
 
         assertThat(sql).doesNotContain("module_code = ?");
         assertThat(sql).doesNotContain("topic_code = ?");
-        assertThat(params).hasSize(2); // query embedding (distance) + query embedding (threshold)
+        assertThat(params).hasSize(3); // query embedding (distance) + query embedding (threshold) + threshold value
+        assertThat(params[0]).isInstanceOf(PGvector.class);
+        assertThat(params[1]).isInstanceOf(PGvector.class);
+        assertThat(params[2]).isEqualTo(0.3);
     }
 
     @Test
@@ -164,10 +173,11 @@ class PgVectorRetrieverWhiteBoxTest {
 
         assertThat(sql).contains("module_code = ?");
         assertThat(sql).doesNotContain("topic_code = ?");
-        assertThat(params).hasSize(3);
+        assertThat(params).hasSize(4);
         assertThat(params[0]).isInstanceOf(PGvector.class);
         assertThat(params[1]).isEqualTo("CALC");
         assertThat(params[2]).isInstanceOf(PGvector.class);
+        assertThat(params[3]).isEqualTo(0.3);
     }
 
     @Test
@@ -193,10 +203,11 @@ class PgVectorRetrieverWhiteBoxTest {
 
         assertThat(sql).doesNotContain("module_code = ?");
         assertThat(sql).contains("topic_code = ?");
-        assertThat(params).hasSize(3);
+        assertThat(params).hasSize(4);
         assertThat(params[0]).isInstanceOf(PGvector.class);
         assertThat(params[1]).isEqualTo("DERIV");
         assertThat(params[2]).isInstanceOf(PGvector.class);
+        assertThat(params[3]).isEqualTo(0.3);
     }
 
     @Test

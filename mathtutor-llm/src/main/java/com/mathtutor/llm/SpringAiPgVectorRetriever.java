@@ -32,11 +32,13 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
 
     private final VectorStore vectorStore;
     private final FilterExpressionBuilder filterBuilder;
+    private final RagProperties ragProperties;
 
     @Autowired
-    public SpringAiPgVectorRetriever(VectorStore vectorStore) {
+    public SpringAiPgVectorRetriever(VectorStore vectorStore, RagProperties ragProperties) {
         this.vectorStore = vectorStore;
         this.filterBuilder = new FilterExpressionBuilder();
+        this.ragProperties = ragProperties;
     }
 
     @Override
@@ -63,10 +65,14 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
             filter = combinedOp.build();
         }
 
+        // Umbral de similitud desde configuración (validada al arrancar)
+        double similarityThreshold = ragProperties.getSimilarityThreshold();
+
         // Búsqueda por similitud con filtro opcional usando SearchRequest
         SearchRequest searchRequest = SearchRequest.builder()
                 .query(query)
                 .topK(10)
+                .similarityThreshold(similarityThreshold)
                 .filterExpression(filter)
                 .build();
 

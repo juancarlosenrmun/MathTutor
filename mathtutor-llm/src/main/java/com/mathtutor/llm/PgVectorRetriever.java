@@ -32,14 +32,17 @@ public class PgVectorRetriever implements RagRetriever {
     private final NoteChunkStore noteChunkStore;
     private final DeterministicEmbeddingModel embeddingModel;
     private final JdbcTemplate jdbcTemplate;
+    private final RagProperties ragProperties;
 
     @Autowired
     public PgVectorRetriever(NoteChunkStore noteChunkStore,
                               DeterministicEmbeddingModel embeddingModel,
-                              JdbcTemplate jdbcTemplate) {
+                              JdbcTemplate jdbcTemplate,
+                              RagProperties ragProperties) {
         this.noteChunkStore = noteChunkStore;
         this.embeddingModel = embeddingModel;
         this.jdbcTemplate = jdbcTemplate;
+        this.ragProperties = ragProperties;
     }
 
     @Override
@@ -72,11 +75,12 @@ public class PgVectorRetriever implements RagRetriever {
             params.add(topic);
         }
 
-        // Umbral de similitud: distance < 0.3 (cosine distance, 0 = identical)
-        // pgvector usa distancia coseno: 1 - cosine_similarity
-        // Para umbral de similitud 0.7, distance < 0.3
-        sql.append(" AND embedding <=> ?::vector < 0.3");
+        // Umbral de similitud desde configuración (validada al arrancar)
+        // pgvector usa distancia coseno: 1 - similitud
+        double cosineDistance = ragProperties.toCosineDistance();
+        sql.append(" AND embedding <=> ?::vector < ?");
         params.add(new PGvector(queryEmbedding));
+        params.add(cosineDistance);
 
         sql.append(" ORDER BY distance ASC LIMIT 10");
 
