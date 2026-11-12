@@ -65,7 +65,8 @@ public class SymjaCasEngine implements CasEngine {
         if (a == null || b == null) {
             return false;
         }
-        return converter.areEquivalent(a, b);
+        EquivalenceResult result = converter.areEquivalentThreeState(a, b);
+        return result == EquivalenceResult.EQUIVALENTE;
     }
 
     @Override

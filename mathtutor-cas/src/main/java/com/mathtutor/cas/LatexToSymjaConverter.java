@@ -88,20 +88,40 @@ public class LatexToSymjaConverter {
      * @param latex1 Primera expresión LaTeX
      * @param latex2 Segunda expresión LaTeX
      * @return true si son equivalentes, false si no lo son o hay error
+     * @deprecated Use {@link #areEquivalentThreeState(String, String)} for three-state result
      */
+    @Deprecated
     public boolean areEquivalent(String latex1, String latex2) {
+        return areEquivalentThreeState(latex1, latex2).toBoolean();
+    }
+
+    /**
+     * Verifica si dos expresiones LaTeX son matemáticamente equivalentes.
+     * Retorna resultado de tres estados para evitar falsos positivos.
+     *
+     * Estados:
+     * - EQUIVALENTE: Simbólicamente idénticas, diferencia simplifica a 0, o numéricamente equivalentes
+     * - NO_EQUIVALENTE: Diferencia > tolerancia, o diferencia constante no nula detectada
+     * - INDETERMINADO: Pocos puntos válidos (<2), dominios disjuntos, error de parseo/evaluación
+     *
+     * @param latex1 Primera expresión LaTeX
+     * @param latex2 Segunda expresión LaTeX
+     * @return Resultado de tres estados
+     */
+    public EquivalenceResult areEquivalentThreeState(String latex1, String latex2) {
         IExpr expr1 = parseLatex(latex1);
         IExpr expr2 = parseLatex(latex2);
 
         if (expr1 == null || expr2 == null) {
-            // Fallback: comparación string si no se puede parsear
-            return latex1 != null && latex1.equals(latex2);
+            // No se puede parsear: indeterminado
+            log.debug("Cannot parse one or both expressions: '{}' vs '{}'", latex1, latex2);
+            return EquivalenceResult.INDETERMINADO;
         }
 
         try {
             // Optimización: si los ASTs son idénticos
             if (expr1.equals(expr2)) {
-                return true;
+                return EquivalenceResult.EQUIVALENTE;
             }
 
             // Simbólicamente: simplificar (expr1 - expr2) y verificar si es 0
@@ -110,36 +130,36 @@ public class LatexToSymjaConverter {
 
             // Verificar si la simplificación es exactamente 0
             if (simplified.isZero()) {
-                return true;
+                return EquivalenceResult.EQUIVALENTE;
             }
 
             // También intentar together() para combinar fracciones
             IExpr together = diff.together();
             if (together.isZero()) {
-                return true;
+                return EquivalenceResult.EQUIVALENTE;
             }
 
             // Si no es exactamente 0, intentar evaluación numérica en varios puntos
             // como respaldo para casos donde la simplificación no llega a 0
-            return evaluateNumerically(expr1, expr2);
+            return evaluateNumericallyThreeState(expr1, expr2);
 
         } catch (Exception e) {
             log.debug("Error checking equivalence symbolically: {}", e.getMessage());
-            // Fallback a evaluación numérica
-            return evaluateNumerically(expr1, expr2);
+            // Fallback a evaluación numérica de tres estados
+            return evaluateNumericallyThreeState(expr1, expr2);
         }
     }
 
     /**
-     * Evalúa dos expresiones numéricamente en varios puntos.
+     * Evalúa dos expresiones numéricamente en varios puntos con resultado de tres estados.
      * Rechaza diferencias constantes (ej: x vs x+1e-10) y dominios disjuntos.
      */
-    private boolean evaluateNumerically(IExpr expr1, IExpr expr2) {
+    private EquivalenceResult evaluateNumericallyThreeState(IExpr expr1, IExpr expr2) {
         try {
             double[] testPoints = {-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 3.0, 5.0};
-            boolean anyValidEvaluation = false;
             double diffSum = 0.0;
             int validCount = 0;
+            double maxAbsDiff = 0.0;
 
             for (double x : testPoints) {
                 try {
@@ -155,14 +175,14 @@ public class LatexToSymjaConverter {
                         continue;
                     }
 
-                    anyValidEvaluation = true;
                     double diff = val1 - val2;
+                    maxAbsDiff = Math.max(maxAbsDiff, Math.abs(diff));
                     diffSum += diff;
                     validCount++;
 
-                    // Diferencia absoluta > tolerancia en CUALQUIER punto → no equivalente
+                    // Diferencia absoluta > tolerancia en CUALQUIER punto → NO_EQUIVALENTE
                     if (Math.abs(diff) > 1e-9) {
-                        return false;
+                        return EquivalenceResult.NO_EQUIVALENTE;
                     }
                 } catch (Exception e) {
                     // Punto no evaluable (ej: sqrt(-1)) → saltar, no cuenta como válido
@@ -173,24 +193,23 @@ public class LatexToSymjaConverter {
             // Debe haber al menos 2 puntos de evaluación válida para considerar equivalente
             // Esto evita falsos positivos con dominios disjuntos (ej: sqrt(x) vs sqrt(-x) solo x=0)
             if (validCount < 2) {
-                return false;
+                return EquivalenceResult.INDETERMINADO;
             }
 
             // Rechazar diferencia constante no nula (ej: x vs x + 1e-10 en todos los puntos)
             // Si la diferencia es constante y ≠ 0, no son equivalentes
             double avgDiff = diffSum / validCount;
             if (Math.abs(avgDiff) > 1e-12) {
-                // Verificar si la diferencia es constante en todos los puntos válidos
-                // (si la varianza de las diferencias es ~0)
-                // Para simplificar: si avgDiff ≠ 0, no son equivalentes
-                return false;
+                return EquivalenceResult.NO_EQUIVALENTE;
             }
 
-            return true;
+            // Si llegamos aquí: todos los puntos válidos tienen diferencia < 1e-9
+            // y la diferencia promedio ≈ 0 → EQUIVALENTE
+            return EquivalenceResult.EQUIVALENTE;
 
         } catch (Exception e) {
             log.debug("Error in numeric evaluation: {}", e.getMessage());
-            return false;
+            return EquivalenceResult.INDETERMINADO;
         }
     }
 

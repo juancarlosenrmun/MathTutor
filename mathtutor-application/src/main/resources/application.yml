@@ -59,8 +59,11 @@ spring:
         api-key: ${GOOGLE_AI_API_KEY:}
         embedding-model: ${GOOGLE_AI_EMBEDDING_MODEL:gemini-embedding-001}
         embedding-dimensions: 768
-        max-retries: 3
-        max-requests-per-minute: 60
+        chat-model: ${GOOGLE_AI_CHAT_MODEL:gemini-1.5-flash}
+        temperature: 0.7
+        max-output-tokens: 8192
+        max-retries: 5
+        max-requests-per-minute: 100
 
 ---
 
