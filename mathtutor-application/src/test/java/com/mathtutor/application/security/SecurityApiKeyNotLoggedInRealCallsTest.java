@@ -216,8 +216,10 @@ class SecurityApiKeyNotLoggedInRealCallsTest {
      * Este test DELIBERADAMENTE loguea la fake key y verifica que el detector la atrapa.
      * DEMUESTRA que los asserts de los tests 1 y 2 SÍ detectarían una fuga.
      * Se ejecuta SIN key real (usa FAKE_API_KEY inyectada).
+     * Tag: "detector-demo" - excluido del test run regular, solo ejecución manual.
      */
     @Test
+    @Tag("detector-demo")
     void testDetectorCatchesLoggedKey() {
         // Given: FAKE_API_KEY inyectada via @DynamicPropertySource
         String fakeKey = FAKE_API_KEY;

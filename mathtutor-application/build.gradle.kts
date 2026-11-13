@@ -108,9 +108,10 @@ tasks.withType<Test> {
 }
 
 // Exclude real-api tagged tests from regular test run (they require GOOGLE_AI_API_KEY)
+// Exclude detector-demo tagged tests (demonstration test that deliberately fails to prove detector works)
 tasks.named<Test>("test") {
     useJUnitPlatform {
-        excludeTags("real-api")
+        excludeTags("real-api", "detector-demo")
     }
 }
 
@@ -172,6 +173,25 @@ tasks.register("realApiTest", Test::class) {
             logger.lifecycle("Skipping realApiTest: GOOGLE_AI_API_KEY not set. Set it in .env or environment to run real API tests.")
             enabled = false
         }
+    }
+}
+
+// detectorDemoTest task: runs the demonstration test that deliberately logs a key to prove detector works
+tasks.register("detectorDemoTest", Test::class) {
+    group = "Verification"
+    description = "Runs detector demo test (DELIBERATELY FAILS to prove detector catches logged keys)"
+
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags("detector-demo")
+    }
+
+    testLogging {
+        events("passed", "failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStandardStreams = true
     }
 }
 
