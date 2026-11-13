@@ -149,7 +149,6 @@ tasks.register("realApiTest", Test::class) {
             apiKey = System.getenv("GOOGLE_AI_API_KEY") ?: systemProperties["GOOGLE_AI_API_KEY"]?.toString()
         }
         logger.lifecycle("realApiTest: GOOGLE_AI_API_KEY = ${if (apiKey != null) "SET (len=${apiKey.length})" else "NOT SET"}")
-        logger.lifecycle("realApiTest: systemProperties GOOGLE_AI_API_KEY = ${systemProperties["GOOGLE_AI_API_KEY"]}")
         if (apiKey == null || apiKey.trim().isEmpty()) {
             logger.lifecycle("Skipping realApiTest: GOOGLE_AI_API_KEY not set. Set it in .env or environment to run real API tests.")
             enabled = false
