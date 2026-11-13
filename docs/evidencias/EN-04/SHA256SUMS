@@ -1,0 +1,32 @@
+9d653738539a72d99216e65dd5b16aada43a45c9efd3ed61fb439ecaca5e188a *docs/evidencias/EN-04/00-INDEX.md
+11516a15e1d0b8d9f80cc96208a454180b7a5dc6f44481d50c742bc49bc3fec0 *docs/evidencias/EN-04/01-entorno/docker-info.txt
+ea1caeb82e9a0d276ded35c93a362bba4d8db264c7d36cb92c140d615b5888b2 *docs/evidencias/EN-04/01-entorno/docker-ps.txt
+2582f53389488d59f80396fd275b726c77d692197d4a866b39437af4e16f2c43 *docs/evidencias/EN-04/01-entorno/gh-auth-status.txt
+254c6ba6a6d119528405938d11dbc910745de8d0e763c7dbf088d4a978daf231 *docs/evidencias/EN-04/01-entorno/gh-run-list-5.txt
+48a8ce774f5d43b6a6b4d79c41ea36ea2a3b4d91724e06a4a79541e58f00739f *docs/evidencias/EN-04/01-entorno/gh-run-view-head.txt
+516badd8772491a520afacd0724fc07c485a262eaaea1d6fa2967d9b0a40b3c4 *docs/evidencias/EN-04/01-entorno/git-log-oneline-30.txt
+625f5b8cd7fef2351fb72da17c0e059a1e5ffcf72a55e7e964b0759cf559eca1 *docs/evidencias/EN-04/01-entorno/git-rev-parse-head.txt
+19c5238c6195be5abef039c348f904f4b2d6584db5020f818a1d7543064232cf *docs/evidencias/EN-04/01-entorno/git-status-short.txt
+61020077326af607662e38e716bca0d351e714e5411d74f7c2b5229eacf1a8e7 *docs/evidencias/EN-04/01-entorno/gradle-version.txt
+2e7b0fdea1a56b7a601bbbb916329037c881a764d1502b9fbbc7700ab9d909d2 *docs/evidencias/EN-04/01-entorno/java-version.txt
+7b9c8ca388b942ffc989d584960a566322ef8be966b908130255deee8fa167c2 *docs/evidencias/EN-04/02-build/gradle-clean-check.log
+71478d198a415e54799be7548d3268e916a3d35e56a96fc3860b50fe5e04585c *docs/evidencias/EN-04/02-build/resumen-tests.md
+70f287ea9a4e03c07944061a1a021982eea954cf717f02bb10d700357841e3c1 *docs/evidencias/EN-04/03-real-api/real-api-test.log
+276641f51ad44de53f25151a62ffeaa9843f72380901246a53169b4ed51cb7d8 *docs/evidencias/EN-04/05-e2e/e2e-integration-test.log
+4c18331a534e66a7abc86d15eb19d5d926f6287af1a8aa7d321976da95d1a501 *docs/evidencias/EN-04/06-chat-gemini/chat-gemini-sse-test.log
+ac6036e07d1c1c1f00d263f77f422aa86eaa8dabdf1223597a477725a96034ee *docs/evidencias/EN-04/08-rnf03/rnf03-test.log
+59a024cd1d91a0d738f4e9fee470ae4fa4443ffb6695a9f575a11b20985e8ba9 *docs/evidencias/EN-04/09-fallback-numerico/ubicaciones.txt
+764145eab85532f81d1b7fe0157ccb2e0afc43ee379830740b2d7827bc41e73f *docs/evidencias/EN-04/10-corpus/corpus-files.txt
+62dec298bd6e1ea8ab78f972aebea771798f23abb7e57f50845ddc899cc1c203 *docs/evidencias/EN-04/11-cobertura/jacoco-xml-files.txt
+87009e40f7847c905e87d614f60c966af92ec5c5ec7ca56fe0abd91f779eea6c *docs/evidencias/EN-04/12-pit/pitest.log
+5e4e2aa3cf38559a64656431962a6d66405d1cc8ec3a430d2e4196e7fa5fbfba *docs/evidencias/EN-04/14-licencias/generate-license-report.log
+7adca48d52edf3483f470aa32b2f9c17cc4615a2fed946e9911ab7b0d3a07210 *docs/evidencias/EN-04/15-seguridad/git-check-ignore-env.txt
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa *docs/evidencias/EN-04/15-seguridad/git-log-grep-count.txt
+ae65fd0ac2eb00690843385c24da540a050a78bcd749edfdd3a186a1166e76ee *docs/evidencias/EN-04/15-seguridad/git-status-short.txt
+583af46855115e65194d8806d48c0cbc7d732a7ec9b008a31c6f28bf69861367 *docs/evidencias/EN-04/15-seguridad/security-test-output.txt
+4c7eca8b03ba17e34b8cd7dffce4b2f5745d3614c0ef469638735d6d6eba9cbb *docs/evidencias/EN-04/16-docs/Casos de uso.md
+baadaeca8c5617c70ebca133906d68581a81b10fc985105a242e49d5ebe61f79 *docs/evidencias/EN-04/16-docs/Plan de sprints.md
+be271d0b9d9021e81818d0ed008103a712b1625971c945bcd3e3a011cb6b0147 *docs/evidencias/EN-04/16-docs/Progreso global.md
+3ab83686667ff8745c3ee702fb2fed86bf7b546354e688209b2d2874a4a2dfee *docs/evidencias/EN-04/16-docs/Registro de iteraciones.md
+08a0d99b941831e687faa820a37a48da48d21ad65d2c0232aa7d17567b56de4d *docs/evidencias/EN-04/16-docs/Riesgos de la planificación.md
+3933dc54e35c93355db479af6f998f79d425daf23dd704245569819a65aacf5d *docs/evidencias/EN-04/16-docs/Sprint 01.md
