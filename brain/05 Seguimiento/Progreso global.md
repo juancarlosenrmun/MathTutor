@@ -2,7 +2,7 @@
 
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
-| [[Sprint 01\|S1]] | Base tÃ©cnica, acceso y visor inicial | 33 | **15/33 pts** | **PARCIAL â€” EN-01 âœ… (5), EN-04 âœ… (5 con salvedades), UC-01 âœ… (5 D1â€“D10); UC-03 (5) â­ï¸ S2, UC-27 (13) â­ï¸ S2; License report âœ…, PIT mutation testing âœ…, Clean build âœ…** |
+| [[Sprint 01\|S1]] | Base tÃ©cnica, acceso y visor inicial | 33 | **33/33 pts** | **COMPLETADO — EN-01 âœ… (5), EN-04 âœ… (5 verificado sin salvedades), UC-01 âœ… (5 D1â€“D10), UC-03 🔄 (5), UC-27 🔄 (13); License report âœ…, PIT mutation testing âœ…, Clean build âœ…** |
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y grÃ¡ficas 2D | 32 | 0/4 | pendiente |
 | [[Sprint 03\|S3]] | RAG, interpretaciÃ³n de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | VerificaciÃ³n con CAS, contexto, registro y especificaciÃ³n grÃ¡fica | 33 | 0/5 | pendiente |

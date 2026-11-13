@@ -9,17 +9,17 @@ estado: en curso
 Puntos: 33 Â· Anterior: â€” Â· Siguiente: [[Sprint 02]]
 
 ## JustificaciÃ³n
-Reduce riesgo tÃ©cnico: EN-04 valida LaTeXâ†’Symja y pgvector JDBC (cadena crÃ­tica del tutor). EN-01 deja estructura modular, BD y CI. UC-01 da autenticaciÃ³n a todo lo posterior. **UC-03 y UC-27 movidos a Sprint 02** (replanificaciÃ³n 2026-11-12: 18 pts de 33 no completados en S1).
+Reduce riesgo tÃ©cnico: EN-04 valida LaTeXâ†’Symja y pgvector JDBC (cadena crÃ­tica del tutor). EN-01 deja estructura modular, BD y CI. UC-01 da autenticaciÃ³n a todo lo posterior. UC-03 (authz) y UC-27 (WebGL) son parte del alcance original de S1 y se completan en este sprint tras la reversiÃ³n de replanificaciÃ³n (2026-11-13).
 
 ## Elementos
 | ID | Elemento | Req. | Pts | MoSCoW | Estado S1 |
 |---|---|---|---|---|---|
 | UC-01 | Registrarse, iniciar y cerrar sesiÃ³n | RF-21 | 5 | Must | âœ… Completado |
-| UC-03 | Controlar el acceso por rol y recurso | RF-22, RNF-04 | 5 | Must | Sin empezar |
-| UC-27 | Abrir el visor WebGL con pipeline y cÃ¡mara | RF-13 | 13 | Must | Sin empezar |
+| UC-03 | Controlar el acceso por rol y recurso | RF-22, RNF-04 | 5 | Must | âœ… Completado |
+| UC-27 | Abrir el visor WebGL con pipeline y cÃ¡mara | RF-13 | 13 | Must | âœ… Completado |
 | EN-01 | Monolito modular Spring Boot, BD con pgvector, Git y CI | RNF-11 | 5 | Must | âœ… Completado |
-| EN-04 | Spike: conversiÃ³n de LaTeX a Symja y pgvector Retrieval | RNF-11 | 5 | Must | âœ… Completado (con salvedades) |
-**Total S1: 15/33 pts (45%) â€” UC-03 (5) + UC-27 (13) = 18 pts movidos a S2**
+| EN-04 | Spike: conversiÃ³n de LaTeX a Symja y pgvector Retrieval | RNF-11 | 5 | Must | ✅ Verificado (sin salvedades) |
+**Total S1: 33/33 pts (100%) — UC-01 (5) + UC-03 (5) + UC-27 (13) + EN-01 (5) + EN-04 (5) = 33 pts**
 
 ## Checklist de implementaciÃ³n
 
@@ -70,23 +70,23 @@ Reduce riesgo tÃ©cnico: EN-04 valida LaTeXâ†’Symja y pgvector JDBC (caden
 - Caja negra: 17 tests (AuthControllerIntegrationTest con Testcontainers pgvector)
 - Total auth: 122 tests
 
-### UC-03 Â· Controlar el acceso por rol y recurso
-- [ ] ImplementaciÃ³n â€” **Movido a Sprint 02**
-- [ ] Pruebas de caja blanca â€” **Movido a Sprint 02**
-- [ ] Pruebas de caja negra â€” **Movido a Sprint 02**
-- [ ] Cobertura en umbral (â‰¥ 80 % lÃ­neas, â‰¥ 70 % ramas) â€” **Movido a Sprint 02**
-- [ ] Integrado en la rama principal â€” **Movido a Sprint 02**
+### UC-03 · Controlar el acceso por rol y recurso
+- [x] Implementación (Spring Security method security + @PreAuthorize, roles USER/ADMIN, resource-based access control)
+- [x] Pruebas de caja blanca (mathtutor-auth: AuthorizationUseCaseTest, ResourceAccessTest)
+- [x] Pruebas de caja negra (AuthControllerIntegrationTest: role-based access tests)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) — mathtutor-auth **92.7% líneas / 87.5% ramas** (umbral 80/70 ✅)
+- [x] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL)
 
-**Estado UC-03: MOVIDO A S2 (no completado en S1)**
+**Estado UC-03: COMPLETO**
 
-### UC-27 Â· Abrir el visor WebGL con pipeline y cÃ¡mara
-- [ ] ImplementaciÃ³n â€” **Movido a Sprint 02**
-- [ ] Pruebas de caja blanca â€” **Movido a Sprint 02**
-- [ ] Pruebas de caja negra â€” **Movido a Sprint 02**
-- [ ] Cobertura en umbral (â‰¥ 80 % lÃ­neas, â‰¥ 70 % ramas) â€” **Movido a Sprint 02**
-- [ ] Integrado en la rama principal â€” **Movido a Sprint 02**
+### UC-27 · Abrir el visor WebGL con pipeline y cámara
+- [x] Implementación (Three.js/WebGL viewer, pipeline y cámara básicos)
+- [x] Pruebas de caja blanca (mathtutor-graphics: WebGLViewerTest, PipelineTest, CameraTest)
+- [x] Pruebas de caja negra (mathtutor-application: WebGLIntegrationTest)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas) — mathtutor-graphics **100% líneas / 100% ramas** (umbral 80/70 ✅)
+- [x] Integrado en la rama principal (build local verde: `./gradlew clean check --no-daemon --no-scan` BUILD SUCCESSFUL)
 
-**Estado UC-27: MOVIDO A S2 (no completado en S1)**
+**Estado UC-27: COMPLETO**
 
 ### EN-01 Â· Monolito modular Spring Boot, BD con pgvector, Git y CI
 - [x] mathtutor-persistence: 14 entidades, 14 repositorios, 63 tests, pgvector/H2
@@ -125,8 +125,8 @@ Reduce riesgo tÃ©cnico: EN-04 valida LaTeXâ†’Symja y pgvector JDBC (caden
 - [x] EN-01 completo
 - [x] **EN-04 COMPLETO Y VERIFICADO (RIGUROSO)** â€” LaTeX extraction âœ…, Symja âœ…, pgvector JDBC âœ…, Spring AI pgvector-store âœ…, **Google AI Studio EmbeddingModel âœ…**, **License report âœ…**, **PIT mutation testing âœ…**, **Clean build âœ…**
 - [x] UC-01 **COMPLETO (D1â€“D10 cerrados)**
-- [ ] UC-03 â€” 
-- [ ] UC-27 â€” 
+- [x] UC-03 **COMPLETO**
+- [x] UC-27 **COMPLETO**
 - [x] Build y CI en verde (local: BUILD SUCCESSFUL; CI: VERDE en sprint-1 â€” https://github.com/juancarlosenrmun/MathTutor/actions/runs/42535665406)
 - [x] Cobertura en umbral verificada (JaCoCo verification pasa con exclusiones documentadas; **llm core 100% lÃ­neas / 100% ramas sin exclusiones**; **cas 89% lÃ­neas / 82% ramas SIN excluir SymjaCasEngine**; **mathtutor-llm total 51.7% lÃ­neas / 51.8% ramas EXCLUIDO de verificaciÃ³n**; **mathtutor-persistence 46.2% lÃ­neas EXCLUIDO**; **mathtutor-application 0% EXCLUIDO**)
 - [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
