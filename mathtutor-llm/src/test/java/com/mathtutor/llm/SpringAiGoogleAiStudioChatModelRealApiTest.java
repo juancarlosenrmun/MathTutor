@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Se ejecuta con: ./gradlew :mathtutor-llm:realApiTest
  */
 @SpringBootTest
-@ActiveProfiles({"test", "google-ai-studio"})
+@ActiveProfiles({"spring-ai-pgvector", "google-ai-studio"})
 @Tag("real-api")
 class SpringAiGoogleAiStudioChatModelRealApiTest {
 

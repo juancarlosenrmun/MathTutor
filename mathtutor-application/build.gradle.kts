@@ -54,6 +54,9 @@ dependencies {
     implementation(project(":mathtutor-graphics"))
     implementation(project(":mathtutor-tutor"))
 
+    // Spring AI Model for EmbeddingModel interface
+    implementation("org.springframework.ai:spring-ai-model")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -67,6 +70,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
     testImplementation("io.projectreactor:reactor-test")
+    testRuntimeOnly("com.h2database:h2")
     // JUnit Platform Launcher required for Gradle JVM Test Suite
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
     // PIT mutation testing - JUnit 5 plugin
