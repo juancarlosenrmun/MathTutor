@@ -81,12 +81,13 @@ verify_ci_run() {
     echo "$result" > "$EVIDENCE_ROOT/01-entorno/gh-run-view-final.json"
 
     local conclusion
-    # Use jq if available, otherwise parse with grep/sed
+    # Use jq if available, otherwise parse with grep/sed (extract only top-level conclusion)
     if command -v jq >/dev/null 2>&1; then
         conclusion=$(echo "$result" | jq -r '.conclusion')
     else
-        # Fallback: extract conclusion from JSON without jq
-        conclusion=$(echo "$result" | grep -o '"conclusion":"[^"]*"' | cut -d'"' -f4)
+        # Fallback: extract top-level conclusion from JSON without jq
+        # Match the first "conclusion" at the start of the object (before "jobs")
+        conclusion=$(echo "$result" | sed -n 's/.*"conclusion":"\([^"]*\)".*/\1/p' | head -1)
     fi
     if [[ "$conclusion" != "success" ]]; then
         log_error "Latest CI run ($run_id) concluded with: $conclusion"
