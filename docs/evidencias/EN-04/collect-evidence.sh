@@ -212,9 +212,6 @@ main() {
     log_info "Output zip: $OUTPUT_ZIP"
     local original_pwd=$(pwd)
 
-    # Check git status
-    check_git_status || exit 1
-
     # Run gradle clean check
     run_gradle_clean_check || exit 1
 
@@ -223,6 +220,9 @@ main() {
 
     # Verify CI run
     verify_ci_run || exit 1
+
+    # Check git status (after build, before generating artifacts)
+    check_git_status || exit 1
 
     # Collect files
     collect_files
