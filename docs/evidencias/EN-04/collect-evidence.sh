@@ -70,18 +70,24 @@ cleanup_docker() {
 verify_ci_run() {
     log_info "Verifying latest CI run on GitHub..."
     local run_id
-    run_id=$(gh run list --branch sprint-1 --limit 1 --json databaseId --jq '.[0].databaseId')
+    run_id=$(gh run list --branch sprint-1 --limit 1 --json databaseId --jq '.[0].databaseId' 2>/dev/null)
     if [[ -z "$run_id" || "$run_id" == "null" ]]; then
         log_warn "Could not find CI run for sprint-1 branch"
         return 0
     fi
 
     local result
-    result=$(gh run view "$run_id" --json headSha,conclusion,jobs --jq '{headSha, conclusion, jobs: [.jobs[] | {name, conclusion}]}')
+    result=$(gh run view "$run_id" --json headSha,conclusion,jobs --jq '{headSha, conclusion, jobs: [.jobs[] | {name, conclusion}]}' 2>/dev/null)
     echo "$result" > "$EVIDENCE_ROOT/01-entorno/gh-run-view-final.json"
 
     local conclusion
-    conclusion=$(echo "$result" | jq -r '.conclusion')
+    # Use jq if available, otherwise parse with grep/sed
+    if command -v jq >/dev/null 2>&1; then
+        conclusion=$(echo "$result" | jq -r '.conclusion')
+    else
+        # Fallback: extract conclusion from JSON without jq
+        conclusion=$(echo "$result" | grep -o '"conclusion":"[^"]*"' | cut -d'"' -f4)
+    fi
     if [[ "$conclusion" != "success" ]]; then
         log_error "Latest CI run ($run_id) concluded with: $conclusion"
         return 1
