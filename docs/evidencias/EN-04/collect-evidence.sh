@@ -129,10 +129,11 @@ collect_files() {
 # Generate SHA256SUMS
 generate_sha256sums() {
     log_info "Generating SHA256SUMS..."
+    local original_pwd=$(pwd)
     cd "$TMP_DIR/evidence"
-    find . -type f ! -name "SHA256SUMS" | sort | xargs sha256sum > "$EVIDENCE_ROOT/$SHA256SUMS"
+    find . -type f ! -name "SHA256SUMS" | sort | xargs sha256sum > "$original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
     cd - >/dev/null
-    log_info "SHA256SUMS generated at $EVIDENCE_ROOT/$SHA256SUMS"
+    log_info "SHA256SUMS generated at $original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
 }
 
 # Create final zip with POSIX paths (Windows-compatible: uses PowerShell Compress-Archive)
@@ -190,6 +191,7 @@ main() {
     log_info "=== EN-04 Evidence Collection Started ==="
     log_info "Evidence root: $EVIDENCE_ROOT"
     log_info "Output zip: $OUTPUT_ZIP"
+    local original_pwd=$(pwd)
 
     # Check git status
     check_git_status || exit 1
@@ -210,7 +212,7 @@ main() {
     generate_sha256sums
 
     # Copy SHA256SUMS to temp for zip
-    cp "$EVIDENCE_ROOT/$SHA256SUMS" "$TMP_DIR/evidence/$SHA256SUMS"
+    cp "$original_pwd/$EVIDENCE_ROOT/$SHA256SUMS" "$TMP_DIR/evidence/$SHA256SUMS"
 
     # Create zip
     create_zip
