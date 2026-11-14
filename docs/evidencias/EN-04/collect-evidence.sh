@@ -97,14 +97,18 @@ verify_ci_run() {
     echo "$result"
 }
 
-# Collect all evidence files
+# Collect all evidence files (Windows-compatible: uses cp instead of rsync)
 collect_files() {
     log_info "Collecting evidence files..."
 
-    # Copy entire evidence directory to temp location
-    rsync -av --exclude="$OUTPUT_ZIP" --exclude="SHA256SUMS" \
-        --exclude="collect-evidence.sh" \
-        "$EVIDENCE_ROOT/" "$TMP_DIR/evidence/"
+    # Copy entire evidence directory to temp location (Windows-compatible)
+    mkdir -p "$TMP_DIR/evidence"
+    # Copy all files except the zip, SHA256SUMS, and this script
+    find "$EVIDENCE_ROOT" -type f ! -name "$OUTPUT_ZIP" ! -name "SHA256SUMS" ! -name "collect-evidence.sh" | while read -r file; do
+        rel_path="${file#$EVIDENCE_ROOT/}"
+        mkdir -p "$TMP_DIR/evidence/$(dirname "$rel_path")"
+        cp "$file" "$TMP_DIR/evidence/$rel_path"
+    done
 
     # Mask secrets in all text files
     log_info "Masking secrets in evidence files..."
@@ -131,14 +135,26 @@ generate_sha256sums() {
     log_info "SHA256SUMS generated at $EVIDENCE_ROOT/$SHA256SUMS"
 }
 
-# Create final zip with POSIX paths
+# Create final zip with POSIX paths (Windows-compatible: uses PowerShell Compress-Archive)
 create_zip() {
     log_info "Creating $OUTPUT_ZIP with POSIX paths..."
-    cd "$TMP_DIR"
-    # Use zip with -X to not store extra attributes, -r for recursive
-    # Ensure POSIX paths (forward slashes)
-    zip -r -X "$OLDPWD/$OUTPUT_ZIP" evidence/
-    cd - >/dev/null
+
+    # Use PowerShell Compress-Archive on Windows, zip on Linux
+    if command -v zip >/dev/null 2>&1; then
+        cd "$TMP_DIR"
+        zip -r -X "$OLDPWD/$OUTPUT_ZIP" evidence/
+        cd - >/dev/null
+    else
+        # Windows: use PowerShell
+        local ps_script="
+            \$source = '$TMP_DIR/evidence'
+            \$dest = '$OLDPWD/$OUTPUT_ZIP'
+            if (Test-Path \$dest) { Remove-Item \$dest -Force }
+            Compress-Archive -Path \$source\* -DestinationPath \$dest -Force
+        "
+        powershell.exe -NoProfile -Command "$ps_script"
+    fi
+
     log_info "Created $OUTPUT_ZIP"
 
     # Verify zip contents
