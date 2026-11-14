@@ -1,0 +1,19 @@
+=== COMANDO ===
+java -version
+
+=== FECHA UTC ===
+2026-11-13 00:49:00 UTC
+
+=== COMMIT SHA ===
+5bbd53cc99ef2c4fe7edf9812b32d38d08b13f3b
+
+=== DESCRIPCIÓN ===
+Versión Java
+
+=== SALIDA ===
+openjdk version "21.0.12.1" 2026-08-18 LTS
+OpenJDK Runtime Environment Microsoft-14941484 (build 21.0.12.1+1-LTS)
+OpenJDK 64-Bit Server VM Microsoft-14941484 (build 21.0.12.1+1-LTS, mixed mode, sharing)
+
+=== CÓDIGO DE SALIDA ===
+0

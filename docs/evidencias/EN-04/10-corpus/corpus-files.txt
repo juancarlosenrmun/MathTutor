@@ -1,0 +1,2 @@
+./mathtutor-cas/bin/test/latex-symja-corpus.json
+./mathtutor-cas/src/test/resources/latex-symja-corpus.json

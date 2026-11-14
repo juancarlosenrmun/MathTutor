@@ -10,22 +10,68 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Test de integración real con Google AI Studio (Gemini) para chat.
  * Requiere GOOGLE_AI_API_KEY en variables de entorno o .env.
  * Se ejecuta con: ./gradlew :mathtutor-llm:realApiTest
  */
-@SpringBootTest
-@ActiveProfiles({"spring-ai-pgvector", "google-ai-studio"})
+@SpringBootTest(classes = LlmTestApplication.class)
+@ActiveProfiles({"google-ai-studio"})
+@Testcontainers(disabledWithoutDocker = true)
 @Tag("real-api")
 class SpringAiGoogleAiStudioChatModelRealApiTest {
+
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("pgvector/pgvector:pg16")
+        .withDatabaseName("mathtutor_test")
+        .withUsername("test")
+        .withPassword("test")
+        .withInitScript("db/migration/test-init.sql");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        String apiKey = System.getenv("GOOGLE_AI_API_KEY");
+        assumeThat(apiKey).as("GOOGLE_AI_API_KEY must be set for this test").isNotNull().isNotEmpty();
+
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+        registry.add("spring.flyway.enabled", () -> "true");
+        registry.add("spring.flyway.locations", () -> "classpath:db/migration");
+        registry.add("spring.profiles.active", () -> "google-ai-studio");
+        registry.add("spring.ai.vectorstore.type", () -> "none");
+        registry.add("spring.ai.vectorstore.pgvector.initialize-schema", () -> "false");
+        registry.add("spring.ai.google.ai-studio.api-key", () -> apiKey);
+        // Use gemini-1.5-flash (standard model per Google AI Studio)
+        // NOTE: Chat models return 404 in Generative Language API for this API key
+        // Embedding models work with gemini-embedding-001, but chat models (gemini-1.5-flash, gemini-1.5-pro, etc.) not available
+        registry.add("spring.ai.google.ai-studio.chat-model", () -> "gemini-1.5-flash");
+        registry.add("spring.ai.google.ai-studio.max-retries", () -> "3");
+        registry.add("spring.ai.google.ai-studio.max-requests-per-minute", () -> "5");
+        registry.add("spring.ai.google.ai-studio.temperature", () -> "0.7");
+        registry.add("spring.ai.google.ai-studio.max-output-tokens", () -> "8192");
+        // Required by RagProperties
+        registry.add("tutor.rag.similarity-threshold", () -> "0.7");
+        // JWT configuration for tests (required by TokenServiceAdapter)
+        registry.add("jwt.secret", () -> "test-secret-key-at-least-256-bits-long-for-hs256-signing");
+        registry.add("jwt.access-token-expiration-minutes", () -> "15");
+        registry.add("jwt.refresh-token-expiration-days", () -> "7");
+    }
 
     @Autowired
     private ChatModel chatModel;
@@ -125,5 +171,4 @@ class SpringAiGoogleAiStudioChatModelRealApiTest {
         // Should be just "París" or "Paris" without extra text
         System.out.println("Respuesta con system prompt: " + answer);
     }
-
-    }
+}

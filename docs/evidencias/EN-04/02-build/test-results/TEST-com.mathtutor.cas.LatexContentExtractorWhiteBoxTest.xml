@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:39.555Z" hostname="DESKTOP-KREG294" time="0.021">
+  <properties/>
+  <testcase name="extract: fórmulas en diferentes entornos se extraen globalmente" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.002"/>
+  <testcase name="extractFormulasFromEnvironment: retorna lista vacía para contenido sin fórmulas" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="extract: entornos con contenido vacío" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="MUTATION TEST: regex sin lookbehind falla con $ escapado al final" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.002"/>
+  <testcase name="extract: no captura $ escapados como fórmulas" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="extract: maneja macros con espacios extra" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="extractFormulasFromEnvironment: retorna lista vacía para null" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.0"/>
+  <testcase name="extractFormulasFromEnvironment: extrae fórmulas de contenido de entorno" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="MUTATION TEST: regex sin lookbehind captura $ escapados como fórmulas (debe fallar si regex rota)" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="MUTATION TEST: regex sin lookbehind falla con múltiples $ escapados" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="extract: maneja entornos con contenido multilínea" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="extract: múltiples entornos del mismo tipo acumulan contenido" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="normalizeEnvironmentName: quita acentos correctamente" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="extract: maneja entornos anidados (toma el más externo)" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="extract: no captura $$ como fórmula inline" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="extract: maneja fórmulas con llaves anidadas" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <testcase name="extract: maneja múltiples archivos .tex concatenados (solo primera macro)" classname="com.mathtutor.cas.LatexContentExtractorWhiteBoxTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

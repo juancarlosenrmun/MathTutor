@@ -53,6 +53,7 @@ public class SpringAiGoogleAiStudioEmbeddingModel implements EmbeddingModel {
         this.dimensions = dimensions;
         this.maxRetries = maxRetries;
         this.maxRequestsPerMinute = maxRequestsPerMinute;
+
         // Use x-goog-api-key header as per Google AI Studio API documentation
         this.restClient = RestClient.builder()
                 .baseUrl(BASE_URL + "models/" + embeddingModel + ":embedContent")

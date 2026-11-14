@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.persistence.repository.UserRepositoryTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:55:12.308Z" hostname="DESKTOP-KREG294" time="0.07">
+  <properties/>
+  <testcase name="shouldCascadeDeletePasswordResetTokens()" classname="com.mathtutor.persistence.repository.UserRepositoryTest" time="0.009"/>
+  <testcase name="shouldReturnTrueWhenEmailExists()" classname="com.mathtutor.persistence.repository.UserRepositoryTest" time="0.005"/>
+  <testcase name="shouldFindActiveUserByEmail()" classname="com.mathtutor.persistence.repository.UserRepositoryTest" time="0.01"/>
+  <testcase name="shouldNotFindInactiveUserByEmail()" classname="com.mathtutor.persistence.repository.UserRepositoryTest" time="0.006"/>
+  <testcase name="shouldSaveAndFindUserByEmail()" classname="com.mathtutor.persistence.repository.UserRepositoryTest" time="0.006"/>
+  <testcase name="shouldReturnFalseWhenEmailNotExists()" classname="com.mathtutor.persistence.repository.UserRepositoryTest" time="0.004"/>
+  <testcase name="shouldReturnEmptyWhenEmailNotExists()" classname="com.mathtutor.persistence.repository.UserRepositoryTest" time="0.005"/>
+  <testcase name="shouldSaveUserWithAllRoles()" classname="com.mathtutor.persistence.repository.UserRepositoryTest" time="0.011"/>
+  <system-out><![CDATA[Hibernate: 
+    insert 
+    into
+        users
+        (active, anonymized_at, created_at, email, password_hash, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    delete 
+    from
+        users 
+    where
+        id=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.anonymized_at,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password_hash,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    insert 
+    into
+        users
+        (active, anonymized_at, created_at, email, password_hash, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    insert 
+    into
+        users
+        (active, anonymized_at, created_at, email, password_hash, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        users
+        (active, anonymized_at, created_at, email, password_hash, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.anonymized_at,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password_hash,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        and u1_0.active=true
+Hibernate: 
+    insert 
+    into
+        users
+        (active, anonymized_at, created_at, email, password_hash, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.anonymized_at,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password_hash,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+        and u1_0.active=true
+Hibernate: 
+    insert 
+    into
+        users
+        (active, anonymized_at, created_at, email, password_hash, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.anonymized_at,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password_hash,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.anonymized_at,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password_hash,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    insert 
+    into
+        users
+        (active, anonymized_at, created_at, email, password_hash, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        users
+        (active, anonymized_at, created_at, email, password_hash, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        users
+        (active, anonymized_at, created_at, email, password_hash, role, id) 
+    values
+        (?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.anonymized_at,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password_hash,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.anonymized_at,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password_hash,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.email=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.anonymized_at,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password_hash,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.email=?
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

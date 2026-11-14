@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.application.DebugEnvironmentTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:49:42.542Z" hostname="DESKTOP-KREG294" time="0.127">
+  <properties/>
+  <testcase name="printEnvironmentVariables()" classname="com.mathtutor.application.DebugEnvironmentTest" time="0.111"/>
+  <system-out><![CDATA[=== Environment Variables ===
+TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+DOCKER_HOST=unix:///var/run/docker.sock
+TESTCONTAINERS_RYUK_DISABLED=true
+=== System Properties ===
+testcontainers.ryuk.disabled=true
+testcontainers.docker.socket.override=/var/run/docker.sock
+docker.host=unix:///var/run/docker.sock
+org.testcontainers.ryuk.disabled=true
+Has Docker env: true
+Has Docker prop: true
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

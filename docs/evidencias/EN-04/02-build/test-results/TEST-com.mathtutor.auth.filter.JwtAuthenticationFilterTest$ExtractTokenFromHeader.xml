@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="doFilterInternal() - Extracción de token desde header Authorization" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:35.874Z" hostname="DESKTOP-KREG294" time="0.008">
+  <properties/>
+  <testcase name="Debe ignorar header Authorization sin prefijo Bearer" classname="com.mathtutor.auth.filter.JwtAuthenticationFilterTest$ExtractTokenFromHeader" time="0.002"/>
+  <testcase name="Debe extraer token de header Authorization Bearer" classname="com.mathtutor.auth.filter.JwtAuthenticationFilterTest$ExtractTokenFromHeader" time="0.002"/>
+  <testcase name="Debe ignorar header Authorization vacío" classname="com.mathtutor.auth.filter.JwtAuthenticationFilterTest$ExtractTokenFromHeader" time="0.002"/>
+  <testcase name="Debe manejar header Authorization null" classname="com.mathtutor.auth.filter.JwtAuthenticationFilterTest$ExtractTokenFromHeader" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

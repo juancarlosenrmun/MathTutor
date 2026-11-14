@@ -11,11 +11,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import reactor.core.publisher.Flux;
+import reactor.netty.http.client.HttpClient;
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +39,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class SpringAiGoogleAiStudioChatModel implements ChatModel {
 
     private static final String DEFAULT_CHAT_MODEL = "gemini-1.5-flash";
-    private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
+    private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta/";
 
-    private final RestClient restClient;
     private final WebClient webClient;
     private final String apiKey;
     private final String chatModel;
@@ -45,6 +49,10 @@ public class SpringAiGoogleAiStudioChatModel implements ChatModel {
     private final int maxRetries;
     private final int maxRequestsPerMinute;
     private final ObjectMapper objectMapper;
+
+    // Rate limiting
+    private long lastRequestTime = 0;
+    private final Object rateLimitLock = new Object();
 
     public SpringAiGoogleAiStudioChatModel(
             @Value("${spring.ai.google.ai-studio.api-key:}") String apiKey,
@@ -65,18 +73,18 @@ public class SpringAiGoogleAiStudioChatModel implements ChatModel {
         this.objectMapper = objectMapper;
 
         // Use x-goog-api-key header as per Google AI Studio API documentation
-        this.restClient = RestClient.builder()
-                .baseUrl(BASE_URL + chatModel + ":generateContent")
-                .defaultHeader("Content-Type", "application/json")
-                .defaultHeader("x-goog-api-key", apiKey)
-                .build();
+        // Configure 300s timeout for chat requests (longer than embedding due to generation time)
+        HttpClient httpClient = HttpClient.create()
+                .responseTimeout(Duration.ofSeconds(300))
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
+                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(300)));
 
-        // WebClient for streaming (SSE)
         this.webClient = WebClient.builder()
-                .baseUrl(BASE_URL + chatModel + ":streamGenerateContent?alt=sse")
+                .baseUrl(BASE_URL)
                 .defaultHeader("Content-Type", "application/json")
                 .defaultHeader("x-goog-api-key", apiKey)
-                .defaultHeader("Accept", "text/event-stream")
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024))
                 .build();
     }
 
@@ -92,11 +100,13 @@ public class SpringAiGoogleAiStudioChatModel implements ChatModel {
                 )
         );
 
-        Map<String, Object> response = executeWithRetry(() -> restClient.post()
-                .uri(uriBuilder -> uriBuilder.build())
-                .body(request)
+        // Use WebClient for non-streaming call with proper timeout
+        Map<String, Object> response = executeWithRetry(() -> webClient.post()
+                .uri(uriBuilder -> uriBuilder.path("models/" + chatModel + ":generateContent").build())
+                .bodyValue(request)
                 .retrieve()
-                .body(Map.class));
+                .bodyToMono(Map.class)
+                .block());
 
         return parseResponse(response);
     }
@@ -115,7 +125,7 @@ public class SpringAiGoogleAiStudioChatModel implements ChatModel {
 
         // Google AI Studio supports streaming via Server-Sent Events
         return webClient.post()
-                .uri(uriBuilder -> uriBuilder.build())
+                .uri(uriBuilder -> uriBuilder.path("models/" + chatModel + ":streamGenerateContent").queryParam("alt", "sse").build())
                 .bodyValue(request)
                 .retrieve()
                 .bodyToFlux(String.class)
@@ -235,12 +245,85 @@ public class SpringAiGoogleAiStudioChatModel implements ChatModel {
 
     /**
      * Ejecuta una operación con reintentos exponenciales y jitter para 429/5xx.
+     * Incluye rate limiting para respetar maxRequestsPerMinute.
+     * Respeta el header Retry-After en respuestas 429.
      */
     private <T> T executeWithRetry(java.util.function.Supplier<T> operation) {
         int attempt = 0;
         while (true) {
+            // Rate limiting: wait if necessary to respect maxRequestsPerMinute
+            long minIntervalMs = 60_000L / Math.max(1, maxRequestsPerMinute);
+            synchronized (rateLimitLock) {
+                long now = System.currentTimeMillis();
+                long timeSinceLastRequest = now - lastRequestTime;
+                if (timeSinceLastRequest < minIntervalMs) {
+                    long waitTime = minIntervalMs - timeSinceLastRequest;
+                    try {
+                        Thread.sleep(waitTime);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("Interrupted during rate limiting", ie);
+                    }
+                }
+                lastRequestTime = System.currentTimeMillis();
+            }
+
             try {
                 return operation.get();
+            } catch (WebClientResponseException.TooManyRequests e) {
+                // Handle 429 with Retry-After header support
+                if (attempt >= maxRetries) {
+                    throw e;
+                }
+                attempt++;
+                long delay = extractRetryAfterDelay(e);
+                if (delay <= 0) {
+                    // Exponential backoff with jitter if no Retry-After header
+                    long baseDelay = (long) Math.pow(2, attempt) * 1000L; // 2s, 4s, 8s...
+                    long jitter = ThreadLocalRandom.current().nextLong(0, 1000);
+                    delay = baseDelay + jitter;
+                }
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted during retry", ie);
+                }
+            } catch (WebClientResponseException.ServiceUnavailable e) {
+                // Handle 503 with Retry-After header support
+                if (attempt >= maxRetries) {
+                    throw e;
+                }
+                attempt++;
+                long delay = extractRetryAfterDelay(e);
+                if (delay <= 0) {
+                    // Exponential backoff with jitter if no Retry-After header
+                    long baseDelay = (long) Math.pow(2, attempt) * 1000L; // 2s, 4s, 8s...
+                    long jitter = ThreadLocalRandom.current().nextLong(0, 1000);
+                    delay = baseDelay + jitter;
+                }
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted during retry", ie);
+                }
+            } catch (WebClientResponseException e) {
+                int status = e.getRawStatusCode();
+                boolean retryable = status >= 500;
+                if (!retryable || attempt >= maxRetries) {
+                    throw e;
+                }
+                attempt++;
+                long baseDelay = (long) Math.pow(2, attempt) * 1000L; // 2s, 4s, 8s...
+                long jitter = ThreadLocalRandom.current().nextLong(0, 1000);
+                long delay = baseDelay + jitter;
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted during retry", ie);
+                }
             } catch (RestClientResponseException e) {
                 int status = e.getRawStatusCode();
                 boolean retryable = status == 429 || status >= 500;
@@ -259,5 +342,38 @@ public class SpringAiGoogleAiStudioChatModel implements ChatModel {
                 }
             }
         }
+    }
+
+    /**
+     * Extrae el delay del header Retry-After de una respuesta 429/503.
+     * Retry-After puede ser segundos (entero) o una fecha HTTP.
+     * Devuelve -1 si no se puede determinar.
+     */
+    private long extractRetryAfterDelay(WebClientResponseException e) {
+        try {
+            String retryAfter = e.getHeaders().getFirst("Retry-After");
+            if (retryAfter != null && !retryAfter.isEmpty()) {
+                // Try parsing as seconds (integer)
+                try {
+                    long seconds = Long.parseLong(retryAfter.trim());
+                    return seconds * 1000L;
+                } catch (NumberFormatException nfe) {
+                    // Try parsing as HTTP date
+                    try {
+                        java.time.format.DateTimeFormatter formatter =
+                            java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+                        java.time.ZonedDateTime date = java.time.ZonedDateTime.parse(retryAfter.trim(), formatter);
+                        long now = System.currentTimeMillis();
+                        long delay = date.toInstant().toEpochMilli() - now;
+                        return Math.max(0, delay);
+                    } catch (Exception dateEx) {
+                        // Ignore, return -1
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            // Ignore header parsing errors
+        }
+        return -1;
     }
 }

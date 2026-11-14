@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Validación de entrada" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:50.026Z" hostname="DESKTOP-KREG294" time="0.01">
+  <properties/>
+  <testcase name="Debe fallar si contraseña es null" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$InputValidation" time="0.002"/>
+  <testcase name="Debe fallar si email está vacío" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$InputValidation" time="0.003"/>
+  <testcase name="Debe fallar si email es null" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$InputValidation" time="0.002"/>
+  <system-out><![CDATA[LoginUseCase.execute: email=test@test.com, ipAddress=1.2.3.4
+LoginUseCase.execute: email=, ipAddress=1.2.3.4
+LoginUseCase.execute: email=null, ipAddress=1.2.3.4
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

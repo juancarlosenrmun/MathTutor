@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="X-Forwarded-For y Trusted Proxy (IP Spoofing Protection)" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:32.968Z" hostname="DESKTOP-KREG294" time="2.145">
+  <properties/>
+  <testcase name="Debe usar primera IP de X-Forwarded-For cuando hay múltiples (client, proxy1, proxy2)" classname="com.mathtutor.auth.controller.AuthControllerTest$TrustedProxyAndXForwardedFor" time="1.917"/>
+  <testcase name="Localhost (127.0.0.1) siempre de confianza para desarrollo" classname="com.mathtutor.auth.controller.AuthControllerTest$TrustedProxyAndXForwardedFor" time="0.045"/>
+  <testcase name="Con trusted proxy: debe usar X-Real-IP cuando request viene de proxy de confianza" classname="com.mathtutor.auth.controller.AuthControllerTest$TrustedProxyAndXForwardedFor" time="0.038"/>
+  <testcase name="Sin trusted proxies: debe ignorar X-Real-IP y usar remoteAddr" classname="com.mathtutor.auth.controller.AuthControllerTest$TrustedProxyAndXForwardedFor" time="0.038"/>
+  <testcase name="Con trusted proxy: debe ignorar X-Forwarded-For si request NO viene de proxy de confianza" classname="com.mathtutor.auth.controller.AuthControllerTest$TrustedProxyAndXForwardedFor" time="0.035"/>
+  <testcase name="Sin trusted proxies: debe ignorar X-Forwarded-For y usar remoteAddr (anti-spoofing)" classname="com.mathtutor.auth.controller.AuthControllerTest$TrustedProxyAndXForwardedFor" time="0.033"/>
+  <testcase name="Con trusted proxy: debe usar X-Forwarded-For cuando request viene de proxy de confianza" classname="com.mathtutor.auth.controller.AuthControllerTest$TrustedProxyAndXForwardedFor" time="0.034"/>
+  <system-out><![CDATA[01:54:33.470 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+01:54:34.459 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:34.459 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:34.466 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 7 ms
+01:54:34.483 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:34.483 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:34.483 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:34.815 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: remoteAddr = '10.0.0.1', trustedProxies configured = true
+01:54:34.815 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: X-Forwarded-For header = '198.51.100.1, 192.0.2.1, 10.0.0.1'
+01:54:34.815 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: extracted IP from X-Forwarded-For = '198.51.100.1'
+01:54:34.901 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:34.901 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:34.901 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:34.913 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:34.916 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:34.916 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:34.925 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: remoteAddr = '127.0.0.1', trustedProxies configured = false
+01:54:34.925 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: localhost detected, trusting forwarding headers
+01:54:34.925 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: X-Forwarded-For header = '203.0.113.50'
+01:54:34.925 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: extracted IP from X-Forwarded-For = '203.0.113.50'
+01:54:34.945 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:34.945 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:34.945 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:34.945 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:34.956 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:34.956 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:34.956 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: remoteAddr = '10.0.0.5', trustedProxies configured = true
+01:54:34.956 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: X-Forwarded-For header = 'null'
+01:54:34.956 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: X-Real-IP header = '203.0.113.50'
+01:54:34.956 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: extracted IP from X-Real-IP = '203.0.113.50'
+01:54:34.978 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:34.978 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:34.978 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:34.988 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:34.988 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:34.988 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:35.004 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: remoteAddr = '192.168.1.100', trustedProxies configured = false
+01:54:35.004 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: no trusted proxies configured, using remoteAddr = '192.168.1.100'
+01:54:35.020 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.020 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.020 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:35.031 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.031 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.031 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:35.038 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: remoteAddr = '192.168.1.100', trustedProxies configured = true
+01:54:35.038 [Test worker] WARN com.mathtutor.auth.controller.AuthController -- extractClientIp: request from untrusted proxy '192.168.1.100', ignoring X-Forwarded-For, using remoteAddr
+01:54:35.051 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.051 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.051 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:35.051 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.051 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.051 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:35.067 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: remoteAddr = '192.168.1.100', trustedProxies configured = false
+01:54:35.075 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: no trusted proxies configured, using remoteAddr = '192.168.1.100'
+01:54:35.083 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.083 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.083 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:35.099 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.099 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.099 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:35.109 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: remoteAddr = '10.0.0.5', trustedProxies configured = true
+01:54:35.109 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: X-Forwarded-For header = '203.0.113.50, 10.0.0.5'
+01:54:35.109 [Test worker] INFO com.mathtutor.auth.controller.AuthController -- extractClientIp: extracted IP from X-Forwarded-For = '203.0.113.50'
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

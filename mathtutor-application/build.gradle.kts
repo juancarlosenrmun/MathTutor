@@ -135,6 +135,13 @@ tasks.register("realApiTest", Test::class) {
         includeTags("real-api")
     }
 
+    // Disable test logging that could leak secrets
+    testLogging {
+        events("failed", "skipped")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStandardStreams = false
+    }
+
     // Load .env file from project root and set GOOGLE_AI_API_KEY as system property for test JVM
     doFirst {
         val rootDir = project.rootProject.projectDir
@@ -161,7 +168,6 @@ tasks.register("realApiTest", Test::class) {
         if (apiKey == null) {
             apiKey = System.getenv("GOOGLE_AI_API_KEY") ?: systemProperties["GOOGLE_AI_API_KEY"]?.toString()
         }
-        logger.lifecycle("realApiTest: GOOGLE_AI_API_KEY = ${if (apiKey != null) "SET (len=${apiKey.length})" else "NOT SET"}")
         if (apiKey == null || apiKey.trim().isEmpty()) {
             logger.lifecycle("Skipping realApiTest: GOOGLE_AI_API_KEY not set. Set it in .env or environment to run real API tests.")
             enabled = false

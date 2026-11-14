@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.persistence.repository.TypicalErrorRepositoryTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:55:12.203Z" hostname="DESKTOP-KREG294" time="0.054">
+  <properties/>
+  <testcase name="shouldFindByCanonicalStepAndCode()" classname="com.mathtutor.persistence.repository.TypicalErrorRepositoryTest" time="0.025"/>
+  <testcase name="shouldReturnEmptyWhenCodeNotExists()" classname="com.mathtutor.persistence.repository.TypicalErrorRepositoryTest" time="0.01"/>
+  <testcase name="shouldSaveAndFindErrorsByCanonicalStep()" classname="com.mathtutor.persistence.repository.TypicalErrorRepositoryTest" time="0.01"/>
+  <system-out><![CDATA[Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        canonical_steps
+        (equivalent_forms, exercise_id, expression_latex, position, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        typical_errors
+        (canonical_step_id, code, seed_hint, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    select
+        te1_0.id,
+        te1_0.canonical_step_id,
+        te1_0.code,
+        te1_0.seed_hint 
+    from
+        typical_errors te1_0 
+    where
+        te1_0.canonical_step_id=? 
+        and te1_0.code=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        canonical_steps
+        (equivalent_forms, exercise_id, expression_latex, position, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    select
+        te1_0.id,
+        te1_0.canonical_step_id,
+        te1_0.code,
+        te1_0.seed_hint 
+    from
+        typical_errors te1_0 
+    where
+        te1_0.canonical_step_id=? 
+        and te1_0.code=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        canonical_steps
+        (equivalent_forms, exercise_id, expression_latex, position, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        typical_errors
+        (canonical_step_id, code, seed_hint, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        typical_errors
+        (canonical_step_id, code, seed_hint, id) 
+    values
+        (?, ?, ?, default)
+Hibernate: 
+    select
+        te1_0.id,
+        te1_0.canonical_step_id,
+        te1_0.code,
+        te1_0.seed_hint 
+    from
+        typical_errors te1_0 
+    where
+        te1_0.canonical_step_id=?
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

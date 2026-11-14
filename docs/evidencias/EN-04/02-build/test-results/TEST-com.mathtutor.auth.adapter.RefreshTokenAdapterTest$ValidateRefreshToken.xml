@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="validateRefreshToken()" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:31.102Z" hostname="DESKTOP-KREG294" time="0.032">
+  <properties/>
+  <testcase name="Debe retornar empty cuando token ya está revocado (detección de reuso se maneja en endpoint /refresh)" classname="com.mathtutor.auth.adapter.RefreshTokenAdapterTest$ValidateRefreshToken" time="0.003"/>
+  <testcase name="Debe retornar empty cuando usuario no existe en BD" classname="com.mathtutor.auth.adapter.RefreshTokenAdapterTest$ValidateRefreshToken" time="0.007"/>
+  <testcase name="Debe retornar empty cuando token está expirado" classname="com.mathtutor.auth.adapter.RefreshTokenAdapterTest$ValidateRefreshToken" time="0.003"/>
+  <testcase name="Debe retornar TokenValidationResult cuando token es válido" classname="com.mathtutor.auth.adapter.RefreshTokenAdapterTest$ValidateRefreshToken" time="0.005"/>
+  <testcase name="Debe retornar empty cuando BD está vacía" classname="com.mathtutor.auth.adapter.RefreshTokenAdapterTest$ValidateRefreshToken" time="0.002"/>
+  <testcase name="Debe retornar empty cuando token no coincide con ningún hash" classname="com.mathtutor.auth.adapter.RefreshTokenAdapterTest$ValidateRefreshToken" time="0.002"/>
+  <testcase name="Debe manejar excepción de passwordEncoder.matches y continuar con siguiente token" classname="com.mathtutor.auth.adapter.RefreshTokenAdapterTest$ValidateRefreshToken" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

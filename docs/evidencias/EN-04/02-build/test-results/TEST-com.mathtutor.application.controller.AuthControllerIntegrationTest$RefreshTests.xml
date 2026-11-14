@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="POST /api/auth/refresh" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:50:32.345Z" hostname="DESKTOP-KREG294" time="58.2">
+  <properties/>
+  <testcase name="Debe fallar con refresh token expirado" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RefreshTests" time="7.477"/>
+  <testcase name="Debe refrescar access token usando refresh token válido" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RefreshTests" time="2.87"/>
+  <testcase name="Debe invalidar refresh token al hacer logout" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RefreshTests" time="10.938"/>
+  <testcase name="Debe revocar familia completa al detectar reuso de refresh token rotado" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RefreshTests" time="20.292"/>
+  <testcase name="Debe fallar con refresh token inválido" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RefreshTests" time="6.312"/>
+  <testcase name="Debe rotar refresh token en cada refresh (nuevo token emitido)" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RefreshTests" time="10.015"/>
+  <testcase name="Debe fallar sin refresh token" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RefreshTests" time="0.292"/>
+  <system-out><![CDATA[2026-11-13T01:50:32.497+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: remoteAddr = '127.0.0.1', trustedProxies configured = false
+2026-11-13T01:50:32.497+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: localhost detected, trusting forwarding headers
+2026-11-13T01:50:32.497+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Forwarded-For header = 'null'
+2026-11-13T01:50:32.497+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Real-IP header = 'null'
+2026-11-13T01:50:32.497+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: no forwarding headers, using remoteAddr = '127.0.0.1'
+LoginUseCase.execute: email=test1794531032352@example.com, ipAddress=127.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:127.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test1794531032352@example.com
+2026-11-13T01:50:39.975+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: remoteAddr = '127.0.0.1', trustedProxies configured = false
+2026-11-13T01:50:39.975+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: localhost detected, trusting forwarding headers
+2026-11-13T01:50:39.975+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Forwarded-For header = 'null'
+2026-11-13T01:50:39.975+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Real-IP header = 'null'
+2026-11-13T01:50:39.975+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: no forwarding headers, using remoteAddr = '127.0.0.1'
+LoginUseCase.execute: email=test1794531039828@example.com, ipAddress=127.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:127.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test1794531039828@example.com
+2026-11-13T01:50:42.846+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: remoteAddr = '127.0.0.1', trustedProxies configured = false
+2026-11-13T01:50:42.846+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: localhost detected, trusting forwarding headers
+2026-11-13T01:50:42.846+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Forwarded-For header = 'null'
+2026-11-13T01:50:42.846+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Real-IP header = 'null'
+2026-11-13T01:50:42.846+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: no forwarding headers, using remoteAddr = '127.0.0.1'
+LoginUseCase.execute: email=test1794531042698@example.com, ipAddress=127.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:127.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test1794531042698@example.com
+2026-11-13T01:50:53.782+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: remoteAddr = '127.0.0.1', trustedProxies configured = false
+2026-11-13T01:50:53.783+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: localhost detected, trusting forwarding headers
+2026-11-13T01:50:53.783+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Forwarded-For header = 'null'
+2026-11-13T01:50:53.783+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Real-IP header = 'null'
+2026-11-13T01:50:53.783+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: no forwarding headers, using remoteAddr = '127.0.0.1'
+LoginUseCase.execute: email=test1794531053636@example.com, ipAddress=127.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:127.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test1794531053636@example.com
+2026-11-13T01:51:14.073+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: remoteAddr = '127.0.0.1', trustedProxies configured = false
+2026-11-13T01:51:14.073+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: localhost detected, trusting forwarding headers
+2026-11-13T01:51:14.073+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Forwarded-For header = 'null'
+2026-11-13T01:51:14.073+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Real-IP header = 'null'
+2026-11-13T01:51:14.073+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: no forwarding headers, using remoteAddr = '127.0.0.1'
+LoginUseCase.execute: email=test1794531073928@example.com, ipAddress=127.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:127.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test1794531073928@example.com
+2026-11-13T01:51:20.385+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: remoteAddr = '127.0.0.1', trustedProxies configured = false
+2026-11-13T01:51:20.385+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: localhost detected, trusting forwarding headers
+2026-11-13T01:51:20.385+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Forwarded-For header = 'null'
+2026-11-13T01:51:20.385+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Real-IP header = 'null'
+2026-11-13T01:51:20.385+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: no forwarding headers, using remoteAddr = '127.0.0.1'
+LoginUseCase.execute: email=test1794531080241@example.com, ipAddress=127.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:127.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test1794531080241@example.com
+2026-11-13T01:51:30.400+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: remoteAddr = '127.0.0.1', trustedProxies configured = false
+2026-11-13T01:51:30.400+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: localhost detected, trusting forwarding headers
+2026-11-13T01:51:30.400+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Forwarded-For header = 'null'
+2026-11-13T01:51:30.400+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Real-IP header = 'null'
+2026-11-13T01:51:30.400+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: no forwarding headers, using remoteAddr = '127.0.0.1'
+LoginUseCase.execute: email=test1794531090255@example.com, ipAddress=127.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:127.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test1794531090255@example.com
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

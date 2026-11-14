@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="POST /api/auth/register" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:51:31.689Z" hostname="DESKTOP-KREG294" time="0.402">
+  <properties/>
+  <testcase name="Debe fallar con email duplicado" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RegisterTests" time="0.159"/>
+  <testcase name="Debe registrar un nuevo usuario y retornar access token + refresh token en cookie" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RegisterTests" time="0.214"/>
+  <testcase name="Debe fallar sin rol" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RegisterTests" time="0.007"/>
+  <testcase name="Debe fallar con email inválido" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RegisterTests" time="0.006"/>
+  <testcase name="Debe fallar con contraseña débil" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$RegisterTests" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

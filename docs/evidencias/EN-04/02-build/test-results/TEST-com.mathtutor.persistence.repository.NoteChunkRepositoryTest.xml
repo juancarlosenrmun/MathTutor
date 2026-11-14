@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.persistence.repository.NoteChunkRepositoryTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:55:11.982Z" hostname="DESKTOP-KREG294" time="0.058">
+  <properties/>
+  <testcase name="shouldFindSimilarByModuleAndTopic()" classname="com.mathtutor.persistence.repository.NoteChunkRepositoryTest" time="0.016"/>
+  <testcase name="shouldSaveAndFindNoteChunk()" classname="com.mathtutor.persistence.repository.NoteChunkRepositoryTest" time="0.009"/>
+  <testcase name="shouldFindByModuleAndTopicCode()" classname="com.mathtutor.persistence.repository.NoteChunkRepositoryTest" time="0.01"/>
+  <testcase name="shouldFindByModuleCode()" classname="com.mathtutor.persistence.repository.NoteChunkRepositoryTest" time="0.008"/>
+  <testcase name="shouldFindByTopicCode()" classname="com.mathtutor.persistence.repository.NoteChunkRepositoryTest" time="0.009"/>
+  <system-out><![CDATA[Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        note_chunks
+        (content, embedding, module_id, module_code, source_file, topic_id, topic_code, chunk_type, version, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        note_chunks
+        (content, embedding, module_id, module_code, source_file, topic_id, topic_code, chunk_type, version, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        nc1_0.id,
+        nc1_0.content,
+        nc1_0.embedding,
+        nc1_0.module_id,
+        nc1_0.module_code,
+        nc1_0.source_file,
+        nc1_0.topic_id,
+        nc1_0.topic_code,
+        nc1_0.chunk_type,
+        nc1_0.version 
+    from
+        note_chunks nc1_0 
+    where
+        nc1_0.module_code=? 
+        and nc1_0.topic_code=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        note_chunks
+        (content, embedding, module_id, module_code, source_file, topic_id, topic_code, chunk_type, version, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        note_chunks
+        (content, embedding, module_id, module_code, source_file, topic_id, topic_code, chunk_type, version, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        note_chunks
+        (content, embedding, module_id, module_code, source_file, topic_id, topic_code, chunk_type, version, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        nc1_0.id,
+        nc1_0.content,
+        nc1_0.embedding,
+        nc1_0.module_id,
+        nc1_0.module_code,
+        nc1_0.source_file,
+        nc1_0.topic_id,
+        nc1_0.topic_code,
+        nc1_0.chunk_type,
+        nc1_0.version 
+    from
+        note_chunks nc1_0 
+    where
+        nc1_0.module_code=? 
+        and nc1_0.topic_code=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        note_chunks
+        (content, embedding, module_id, module_code, source_file, topic_id, topic_code, chunk_type, version, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        note_chunks
+        (content, embedding, module_id, module_code, source_file, topic_id, topic_code, chunk_type, version, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        nc1_0.id,
+        nc1_0.content,
+        nc1_0.embedding,
+        nc1_0.module_id,
+        nc1_0.module_code,
+        nc1_0.source_file,
+        nc1_0.topic_id,
+        nc1_0.topic_code,
+        nc1_0.chunk_type,
+        nc1_0.version 
+    from
+        note_chunks nc1_0 
+    where
+        nc1_0.module_code=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        note_chunks
+        (content, embedding, module_id, module_code, source_file, topic_id, topic_code, chunk_type, version, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        nc1_0.id,
+        nc1_0.content,
+        nc1_0.embedding,
+        nc1_0.module_id,
+        nc1_0.module_code,
+        nc1_0.source_file,
+        nc1_0.topic_id,
+        nc1_0.topic_code,
+        nc1_0.chunk_type,
+        nc1_0.version 
+    from
+        note_chunks nc1_0 
+    where
+        nc1_0.topic_code=?
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

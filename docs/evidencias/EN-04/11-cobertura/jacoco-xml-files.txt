@@ -1,0 +1,2 @@
+./mathtutor-application/build/reports/jacoco/test/jacocoTestReport.xml
+./mathtutor-llm/build/reports/jacoco/test/jacocoTestReport.xml
