@@ -15,7 +15,9 @@ import org.springframework.web.client.RestClientResponseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.time.Duration;
 
 /**
  * Adaptador de Spring AI EmbeddingModel que usa Google AI Studio (Gemini) API directamente.
@@ -24,6 +26,12 @@ import java.util.concurrent.ThreadLocalRandom;
  * Perfil: "google-ai-studio" para activar cuando se tiene API key de Google AI Studio.
  *
  * API Reference: https://ai.google.dev/gemini-api/docs/embeddings
+ *
+ * Características de robustez:
+ * - Rate limiting local (maxRequestsPerMinute)
+ * - Retry con backoff exponencial + jitter para 429/5xx
+ * - Soporte header Retry-After (segundos o fecha HTTP)
+ * - Cache de embeddings en memoria (evita llamadas repetidas)
  */
 @Component
 @Profile("google-ai-studio")
@@ -39,6 +47,13 @@ public class SpringAiGoogleAiStudioEmbeddingModel implements EmbeddingModel {
     private final int dimensions;
     private final int maxRetries;
     private final int maxRequestsPerMinute;
+
+    // Rate limiting
+    private long lastRequestTime = 0;
+    private final Object rateLimitLock = new Object();
+
+    // Embedding cache (clave: texto + taskType)
+    private final ConcurrentHashMap<String, float[]> embeddingCache = new ConcurrentHashMap<>();
 
     public SpringAiGoogleAiStudioEmbeddingModel(
             @Value("${spring.ai.google.ai-studio.api-key:}") String apiKey,

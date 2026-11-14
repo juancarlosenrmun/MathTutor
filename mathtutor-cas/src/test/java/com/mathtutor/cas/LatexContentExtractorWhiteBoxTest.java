@@ -329,4 +329,122 @@ class LatexContentExtractorWhiteBoxTest {
             throw new RuntimeException(e);
         }
     }
+
+    // ===== MUTATION KILLING TESTS =====
+    // These tests target specific mutants from PIT mutation testing
+
+    @Test
+    @DisplayName("MUTATION KILL: extractFormulas - exact formula count (MathMutator: addition/subtraction)")
+    void mutationKillExtractFormulasExactCount() {
+        // Tests that formula counter uses addition (not subtraction)
+        // If mutator changes '+' to '-' in counter, count will be wrong
+        String tex = """
+                \\bloque{Test}
+                \\tema{Test}
+                \\dificultad{1}
+                \\begin{ejercicio}
+                Formulas: $f(x) = x^2$ and $g(x) = \\sin(x)$ and $h(x) = \\cos(x)$
+                \\end{ejercicio}
+                """;
+
+        LatexContentExtractor.ExtractionResult result = extractor.extract(tex);
+
+        // Exactly 3 inline formulas - if counter uses subtraction, count would be wrong
+        assertThat(result.getFormulas()).hasSize(3);
+        assertThat(result.getFormulas()).containsExactlyInAnyOrder(
+                "f(x) = x^2",
+                "g(x) = \\sin(x)",
+                "h(x) = \\cos(x)"
+        );
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: extractFormulas - exact formula count with display + inline (MathMutator)")
+    void mutationKillExtractFormulasMixedExactCount() {
+        String tex = """
+                \\bloque{Test}
+                \\tema{Test}
+                \\dificultad{1}
+                \\begin{ejercicio}
+                Inline: $x^2$. Display: $$y^2$$. Another inline: $z^2$.
+                \\end{ejercicio}
+                """;
+
+        LatexContentExtractor.ExtractionResult result = extractor.extract(tex);
+
+        // 3 formulas total (2 inline + 1 display)
+        // If counter mutates '+' to '-', total would be wrong
+        assertThat(result.getFormulas()).hasSize(3);
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: extractFormulas - boundary condition in loop (ConditionalsBoundaryMutator)")
+    void mutationKillExtractFormulasBoundaryCondition() {
+        // Test with exactly the boundary number of formulas that would trigger off-by-one
+        // The loop iterates over matches; boundary mutator changes <= to < or similar
+        StringBuilder tex = new StringBuilder("""
+                \\bloque{Test}
+                \\tema{Test}
+                \\dificultad{1}
+                \\begin{ejercicio}
+                """);
+
+        // Add exactly 10 formulas to test loop boundary
+        for (int i = 1; i <= 10; i++) {
+            tex.append("$f").append(i).append("(x) = x^").append(i).append("$ ");
+        }
+        tex.append("\\end{ejercicio}");
+
+        LatexContentExtractor.ExtractionResult result = extractor.extract(tex.toString());
+
+        // Must find exactly 10 formulas
+        // If boundary condition mutated, might find 9 or 11
+        assertThat(result.getFormulas()).hasSize(10);
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: extractFormulasFromEnvironment - exact formula count (MathMutator)")
+    void mutationKillExtractFormulasFromEnvironmentExactCount() {
+        String content = "Step 1: $a^2$. Step 2: $b^2$. Step 3: $c^2$. Step 4: $$d^2$$. Step 5: $e^2$.";
+
+        List<String> formulas = extractor.extractFormulasFromEnvironment(content);
+
+        // 5 formulas total (4 inline + 1 display)
+        assertThat(formulas).hasSize(5);
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: extractFormulasFromEnvironment - boundary condition (ConditionalsBoundaryMutator)")
+    void mutationKillExtractFormulasFromEnvironmentBoundary() {
+        // Test boundary in environment formula extraction loop
+        StringBuilder content = new StringBuilder();
+        for (int i = 1; i <= 8; i++) {
+            content.append("$x^").append(i).append("$ ");
+        }
+
+        List<String> formulas = extractor.extractFormulasFromEnvironment(content.toString());
+
+        assertThat(formulas).hasSize(8);
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: extractFormulas - nested display formula edge case")
+    void mutationKillExtractFormulasNestedDisplayEdgeCase() {
+        // Display formulas with nested braces that could affect counter
+        String tex = """
+                \\bloque{Test}
+                \\tema{Test}
+                \\dificultad{1}
+                \\begin{solucion}
+                $$\\frac{\\mathrm{d}}{\\mathrm{d}x} \\left( x^2 \\right) = 2x$$
+                $$\\int_{0}^{1} \\left( x^2 + \\sin(x) \\right) dx$$
+                Inline check: $y = mx + b$
+                \\end{solucion}
+                """;
+
+        LatexContentExtractor.ExtractionResult result = extractor.extract(tex);
+
+        // 3 formulas: 2 display + 1 inline
+        assertThat(result.getFormulas()).hasSize(3);
+    }
 }

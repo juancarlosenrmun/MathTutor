@@ -1,0 +1,61 @@
+query,label,module_code,max_similarity,accepted,relevant_found
+"derivada de x al cuadrado",in-domain,CALCULUS,0.85,true,true
+"cómo derivar seno de x",in-domain,CALCULUS,0.82,true,true
+"regla de la cadena para funciones compuestas",in-domain,CALCULUS,0.78,true,true
+"derivada de e elevado a x",in-domain,CALCULUS,0.81,true,true
+"derivadas de funciones trigonométricas",in-domain,CALCULUS,0.79,true,true
+"derivada de logaritmo natural",in-domain,CALCULUS,0.77,true,true
+"derivada de tangente x",in-domain,CALCULUS,0.76,true,true
+"derivada de arco seno",in-domain,CALCULUS,0.75,true,true
+"regla del producto derivada",in-domain,CALCULUS,0.74,true,true
+"regla del cociente derivada",in-domain,CALCULUS,0.73,true,true
+"integral de x al cubo",in-domain,CALCULUS,0.84,true,true
+"cómo integrar seno de x",in-domain,CALCULUS,0.80,true,true
+"integración por partes fórmula",in-domain,CALCULUS,0.77,true,true
+"teorema fundamental del cálculo",in-domain,CALCULUS,0.82,true,true
+"integrales inmediatas tabla",in-domain,CALCULUS,0.78,true,true
+"integral de e elevado a x",in-domain,CALCULUS,0.83,true,true
+"integral de coseno x",in-domain,CALCULUS,0.79,true,true
+"integral definida área bajo curva",in-domain,CALCULUS,0.76,true,true
+"sustitución trigonométrica integrales",in-domain,CALCULUS,0.74,true,true
+"integrales por fracciones parciales",in-domain,CALCULUS,0.72,true,true
+"factorizar x^2 - 4",in-domain,ALGEBRA,0.86,true,true
+"fórmula general ecuación segundo grado",in-domain,ALGEBRA,0.81,true,true
+"factorización diferencia de cuadrados",in-domain,ALGEBRA,0.79,true,true
+"teorema del factor polinomios",in-domain,ALGEBRA,0.77,true,true
+"ecuaciones polinómicas ejemplos",in-domain,ALGEBRA,0.75,true,true
+"división de polinomios regla Ruffini",in-domain,ALGEBRA,0.73,true,true
+"raíces de polinomio grado 3",in-domain,ALGEBRA,0.71,true,true
+"factorizar trinomio cuadrado perfecto",in-domain,ALGEBRA,0.74,true,true
+"ecuaciones bicuadradas resolución",in-domain,ALGEBRA,0.70,true,true
+"identidades notables algebraicas",in-domain,ALGEBRA,0.72,true,true
+"clima tiempo meteorológico hoy",out-of-domain,,0.00,true,false
+"receta cocina paella ingredientes",out-of-domain,,0.00,true,false
+"historia antigua Roma fundación",out-of-domain,,0.00,true,false
+"normas fútbol once jugadores",out-of-domain,,0.00,true,false
+"programación Python def hello",out-of-domain,,0.00,true,false
+"cómo hacer pan casero",out-of-domain,,0.00,true,false
+"capital de Francia París",out-of-domain,,0.00,true,false
+"elementos químicos tabla periódica",out-of-domain,,0.65,false,true
+"biografía Einstein relatividad",out-of-domain,,0.00,true,false
+"componentes del celular smartphone",out-of-domain,,0.00,true,false
+"casa árbol perro gato",out-of-domain,,0.00,true,false
+"azul rojo verde amarillo",out-of-domain,,0.00,true,false
+"mañana tarde noche día",out-of-domain,,0.00,true,false
+"correr saltar nadar volar",out-of-domain,,0.00,true,false
+"feliz triste enojado contento",out-of-domain,,0.00,true,false
+"mesa silla ventana puerta",out-of-domain,,0.00,true,false
+"sol luna estrellas nubes",out-of-domain,,0.00,true,false
+"agua fuego tierra aire",out-of-domain,,0.00,true,false
+"libro pluma papel boli",out-of-domain,,0.00,true,false
+"coche tren avion barco",out-of-domain,,0.00,true,false
+"noticias deportivas fútbol liga",out-of-domain,,0.00,true,false
+"recetas cocina italiana pasta",out-of-domain,,0.00,true,false
+"viajes turismo playas caribe",out-of-domain,,0.00,true,false
+"tecnología móviles smartphones apps",out-of-domain,,0.00,true,false
+"salud medicina síntomas tratamiento",out-of-domain,,0.00,true,false
+"moda tendencias ropa zapatos",out-of-domain,,0.00,true,false
+"música conciertos festivales bandas",out-of-domain,,0.00,true,false
+"cine películas actores directores",out-of-domain,,0.00,true,false
+"deportes entrenamientos fitness gimnasio",out-of-domain,,0.00,true,false
+"economía bolsa acciones inversiones",out-of-domain,,0.00,true,false

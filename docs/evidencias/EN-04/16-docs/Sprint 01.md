@@ -9,7 +9,7 @@ estado: en curso
 Puntos: 33 Â· Anterior: â€” Â· Siguiente: [[Sprint 02]]
 
 ## JustificaciÃ³n
-Reduce riesgo tÃ©cnico: EN-04 valida LaTeXâ†’Symja y pgvector JDBC (cadena crÃ­tica del tutor). EN-01 deja estructura modular, BD y CI. UC-01 da autenticaciÃ³n a todo lo posterior. **UC-03 y UC-27 movidos a Sprint 02** (replanificaciÃ³n 2026-11-12: 18 pts de 33 no completados en S1).
+Reduce riesgo tÃ©cnico: EN-04 valida LaTeXâ†’Symja y pgvector JDBC (cadena crÃ­tica del tutor). EN-01 deja estructura modular, BD y CI. UC-01 da autenticaciÃ³n a todo lo posterior. **UC-03 y UC-27 NO completados en S1** (replanificaciÃ³n 2026-11-12: 18 pts de 33 no completados en S1).
 
 ## Elementos
 | ID | Elemento | Req. | Pts | MoSCoW | Estado S1 |
@@ -18,8 +18,8 @@ Reduce riesgo tÃ©cnico: EN-04 valida LaTeXâ†’Symja y pgvector JDBC (caden
 | UC-03 | Controlar el acceso por rol y recurso | RF-22, RNF-04 | 5 | Must | Sin empezar |
 | UC-27 | Abrir el visor WebGL con pipeline y cÃ¡mara | RF-13 | 13 | Must | Sin empezar |
 | EN-01 | Monolito modular Spring Boot, BD con pgvector, Git y CI | RNF-11 | 5 | Must | âœ… Completado |
-| EN-04 | Spike: conversiÃ³n de LaTeX a Symja y pgvector Retrieval | RNF-11 | 5 | Must | âœ… Completado (con salvedades) |
-**Total S1: 15/33 pts (45%) â€” UC-03 (5) + UC-27 (13) = 18 pts movidos a S2**
+| EN-04 | Spike: conversiÃ³n de LaTeX a Symja y pgvector Retrieval | RNF-11 | 5 | Must | En verificaciÃ³n (salvedades 1.1-1.11) |
+**Total S1: 10/33 pts (30%) â€” EN-01 (5) + UC-01 (5) completados; UC-03 (5) + UC-27 (13) + EN-04 (5 con salvedades) = 23 pts pendientes**
 
 ## Checklist de implementaciÃ³n
 
@@ -123,7 +123,7 @@ Reduce riesgo tÃ©cnico: EN-04 valida LaTeXâ†’Symja y pgvector JDBC (caden
 
 ## DefiniciÃ³n de hecho del sprint
 - [x] EN-01 completo
-- [x] **EN-04 COMPLETO Y VERIFICADO (RIGUROSO)** â€” LaTeX extraction âœ…, Symja âœ…, pgvector JDBC âœ…, Spring AI pgvector-store âœ…, **Google AI Studio EmbeddingModel âœ…**, **License report âœ…**, **PIT mutation testing âœ…**, **Clean build âœ…**
+- [x] **EN-04 EN VERIFICACIÃ“N (salvedades 1.1-1.11 pendientes)** â€” LaTeX extraction âœ…, Symja âœ…, pgvector JDBC âœ…, Spring AI pgvector-store âœ…, **Google AI Studio EmbeddingModel âœ…**, **License report âœ…**, **PIT mutation testing âœ…**, **Clean build âœ…**
 - [x] UC-01 **COMPLETO (D1â€“D10 cerrados)**
 - [ ] UC-03 â€” 
 - [ ] UC-27 â€” 

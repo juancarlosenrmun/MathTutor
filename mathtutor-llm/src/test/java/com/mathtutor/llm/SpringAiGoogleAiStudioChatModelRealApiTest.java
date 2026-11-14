@@ -57,10 +57,8 @@ class SpringAiGoogleAiStudioChatModelRealApiTest {
         registry.add("spring.ai.vectorstore.type", () -> "none");
         registry.add("spring.ai.vectorstore.pgvector.initialize-schema", () -> "false");
         registry.add("spring.ai.google.ai-studio.api-key", () -> apiKey);
-        // Use gemini-1.5-flash (standard model per Google AI Studio)
-        // NOTE: Chat models return 404 in Generative Language API for this API key
-        // Embedding models work with gemini-embedding-001, but chat models (gemini-1.5-flash, gemini-1.5-pro, etc.) not available
-        registry.add("spring.ai.google.ai-studio.chat-model", () -> "gemini-1.5-flash");
+        // Use gemini-2.5-flash (model specified in .env GOOGLE_AI_CHAT_MODEL)
+        registry.add("spring.ai.google.ai-studio.chat-model", () -> "gemini-2.5-flash");
         registry.add("spring.ai.google.ai-studio.max-retries", () -> "3");
         registry.add("spring.ai.google.ai-studio.max-requests-per-minute", () -> "5");
         registry.add("spring.ai.google.ai-studio.temperature", () -> "0.7");

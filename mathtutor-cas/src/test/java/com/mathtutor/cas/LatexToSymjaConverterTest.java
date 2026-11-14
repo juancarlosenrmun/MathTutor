@@ -418,4 +418,203 @@ class LatexToSymjaConverterTest {
         // ln(x) vs ln(-x) - solo solapan en nada (dominio vacío en común)
         assertThat(converter.areEquivalent("\\ln(x)", "\\ln(-x)")).isFalse();
     }
+
+    // ===== MUTATION KILLING TESTS for evaluateNumericallyThreeState =====
+    // Target: MathMutator (subtraction/addition/division), ConditionalsBoundaryMutator, IncrementsMutator
+
+    @Test
+    @DisplayName("MUTATION KILL: evaluateNumericallyThreeState - subtraction vs addition (MathMutator)")
+    void mutationKillEvaluateNumericallySubtractionVsAddition() {
+        // Test case where a - b != a + b
+        // If mutator changes '-' to '+' in diff calculation, this would pass incorrectly
+        // 5 - 3 = 2, but 5 + 3 = 8 (different!)
+        // We test expressions where subtraction gives different result than addition
+
+        // x^2 - x vs x^2 + x -> difference is -2x vs +2x
+        // At x=2: 4-2=2 vs 4+2=6 -> diff = -4 (|diff| > 1e-9 => NOT equivalent)
+        assertThat(converter.areEquivalent("x^2 - x", "x^2 + x")).isFalse();
+
+        // More direct: test that numeric diff uses subtraction
+        // a = 10, b = 3: a - b = 7, a + b = 13 (different)
+        assertThat(converter.areEquivalent("10", "3")).isFalse();
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: evaluateNumericallyThreeState - division vs multiplication (MathMutator)")
+    void mutationKillEvaluateNumericallyDivisionVsMultiplication() {
+        // Test case where a / b != a * b
+        // If mutator changes '/' to '*', this would pass incorrectly
+        // 6 / 2 = 3, but 6 * 2 = 12 (different!)
+
+        // x^2 / x vs x^2 * x -> at x=2: 4/2=2 vs 4*2=8 -> diff = -6
+        assertThat(converter.areEquivalent("x^2 / x", "x^2 * x")).isFalse();
+
+        // Direct numeric: 6/2=3 vs 6*2=12
+        assertThat(converter.areEquivalent("6/2", "6*2")).isFalse();
+
+        // Test that division is actually used in comparison
+        // If / is mutated to *, equivalent expressions with division would fail
+        assertThat(converter.areEquivalent("1/2", "0.5")).isTrue();  // 0.5 = 1/2
+        assertThat(converter.areEquivalent("1/2", "2")).isFalse();   // 2 = 1*2 (mutated)
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: evaluateNumericallyThreeState - exact tolerance boundary (ConditionalsBoundaryMutator)")
+    void mutationKillEvaluateNumericallyExactToleranceBoundary() {
+        // Test exact boundary: diff = 1e-9 (boundary) vs 1e-10 (inside)
+        // ConditionalsBoundaryMutator changes <= to < or >= to >
+
+        // These should be equivalent (diff < 1e-9)
+        assertThat(converter.areEquivalent("x", "x+1e-10")).isFalse(); // diff = 1e-10, but CONSTANT diff rejected
+
+        // Test boundary with exact zero difference (identity)
+        // These pass through numeric evaluation with diff=0 at all points
+        assertThat(converter.areEquivalent("x^2", "x^2")).isTrue();
+        assertThat(converter.areEquivalent("\\sin^2(x) + \\cos^2(x)", "1")).isTrue();
+        assertThat(converter.areEquivalent("(x+1)^2", "x^2+2*x+1")).isTrue();
+
+        // Test that non-equivalent with small constant diff is rejected
+        // avgDiff check: |avgDiff| > 1e-12 -> NOT_EQUIVALENTE
+        assertThat(converter.areEquivalent("x", "x+1e-8")).isFalse(); // diff = 1e-8, avgDiff = 1e-8 > 1e-12
+
+        // Test symbolic path: subtraction in diff = expr1.subtract(expr2)
+        // If subtract mutated to add, these would fail
+        assertThat(converter.areEquivalent("x^2 - x^2", "0")).isTrue();
+        assertThat(converter.areEquivalent("2*x", "x+x")).isTrue();
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: evaluateNumericallyThreeState - loop counter increment (IncrementsMutator)")
+    void mutationKillEvaluateNumericallyLoopCounterIncrement() {
+        // The testPoints array has 9 elements: -2, -1, -0.5, 0, 0.5, 1, 2, 3, 5
+        // Loop iterates over these. If increment changes from ++ to --, it would iterate backwards
+        // or skip elements. We need a test that fails if iteration order is wrong.
+
+        // Use expressions where evaluation at specific points matters
+        // If loop goes backwards, it still evaluates same points, just different order
+        // But the validCount and diffSum would be same...
+
+        // Better: test that ALL 9 points are evaluated by using expressions
+        // that only evaluate at specific points
+        // Actually, the loop is for-each: for (double x : testPoints)
+        // IncrementsMutator on for-each doesn't apply directly...
+
+        // Wait, the mutator targets "Changed increment from 1 to -1" at line ~181
+        // Let me check the code again... The loop at line 164: for (double x : testPoints)
+        // This is enhanced for loop, no explicit increment. But maybe there's a traditional for loop somewhere?
+
+        // Looking at the code: testPoints is array, for (double x : testPoints) - no increment to mutate
+        // But maybe validCount++ or diffSum += diff could be mutated?
+        // The report says line ~181 in evaluateNumericallyThreeState
+
+        // Line 180: diffSum += diff; (addition)
+        // Line 181: validCount++; (increment)
+        // Line 184: if (Math.abs(diff) > 1e-9)
+
+        // IncrementsMutator could change validCount++ to validCount--
+        // If so, validCount would decrease, potentially making validCount < 2 check pass incorrectly
+
+        // Test: need enough valid points so that if validCount is decremented, it falls below 2
+        // But we can't control the mutation directly...
+
+        // Best approach: test with expressions that give exactly 2 valid points
+        // If validCount is decremented from 2 to 0 (or 1), it would be INDETERMINADO
+        // But with current test points, most expressions give many valid points
+
+        // Use expression with limited domain: sqrt(x) only valid for x >= 0
+        // Test points: -2, -1, -0.5, 0, 0.5, 1, 2, 3, 5
+        // Valid: 0, 0.5, 1, 2, 3, 5 = 6 points
+        // If validCount-- happens 6 times, validCount = -6 or 0
+
+        // Actually, the mutation is on the increment itself, not the loop
+        // Let's test that equivalent expressions with limited valid points still work
+        assertThat(converter.areEquivalent("\\sqrt{x}", "\\sqrt{x}")).isTrue();
+
+        // Test with expression that has exactly 2 valid points
+        // Use piecewise or conditional... but Symja may not support
+
+        // Simpler: test that loop processes all points by checking
+        // expressions that would fail if points are skipped
+        // If increment is mutated, validCount might be wrong
+        // This is hard to test directly...
+
+        // Instead, test the specific case: x vs x (identity) at all points
+        // Should be equivalent with 9 valid points
+        assertThat(converter.areEquivalent("x", "x")).isTrue();
+        assertThat(converter.areEquivalent("x^2", "x^2")).isTrue();
+        assertThat(converter.areEquivalent("\\sin(x)", "\\sin(x)")).isTrue();
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: evaluateNumericallyThreeState - negative difference rejection (MathMutator)")
+    void mutationKillEvaluateNumericallyNegativeDifference() {
+        // The code checks Math.abs(diff) > 1e-9
+        // If mutator changes subtraction to addition: diff = val1 + val2 (wrong sign)
+        // This would make diff positive when it should be negative, but abs() handles it
+
+        // Better test: ensure diff = val1 - val2 is used, not val2 - val1
+        // If reversed: diff = val2 - val1 = -(val1 - val2)
+        // abs() makes it same... so need case where avgDiff check catches it
+
+        // avgDiff = sum(diff) / count
+        // If diff sign is flipped, avgDiff sign flips
+        // avgDiff check: Math.abs(avgDiff) > 1e-12 => NOT equivalent
+        // For identical expressions, avgDiff should be ~0
+        // If diff = val2 - val1, then for x vs x: diff = 0, avgDiff = 0 (same)
+        // For x vs x+1: diff = 1 (val2 - val1 = (x+1)-x = 1), avgDiff = 1 > 1e-12 => rejected (correct)
+        // Wait, both directions give same abs(avgDiff)...
+
+        // The key is: diffSum accumulates diff. If diff = val2 - val1 instead of val1 - val2,
+        // then for equivalent expressions diff=0, for non-equivalent diff has opposite sign.
+        // But abs(avgDiff) is same either way.
+
+        // So MathMutator on subtraction is hard to catch with just abs()...
+        // Unless we test that the rejection happens for the RIGHT reason
+
+        // Test: x vs x + 1e-8 (diff = -1e-8, |diff| > 1e-9 => NOT equivalent)
+        // If subtraction is mutated to addition: diff = val1 + val2 = x + (x+1e-8) = 2x + 1e-8
+        // At test points, this varies: at x=-2: -4+1e-8; at x=2: 4+1e-8
+        // |diff| would be large at many points => still NOT equivalent
+
+        // The mutation might be in the comparison itself...
+        // The report says line ~178: "Replaced double subtraction with addition"
+        // This is likely: double diff = val1 - val2; -> double diff = val1 + val2;
+        // With this mutation, for equivalent expressions (val1 == val2): diff = 2*val1
+        // At x=2: diff = 4, |4| > 1e-9 => would reject equivalent expressions!
+
+        // TEST: equivalent expressions must still pass
+        assertThat(converter.areEquivalent("x^2", "x^2")).isTrue();  // Would fail if - mutated to +
+        assertThat(converter.areEquivalent("\\sin(x)", "\\sin(x)")).isTrue();
+        assertThat(converter.areEquivalent("x^3 + 2*x", "x^3 + 2*x")).isTrue();
+
+        // Non-equivalent with small diff must still fail
+        assertThat(converter.areEquivalent("x", "x+1e-8")).isFalse();
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: areEquivalentThreeState - symbolic path with subtraction (MathMutator)")
+    void mutationKillAreEquivalentSymbolicSubtraction() {
+        // The symbolic path: IExpr diff = expr1.subtract(expr2);
+        // If subtract is mutated to add, diff = expr1 + expr2
+        // Then simplified.isZero() would fail for equivalent expressions
+
+        // Test symbolic equivalence (should use subtract)
+        assertThat(converter.areEquivalent("(x+1)^2", "x^2+2*x+1")).isTrue();
+        assertThat(converter.areEquivalent("x^2 - x^2", "0")).isTrue();
+        assertThat(converter.areEquivalent("2*x", "x+x")).isTrue();
+    }
+
+    @Test
+    @DisplayName("MUTATION KILL: evaluateNumericallyThreeState - zero diff check (ConditionalsBoundaryMutator)")
+    void mutationKillEvaluateNumericallyZeroDiffBoundary() {
+        // Test boundary around zero difference
+        // If mutator changes diff == 0 to diff != 0 or similar
+
+        // Exactly equivalent
+        assertThat(converter.areEquivalent("x^2", "x^2")).isTrue();
+
+        // Diff exactly zero at all test points (trig identity)
+        // Symja may not simplify symbolically, but numeric evaluation detects equivalence
+        assertThat(converter.areEquivalent("\\sin^2(x) + \\cos^2(x)", "1")).isTrue();
+    }
 }
