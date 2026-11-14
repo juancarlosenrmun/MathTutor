@@ -147,10 +147,15 @@ create_zip() {
         zip -r -X "$OLDPWD/$OUTPUT_ZIP" evidence/
         cd - >/dev/null
     else
-        # Windows: use PowerShell
+        # Windows: use PowerShell with Windows paths
+        # Convert Unix paths to Windows paths using cygpath
+        local win_source
+        local win_dest
+        win_source=$(cygpath -w "$TMP_DIR/evidence")
+        win_dest=$(cygpath -w "$OLDPWD/$OUTPUT_ZIP")
         local ps_script="
-            \$source = '$TMP_DIR/evidence'
-            \$dest = '$OLDPWD/$OUTPUT_ZIP'
+            \$source = '$win_source'
+            \$dest = '$win_dest'
             if (Test-Path \$dest) { Remove-Item \$dest -Force }
             Compress-Archive -Path \$source\* -DestinationPath \$dest -Force
         "
