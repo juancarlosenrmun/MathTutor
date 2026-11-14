@@ -131,7 +131,8 @@ generate_sha256sums() {
     log_info "Generating SHA256SUMS..."
     local original_pwd=$(pwd)
     cd "$TMP_DIR/evidence"
-    find . -type f ! -name "SHA256SUMS" | sort | xargs sha256sum > "$original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
+    # Use find -print0 and xargs -0 to handle filenames with spaces
+    find . -type f ! -name "SHA256SUMS" -print0 | sort -z | xargs -0 sha256sum > "$original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
     cd - >/dev/null
     log_info "SHA256SUMS generated at $original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
 }
