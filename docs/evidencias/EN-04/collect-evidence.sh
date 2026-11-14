@@ -137,29 +137,42 @@ generate_sha256sums() {
     log_info "SHA256SUMS generated at $original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
 }
 
-# Create final zip with POSIX paths (Windows-compatible: uses PowerShell Compress-Archive)
+# Create final zip with POSIX paths (Windows-compatible: uses Python zipfile)
 create_zip() {
     log_info "Creating $OUTPUT_ZIP with POSIX paths..."
 
-    # Use PowerShell Compress-Archive on Windows, zip on Linux
+    # Use zip on Linux, Python on Windows (for proper POSIX paths)
     if command -v zip >/dev/null 2>&1; then
         cd "$TMP_DIR"
         zip -r -X "$OLDPWD/$OUTPUT_ZIP" evidence/
         cd - >/dev/null
     else
-        # Windows: use PowerShell with Windows paths
-        # Convert Unix paths to Windows paths using cygpath
-        local win_source
-        local win_dest
-        win_source=$(cygpath -w "$TMP_DIR/evidence")
-        win_dest=$(cygpath -w "$OLDPWD/$OUTPUT_ZIP")
-        local ps_script="
-            \$source = '$win_source'
-            \$dest = '$win_dest'
-            if (Test-Path \$dest) { Remove-Item \$dest -Force }
-            Compress-Archive -Path \$source\* -DestinationPath \$dest -Force
-        "
-        powershell.exe -NoProfile -Command "$ps_script"
+        # Windows: use Python for reliable zip creation
+        local original_pwd=$(pwd)
+        python3 -c "
+import zipfile
+import os
+import sys
+
+source_dir = os.path.join('$TMP_DIR', 'evidence')
+output_zip = os.path.join('$original_pwd', '$OUTPUT_ZIP')
+
+with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
+    for root, dirs, files in os.walk(source_dir):
+        for file in files:
+            filepath = os.path.join(root, file)
+            # Use POSIX paths (forward slashes) in the zip
+            arcname = os.path.relpath(filepath, source_dir).replace(os.sep, '/')
+            zf.write(filepath, arcname)
+
+# Verify
+with zipfile.ZipFile(output_zip, 'r') as zf:
+    bad = zf.testzip()
+    if bad:
+        print(f'ERROR: Bad file in zip: {bad}', file=sys.stderr)
+        sys.exit(1)
+    print(f'Created zip with {len(zf.namelist())} files')
+"
     fi
 
     log_info "Created $OUTPUT_ZIP"
