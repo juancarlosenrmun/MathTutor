@@ -110,7 +110,7 @@ collect_files() {
         cp "$file" "$TMP_DIR/evidence/$rel_path"
     done
 
-    # Mask secrets in all text files
+    # Mask secrets in all text files (in temp)
     log_info "Masking secrets in evidence files..."
     find "$TMP_DIR/evidence" -type f \( -name "*.txt" -o -name "*.log" -o -name "*.md" -o -name "*.json" -o -name "*.xml" \) | while read -r file; do
         mask_secrets "$file" "$file.masked"
@@ -123,16 +123,24 @@ collect_files() {
         mv "$file.masked" "$file"
     done
 
-    log_info "Secrets masked in all evidence files."
+    # Copy masked files BACK to evidence directory so SHA256SUMS matches
+    log_info "Syncing masked files to evidence directory..."
+    find "$TMP_DIR/evidence" -type f | while read -r file; do
+        rel_path="${file#$TMP_DIR/evidence/}"
+        mkdir -p "$EVIDENCE_ROOT/$(dirname "$rel_path")"
+        cp "$file" "$EVIDENCE_ROOT/$rel_path"
+    done
+
+    log_info "Secrets masked and synced to evidence directory."
 }
 
 # Generate SHA256SUMS
 generate_sha256sums() {
     log_info "Generating SHA256SUMS..."
     local original_pwd=$(pwd)
-    cd "$TMP_DIR/evidence"
+    cd "$EVIDENCE_ROOT"
     # Use find -print0 and xargs -0 to handle filenames with spaces
-    find . -type f ! -name "SHA256SUMS" -print0 | sort -z | xargs -0 sha256sum > "$original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
+    find . -type f ! -name "$SHA256SUMS" ! -name "$OUTPUT_ZIP" ! -name "collect-evidence.sh" -print0 | sort -z | xargs -0 sha256sum > "$original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
     cd - >/dev/null
     log_info "SHA256SUMS generated at $original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
 }
