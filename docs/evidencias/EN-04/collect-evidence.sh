@@ -148,7 +148,7 @@ create_zip() {
         cd - >/dev/null
     else
         # Windows: use Python for reliable zip creation
-        local original_pwd=$(pwd)
+        local original_pwd=$(pwd -W)
         python3 -c "
 import zipfile
 import os
@@ -158,8 +158,9 @@ tmp_dir = r'$TMP_DIR'
 original_pwd = r'$original_pwd'
 output_zip_name = '$OUTPUT_ZIP'
 
-source_dir = os.path.join(tmp_dir, 'evidence')
-output_zip = os.path.join(original_pwd, output_zip_name)
+# Normalize paths for Windows
+source_dir = os.path.normpath(os.path.join(tmp_dir, 'evidence'))
+output_zip = os.path.normpath(os.path.join(original_pwd, output_zip_name))
 
 with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
     for root, dirs, files in os.walk(source_dir):
