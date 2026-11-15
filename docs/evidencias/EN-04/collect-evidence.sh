@@ -154,8 +154,12 @@ import zipfile
 import os
 import sys
 
-source_dir = os.path.join('$TMP_DIR', 'evidence')
-output_zip = os.path.join('$original_pwd', '$OUTPUT_ZIP')
+tmp_dir = r'$TMP_DIR'
+original_pwd = r'$original_pwd'
+output_zip_name = '$OUTPUT_ZIP'
+
+source_dir = os.path.join(tmp_dir, 'evidence')
+output_zip = os.path.join(original_pwd, output_zip_name)
 
 with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
     for root, dirs, files in os.walk(source_dir):
