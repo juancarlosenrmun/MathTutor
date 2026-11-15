@@ -148,15 +148,18 @@ create_zip() {
         cd - >/dev/null
     else
         # Windows: use Python for reliable zip creation
-        local original_pwd=$(pwd -W)
+        # Pass variables via environment to avoid heredoc expansion issues
+        export TMP_DIR
+        export OUTPUT_ZIP
+        export original_pwd=$(pwd -W)
         python3 -c "
 import zipfile
 import os
 import sys
 
-tmp_dir = r'$TMP_DIR'
-original_pwd = r'$original_pwd'
-output_zip_name = '$OUTPUT_ZIP'
+tmp_dir = os.environ['TMP_DIR']
+original_pwd = os.environ['original_pwd']
+output_zip_name = os.environ['OUTPUT_ZIP']
 
 # Normalize paths for Windows
 source_dir = os.path.normpath(os.path.join(tmp_dir, 'evidence'))
