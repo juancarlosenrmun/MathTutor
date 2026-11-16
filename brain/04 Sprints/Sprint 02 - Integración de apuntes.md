@@ -6,10 +6,10 @@ Diseño: snapshot reproducible de los fuentes originales bajo `notes/sources/ind
 
 Distribución: capítulos 1–2 → funciones; 3–4 → derivadas-integrales; 5–8 → metodos-3d como fundamentos algebraicos y geometría. Se conserva autoría de Diego García Zamora y Nuria V. Castillo González (Universidad de Jaén), según la configuración original.
 
-- [ ] Añadir pruebas Python de normalización, comentarios, límites, entornos, segmentación e importación idempotente y observar fallos.
-- [ ] Implementar importador, snapshot y manifiesto; regenerar ocho recursos y sustituir las tres notas introductorias, sin modificar originales externos.
-- [ ] Adaptar pruebas Java de arranque al corpus real; verificar todos los temas, metadatos, fórmulas e idempotencia en PostgreSQL/pgvector.
-- [ ] Ejecutar build, JaCoCo, cliente, Chromium, regresiones Python y revisión independiente; commits pequeños sin cofirma.
-- [ ] Actualizar PR #9, repetir CI para el nuevo commit, integrar en DEV únicamente con CI verde y registrar evidencia y checklist.
+- [x] Añadir pruebas Python de normalización, comentarios, límites, entornos, segmentación e importación idempotente y observar fallos.
+- [x] Implementar importador, snapshot y manifiesto; regenerar ocho recursos y sustituir las tres notas introductorias, sin modificar originales externos.
+- [x] Adaptar pruebas Java de arranque al corpus real; verificar todos los temas, metadatos, fórmulas e idempotencia en PostgreSQL/pgvector.
+- [x] Ejecutar build, JaCoCo, cliente, Chromium, regresiones Python y revisión independiente; commits pequeños sin cofirma.
+- [x] Actualizar PR #9, repetir CI para el nuevo commit, integrar en DEV únicamente con CI verde y registrar evidencia y checklist.
 
 Riesgos comprobados: macros con prefijo coincidente, comentarios escapados, fórmulas multilínea, entornos anidados, último fragmento pequeño, archivos alterados y materiales auxiliares que no deben indexarse como temario.
