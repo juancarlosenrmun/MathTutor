@@ -10,6 +10,7 @@ flowchart LR
   App --> Interface[interface.mjs: mountInterface]
   App --> Viewer[WebGLViewer]
   Interface --> Session[SessionClient]
+  Interface --> Workspace[workspaceFor: presentación según rol vigente]
   Session --> Locks[Web Locks: cookie compartida]
   Session --> Auth[AuthController: APIs existentes]
   Viewer --> Camera[Camera]
@@ -17,6 +18,8 @@ flowchart LR
 ```
 
 `SessionClient` incorpora `register`, `restore`, `logout`, `role` y `post` con CSRF. `mountInterface` coordina rutas, estados ocupados, validación de confirmación y descarte de consultas obsoletas. No se añaden controladores ni contratos backend.
+
+La revisión tras leer S1–S10 incorpora `#/espacio` como destino autenticado de S1 y `workspaceFor(role)` como función de presentación, sin otorgar permisos. Las siete vistas se definen en [[Sprint 01 - Diseño frontend]]; chat, módulos, historial y paneles privilegiados siguen en sus respectivos sprints.
 
 ## Diseño general
 

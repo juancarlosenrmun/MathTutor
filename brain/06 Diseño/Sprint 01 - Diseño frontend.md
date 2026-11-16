@@ -13,18 +13,40 @@ Frontend minimalista y accesible para registro, sesión, permisos y visor inicia
 
 ## Decisiones
 
-Se conserva HTML/CSS y módulos JavaScript nativos en `/visor/index.html`. Rutas hash y secciones semánticas comparten una instancia de `SessionClient` y conservan el visor. Un framework añadiría dependencias innecesarias para seis vistas; páginas independientes obligarían a renovar la cookie en cada navegación. La ruta de cada vista permite enlaces directos y navegación atrás/adelante.
+### Contexto de los diez sprints
+
+Se leen íntegramente [[Sprint 01]], [[Sprint 02]], [[Sprint 03]], [[Sprint 04]], [[Sprint 05]], [[Sprint 06]], [[Sprint 07]], [[Sprint 08]], [[Sprint 09]] y [[Sprint 10]], y se contrasta el alcance con [[Requisitos funcionales]], [[Requisitos no funcionales]], [[Restricciones y alcance]] y [[Casos de uso]]. La navegación de S1 debe sentirse como la entrada al tutor adaptativo. El laboratorio es una herramienta dentro del producto; el espacio autenticado da continuidad al registro y acceso sin ofrecer capacidades futuras.
+
+| Sprint | Evolución prevista de interfaz (solo contexto; no implementada en S1) |
+|---|---|
+| [[Sprint 01]] | Acceso, registro, espacio autenticado, cuenta y permisos, laboratorio inicial, acceso restringido |
+| [[Sprint 02]] | Selección de módulo previa a conversación; chat en streaming y visor de gráficas 2D |
+| [[Sprint 03]] | Avisos de privacidad/cookies; expresiones y superficies en el flujo tutor–visor. RAG y carga del banco son procesos internos |
+| [[Sprint 04]] | Historial y progreso; estados de verificación de pasos y especificación gráfica en las vistas existentes |
+| [[Sprint 05]] | Pistas progresivas y control de solución en el chat; tangentes en el visor. Cumplimiento documental sin panel ficticio |
+| [[Sprint 06]] | Estados de moderación/cuota y superficies iluminadas; seguridad sobre los recorridos existentes |
+| [[Sprint 07]] | Solicitud/restablecimiento de contraseña y selección por intersección en el visor; evaluación pedagógica técnica |
+| [[Sprint 08]] | Derechos de datos propios, estadísticas docentes agregadas y gestión de usuarios para administración |
+| [[Sprint 09]] | Uso/sesiones individuales con auditoría, modo solo apuntes y animaciones; progresión dentro del tutor |
+| [[Sprint 10]] | Postprocesamiento en el visor y mediciones técnicas de rendimiento |
+
+No se crean enlaces deshabilitados ni datos ficticios para esas capacidades. Todos los alumnos tendrán acceso a todos los módulos y no habrá clases. El profesor no sube apuntes: se cargan desde el código fuente. Los paneles privilegiados se incorporarán cuando sus UC estén implementados, no solo porque el usuario posea ese rol.
+
+Se conserva HTML/CSS y módulos JavaScript nativos en `/visor/index.html`. Rutas hash y siete secciones semánticas comparten una instancia de `SessionClient` y conservan el visor. Un framework añadiría dependencias innecesarias para este alcance; páginas independientes obligarían a renovar la cookie en cada navegación. La ruta de cada vista permite enlaces directos y navegación atrás/adelante.
 
 | Ruta | Vista | Comportamiento |
 |---|---|---|
 | `#/inicio` | Inicio | Presentación y acceso al laboratorio o al registro |
 | `#/acceso` | Iniciar sesión | Correo y contraseña, mostrar/ocultar, estado ocupado y error |
 | `#/registro` | Crear cuenta | Alumno, confirmación y requisitos de contraseña del servidor |
+| `#/espacio` | Tu espacio | Destino tras login/registro, texto según rol vigente y entradas reales a laboratorio/cuenta; sin sesión muestra acceso |
 | `#/laboratorio` | Laboratorio | WebGL2 real, ejes, controles de cámara y ayuda |
 | `#/cuenta` | Cuenta | Correo, rol vigente, permisos y cierre; sin sesión muestra acceso |
 | `#/restringido` | Acceso restringido | Explica el 403 y ofrece laboratorio o acceso |
 
 La autorización real y la propiedad siguen verificándose en el servidor. La vista de cuenta no concede privilegios. El alta pública siempre envía `ALUMNO`; las cuentas privilegiadas las gestiona el centro.
+
+La portada presenta MathTutor como un tutor adaptativo en desarrollo. Las acciones autenticadas llevan al espacio; cuenta y laboratorio permiten volver a él. `workspaceFor(role)` describe únicamente lo disponible en S1 para cada rol, sin simular paneles docentes ni administrativos. El cambio de rol se refleja también en la bienvenida sin reautenticar.
 
 ## Sistema visual
 
@@ -48,6 +70,6 @@ Rol consultado cada 3 segundos con timeout de 2 segundos. Un 401 intenta una ún
 4. Revisión independiente; regresiones de concurrencia, cierre y salto al contenido; correcciones verificadas.
 5. Build Gradle, V8, JaCoCo y Chromium; seguimiento en la rama de implementación. CI remota e integración en DEV pendientes.
 
-Comandos: `./gradlew.bat check jacocoAggregateReport --no-daemon --no-scan`, `python scripts/smoke-webgl.py`, `python scripts/test_verify_integration_results.py`, `python scripts/verify-integration-results.py`. El smoke usa CDP y WebSocket nativos de Node para probar Web Locks con reloj real; no añade dependencias de navegador. Comprueba vistas a 1200 y 375 px, registro, login, permisos, cierre, cámara y exclusión de renovaciones. Genera seis capturas en `mathtutor-graphics/build/reports/client-browser/`.
+Comandos: `./gradlew.bat check jacocoAggregateReport --no-daemon --no-scan`, `python scripts/smoke-webgl.py`, `python scripts/test_verify_integration_results.py`, `python scripts/verify-integration-results.py`. El smoke usa CDP y WebSocket nativos de Node para probar Web Locks con reloj real; no añade dependencias de navegador. Comprueba vistas públicas y autenticadas a 1200 y 375 px, registro, login, permisos, cambios de rol en el espacio, cierre, cámara y exclusión de renovaciones. Genera diez capturas en `mathtutor-graphics/build/reports/client-browser/`, incluidas las variantes alumno/profesor/administrador y móvil con APIs simuladas, sin crear usuarios reales.
 
 Skills instaladas y aplicadas: [frontend-design](https://skills.sh/anthropics/skills/frontend-design) y [web-design-guidelines](https://skills.sh/vercel-labs/agent-skills/web-design-guidelines). Se aplica además el flujo local de TDD, accesibilidad, revisión y documentación. No se realizan llamadas a proveedores LLM.
