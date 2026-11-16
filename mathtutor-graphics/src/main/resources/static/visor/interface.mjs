@@ -23,7 +23,7 @@ export function mountInterface(document, host, onView) {
   const all = selector => [...document.querySelectorAll(selector)];
   const one = selector => document.querySelector(selector);
   const notice = one('#notice');
-  let busy = true, polling = false, disposed = false, currentView;
+  let busy = true, polling = false, disposed = false, currentView, activity = 0;
   function announce(message) {
     notice.textContent = message; notice.hidden = !message; one('#retry-logout').hidden = true;
   }
@@ -59,18 +59,22 @@ export function mountInterface(document, host, onView) {
   }
   function setBusy(value) {
     busy = value;
+    if (value) activity++;
     for (const button of all('[data-auth] button[type="submit"], [data-logout]')) button.disabled = value;
   }
   async function updateRole() {
     if (busy || polling || disposed || !client.token) return;
     polling = true;
+    const generation = activity;
     try {
       const role = await client.role();
+      if (disposed || generation !== activity) return;
       if (role !== undefined) {
         if (!role) announce('Tu sesión ha terminado. Inicia sesión para volver a tu cuenta.');
         render();
       }
     } catch (error) {
+      if (disposed || generation !== activity) return;
       if (error.status === 403) host.location.hash = '#/restringido';
       announce(error.status === 403 ? error.message : 'No se pudo comprobar el permiso actual. Reintentaremos automáticamente.');
       render();
@@ -126,6 +130,9 @@ export function mountInterface(document, host, onView) {
       one('#retry-logout').hidden = false;
     }
     finally { setBusy(false); host.location.hash = '#/acceso'; render(); }
+  });
+  one('.skip-link').addEventListener('click', event => {
+    event.preventDefault(); one('#main').focus(); one('#main').scrollIntoView();
   });
   host.addEventListener('hashchange', render);
   const interval = host.setInterval(updateRole, 3000);

@@ -1,17 +1,23 @@
 /** Token solo en memoria: nunca se persiste en localStorage ni sessionStorage. */
 export class SessionClient {
-  constructor(fetcher = globalThis.fetch) { this.fetch = fetcher; this.token = null; this.query = 0; this.profile = null; }
+  constructor(fetcher = globalThis.fetch, locks = globalThis.navigator?.locks) {
+    this.fetch = fetcher; this.locks = locks; this.token = null; this.query = 0; this.profile = null;
+  }
 
   async post(action, body) {
-    const csrf = await this.fetch('/api/csrf-token', { credentials: 'same-origin', signal: AbortSignal.timeout(4000) });
-    if (!csrf.ok) throw new Error('No se pudo preparar la sesión. Vuelve a intentarlo.');
-    const { csrfToken } = await csrf.json();
-    return this.fetch(`/api/auth/${action}`, {
-      method: 'POST', credentials: 'same-origin', signal: AbortSignal.timeout(4000),
-      headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken,
-        ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
-      body: JSON.stringify(body),
-    });
+    // La cookie es compartida por pestañas: serializar su rotación evita falsos reusos.
+    const request = async () => {
+      const csrf = await this.fetch('/api/csrf-token', { credentials: 'same-origin', signal: AbortSignal.timeout(4000) });
+      if (!csrf.ok) throw new Error('No se pudo preparar la sesión. Vuelve a intentarlo.');
+      const { csrfToken } = await csrf.json();
+      return this.fetch(`/api/auth/${action}`, {
+        method: 'POST', credentials: 'same-origin', signal: AbortSignal.timeout(4000),
+        headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': csrfToken,
+          ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
+        body: JSON.stringify(body),
+      });
+    };
+    return this.locks ? this.locks.request('mathtutor-auth-cookie', request) : request();
   }
 
   failure(response, fallback) {

@@ -95,3 +95,24 @@ test('enviar durante la restauración no realiza una segunda autenticación', as
   await f.submit(f.forms[0]); await app.ready;
   assert.equal(f.state.calls.some(([path]) => path.endsWith('/login')), false);
 });
+
+test('saltar al contenido conserva la vista actual', async () => {
+  const f = await setup(); f.host.location.hash = '#/laboratorio'; f.app.render();
+  f.nodes['.skip-link'].listeners.click({ preventDefault() {} });
+  assert.equal(f.views.find(view => !view.hidden).dataset.view, 'laboratorio');
+  assert.equal(f.host.location.hash, '#/laboratorio');
+  assert.equal(f.nodes['#main'].focused, true);
+});
+
+test('el error tardío de permisos no oculta el reintento de cierre fallido', async () => {
+  const f = await setup(); await f.submit(f.forms[0]);
+  let reject;
+  const previous = f.app.client.fetch;
+  f.app.client.fetch = (path, options) => path.endsWith('/me')
+    ? new Promise((_, fail) => { reject = fail; }) : previous(path, options);
+  const poll = f.app.updateRole();
+  f.state.status = 500; await f.nodes['#logout'].listeners.click();
+  reject(new Error('timeout')); await poll;
+  assert.equal(f.nodes['#retry-logout'].hidden, false);
+  assert.match(f.nodes['#notice'].textContent, /servidor no confirmó/);
+});

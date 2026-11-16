@@ -76,3 +76,21 @@ test('salir invalida una renovación pendiente', async () => {
   await pending;
   assert.equal(client.token, null);
 });
+
+test('dos pestañas coordinan la rotación de la cookie compartida', async () => {
+  let queue = Promise.resolve(), cookie = 1, concurrent = 0, maximum = 0;
+  const locks = { request(name, action) {
+    assert.equal(name, 'mathtutor-auth-cookie');
+    const next = queue.then(action); queue = next.catch(() => {}); return next;
+  } };
+  const fetcher = async path => {
+    if (path.endsWith('csrf-token')) return { ok: true, json: async () => ({ csrfToken: 'csrf' }) };
+    const sent = cookie; maximum = Math.max(maximum, ++concurrent);
+    await new Promise(done => setImmediate(done)); concurrent--;
+    const valid = sent === cookie; cookie++;
+    return { ok: valid, status: valid ? 200 : 401, json: async () => ({ data: { accessToken: 'token' } }) };
+  };
+  const first = new SessionClient(fetcher, locks), second = new SessionClient(fetcher, locks);
+  await Promise.all([first.restore(), second.restore()]);
+  assert.equal(maximum, 1); assert.equal(first.token, 'token'); assert.equal(second.token, 'token');
+});

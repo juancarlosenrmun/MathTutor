@@ -3,10 +3,11 @@
     addEventListener(name, fn) { this.listeners[name] = fn; }, removeEventListener() {},
     setAttribute(k, v) { this.attributes[k] = v; }, removeAttribute(k) { delete this.attributes[k]; },
     toggleAttribute(k, value) { if (value) this.attributes[k] = ''; else delete this.attributes[k]; },
-    focus() { this.focused = true; }, ...extra };
+    focus() { this.focused = true; }, scrollIntoView() {}, ...extra };
 }
 export function fixture() {
   const nodes = Object.fromEntries(['notice', 'retry-logout', 'role', 'account-email', 'permission-description', 'main', 'logout', 'graphic-status'].map(id => ['#' + id, element()]));
+  nodes['.skip-link'] = element();
   const views = ['inicio','acceso','registro','laboratorio','cuenta','restringido'].map(view => element({ dataset: { view } }));
   const navs = ['inicio', 'laboratorio'].map(nav => element({ dataset: { nav } }));
   const forms = ['login', 'register'].map(auth => {
