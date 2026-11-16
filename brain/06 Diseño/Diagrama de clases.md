@@ -1,5 +1,8 @@
 # Diagrama de clases general
 
+> [!note] Alcance del diagrama
+> El diagrama general incluye diseño futuro. La auditoría [[Auditoria Sprint 01 2026-11-16]] distingue las clases existentes de las previstas; no demuestra implementación de UC-03, UC-27 ni del orquestador.
+
 > Verificar: paquetes, dependencias (solo hacia interfaces), una única llamada a `LlmGateway` por turno, sin transacciones abiertas durante la llamada al LLM.
 
 ```mermaid
@@ -190,6 +193,11 @@ SpecInterpreter --> GraphicController : JSON
 ```
 
 ## Notas de verificación
+- Corrección S1 en revisión: el filtro JWT valida exclusivamente tokens de acceso y consulta `UserRepositoryPort` en cada petición para obtener rol y estado actuales (RNF-04). El registro público asigna únicamente ALUMNO.
+- La renovación se concentra en una operación transaccional: `TokenServiceAdapter` delega en `RefreshTokenAdapter`, que bloquea primero al usuario con `UserRepository.findByIdForUpdate` y después relee el token con `RefreshTokenRepository.findByTokenHashForUpdate`. La generación del sustituto, la revocación y su almacenamiento son atómicos; el bloqueo por propietario serializa también los cambios de una misma familia.
+- `SpringAiGoogleAiStudioChatModel` y `GoogleAiStudioLlmGateway` preservan mensajes de sistema/usuario y consumen SSE; no reintentan ni cambian de proveedor al fallar. `GoogleAiStudioRateLimiter` limita solicitudes locales por configuración y no representa una garantía de cuota Google.
+- `SpringAiPgVectorRetriever` rechaza una transacción previa antes de buscar o indexar (`Propagation.NEVER`); la generación de embeddings se realiza sin envolver llamadas remotas en una transacción JDBC. Las consultas usan RETRIEVAL_QUERY y los documentos RETRIEVAL_DOCUMENT.
+- El CAS utiliza contextos independientes por operación. La coincidencia en muestras numéricas nunca prueba identidad simbólica; los casos no demostrables conservan estado indeterminado.
 - `CircuitBreakerLlmGateway` implementa el modo solo apuntes (UC-26, Sprint 9); antes, `SpringAiLlmGateway` directo.
 - `CasEngine` y `ExpressionParser` los implementa Symja; el spike EN-04 decide si se confirma.
 - `ExerciseRecognizer` (UC-23, S6) nunca usa LLM ni similitud semántica.
@@ -221,3 +229,23 @@ SpecInterpreter --> GraphicController : JSON
 | ProgressController | UC-11 |
 | TeacherStatsController | UC-10 |
 | AdminController | UC-06, UC-07, UC-08, UC-09 |
+
+
+## Cierre técnico S1 · UC-03 y UC-27 (2026-11-16)
+
+```mermaid
+classDiagram
+AccessPolicy <|.. RoleAccessPolicy
+ResourceAccessController --> AccessPolicy
+ResourceAccessController --> TutorSessionRepository : existsByIdAndUserId
+JwtAuthenticationFilter --> UserRepositoryPort : rol vigente por petición
+WebGLViewer --> Camera : matriz de vista y proyección
+WebGLViewer --> ShaderPipeline : WebGL2 y GLSL 300 ES
+SessionClient --> AuthController : login CSRF y me cada 3 segundos
+```
+
+- `GET /api/access/sessions/{id}` devuelve 204 si el rol puede leer sesiones y el usuario es propietario; 403 si es ajena, inexistente o el rol no tiene acceso; 401 sin identidad activa. No revela datos ni existencia de recursos ajenos.
+- Alumno: lectura de contenido y sesiones propias. Profesor: contenido y estadísticas agregadas. Administrador: permisos de gestión; el acceso individual ajeno se reserva a UC-09 y su auditoría. Ninguna ruta administrativa de otros sprints se implementa aquí.
+- El cliente `/visor/index.html` incluye ejes de referencia, controles de órbita, zoom y desplazamiento por ratón/teclado, recuperación del contexto y errores en español. El pipeline usa shaders propios; dibuja bajo demanda, libera GPU al salir y conserva funcionamiento al volver desde la caché de navegación.
+- El rol visible se consulta cada 3 s con timeout de 2 s y rechazo de respuestas obsoletas; el token se conserva únicamente en memoria. Pruebas Node con cobertura V8 y smoke Chromium que compila shaders y comprueba píxeles reales.
+- Las gráficas, superficies, iluminación, selección e interpretación de especificaciones siguen perteneciendo a sus sprints. Véase [[Sprint 01]].
