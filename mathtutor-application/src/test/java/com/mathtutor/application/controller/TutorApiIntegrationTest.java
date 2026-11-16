@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 /** UC-12: contrato HTTP, tabla de permisos y persistencia real PostgreSQL/pgvector. */
-@SpringBootTest(properties = {"spring.config.import=", "spring.jpa.open-in-view=false"})
+@SpringBootTest(properties = "spring.config.import=")
 @AutoConfigureMockMvc @Testcontainers @DirtiesContext
 class TutorApiIntegrationTest {
     @Container static final PostgreSQLContainer<?> DB = new PostgreSQLContainer<>(
@@ -39,6 +39,7 @@ class TutorApiIntegrationTest {
     @Autowired ObjectMapper json;
     @Autowired UserRepositoryPort users;
     @Autowired TokenServiceAdapter tokens;
+    @Autowired javax.sql.DataSource datasource;
     @MockBean LlmGateway llm;
     String token;
     @BeforeEach void user() {
@@ -95,9 +96,13 @@ class TutorApiIntegrationTest {
         org.mockito.Mockito.when(llm.stream(org.mockito.ArgumentMatchers.any())).thenAnswer(call -> {
             org.assertj.core.api.Assertions.assertThat(
                     org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+            org.assertj.core.api.Assertions.assertThat(((com.zaxxer.hikari.HikariDataSource) datasource)
+                    .getHikariPoolMXBean().getActiveConnections()).isZero();
             return reactor.core.publisher.Flux.defer(() -> {
                 org.assertj.core.api.Assertions.assertThat(
                         org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
+                org.assertj.core.api.Assertions.assertThat(((com.zaxxer.hikari.HikariDataSource) datasource)
+                        .getHikariPoolMXBean().getActiveConnections()).isZero();
                 return reactor.core.publisher.Flux.just("Una ", "función");
             });
         });

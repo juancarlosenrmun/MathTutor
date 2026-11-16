@@ -1,6 +1,9 @@
 spring:
   application:
     name: mathtutor
+  jpa:
+    # RNF-03: la respuesta SSE no conserva un EntityManager ni una conexión JDBC.
+    open-in-view: false
 
   # Cargar .env si existe (opcional, no falla si no está)
   config:
