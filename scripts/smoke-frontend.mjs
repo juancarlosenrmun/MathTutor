@@ -49,10 +49,38 @@ try {
     result = await evaluate('document.body?.dataset.result');
     if (result) break;
     await delay(50);
+    const metrics = await evaluate(`(() => {
+      const doc = document.querySelector('iframe').contentDocument;
+      return { viewport: doc.documentElement.clientWidth, content: doc.documentElement.scrollWidth };
+    })()`);
+    if (metrics.content > metrics.viewport + 1) throw new Error(`Desbordamiento en captura ${name}: ${JSON.stringify(metrics)}`);
   }
   await writeFile(join(evidence, 'frontend.html'), await evaluate('document.documentElement.outerHTML'));
   if (result !== 'passed') throw new Error(await evaluate('document.querySelector("#result")?.textContent') || 'Contrato frontend sin finalizar');
   console.log('Frontend real: rutas, móvil, sesión, permisos y cámara correctos');
+  // Capturas autenticadas con el backend simulado del contrato, sin crear usuarios reales.
+  await evaluate(`(async () => {
+    const frame = document.querySelector('iframe'), win = frame.contentWindow;
+    document.body.style.margin = '0'; document.querySelector('#result').hidden = true;
+    frame.style.cssText = 'display:block;width:100%;height:100vh;border:0';
+    win.testState.status = 200;
+    await win.testApp.client.login('alumno@ejemplo.es', 'UnaClaveSegura12!');
+    await win.testApp.client.role(); win.location.hash = '#/espacio'; win.testApp.render();
+    win.document.querySelector('#notice').hidden = true;
+  })()`);
+  for (const [role, name, width, height] of [['ALUMNO', 'espacio', 1440, 1000],
+    ['PROFESOR', 'espacio-profesor', 1440, 1000], ['ADMIN', 'espacio-admin', 1440, 1000],
+    ['ALUMNO', 'espacio-movil', 390, 1000]]) {
+    await command('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 700 });
+    await evaluate(`(async () => {
+      const win = document.querySelector('iframe').contentWindow;
+      win.testState.role = '${role}'; await win.testApp.updateRole();
+      win.document.querySelector('#main').blur();
+    })()`);
+    await delay(50);
+    const shot = await command('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+    await writeFile(join(evidence, `${name}.png`), Buffer.from(shot.data, 'base64'));
+  }
   for (const [name, view, width, height] of [['inicio', 'inicio', 1440, 1000],
     ['laboratorio', 'laboratorio', 1440, 1000], ['acceso', 'acceso', 1440, 1000],
     ['registro', 'registro', 1440, 1000], ['inicio-movil', 'inicio', 390, 1000],
