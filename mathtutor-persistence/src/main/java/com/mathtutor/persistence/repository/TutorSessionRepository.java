@@ -19,6 +19,9 @@ import java.util.Optional;
 @Repository
 public interface TutorSessionRepository extends JpaRepository<TutorSession, Long> {
 
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = "module")
+    Optional<TutorSession> findByIdAndUserId(Long id, Long userId);
+
     boolean existsByIdAndUserId(Long id, Long userId);
 
     List<TutorSession> findByUser(User user);
