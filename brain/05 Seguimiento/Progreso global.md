@@ -1,6 +1,6 @@
 ﻿# Progreso global
 
-Sprint 02 (2026-11-16 23:18): cuatro UC implementados y verificados localmente en `Sprint-2`, 32/32 puntos técnicos, build correcto; 906 pruebas Java, 44 Node, tres verificaciones Chromium y cuatro Python, sin fallos. JaCoCo en umbral por módulo y V8 99,88/93,40. Pendientes CI remota e integración en DEV: 0/4 UC entregados; checklist 19/25. Véase [[Sprint 02]].
+Sprint 02 (2026-11-16 23:51): **completado**, 4/4 UC y 32/32 puntos integrados en DEV mediante [PR #9](https://github.com/juancarlosenrmun/MathTutor/pull/9), tras [CI verde](https://github.com/juancarlosenrmun/MathTutor/actions/runs/43972987433). Incluye ocho capítulos de Industriales y 121 fragmentos. Verificación remota: 906 Java, 44 Node, tres comprobaciones Chromium y 15 Python, sin fallos/omisiones; JaCoCo en umbral y V8 99,88/93,40. Checklist **25/25**. Véase [[Sprint 02]].
 
 > [!note] Estado vigente
 > S1 base completado: 5/5 elementos, 33/33 puntos, CI verde e integrado en DEV. Ampliación frontend en `Sprint-1-Frontend`: 4/5 comprobaciones verificadas localmente; pendiente de CI remota e integración en DEV. Véase [[Sprint 01]].
@@ -16,7 +16,7 @@ Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlos
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
 | [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 base (33/33 pts); frontend 4/5 | en curso (PR #8 a DEV) |
-| [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 0/4 integrados; 4/4 verificados localmente | en curso (Sprint-2; checklist 19/25) |
+| [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 4/4 (32/32 pts) | completado (DEV; checklist 25/25) |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 0/5 | pendiente |
 | [[Sprint 05\|S5]] | Hito: tutor socrático completo con tangentes y RGPD | 34 | 0/4 | pendiente |

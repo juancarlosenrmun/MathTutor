@@ -2,7 +2,7 @@
 sprint: S2
 objetivo: Chat con LLM, apuntes indexados y gráficas 2D
 puntos: 32
-estado: en curso
+estado: completado
 ---
 # Sprint 02 · Chat con LLM, apuntes indexados y gráficas 2D
 
@@ -26,37 +26,47 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-13 · Conversar con el tutor con respuesta en streaming
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-14 · Indexar los apuntes LaTeX al arrancar
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-28 · Ver gráficas 2D de la función, su derivada y el área bajo la curva
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos
-- [ ] Build y CI en verde
+- [x] Todos los elementos completos
+- [x] Build y CI en verde
 - [x] Cobertura en umbral verificada
 - [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+### 2026-11-16 23:51 · Apuntes Industriales, CI e integración en DEV
+
+- **Petición**: ejecutar CI e integrar en DEV; durante esa ejecución, incorporar los apuntes del directorio externo `Apuntes/Industriales`.
+- **Corpus**: ocho capítulos y **121 fragmentos** de 150–400 palabras, distribuidos entre los tres bloques existentes. Las tres notas introductorias se sustituyen por el contenido aportado. Se conservan doce fuentes originales byte a byte y autoría (Diego García Zamora y Nuria V. Castillo González, Universidad de Jaén), con SHA-256 y correspondencia de tema/módulo en `industriales-manifest.json`.
+- **Importador**: `scripts/import_industriales.py`, sin dependencias externas ni ejecución LaTeX. Conserva fórmulas, entornos y parejas teorema–demostración; expande macros conocidas y retira formato editorial. El glosario y los ejercicios propuestos se preservan en las fuentes, fuera del índice de apuntes; no se adelanta el banco de UC-22. `--check` valida reproducibilidad y se ejecuta en CI.
+- **Pruebas/evidencia**: build local correcto y repetición de las pruebas de arranque tras la última regeneración, ambas verdes. Revisión independiente sin bloqueantes. [CI del commit 89397ed](https://github.com/juancarlosenrmun/MathTutor/actions/runs/43972987433) correcta: **906 Java (781 blanca / 125 negra e integración), 44 Node, 15 Python y tres comprobaciones Chromium**, sin fallos u omisiones. Los informes remotos confirman los porcentajes de la tabla inferior y V8 **99,88 % líneas / 93,40 % ramas**. De las Python, once verifican el importador y cuatro la puerta de integraciones. Sin nuevas exclusiones de cobertura.
+- **Integración**: [PR #9](https://github.com/juancarlosenrmun/MathTutor/pull/9) fusionada en DEV tras CI verde, commit `eca06657da2f78ef4ed8862702747e5f2407441e`; commits originales preservados y sin cofirma. Copia local actualizada en DEV. La CI de DEV comprueba también la integración y la publicación del seguimiento; `main` permanece intacta.
+- **Documentación**: plan de importación, contrato de autores y notas de diseño actualizados por separado en DOC. Fuentes externas sin modificar; no se importan PDF, logs, cachés ni archivos de compilación.
+- **Estado vigente**: **4/4 UC integrados, 32/32 puntos entregados, 20/20 comprobaciones de UC y checklist total 25/25**. `estado: completado`. Las entradas siguientes conservan la historia previa a la integración.
 
 ### 2026-11-16 23:18 · Implementación y verificación local
 
@@ -82,5 +92,5 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 | tutor | 96,43 % | 96,67 % |
 
 - **Pendiente**: publicar la rama, obtener CI remota verde e integrar en `DEV`. Por eso permanecen sin marcar las cuatro integraciones, «Todos los elementos completos» y «Build y CI en verde», aunque el build local pasa.
-- **Velocidad/estado**: 32/32 puntos implementados y verificados localmente; **0/32 entregados** según la definición de integración. **0/4 UC integrados**, 16/20 verificaciones de UC; checklist total **19/25**. `estado: en curso`.
+- **Velocidad/estado**: 32/32 puntos implementados y verificados localmente; **0/32 entregados** según la definición de integración. **0/4 UC integrados**, 16/20 verificaciones de UC; checklist total **19/25**. `estado: completado`.
 - Logs locales: `.sprint02-build.log`, `.sprint02-verification-final.log`, `.sprint02-browser-final.log`; los fallos iniciales y las comprobaciones parciales quedan en los demás `.sprint02-*.log`, sin versionar artefactos de build.
