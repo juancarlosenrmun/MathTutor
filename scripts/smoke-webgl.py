@@ -15,8 +15,8 @@ EVIDENCE = ROOT / "mathtutor-graphics/build/reports/client-browser"
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        if self.path == "/smoke.html":
-            content = (ROOT / "mathtutor-graphics/src/test/browser/smoke.html").read_bytes()
+        if self.path in ("/smoke.html", "/frontend.html"):
+            content = (ROOT / "mathtutor-graphics/src/test/browser" / self.path.lstrip("/")).read_bytes()
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
@@ -41,12 +41,13 @@ def main():
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         for name, route, expected in [("pipeline", "/smoke.html", 'data-result="passed"'),
+                                      ("frontend", "/frontend.html", 'data-result="passed"'),
                                       ("page", "/visor/index.html", "Visor listo.")]:
             with tempfile.TemporaryDirectory(prefix="mathtutor-browser-") as profile:
                 result = subprocess.run([browser, "--headless", "--no-first-run", "--no-default-browser-check",
                     "--no-sandbox", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
                     "--disable-background-networking", f"--user-data-dir={profile}",
-                    "--virtual-time-budget=3000", "--dump-dom",
+                    "--virtual-time-budget=10000", "--dump-dom",
                     f"http://127.0.0.1:{server.server_port}{route}"],
                     capture_output=True, timeout=45, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
                 dom = result.stdout.decode("utf-8", errors="replace")

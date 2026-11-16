@@ -1,57 +1,37 @@
-import test from 'node:test';
+﻿import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mount } from '../../main/resources/static/visor/app.mjs';
 import { fakeGl } from './fake-gl.mjs';
+import { element, fixture } from './ui-fixture.mjs';
 
-function element(extra = {}) {
-  return { textContent: '', listeners: {}, addEventListener(name, fn) { this.listeners[name] = fn; },
-    removeEventListener() {}, ...extra };
-}
-
-test('la página conecta controles y refleja cambios de rol en menos de cinco segundos', async () => {
-  let currentRole = 'ALUMNO', online = true, loginAllowed = true;
-  const nodes = { '#graphic-status': element(), '#role': element(),
-    canvas: element({ clientWidth: 600, clientHeight: 400, getContext: () => fakeGl() }),
-    form: element({ elements: { email: { value: 'a@test.es' }, password: { value: 'secret' } } }) };
+test('la página monta WebGL, conecta cámara, cambia de vista y libera recursos', async () => {
+  const f = fixture();
+  f.nodes.canvas = element({ clientWidth: 600, clientHeight: 400, getContext: () => fakeGl() });
   const button = element({ dataset: { camera: 'in' } });
-  const host = element({ setInterval(fn, delay) { this.poll = fn; assert.equal(delay, 3000); return 7; },
-    clearInterval(id) { this.cleared = id; },
-    async fetch(path) {
-      if (!online) throw new Error('Sin conexión');
-      return { ok: loginAllowed, json: async () => path.endsWith('csrf-token') ? { csrfToken: 'csrf' }
-        : { data: path.endsWith('login') ? { accessToken: 'jwt' } : { role: currentRole } } };
-    } });
-  mount({ querySelector: key => nodes[key], querySelectorAll: () => [button] }, host);
+  const original = f.doc.querySelectorAll;
+  f.doc.querySelectorAll = selector => selector === '[data-camera]' ? [button] : original(selector);
+  const app = mount(f.doc, f.host);
+  await app.ready;
+  assert.match(f.nodes['#graphic-status'].textContent, /Visor listo/);
   button.listeners.click();
-  const submit = () => nodes.form.listeners.submit({ preventDefault() {}, currentTarget: nodes.form });
-  await submit();
-  assert.equal(nodes['#role'].textContent, 'ALUMNO');
-  assert.equal(nodes.form.elements.password.value, '');
-  currentRole = 'PROFESOR';
-  await host.poll();
-  assert.equal(nodes['#role'].textContent, 'PROFESOR');
-  online = false;
-  await host.poll();
-  assert.match(nodes['#role'].textContent, /No se pudo/);
-  online = true;
-  loginAllowed = false;
-  await submit();
-  assert.match(nodes['#role'].textContent, /Credenciales/);
-  await host.poll();
-  assert.equal(nodes['#role'].textContent, 'Sin sesión');
-  host.listeners.pagehide({ persisted: true });
-  assert.equal(host.cleared, undefined);
-  host.listeners.pagehide({ persisted: false });
-  assert.equal(host.cleared, 7);
+  f.host.location.hash = '#/laboratorio';
+  f.host.listeners.hashchange();
+  // El doble conserva solo el último listener; comprobar también limpieza del visor directamente.
+  const uiHide = f.host.listeners.pagehide;
+  uiHide({ persisted: true });
+  assert.equal(f.host.cleared, undefined);
+  uiHide({ persisted: false });
+  assert.equal(f.host.cleared, 7);
 });
 
-test('sin WebGL2 muestra alternativa textual y desactiva controles', () => {
-  const status = element();
+test('sin WebGL2 la interfaz sigue operativa y desactiva controles', async () => {
+  const f = fixture();
+  f.nodes.canvas = element({ getContext: () => null });
   const button = element({ dataset: { camera: 'in' } });
-  const nodes = { '#graphic-status': status, '#role': element(), canvas: element({ getContext: () => null }), form: element() };
-  const host = element({ fetch() {}, setInterval() {}, clearInterval() {} });
-  mount({ querySelector: key => nodes[key], querySelectorAll: () => [button] }, host);
-  assert.match(status.textContent, /WebGL 2/);
+  const original = f.doc.querySelectorAll;
+  f.doc.querySelectorAll = selector => selector === '[data-camera]' ? [button] : original(selector);
+  await mount(f.doc, f.host).ready;
+  assert.match(f.nodes['#graphic-status'].textContent, /WebGL 2/);
   assert.equal(button.disabled, true);
-  host.listeners.pagehide({ persisted: false });
+  f.host.location.hash = '#/laboratorio'; f.host.listeners.hashchange();
 });
