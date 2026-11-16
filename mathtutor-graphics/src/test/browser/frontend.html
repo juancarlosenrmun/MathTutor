@@ -21,6 +21,8 @@ try {
   await new Promise(resolve => frame.addEventListener('load', resolve, { once: true }));
   const win = frame.contentWindow, doc = frame.contentDocument;
   await win.testApp.ready;
+  // Esperar la cola nativa de locks, sin asumir que 30 ms equivalen a una respuesta.
+  const idle = async () => { await win.navigator.locks.request('mathtutor-auth-cookie', () => {}); await settle(); };
   const go = async view => { win.location.hash = '#/' + view; await settle(); };
   const visible = () => [...doc.querySelectorAll('[data-view]')].filter(node => !node.hidden);
   assert(visible().length === 1, 'Debe haber una sola vista activa');
@@ -41,28 +43,42 @@ try {
   register.dispatchEvent(new Event('submit', { cancelable: true })); await settle();
   assert(!register.querySelector('[data-error]').hidden, 'Confirmación sin validar');
   register.elements.confirm.value = 'UnaClaveSegura12!';
-  register.dispatchEvent(new Event('submit', { cancelable: true })); await settle();
-  assert(visible()[0].dataset.view === 'cuenta', 'Registro no abre cuenta');
+  register.dispatchEvent(new Event('submit', { cancelable: true }));
+  await idle();
+  assert(visible()[0].dataset.view === 'cuenta', 'Registro no abre cuenta: ' + register.querySelector('[data-error]').textContent);
   assert(doc.querySelector('#account-email').textContent === 'alumno@ejemplo.es', 'Correo no mostrado');
   const call = win.testState.calls.find(([path]) => path.endsWith('register'));
   assert(JSON.parse(call[1].body).role === 'ALUMNO', 'Registro permite escalar rol');
   win.testState.role = 'PROFESOR'; await win.testApp.updateRole();
   assert(doc.querySelector('#role').textContent === 'PROFESOR', 'Rol obsoleto');
   await go('laboratorio');
+  doc.querySelector('.skip-link').click(); await settle();
+  assert(visible()[0].dataset.view === 'laboratorio', 'Saltar al contenido cambia de ruta');
   assert(doc.querySelector('canvas').width > 1, 'Visor sin tamaño después de navegar');
   assert(doc.querySelector('#graphic-status').textContent.includes('Visor listo.'), 'Visor no disponible');
   doc.querySelector('[data-camera="reset"]').click();
-  doc.querySelector('#logout').click(); await settle();
+  doc.querySelector('#logout').click(); await idle();
   assert(visible()[0].dataset.view === 'acceso', 'Cierre no vuelve a acceso');
   const login = doc.querySelector('[data-auth="login"]');
   win.testState.status = 429;
   login.elements.email.value = 'alumno@ejemplo.es'; login.elements.password.value = 'UnaClaveSegura12!';
-  login.dispatchEvent(new Event('submit', { cancelable: true })); await settle();
+  login.dispatchEvent(new Event('submit', { cancelable: true }));
+  await idle();
   assert(login.querySelector('[data-error]').textContent.includes('Demasiados'), 'Falta error de límite');
   win.testState.status = 200;
-  login.elements.password.value = 'UnaClaveSegura12!'; login.dispatchEvent(new Event('submit', { cancelable: true })); await settle();
+  login.elements.password.value = 'UnaClaveSegura12!'; login.dispatchEvent(new Event('submit', { cancelable: true }));
+  await idle();
   win.testState.status = 403; await win.testApp.updateRole(); await settle();
   assert(visible()[0].dataset.view === 'restringido', '403 sin vista de acceso restringido');
+  const { SessionClient } = await import('/visor/session.mjs');
+  let concurrent = 0, maximum = 0;
+  const fetcher = async path => {
+    if (path.endsWith('csrf-token')) return { ok: true, json: async () => ({ csrfToken: 'csrf' }) };
+    maximum = Math.max(maximum, ++concurrent); await settle(); concurrent--;
+    return { ok: true, status: 200, json: async () => ({ data: { accessToken: 'native-lock' } }) };
+  };
+  await Promise.all([new SessionClient(fetcher).restore(), new SessionClient(fetcher).restore()]);
+  assert(maximum === 1, 'Web Locks no serializa renovaciones concurrentes');
   document.body.dataset.result = 'passed';
   document.querySelector('#result').textContent = 'Contrato frontend correcto: rutas, móvil, registro, login, permisos, cierre y visor.';
 } catch (error) {

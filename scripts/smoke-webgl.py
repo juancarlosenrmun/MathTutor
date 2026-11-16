@@ -15,7 +15,12 @@ EVIDENCE = ROOT / "mathtutor-graphics/build/reports/client-browser"
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        if self.path in ("/smoke.html", "/frontend.html"):
+        if self.path == "/api/csrf-token":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"csrfToken":"smoke"}')
+        elif self.path in ("/smoke.html", "/frontend.html"):
             content = (ROOT / "mathtutor-graphics/src/test/browser" / self.path.lstrip("/")).read_bytes()
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -23,6 +28,13 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(content)
         else:
             super().do_GET()
+
+    def do_POST(self):
+        # Servidor estático de pruebas: ninguna sesión persistente.
+        self.send_response(401)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(b'{}')
 
     def log_message(self, *_):
         pass
@@ -41,7 +53,6 @@ def main():
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         for name, route, expected in [("pipeline", "/smoke.html", 'data-result="passed"'),
-                                      ("frontend", "/frontend.html", 'data-result="passed"'),
                                       ("page", "/visor/index.html", "Visor listo.")]:
             with tempfile.TemporaryDirectory(prefix="mathtutor-browser-") as profile:
                 result = subprocess.run([browser, "--headless", "--no-first-run", "--no-default-browser-check",
@@ -56,6 +67,9 @@ def main():
                     (EVIDENCE / f"{name}.log").write_bytes(result.stderr)
                     raise SystemExit(f"Prueba de navegador fallida: {name}; consulta {EVIDENCE}")
                 print(f"WebGL2 real: {name} correcto")
+        subprocess.run(["node", str(ROOT / "scripts/smoke-frontend.mjs"), browser,
+                        f"http://127.0.0.1:{server.server_port}", str(EVIDENCE)],
+                       check=True, timeout=90)
     finally:
         server.shutdown()
         server.server_close()
