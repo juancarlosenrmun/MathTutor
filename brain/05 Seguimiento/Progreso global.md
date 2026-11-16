@@ -1,11 +1,11 @@
 # Progreso global
 
 > [!note] Estado vigente
-> S1: cinco elementos implementados y verificados; pendiente CI remoto e integración en DEV. Véase [[Sprint 01]].
+> S1 completado: 5/5 elementos, 33/33 puntos, CI verde e integrado en DEV. Véase [[Sprint 01]].
 
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
-| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 verificados (33/33 pts); integración pendiente | en curso |
+| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 (33/33 pts) | completado |
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y grÃ¡ficas 2D | 32 | 0/4 | pendiente |
 | [[Sprint 03\|S3]] | RAG, interpretaciÃ³n de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | VerificaciÃ³n con CAS, contexto, registro y especificaciÃ³n grÃ¡fica | 33 | 0/5 | pendiente |

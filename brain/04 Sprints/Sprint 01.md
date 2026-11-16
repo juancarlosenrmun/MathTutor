@@ -2,7 +2,7 @@
 sprint: S1
 objetivo: Base técnica, acceso y visor inicial
 puntos: 33
-estado: en curso
+estado: completado
 ---
 # Sprint 01 · Base técnica, acceso y visor inicial
 
@@ -10,15 +10,15 @@ Anterior: — · Siguiente: [[Sprint 02]] · Plan: [[Sprint 01 - Plan de cierre]
 
 ## Estado vigente
 
-Los cinco elementos están implementados y verificados localmente. El cierre formal queda condicionado a CI verde e integración en DEV. Esta nota sustituye las declaraciones contradictorias de cierre de anteriores iteraciones; el histórico se conserva en [[Registro de iteraciones]].
+Los cinco elementos están implementados, verificados por CI e integrados en DEV. Esta nota sustituye las declaraciones contradictorias de cierre de anteriores iteraciones; el histórico se conserva en [[Registro de iteraciones]].
 
 | ID | Elemento | Requisitos | Puntos | Estado |
 |---|---|---|---|---|
-| UC-01 | Registro, inicio, cierre y renovación de sesión | RF-21 | 5 | Verificado localmente |
-| UC-03 | Autorización por rol y propiedad | RF-22, RNF-04 | 5 | Verificado localmente |
-| UC-27 | Visor WebGL2, pipeline GLSL y cámara | RF-13 | 13 | Verificado localmente |
-| EN-01 | Monolito modular, PostgreSQL+pgvector, migraciones, Git y CI | RNF-11 | 5 | Verificado localmente |
-| EN-04 | Spike LaTeX, Symja y recuperación vectorial | RNF-11 | 5 | Verificado localmente |
+| UC-01 | Registro, inicio, cierre y renovación de sesión | RF-21 | 5 | Completado e integrado en DEV |
+| UC-03 | Autorización por rol y propiedad | RF-22, RNF-04 | 5 | Completado e integrado en DEV |
+| UC-27 | Visor WebGL2, pipeline GLSL y cámara | RF-13 | 13 | Completado e integrado en DEV |
+| EN-01 | Monolito modular, PostgreSQL+pgvector, migraciones, Git y CI | RNF-11 | 5 | Completado e integrado en DEV |
+| EN-04 | Spike LaTeX, Symja y recuperación vectorial | RNF-11 | 5 | Completado e integrado en DEV |
 
 ## Checklist del sprint
 
@@ -27,10 +27,10 @@ Los cinco elementos están implementados y verificados localmente. El cierre for
 - [x] UC-27: WebGL2 real con shaders propios, órbita/zoom/desplazamiento, ratón/teclado, resize, recuperación de contexto y cobertura V8.
 - [x] EN-01: módulos, arquitectura, Flyway y PostgreSQL+pgvector verificados; CI incluye Java, cliente y prueba real de navegador.
 - [x] EN-04: CAS y adaptadores LLM/retriever probados sin consumir cuota remota; integración pgvector determinista.
-- [ ] CI del commit final en verde.
-- [ ] Integración de los cinco elementos en DEV.
+- [x] CI del commit final en verde.
+- [x] Integración de los cinco elementos en DEV.
 
-**Checklist técnica: 5/5 elementos (33/33 puntos implementados y verificados); cierre formal pendiente de CI e integración.**
+**Checklist: 5/5 elementos completados (33/33 puntos), CI en verde e integración en DEV verificada.**
 
 ## Evidencia de verificación
 
@@ -63,4 +63,10 @@ Todos cumplen 80/70; tutor cumple 90/90. JaCoCo excluye únicamente el arranque 
 - Las pruebas ordinarias usan dobles locales; las pruebas externas siguen etiquetadas y requieren ejecución voluntaria. Esta iteración no acredita cuota, semántica ni disponibilidad actuales de Google, ni nuevas cifras PIT/licencias.
 - `.gitignore` protege secretos, compilados, cachés, IDE, copias y paquetes de evidencias. Se retiran del índice los artefactos ya versionados conservando las fuentes, wrapper, plantillas `.env` y lockfiles.
 - Se conservó `sprint-1`, con cambios previos, para la PR existente a DEV; no se trabajó en main. Los diagramas se actualizan en el worktree DOC, separados del código. Las eliminaciones documentales ajenas encontradas durante la sesión no se incluyen en los commits de implementación.
-- Pendiente formal: resultado de CI remoto e integración en DEV. No se marca completado hasta disponer de ambas evidencias.
+- Cierre formal 2026-11-16 19:15: [CI en verde](https://github.com/juancarlosenrmun/MathTutor/actions/runs/43925892460) sobre `f484c03`; [PR #6 fusionada en DEV](https://github.com/juancarlosenrmun/MathTutor/pull/6), commit `5205d65540bd4239ef1acb22361acf16105514bf`. Diagramas y auditoría publicados por separado en DOC (`c215792`). Sin pendientes de implementación de S1.
+
+## Evidencia de integración
+
+- Se contrastaron los artefactos remotos: 863 pruebas Java correctas, 0 fallos, 0 omitidas; JaCoCo en umbral en los ocho módulos. V8 y las dos pruebas Chromium también pasan en GitHub Actions.
+- La reconciliación con DEV conserva exactamente el árbol de fuentes verificado; evita reintroducir controladores/adaptadores antiguos duplicados, migraciones duplicadas y binarios. No se modifica main.
+- Continuación solicitada: se comprobaron `git log` y `git status`; se confirmó que el push de `f484c03` terminó y se ejecutó el commit/push de documentación que quedó interrumpido.

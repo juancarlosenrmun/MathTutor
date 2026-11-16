@@ -1,6 +1,6 @@
 ---
 sprint: S1
-estado: en curso
+estado: completado
 ---
 # Plan de cierre del Sprint 01
 
@@ -24,3 +24,7 @@ Petición: completar [[Sprint 01]], conservar los cambios previos, verificar cob
 ## Revisión
 
 Revisar especialmente accesos cruzados, registro con privilegios, revocación sin renovar JWT, shaders fallidos, pérdida de contexto y recursos GPU liberados.
+
+## Resultado
+
+Ejecutado y verificado el 2026-11-16 19:15. Los cinco elementos de [[Sprint 01]] están integrados en DEV con CI verde. La reconciliación de historia se realizó en un worktree separado, conservando las fuentes verificadas. Diseño y auditoría publicados en DOC.

@@ -1,3 +1,11 @@
+## 2026-11-16 19:15 · Sprint 01 · Continuación y cierre integrado
+- **Petición**: continuar el último comando y comprobar `git log`/`git status` para retomar el trabajo.
+- **Resultado**: confirmado push de `f484c03`, publicada documentación de diseño/auditoría en DOC (`c215792`), CI final verificada y PR #6 fusionada en DEV (`5205d65540bd4239ef1acb22361acf16105514bf`). Se actualizan checklist, estado y progreso a completado.
+- **Pruebas**: artefactos de CI con 737 pruebas de caja blanca y 126 de caja negra/integración (863 Java), 0 fallos/omitidas; 11 pruebas cliente, cuatro de la puerta Python y dos comprobaciones Chromium reales.
+- **Cobertura**: ocho módulos cumplen 80/70 y tutor 90/90; mínimo persistence 84,05 % líneas y 72,92 % ramas. Cliente V8 100 % líneas / 98,10 % ramas. [Evidencia CI](https://github.com/juancarlosenrmun/MathTutor/actions/runs/43925892460).
+- **Pendiente**: ningún UC/EN de S1. Se conservan fuera de estos commits 166 eliminaciones previas de evidencias antiguas en el directorio principal; no afectan al código integrado. main no se modifica.
+- **Checklist**: 5/5 elementos, 33/33 puntos, CI e integración verificadas.
+
 ## 2026-11-16 19:03 · Sprint 01 · Cierre técnico, UC-03 y UC-27
 - **Petición**: completar S1, comentarios y calidad, cobertura y `.gitignore` apto para GitHub/CI.
 - **Implementado**: política de permisos y propiedad; rol vigente por petición; alta pública sin privilegios; cliente WebGL2/GLSL propio con cámara, controles y recuperación; polling seguro de permisos; CI con V8 y navegador real; corrección de la puerta JUnit por `@DisplayName`; limpieza de artefactos del índice.
