@@ -1,13 +1,15 @@
 # Progreso global
 
 > [!note] Estado vigente
-> S1 completado: 5/5 elementos, 33/33 puntos, CI verde e integrado en DEV. Véase [[Sprint 01]].
+> S1 base completado: 5/5 elementos, 33/33 puntos, CI verde e integrado en DEV. Ampliación frontend en `Sprint-1-Frontend`: 4/5 comprobaciones verificadas localmente; pendiente de CI remota e integración en DEV. Véase [[Sprint 01]].
 
 Última verificación de integración (2026-11-16 19:40): conflictos del pull resueltos, build y cobertura en verde, 863 pruebas Java correctas y aplicación local operativa. S1 conserva 5/5 elementos y 33/33 puntos.
 
+Ampliación frontend (2026-11-16 22:10): seis vistas, 29 pruebas Node, tres comprobaciones Chromium y cuatro regresiones Python correctas. Build y cobertura en umbral; vista previa en `http://127.0.0.1:8081/visor/index.html`. Estado de la ampliación: 4/5, pendiente CI remota e integración.
+
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
-| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 (33/33 pts) | completado |
+| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 base (33/33 pts); frontend 4/5 | en curso (ampliación frontend) |
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 0/4 | pendiente |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 0/5 | pendiente |

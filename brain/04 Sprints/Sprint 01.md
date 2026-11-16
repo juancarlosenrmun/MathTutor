@@ -2,7 +2,7 @@
 sprint: S1
 objetivo: Base técnica, acceso y visor inicial
 puntos: 33
-estado: completado
+estado: en curso
 ---
 # Sprint 01 · Base técnica, acceso y visor inicial
 
@@ -10,7 +10,7 @@ Anterior: — · Siguiente: [[Sprint 02]] · Plan: [[Sprint 01 - Plan de cierre]
 
 ## Estado vigente
 
-Los cinco elementos están implementados, verificados por CI e integrados en DEV. Esta nota sustituye las declaraciones contradictorias de cierre de anteriores iteraciones; el histórico se conserva en [[Registro de iteraciones]].
+Los cinco elementos del sprint base están implementados, verificados por CI e integrados en DEV. La ampliación frontend solicitada después del cierre está verificada localmente en `Sprint-1-Frontend`, pendiente de CI remota e integración; véase su checklist al final. El histórico se conserva en [[Registro de iteraciones]].
 
 | ID | Elemento | Requisitos | Puntos | Estado |
 |---|---|---|---|---|
@@ -77,3 +77,32 @@ Todos cumplen 80/70; tutor cumple 90/90. JaCoCo excluye únicamente el arranque 
 - Build limpio, 863 pruebas Java (737 blanca / 126 negra), 11 Node y cuatro regresiones de la puerta CI correctas; cero fallos u omisiones Java. JaCoCo conserva los umbrales en todos los módulos y V8 registra 100/98,10.
 - WebGL verificado en Chromium y sobre la aplicación real. Seis comprobaciones HTTP correctas, PostgreSQL saludable y aplicación reiniciada en `/visor/index.html` con salud `UP`.
 - Checklist confirmada: 5/5, 33/33 puntos. Sin pendientes derivados de la fusión; evidencia detallada en [[Registro de iteraciones]].
+
+## Ampliación de interfaz · Sprint-1-Frontend
+
+Petición: diseñar e implementar todas las vistas de S1 con estilo minimalista y commits pequeños sin cofirma. Git no admite espacios: se utiliza `Sprint-1-Frontend` desde DEV actualizada en lugar del nombre solicitado. No se adelantan UC de otros sprints.
+
+Diseño y plan: conservar HTML/CSS/ES modules y APIs existentes. Frente a añadir un framework o páginas con sesiones independientes, usar vistas con rutas hash permite conservar el token solo en memoria. Paleta: papel `#f6f7f2`, tinta `#202a25`, verde `#285b43`, gris `#626e65`, borde `#dce2d9`; títulos Georgia y cuerpo Segoe UI. Navegación discreta, formularios con etiquetas y errores, laboratorio con visor real y ayuda lateral. Alineación izquierda, espacio generoso y adaptación móvil. Detalle y diagramas actualizados por separado en DOC: [[Sprint 01 - Diseño frontend]].
+
+- [x] UC-01 frontend: inicio, acceso, registro de alumno, cuenta, renovación y cierre; pruebas y cobertura local.
+- [x] UC-03 frontend: rol vigente, permisos y vista de acceso restringido; pruebas locales.
+- [x] UC-27 frontend: laboratorio responsive, controles de cámara y alternativas accesibles; navegador real.
+- [x] EN-01/EN-04: conservar build e integración técnica existentes; regresiones verificadas sin llamadas remotas al LLM.
+- [ ] CI de la ampliación en verde e integración en DEV.
+
+Secuencia ejecutada: pruebas de sesión fallidas → cliente de registro/refresh/logout → vistas semánticas y CSS → navegación y formularios → revisión independiente → regresiones y corrección de renovación entre pestañas, polling obsoleto y salto al contenido → build y cobertura. Commits sin cofirma. Skills instaladas globalmente: `anthropics/skills:frontend-design` y `vercel-labs/agent-skills:web-design-guidelines`; se aplican junto a frontend-ui-engineering, TDD y obsidian-markdown.
+
+### Evidencia local de la ampliación
+
+- Java: 863 pruebas (737 blanca / 126 negra), cero fallos u omisiones; `check jacocoAggregateReport` correcto. JaCoCo conserva los umbrales en los ocho módulos; mínimo persistence 84,05 % líneas / 72,92 % ramas, tutor 100/100.
+- Cliente: 29 pruebas Node, incluidas las tres regresiones de revisión. V8: 99,79 % líneas / 96,94 % ramas; puerta 80/70 activa, excluye solo `main.mjs` de arranque.
+- Navegador Chromium: pipeline GLSL con píxeles reales, carga de página y contrato frontend con rutas, registro, login, cierre, rol, 403, Web Locks nativo y cámara. Sin desbordamientos a 1200 y 375 px. Seis capturas de escritorio/móvil en `mathtutor-graphics/build/reports/client-browser/`.
+- Cuatro pruebas Python de la puerta CI correctas; integraciones PostgreSQL/pgvector verificadas sin omisiones. Revisión independiente final sin hallazgos bloqueantes.
+- Vista previa operativa en `http://127.0.0.1:8081/visor/index.html`: Spring Boot con PostgreSQL local, secreto JWT aleatorio solo en el entorno del proceso. Salud y entrega de las seis vistas, CSS y módulo JavaScript comprobadas por HTTP 200; no se crean usuarios de prueba.
+- Comandos: `./gradlew.bat check jacocoAggregateReport --no-daemon --no-scan`, `./gradlew.bat :mathtutor-graphics:check jacocoAggregateReport --no-daemon --no-scan`, `python scripts/smoke-webgl.py`, `python scripts/test_verify_integration_results.py`, `python scripts/verify-integration-results.py`.
+
+### Notas de iteración de la ampliación
+
+- EN-01 y EN-04 son infraestructura/spike; no requieren nuevas vistas de usuario. Se mantienen fuera de alcance chat, recuperación de contraseña, gráficas y administración de otros sprints.
+- El cierre fallido borra el token local y ofrece reintentar la revocación de la cookie; ninguna respuesta de permisos anterior puede ocultar ese reintento. Web Locks coordina mutaciones de cookie entre pestañas en navegadores modernos/contexto seguro; entornos antiguos sin esta API no coordinan pestañas.
+- La evidencia anterior de 5/5 UC/EN integrados permanece válida para el sprint base. La ampliación frontend queda **4/5 comprobaciones**, pendiente de CI remota e integración en DEV; no se fusiona ni se modifica main. Por esta ampliación el frontmatter pasa a `en curso`.
