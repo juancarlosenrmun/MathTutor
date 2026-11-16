@@ -38,6 +38,44 @@ class TokenServiceAdapterTest {
         adapter.init();
     }
 
+    @Test
+    @DisplayName("Rotación delega exclusión mutua y mantiene identidad actual")
+    void shouldRotateUsingAtomicAdapter() {
+        var user = new TokenServicePort.TokenValidationResult(1L, "test@example.com", "PROFESOR", "family", "42");
+        when(refreshTokenAdapter.rotateRefreshToken(eq("old"), any())).thenAnswer(invocation -> {
+            java.util.function.Function<TokenServicePort.TokenValidationResult, String> factory = invocation.getArgument(1);
+            return Optional.of(new RefreshTokenAdapter.Rotation(factory.apply(user), user));
+        });
+        var rotation = adapter.rotateRefreshToken("old").orElseThrow();
+        assertThat(rotation.email()).isEqualTo("test@example.com");
+        assertThat(rotation.role()).isEqualTo("PROFESOR");
+        assertThat(rotation.accessToken()).isNotEqualTo(rotation.refreshToken());
+        assertThat(adapter.extractClaims(rotation.refreshToken()).get("tokenId")).isNotNull();
+    }
+
+    @Test void shouldRejectUnknownRotation() {
+        assertThat(adapter.rotateRefreshToken("unknown")).isEmpty();
+    }
+
+    @Test void shouldDecodeEscapedClaimsWithoutTruncation() {
+        String email = "quoted\"name\\suffix@example.com";
+        String token = adapter.generateAccessToken(1L, email, "ALUMNO");
+        assertThat(adapter.extractClaims(token).get("email")).isEqualTo(email);
+    }
+
+    @Test void rejectsNonPositiveTokenDurations() {
+        ReflectionTestUtils.setField(adapter, "accessTokenExpirationMinutes", 0L);
+        assertThatThrownBy(adapter::init).isInstanceOf(IllegalStateException.class);
+        ReflectionTestUtils.setField(adapter, "accessTokenExpirationMinutes", 15L);
+        ReflectionTestUtils.setField(adapter, "refreshTokenExpirationDays", -1L);
+        assertThatThrownBy(adapter::init).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test void shouldDelegateSessionRevocation() {
+        adapter.revokeRefreshSession("raw");
+        verify(refreshTokenAdapter).revokeRefreshSession("raw");
+    }
+
     @Nested
     @DisplayName("generateAccessToken()")
     class GenerateAccessToken {
@@ -114,42 +152,26 @@ class TokenServiceAdapterTest {
         }
 
         @Test
-        @DisplayName("Debe validar refresh token correcto y retornar claims")
-        void shouldValidateCorrectRefreshToken() throws TokenServicePort.InvalidTokenException {
-            // Given
-            String tokenId = UUID.randomUUID().toString();
-            String token = adapter.generateRefreshToken(1L, "test@example.com", "ALUMNO", tokenId);
-
-            // Mock validateRefreshToken to return valid result
-            when(refreshTokenAdapter.validateRefreshToken(anyString()))
-                .thenReturn(Optional.of(new TokenServicePort.TokenValidationResult(1L, "test@example.com", "ALUMNO", "family-1", tokenId)));
-
-            // When
-            Map<String, Object> claims = adapter.validateToken(token);
-
-            // Then
-            assertThat(claims).isNotNull();
-            assertThat(claims.get("userId")).isEqualTo(1L);
-            assertThat(claims.get("tokenId")).isEqualTo(tokenId);
+        @DisplayName("No debe aceptar refresh token como credencial de acceso")
+        void shouldRejectRefreshTokenForAccess() {
+            String token = adapter.generateRefreshToken(1L, "test@example.com", "ALUMNO", "refresh-id");
+            assertThatThrownBy(() -> adapter.validateToken(token))
+                    .isInstanceOf(TokenServicePort.InvalidTokenException.class);
+            verifyNoInteractions(refreshTokenAdapter);
         }
 
         @Test
         @DisplayName("Debe lanzar excepción para token expirado")
         void shouldThrowForExpiredToken() {
-            // Given - crear adapter con expiración muy corta
-            TokenServiceAdapter shortExpiryAdapter = new TokenServiceAdapter(mock(RefreshTokenAdapter.class));
-            ReflectionTestUtils.setField(shortExpiryAdapter, "jwtSecret", "test-secret-key-at-least-256-bits-long-for-hs256-signing");
-            ReflectionTestUtils.setField(shortExpiryAdapter, "accessTokenExpirationMinutes", 0L); // Expirado inmediatamente
-            ReflectionTestUtils.setField(shortExpiryAdapter, "refreshTokenExpirationDays", 7L);
-            shortExpiryAdapter.init();
-
-            String token = shortExpiryAdapter.generateAccessToken(1L, "test@example.com", "ALUMNO");
-
-            // Esperar un momento para que expire
-            try { Thread.sleep(100); } catch (InterruptedException ignored) {}
+            String token = io.jsonwebtoken.Jwts.builder().subject("1")
+                    .claim("email", "test@example.com").claim("role", "ALUMNO")
+                    .expiration(java.util.Date.from(java.time.Instant.now().minusSeconds(60)))
+                    .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor(
+                            "test-secret-key-at-least-256-bits-long-for-hs256-signing".getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                            io.jsonwebtoken.Jwts.SIG.HS256).compact();
 
             // When / Then
-            assertThatThrownBy(() -> shortExpiryAdapter.validateToken(token))
+            assertThatThrownBy(() -> adapter.validateToken(token))
                     .isInstanceOf(TokenServicePort.InvalidTokenException.class)
                     .hasMessageContaining("expired");
         }
@@ -187,13 +209,11 @@ class TokenServiceAdapterTest {
             // Given
             String tokenId = UUID.randomUUID().toString();
             String token = adapter.generateRefreshToken(1L, "test@example.com", "ALUMNO", tokenId);
-            when(refreshTokenAdapter.validateRefreshToken(anyString()))
-                .thenReturn(Optional.empty());
 
             // When / Then
             assertThatThrownBy(() -> adapter.validateToken(token))
                     .isInstanceOf(TokenServicePort.InvalidTokenException.class)
-                    .hasMessageContaining("revoked");
+                    .hasMessageContaining("access");
         }
     }
 
@@ -207,8 +227,6 @@ class TokenServiceAdapterTest {
             // Given
             String tokenId = UUID.randomUUID().toString();
             String token = adapter.generateRefreshToken(1L, "test@example.com", "ALUMNO", tokenId);
-            when(refreshTokenAdapter.validateRefreshToken(anyString()))
-                .thenReturn(Optional.empty());
 
             // When
             adapter.revokeRefreshToken(tokenId);
@@ -217,7 +235,7 @@ class TokenServiceAdapterTest {
             verify(refreshTokenAdapter).revokeRefreshToken(tokenId);
             assertThatThrownBy(() -> adapter.validateToken(token))
                     .isInstanceOf(TokenServicePort.InvalidTokenException.class)
-                    .hasMessageContaining("revoked");
+                    .hasMessageContaining("access");
         }
 
         @Test

@@ -1,0 +1,30 @@
+:root { font-family: system-ui, sans-serif; color: #183334; background: #f4f4ee; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+header, main, footer { max-width: 1120px; margin: auto; padding: 1.5rem; }
+header { display: flex; justify-content: space-between; border-bottom: 1px solid #c7d1c8; gap: 1rem; }
+header a { color: #183334; font-weight: 800; text-decoration: none; font-size: 1.3rem; }
+header span, footer { color: #506360; }
+main { padding-top: 3rem; }
+.eyebrow { font-size: .75rem; letter-spacing: .13em; color: #506360; font-weight: 700; }
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -.045em; margin: .7rem 0; }
+.intro { max-width: 620px; line-height: 1.6; margin-bottom: 2rem; }
+section { background: white; border: 1px solid #c7d1c8; border-radius: .8rem; overflow: hidden; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; padding: 1rem; }
+h2 { font-size: 1rem; margin: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: .5rem; }
+button { border: 1px solid #68817b; border-radius: .4rem; background: #fff; padding: .65rem .85rem; color: #183334; font: inherit; cursor: pointer; min-height: 44px; }
+button:hover { background: #eaf2ec; }
+button:disabled { opacity: .5; cursor: default; }
+:focus-visible { outline: 3px solid #a9590b; outline-offset: 3px; }
+canvas { display: block; width: 100%; height: clamp(280px, 48vh, 520px); touch-action: none; }
+#graphic-status, #instructions { padding: 0 1rem; font-size: .9rem; line-height: 1.6; }
+#instructions { color: #506360; }
+aside { margin-top: 1.5rem; padding: 1.5rem; border: 1px solid #c7d1c8; border-radius: .8rem; }
+form { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; }
+label { display: grid; gap: .4rem; flex: 1 1 200px; }
+input { font: inherit; width: 100%; padding: .7rem; border: 1px solid #68817b; border-radius: .4rem; }
+form button { background: #183e36; color: white; }
+form button:hover { background: #285e50; }
+footer { font-size: .85rem; padding-top: 2rem; }
+@media (max-width: 600px) { header { flex-direction: column; } main { padding-top: 1.5rem; } }

@@ -26,7 +26,8 @@ public class NoteChunk {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "embedding", columnDefinition = "BLOB")
+    @Lob
+    @Column(name = "embedding")
     private byte[] embedding;
 
     @Column(name = "chunk_type", length = 30)

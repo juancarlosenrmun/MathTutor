@@ -2,107 +2,54 @@ name: CI
 
 on:
   push:
-    branches: [ DEV, main, sprint-1 ]
+    branches: [ DEV, main, sprint-1, 'dev/**' ]
   pull_request:
     branches: [ DEV, main, sprint-1 ]
+
+permissions:
+  contents: read
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
-    # Set environment variables at job level so they're inherited by forked test JVMs
-    env:
-      # Testcontainers Docker host - use host Docker daemon
-      TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
-      DOCKER_HOST: unix:///var/run/docker.sock
-      # Disable Ryuk (Testcontainers cleanup container) to avoid issues in CI
-      TESTCONTAINERS_RYUK_DISABLED: "true"
-      # Do NOT activate spring-ai-pgvector profile on CI - Testcontainers integration tests
-      # require Docker and are meant for local development. They are skipped locally when
-      # Docker is not available (disabledWithoutDocker=true). On CI, we run unit tests only.
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: true
-
+      - name: Set up Node.js for WebGL tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Verify Docker is running
-        run: docker version && docker ps
-
-      - name: Fix Docker socket permissions
-        # GitHub Actions runner may not have permission to access /var/run/docker.sock
-        run: |
-          sudo chmod 666 /var/run/docker.sock
-          echo "=== Docker socket after chmod ==="
-          ls -la /var/run/docker.sock
-          # Verify the current user can access it
-          docker version
-
-      - name: Debug environment variables
-        run: |
-          echo "=== Shell environment ==="
-          env | grep -E 'DOCKER|TESTCONTAINERS|SPRING_PROFILES'
-          echo "=== Docker socket ==="
-          ls -la /var/run/docker.sock
-          echo "=== Test Docker access ==="
-          docker version
-          docker ps
-
-      - name: Build and test with Gradle
-        run: ./gradlew clean check --no-daemon --no-scan
-
-      - name: Upload JaCoCo coverage report
+        run: docker version
+      - name: Test integration verification gate
+        run: python3 scripts/test_verify_integration_results.py
+      - name: Build, integration tests and coverage thresholds
+        run: ./gradlew clean check jacocoAggregateReport --no-daemon --no-scan
+      - name: Verify integration tests were executed
+        if: always()
+        run: python3 scripts/verify-integration-results.py
+      - name: Compile shaders and verify rendered pixels in a real browser
+        run: python3 scripts/smoke-webgl.py
+      - name: Upload test and coverage evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: jacoco-report
+          name: sprint-1-verification
           path: |
-            **/build/reports/jacoco/**/*.xml
-            **/build/reports/jacoco/aggregate/**/*.xml
+            **/build/test-results/test/*.xml
+            **/build/reports/jacoco/**
+            **/build/reports/client/**
+            **/build/reports/client-browser/**
+          if-no-files-found: error
           retention-days: 7
-
-      - name: Check coverage thresholds
-        run: |
-          # Verificar que los informes JaCoCo existen
-          find . -name "jacoco*.xml" -type f | head -20
-        if: always()
-
-  verify-coverage:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    if: always()
-
-    steps:
-      - name: Download JaCoCo reports
-        uses: actions/download-artifact@v4
-        with:
-          name: jacoco-report
-          path: jacoco-reports
-
-      - name: Verify coverage thresholds
-        run: |
-          # Script para verificar umbrales de cobertura (80% líneas, 70% ramas)
-          # Los umbrales se aplican en ./gradlew check, pero aquí hacemos una verificación adicional
-          echo "Verifying coverage reports..."
-          find jacoco-reports -name "*.xml" -type f | while read file; do
-            echo "Checking $file"
-            # Extract coverage from XML (simplified check)
-            if grep -q 'line-rate="0\.' "$file"; then
-              echo "WARNING: Low line coverage in $file"
-            fi
-          done
-          echo "Coverage verification completed"
-        if: always()

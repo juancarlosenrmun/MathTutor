@@ -24,11 +24,11 @@ class SymjaCasEngineCatchBlockTest {
     private SymjaCasEngine engine;
 
     @Test
-    @DisplayName("verify handles exception from converter.areEquivalent")
+    @DisplayName("verify handles exception from converter.areEquivalentThreeState")
     void verifyHandlesConverterException() {
         // Given
         engine = new SymjaCasEngine(mockConverter);
-        when(mockConverter.areEquivalent(anyString(), anyString())).thenThrow(new RuntimeException("Symja error"));
+        when(mockConverter.areEquivalentThreeState(anyString(), anyString())).thenThrow(new RuntimeException("Symja error"));
 
         // When
         CasEngine.Verification result = engine.verify("x^2", "x^2");
@@ -70,7 +70,7 @@ class SymjaCasEngineCatchBlockTest {
         engine = new SymjaCasEngine(mockConverter);
         // Make converter throw on parseLatex for analyzeDifference
         when(mockConverter.parseLatex(anyString())).thenThrow(new RuntimeException("Evaluation error"));
-        when(mockConverter.areEquivalent(anyString(), anyString())).thenReturn(false);
+        when(mockConverter.areEquivalentThreeState(anyString(), anyString())).thenReturn(EquivalenceResult.NO_EQUIVALENTE);
 
         // When - verify with non-equivalent expressions triggers analyzeDifference
         CasEngine.Verification result = engine.verify("x^2", "x^3");
@@ -89,7 +89,7 @@ class SymjaCasEngineCatchBlockTest {
         // Given
         engine = new SymjaCasEngine(mockConverter);
         // Make areEquivalent return false to enter analyzeDifference
-        when(mockConverter.areEquivalent(anyString(), anyString())).thenReturn(false);
+        when(mockConverter.areEquivalentThreeState(anyString(), anyString())).thenReturn(EquivalenceResult.NO_EQUIVALENTE);
         // Make parseLatex throw exception in analyzeDifference
         when(mockConverter.parseLatex(anyString())).thenThrow(new RuntimeException("Parse error in analyze"));
 

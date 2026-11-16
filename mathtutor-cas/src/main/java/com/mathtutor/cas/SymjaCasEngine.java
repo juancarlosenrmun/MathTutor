@@ -46,10 +46,12 @@ public class SymjaCasEngine implements CasEngine {
         }
 
         try {
-            boolean equiv = equivalent(studentExpr, reference);
-
-            if (equiv) {
+            EquivalenceResult result = converter.areEquivalentThreeState(studentExpr, reference);
+            if (result == EquivalenceResult.EQUIVALENTE) {
                 return CasEngine.Verification.ofCorrect();
+            } else if (result == EquivalenceResult.INDETERMINADO) {
+                return CasEngine.Verification.ofIncorrect(ErrorType.OTRO,
+                        "No se pudo determinar la equivalencia de las expresiones");
             } else {
                 String hint = analyzeDifference(studentExpr, reference);
                 return CasEngine.Verification.ofIncorrect(ErrorType.OTRO, hint);
@@ -65,7 +67,8 @@ public class SymjaCasEngine implements CasEngine {
         if (a == null || b == null) {
             return false;
         }
-        return converter.areEquivalent(a, b);
+        EquivalenceResult result = converter.areEquivalentThreeState(a, b);
+        return result == EquivalenceResult.EQUIVALENTE;
     }
 
     @Override
@@ -121,8 +124,8 @@ public class SymjaCasEngine implements CasEngine {
             if (studentParsed != null && refParsed != null) {
                 try {
                     double testValue = 2.0;
-                    double studentVal = evaluateAt(studentParsed, "x", testValue);
-                    double refVal = evaluateAt(refParsed, "x", testValue);
+                    double studentVal = converter.evaluateAt(studentParsed, "x", testValue);
+                    double refVal = converter.evaluateAt(refParsed, "x", testValue);
 
                     double diff = Math.abs(studentVal - refVal);
 
@@ -130,7 +133,7 @@ public class SymjaCasEngine implements CasEngine {
                         return "Las expresiones son numéricamente equivalentes en x=2 (posible forma equivalente no detectada simbólicamente)";
                     }
 
-                    return String.format("Las expresiones no son equivalentes. Estudiante: %s (%.4f), Referencia: %s (%.4f)",
+                    return String.format(java.util.Locale.ROOT, "Las expresiones no son equivalentes. Estudiante: %s (%.4f), Referencia: %s (%.4f)",
                             studentExpr, studentVal, reference, refVal);
                 } catch (Exception e) {
                     return "Error evaluando numéricamente: " + e.getMessage();
@@ -144,9 +147,4 @@ public class SymjaCasEngine implements CasEngine {
         }
     }
 
-    private double evaluateAt(Object expr, String var, double value) {
-        // Usar reflexión o método del converter
-        // Por simplicidad, evaluar a través del converter
-        return 0.0; // Placeholder - la evaluación real se hace en converter
-    }
 }

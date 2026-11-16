@@ -38,7 +38,7 @@ class SecurityConfigTest {
 
     @BeforeEach
     void setUp() {
-        securityConfig = new SecurityConfig(tokenServiceAdapter);
+        securityConfig = new SecurityConfig(tokenServiceAdapter, mock(com.mathtutor.common.auth.port.UserRepositoryPort.class));
     }
 
     @Test

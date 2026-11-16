@@ -6,7 +6,6 @@ import com.mathtutor.common.auth.domain.RegisterUserUseCase;
 import com.mathtutor.common.auth.domain.Result;
 import com.mathtutor.common.auth.domain.User;
 import com.mathtutor.auth.filter.JwtAuthenticationFilter;
-import com.mathtutor.common.auth.port.TokenServicePort;
 import com.mathtutor.auth.adapter.TokenServiceAdapter;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,13 +14,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,8 +22,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -41,12 +32,13 @@ import java.util.UUID;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-
     private final RegisterUserUseCase registerUserUseCase;
     private final LoginUseCase loginUseCase;
     private final LogoutUseCase logoutUseCase;
     private final TokenServiceAdapter tokenServiceAdapter;
+
+    @Value("${jwt.refresh-token-expiration-days:7}")
+    private long refreshTokenExpirationDays = 7;
 
     /**
      * Lista de CIDR de proxies de confianza.
@@ -60,7 +52,7 @@ public class AuthController {
      * Lista parseada de rangos CIDR de confianza.
      * Vacía si no se configuró app.trusted-proxies.
      */
-    private List<String> trustedProxyCidrs;
+    private List<String> trustedProxyCidrs = List.of();
 
     public AuthController(
             RegisterUserUseCase registerUserUseCase,
@@ -72,8 +64,7 @@ public class AuthController {
         this.loginUseCase = loginUseCase;
         this.logoutUseCase = logoutUseCase;
         this.tokenServiceAdapter = tokenServiceAdapter;
-        // Parse trusted proxies on construction
-        this.trustedProxyCidrs = parseTrustedProxies(trustedProxiesConfig);
+
     }
 
     /**
@@ -83,6 +74,14 @@ public class AuthController {
      * @param config string de configuración (puede ser null o vacío)
      * @return lista de CIDR válidos, vacía si no hay configuración
      */
+    @jakarta.annotation.PostConstruct
+    public void initializeTrustedProxies() {
+        trustedProxyCidrs = parseTrustedProxies(trustedProxiesConfig);
+        for (String cidr : trustedProxyCidrs) {
+            new org.springframework.security.web.util.matcher.IpAddressMatcher(cidr);
+        }
+    }
+
     private List<String> parseTrustedProxies(String config) {
         if (config == null || config.trim().isEmpty()) {
             return List.of();
@@ -186,16 +185,10 @@ public class AuthController {
     ) {
         if (currentUser != null) {
             logoutUseCase.execute(currentUser.id(), currentUser.email());
-            // Revocar refresh token en BD si se proporciona
-            if (StringUtils.hasText(refreshToken)) {
-                try {
-                    tokenServiceAdapter.validateRefreshToken(refreshToken).ifPresent(tokenValidationResult -> {
-                        tokenServiceAdapter.revokeRefreshToken(tokenValidationResult.tokenId());
-                    });
-                } catch (Exception ignored) {
-                    // Token ya inválido o expirado, no hacer nada
-                }
-            }
+        }
+        // Revocar incluso cuando el access token haya expirado.
+        if (StringUtils.hasText(refreshToken)) {
+            tokenServiceAdapter.revokeRefreshSession(refreshToken);
         }
 
         // Limpiar cookie de refresh token
@@ -217,52 +210,16 @@ public class AuthController {
                     .body(ApiResponse.error("Refresh token no proporcionado"));
         }
 
-        // Validar refresh token contra BD
-        Optional<TokenServicePort.TokenValidationResult> validationOpt =
-                tokenServiceAdapter.validateRefreshToken(refreshToken);
-
-        if (validationOpt.isEmpty()) {
-            // Verificar si es un caso de reuso de token (token existe pero está revocado)
-            // Si es así, revocar toda la familia (detección de replay attack)
-            if (tokenServiceAdapter.isRefreshTokenRevoked(refreshToken)) {
-                // Obtener el familyId del token revocado para revocar la familia
-                String familyId = tokenServiceAdapter.getFamilyIdForRevokedToken(refreshToken);
-                if (familyId != null) {
-                    tokenServiceAdapter.revokeTokenFamily(familyId);
-                }
-            }
+        var rotation = tokenServiceAdapter.rotateRefreshToken(refreshToken);
+        if (rotation.isEmpty()) {
             clearRefreshTokenCookie(response);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error("Refresh token inválido, revocado o expirado"));
         }
-
-        TokenServicePort.TokenValidationResult validation = validationOpt.get();
-        String familyId = validation.familyId();
-        String tokenId = validation.tokenId();
-
-        // Generar nuevos tokens con el MISMO familyId (rotación)
-        String newAccessToken = tokenServiceAdapter.generateAccessToken(
-                validation.userId(), validation.email(), validation.role());
-
-        // IMPORTANTE: Para rotación, usamos el MISMO familyId
-        // Generamos un nuevo tokenId para el nuevo token
-        String newTokenId = UUID.randomUUID().toString();
-        String newRefreshToken = tokenServiceAdapter.generateRefreshToken(
-                validation.userId(), validation.email(), validation.role(), newTokenId);
-
-        // Almacenar nuevo refresh token en BD con el MISMO familyId
-        String storedRefreshToken = tokenServiceAdapter.storeRefreshTokenWithFamily(
-                validation.userId(), validation.email(), validation.role(),
-                newRefreshToken, familyId);
-
-        // Revocar el token anterior (rotación normal)
-        tokenServiceAdapter.revokeRefreshToken(tokenId);
-
-        addRefreshTokenCookie(response, storedRefreshToken);
-
+        var tokens = rotation.get();
+        addRefreshTokenCookie(response, tokens.refreshToken());
         return ResponseEntity.ok(ApiResponse.success(
-                new RefreshResponse(newAccessToken, validation.email(), validation.role())
-        ));
+                new RefreshResponse(tokens.accessToken(), tokens.email(), tokens.role())));
     }
 
     /**
@@ -287,7 +244,7 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setSecure(true); // Requiere HTTPS en producción
         cookie.setPath("/api/auth");
-        cookie.setMaxAge(7 * 24 * 60 * 60); // 7 días
+        cookie.setMaxAge(Math.toIntExact(refreshTokenExpirationDays * 86400));
         cookie.setAttribute("SameSite", "Strict");
         response.addCookie(cookie);
     }
@@ -302,143 +259,48 @@ public class AuthController {
         response.addCookie(cookie);
     }
 
-    /**
-     * Extrae la IP real del cliente considerando proxies (X-Forwarded-For).
-     * <p>
-     * Solo confía en X-Forwarded-For / X-Real-IP si hay proxies de confianza configurados
-     * (app.trusted-proxies). Sin configuración, ignora esos headers y usa remoteAddr
-     * para prevenir IP spoofing.
-     * <p>
-     * Excepción: localhost (127.0.0.1, ::1) siempre se considera de confianza para desarrollo,
-     * permitiendo el uso de X-Forwarded-For en entornos locales.
-     */
+    /** Solo utiliza cabeceras reenviadas cuando el emisor inmediato es un proxy configurado. */
     private String extractClientIp(jakarta.servlet.http.HttpServletRequest request) {
-        String remoteAddr = request.getRemoteAddr();
-        log.info("extractClientIp: remoteAddr = '{}', trustedProxies configured = {}", remoteAddr, !trustedProxyCidrs.isEmpty());
-
-        // Localhost siempre de confianza para desarrollo (permite X-Forwarded-For en local)
-        if (isLocalhost(remoteAddr)) {
-            log.info("extractClientIp: localhost detected, trusting forwarding headers");
-            return extractFromForwardingHeaders(request, remoteAddr);
+        String remote = request.getRemoteAddr();
+        if (!isTrustedProxy(remote)) {
+            return remote;
         }
-
-        // Si NO hay proxies de confianza configurados, NO usar X-Forwarded-For ni X-Real-IP
-        // para prevenir spoofing. Usar directamente remoteAddr.
-        if (trustedProxyCidrs.isEmpty()) {
-            log.info("extractClientIp: no trusted proxies configured, using remoteAddr = '{}'", remoteAddr);
-            return remoteAddr;
-        }
-
-        // Verificar que la request viene de un proxy de confianza
-        // (la IP del proxy inmediato debe estar en la lista de confianza)
-        if (!isTrustedProxy(remoteAddr)) {
-            log.warn("extractClientIp: request from untrusted proxy '{}', ignoring X-Forwarded-For, using remoteAddr", remoteAddr);
-            return remoteAddr;
-        }
-
-        // Request viene de proxy de confianza: podemos usar headers de forwarding
-        return extractFromForwardingHeaders(request, remoteAddr);
-    }
-
-    /**
-     * Extrae IP de headers de forwarding (X-Forwarded-For, X-Real-IP).
-     * Fallback a remoteAddr si no hay headers.
-     */
-    private String extractFromForwardingHeaders(jakarta.servlet.http.HttpServletRequest request, String fallback) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        log.info("extractClientIp: X-Forwarded-For header = '{}'", xForwardedFor);
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            // X-Forwarded-For puede tener múltiples IPs: "client, proxy1, proxy2"
-            // La primera es la del cliente original
-            String[] ips = xForwardedFor.split(",");
-            String ip = ips[0].trim();
-            log.info("extractClientIp: extracted IP from X-Forwarded-For = '{}'", ip);
-            return ip;
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        log.info("extractClientIp: X-Real-IP header = '{}'", xRealIp);
-        if (xRealIp != null && !xRealIp.isEmpty()) {
-            String ip = xRealIp.trim();
-            log.info("extractClientIp: extracted IP from X-Real-IP = '{}'", ip);
-            return ip;
-        }
-
-        log.info("extractClientIp: no forwarding headers, using remoteAddr = '{}'", fallback);
-        return fallback;
-    }
-
-    /**
-     * Verifica si una IP es localhost (IPv4 o IPv6).
-     */
-    private boolean isLocalhost(String ip) {
-        if (ip == null || ip.isEmpty()) {
-            return false;
-        }
-        return "127.0.0.1".equals(ip) || "::1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip);
-    }
-
-    /**
-     * Verifica si una IP está dentro de los rangos CIDR de proxies de confianza.
-     *
-     * @param ip IP a verificar
-     * @return true si la IP coincide con alguno de los CIDR configurados
-     */
-    private boolean isTrustedProxy(String ip) {
-        if (ip == null || ip.isEmpty()) {
-            return false;
-        }
-        // Manejar IPv6 localhost (::1) y IPv4 localhost (127.0.0.1)
-        if ("127.0.0.1".equals(ip) || "::1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip)) {
-            return true; // localhost siempre de confianza para desarrollo
-        }
-        // Para implementación completa de CIDR, se usaría una librería como
-        // org.apache.commons:commons-net o ipaddress library.
-        // Aquí simplificación: comprobación exacta o prefijos comunes.
-        for (String cidr : trustedProxyCidrs) {
-            if (cidr.contains("/")) {
-                // CIDR notation: verificar si IP está en el rango
-                if (ipMatchesCidr(ip, cidr)) {
-                    return true;
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (StringUtils.hasText(forwarded)) {
+            String[] chain = forwarded.split(",", -1);
+            String current = remote;
+            for (int index = chain.length - 1; index >= 0 && isTrustedProxy(current); index--) {
+                String candidate = chain[index].trim();
+                if (!isIpLiteral(candidate)) {
+                    return remote;
                 }
-            } else if (cidr.equals(ip)) {
-                // Coincidencia exacta
-                return true;
+                current = candidate;
             }
+            return current;
         }
-        return false;
+        String real = request.getHeader("X-Real-IP");
+        return StringUtils.hasText(real) && isIpLiteral(real.trim()) ? real.trim() : remote;
     }
 
-    /**
-     * Verifica si una IP coincide con un rango CIDR (simplificado para IPv4).
-     * Para IPv6 completo se necesitaría una librería dedicada.
-     */
-    private boolean ipMatchesCidr(String ip, String cidr) {
-        try {
-            String[] parts = cidr.split("/");
-            if (parts.length != 2) return false;
-            String baseIp = parts[0];
-            int prefixLength = Integer.parseInt(parts[1]);
-
-            // Convertir IPs a long para comparación IPv4
-            long ipLong = ipToLong(ip);
-            long baseLong = ipToLong(baseIp);
-            long mask = prefixLength == 0 ? 0 : ~0L << (32 - prefixLength);
-
-            return (ipLong & mask) == (baseLong & mask);
-        } catch (Exception e) {
-            log.warn("Error parsing CIDR '{}': {}", cidr, e.getMessage());
+    private boolean isTrustedProxy(String ip) {
+        if (!isIpLiteral(ip)) {
             return false;
         }
+        return trustedProxyCidrs.stream().anyMatch(cidr ->
+                new org.springframework.security.web.util.matcher.IpAddressMatcher(cidr).matches(ip));
     }
 
-    private long ipToLong(String ip) {
-        String[] octets = ip.split("\\.");
-        long result = 0;
-        for (int i = 0; i < 4; i++) {
-            result = (result << 8) | (Long.parseLong(octets[i]) & 0xFF);
+    private boolean isIpLiteral(String ip) {
+        if (ip == null || ip.isBlank() || !ip.matches("[0-9a-fA-F:.]+")
+                || (!ip.contains(":") && !ip.matches("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+"))) {
+            return false;
         }
-        return result;
+        try {
+            java.net.InetAddress.getByName(ip);
+            return true;
+        } catch (java.net.UnknownHostException ignored) {
+            return false;
+        }
     }
 
     // DTOs de request/response

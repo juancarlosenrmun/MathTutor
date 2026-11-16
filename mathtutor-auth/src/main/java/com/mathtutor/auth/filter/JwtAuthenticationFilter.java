@@ -1,6 +1,7 @@
 package com.mathtutor.auth.filter;
 
 import com.mathtutor.common.auth.port.TokenServicePort;
+import com.mathtutor.common.auth.port.UserRepositoryPort;
 import com.mathtutor.auth.adapter.TokenServiceAdapter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -35,8 +36,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenServiceAdapter tokenServiceAdapter;
 
-    public JwtAuthenticationFilter(TokenServiceAdapter tokenServiceAdapter) {
+    private final UserRepositoryPort users;
+
+    public JwtAuthenticationFilter(TokenServiceAdapter tokenServiceAdapter, UserRepositoryPort users) {
         this.tokenServiceAdapter = tokenServiceAdapter;
+        this.users = users;
     }
 
     @Override
@@ -87,6 +91,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String role = (String) claims.get("role");
 
         if (userId != null && StringUtils.hasText(email) && StringUtils.hasText(role)) {
+            // RNF-04: permisos y desactivación efectivos en la siguiente petición.
+            var currentUser = users.findActiveByEmail(email);
+            if (currentUser.isEmpty() || !userId.equals(currentUser.get().id())) {
+                return;
+            }
+            role = currentUser.get().role().name();
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(
                     new SimpleGrantedAuthority("ROLE_" + role)
             );
