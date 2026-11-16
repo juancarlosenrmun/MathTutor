@@ -26,6 +26,7 @@ dependencies {
 
     // Spring Context for @Component annotation
     implementation("org.springframework:spring-context")
+    implementation("io.projectreactor:reactor-core")
 
     // Lombok (explicit version since BOM doesn't resolve for annotationProcessor)
     compileOnly("org.projectlombok:lombok:1.18.34")

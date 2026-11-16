@@ -1,0 +1,1280 @@
+\chapter{Diagonalización}
+\label{ch:diagonalizacion}
+
+En el capítulo anterior hemos visto que una aplicación lineal puede representarse mediante matrices diferentes cuando cambiamos de base. Esta libertad permite plantear una cuestión natural: \emph{¿podemos elegir una base en la que la matriz de una transformación sea especialmente sencilla?}
+
+La situación ideal se produce cuando la matriz resulta diagonal. En ese caso, la transformación deja de mezclar las coordenadas: cada dirección básica se transforma simplemente multiplicándose por un número. Esta idea está detrás de muchas técnicas de ingeniería. Los modos normales de vibración de un sistema mecánico, la evolución de estados acoplados, ciertos modelos de transferencia de energía o la descomposición de una respuesta en direcciones independientes pueden entenderse a partir de valores y vectores propios.
+
+En este capítulo estudiaremos primero la diagonalización por semejanza. Después veremos otra transformación de matrices, la \emph{congruencia}, que aparece de manera natural al estudiar formas cuadráticas. Aunque ambas conducen en determinados casos a matrices diagonales, representan operaciones matemáticas distintas y no deben confundirse.
+
+\section{Valores y vectores propios}
+\label{sec:valores-vectores-propios}
+
+\subsection{Direcciones invariantes}
+
+Sea $T:\R^n\to\R^n$ una aplicación lineal y sea $A$ su matriz en una determinada base. En general, al aplicar $T$ a un vector cambia tanto su módulo como su dirección. Sin embargo, existen direcciones especiales que se conservan.
+
+\begin{definition}[Vector propio y valor propio]
+Sea $A\in\mathcal M_n(\R)$. Un vector no nulo $v\in\R^n$ es un \emph{vector propio} de $A$ si existe un número $\lambda\in\R$ tal que
+\[
+Av=\lambda v.
+\]
+El número $\lambda$ se denomina \emph{valor propio} asociado a $v$.
+\end{definition}
+
+La igualdad $Av=\lambda v$ significa que la acción de $A$ sobre $v$ no cambia su dirección: únicamente multiplica el vector por el factor $\lambda$. Si $\lambda>1$, el vector se alarga; si $0<\lambda<1$, se contrae; si $\lambda<0$, además cambia de sentido; y si $\lambda=0$, el vector se transforma en el vector nulo.
+
+\begin{example}
+Consideremos
+\[
+A=\begin{pmatrix}
+2&1\\
+0&3
+\end{pmatrix}.
+\]
+Para $v=(1,0)^t$ se tiene
+\[
+Av=\begin{pmatrix}2\\0\end{pmatrix}=2v,
+\]
+por lo que $v$ es un vector propio asociado al valor propio $\lambda=2$.
+
+En cambio, para $w=(0,1)^t$,
+\[
+Aw=\begin{pmatrix}1\\3\end{pmatrix},
+\]
+que no es múltiplo de $w$. Por tanto, $w$ no es vector propio.
+\end{example}
+
+En problemas de ingeniería, un vector propio suele representar una configuración que conserva su forma bajo la transformación. Por ejemplo, si una matriz describe la evolución lineal de un estado, una condición inicial alineada con un vector propio evoluciona sin cambiar de dirección en el espacio de estados: solamente cambia su amplitud.
+
+\subsection{Cálculo de los valores propios}
+
+La ecuación
+\[
+Av=\lambda v
+\]
+puede escribirse como
+\[
+(A-\lambda I)v=0.
+\]
+Como buscamos soluciones no nulas, este sistema homogéneo debe ser compatible indeterminado. Por el Teorema de Rouché--Frobenius, esto sucede exactamente cuando
+\[
+\operatorname{rg}(A-\lambda I)<n,
+\]
+o, equivalentemente,
+\[
+\det(A-\lambda I)=0.
+\]
+
+\begin{definition}[Polinomio característico]
+Sea $A\in\mathcal M_n(\R)$. El polinomio
+\[
+p_A(\lambda)=\det(A-\lambda I)
+\]
+se denomina \emph{polinomio característico} de $A$.
+\end{definition}
+
+\begin{theorem}
+Un número $\lambda\in\R$ es valor propio de $A$ si y sólo si
+\[
+p_A(\lambda)=0.
+\]
+\end{theorem}
+
+Por tanto, los valores propios reales de una matriz son las raíces reales de su polinomio característico.
+
+\begin{example}
+Sea
+\[
+A=\begin{pmatrix}
+4&1\\
+2&3
+\end{pmatrix}.
+\]
+Entonces
+\[
+\begin{aligned}
+p_A(\lambda)
+&=\det\begin{pmatrix}4-\lambda&1\\2&3-\lambda\end{pmatrix}\\
+&=(4-\lambda)(3-\lambda)-2\\
+&=\lambda^2-7\lambda+10\\
+&=(\lambda-2)(\lambda-5).
+\end{aligned}
+\]
+Los valores propios son, por tanto,
+\[
+\boxed{\lambda_1=2,\qquad \lambda_2=5.}
+\]
+\end{example}
+
+Una matriz real puede tener valores propios complejos. En este capítulo nos centraremos en la diagonalización sobre $\R$, por lo que necesitaremos valores y vectores propios reales. Cuando todos los valores propios sean reales, seguiremos trabajando dentro del espacio vectorial real que hemos utilizado hasta ahora.
+
+\subsection{Espacios propios}
+
+Una vez conocido un valor propio $\lambda$, sus vectores propios se obtienen resolviendo
+\[
+(A-\lambda I)v=0.
+\]
+El conjunto de soluciones es un subespacio vectorial.
+
+\begin{definition}[Espacio propio]
+Sea $\lambda$ un valor propio de $A$. El \emph{espacio propio} asociado a $\lambda$ es
+\[
+E_{\lambda}=\ker(A-\lambda I).
+\]
+Los vectores propios asociados a $\lambda$ son precisamente los vectores no nulos de $E_\lambda$.
+\end{definition}
+
+\begin{solvedexercise}
+Calcular los valores propios y una base de cada espacio propio de
+\[
+A=\begin{pmatrix}
+4&-1&1\\
+0&3&0\\
+1&-1&4
+\end{pmatrix}.
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Calculamos primero el polinomio característico:
+\[
+p_A(\lambda)=\det(A-\lambda I).
+\]
+Al desarrollar y factorizar se obtiene
+\[
+p_A(\lambda)=(3-\lambda)^2(5-\lambda).
+\]
+Por tanto, los valores propios son $\lambda=3$ y $\lambda=5$.
+
+Para $\lambda=3$ resolvemos
+\[
+(A-3I)v=0,
+\]
+es decir,
+\[
+\begin{pmatrix}
+1&-1&1\\
+0&0&0\\
+1&-1&1
+\end{pmatrix}
+\begin{pmatrix}x\\y\\z\end{pmatrix}=0.
+\]
+La única ecuación independiente es
+\[
+x-y+z=0,
+\]
+de modo que
+\[
+(x,y,z)=s(1,1,0)+t(-1,0,1).
+\]
+Así,
+\[
+E_3=\langle(1,1,0),(-1,0,1)\rangle.
+\]
+
+Para $\lambda=5$,
+\[
+(A-5I)v=0
+\]
+conduce a
+\[
+E_5=\langle(1,0,1)\rangle.
+\]
+En consecuencia, una base de cada espacio propio es
+\[
+\boxed{\mathcal B_3=((1,1,0),(-1,0,1)),\qquad
+\mathcal B_5=((1,0,1)).}
+\]
+\end{solvedexercise}
+
+El ejemplo anterior muestra una diferencia importante entre \emph{valor propio} y \emph{vector propio}: a un mismo valor propio pueden corresponder infinitos vectores propios, todos ellos contenidos en su espacio propio.
+
+\subsection{Multiplicidad algebraica y geométrica}
+
+\begin{definition}[Multiplicidad algebraica]
+La \emph{multiplicidad algebraica} de un valor propio $\lambda$ es su multiplicidad como raíz del polinomio característico. La denotaremos por $m_a(\lambda)$.
+\end{definition}
+
+\begin{definition}[Multiplicidad geométrica]
+La \emph{multiplicidad geométrica} de un valor propio $\lambda$ es la dimensión de su espacio propio:
+\[
+m_g(\lambda)=\dim E_\lambda.
+\]
+\end{definition}
+
+Estas multiplicidades satisfacen
+\[
+1\leq m_g(\lambda)\leq m_a(\lambda).
+\]
+En el ejercicio anterior, $\lambda=3$ tiene multiplicidad algebraica $2$ y espacio propio de dimensión $2$, mientras que $\lambda=5$ tiene multiplicidad algebraica y geométrica iguales a $1$.
+
+\begin{proposition}
+Los vectores propios asociados a valores propios distintos son linealmente independientes.
+\end{proposition}
+
+Este resultado explica por qué una matriz con $n$ valores propios reales distintos es siempre diagonalizable: automáticamente proporciona $n$ direcciones propias linealmente independientes.
+
+\section{Diagonalización por semejanza}
+\label{sec:diagonalizacion-semejanza}
+
+\subsection{Cambio de base y matriz diagonal}
+
+Recordemos que si una aplicación lineal $T:\R^n\to\R^n$ tiene matriz $A$ en la base canónica y elegimos otra base $\mathcal B$, la nueva matriz está relacionada con $A$ mediante
+\[
+[T]_{\mathcal B\leftarrow\mathcal B}=P^{-1}AP,
+\]
+donde las columnas de $P$ son los vectores de la base $\mathcal B$ expresados en coordenadas canónicas.
+
+Si escogemos una base formada por vectores propios
+\[
+\mathcal B=(v_1,\ldots,v_n),
+\]
+con
+\[
+Av_i=\lambda_i v_i,
+\]
+entonces la matriz de la transformación en esa base es
+\[
+D=\begin{pmatrix}
+\lambda_1&0&\cdots&0\\
+0&\lambda_2&\cdots&0\\
+\vdots&\vdots&\ddots&\vdots\\
+0&0&\cdots&\lambda_n
+\end{pmatrix}.
+\]
+En otras palabras,
+\[
+P^{-1}AP=D
+\qquad\Longleftrightarrow\qquad
+A=PDP^{-1}.
+\]
+
+\begin{definition}[Matrices semejantes]
+Dos matrices cuadradas $A$ y $B$ son \emph{semejantes} si existe una matriz regular $P$ tal que
+\[
+B=P^{-1}AP.
+\]
+\end{definition}
+
+Matrices semejantes representan la misma aplicación lineal respecto de bases diferentes. Por ello tienen, entre otras propiedades, el mismo polinomio característico, los mismos valores propios, el mismo determinante y la misma traza.
+
+\begin{definition}[Matriz diagonalizable]
+Una matriz $A\in\mathcal M_n(\R)$ es \emph{diagonalizable sobre $\R$} si es semejante a una matriz diagonal, es decir, si existe una matriz regular $P$ y una matriz diagonal $D$ tales que
+\[
+A=PDP^{-1}.
+\]
+\end{definition}
+
+\begin{theorem}[Criterio fundamental de diagonalización]
+Una matriz $A\in\mathcal M_n(\R)$ es diagonalizable si y sólo si existe una base de $\R^n$ formada por vectores propios de $A$.
+\end{theorem}
+
+Por tanto, diagonalizar una matriz consiste esencialmente en encontrar suficientes vectores propios linealmente independientes.
+
+\begin{solvedexercise}
+Diagonalizar, si es posible, la matriz
+\[
+A=\begin{pmatrix}
+4&-1&1\\
+0&3&0\\
+1&-1&4
+\end{pmatrix}.
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+En la sección anterior obtuvimos
+\[
+E_3=\langle(1,1,0),(-1,0,1)\rangle,
+\qquad
+E_5=\langle(1,0,1)\rangle.
+\]
+Disponemos, por tanto, de tres vectores propios linealmente independientes. Tomamos
+\[
+P=\begin{pmatrix}
+1&-1&1\\
+1&0&0\\
+0&1&1
+\end{pmatrix}.
+\]
+Como las dos primeras columnas corresponden a $\lambda=3$ y la tercera a $\lambda=5$, definimos
+\[
+D=\begin{pmatrix}
+3&0&0\\
+0&3&0\\
+0&0&5
+\end{pmatrix}.
+\]
+Entonces
+\[
+AP=PD,
+\]
+y, puesto que $P$ es regular,
+\[
+\boxed{A=PDP^{-1}.}
+\]
+La matriz $A$ es diagonalizable.
+\end{solvedexercise}
+
+El orden de los valores propios en $D$ debe corresponderse con el orden de los vectores propios colocados como columnas de $P$. Cambiar simultáneamente ambos órdenes produce otra diagonalización igualmente válida.
+
+\subsection{Criterios prácticos de diagonalización}
+
+El criterio fundamental puede expresarse en términos de las multiplicidades.
+
+\begin{theorem}
+Sea $A\in\mathcal M_n(\R)$ y supongamos que su polinomio característico se descompone completamente en factores lineales reales. Entonces $A$ es diagonalizable si y sólo si, para cada valor propio $\lambda$,
+\[
+m_g(\lambda)=m_a(\lambda).
+\]
+\end{theorem}
+
+Equivalentemente,
+\[
+\sum_{\lambda}\dim E_\lambda=n.
+\]
+
+\begin{corollary}
+Si $A\in\mathcal M_n(\R)$ tiene $n$ valores propios reales distintos, entonces $A$ es diagonalizable.
+\end{corollary}
+
+La recíproca es falsa: una matriz puede ser diagonalizable aunque tenga valores propios repetidos, siempre que disponga de suficientes vectores propios independientes.
+
+\begin{example}
+Las matrices
+\[
+A=\begin{pmatrix}
+2&0\\
+0&2
+\end{pmatrix},
+\qquad
+B=\begin{pmatrix}
+2&1\\
+0&2
+\end{pmatrix}
+\]
+tienen el mismo único valor propio $\lambda=2$ con multiplicidad algebraica $2$.
+
+Para $A$,
+\[
+E_2=\R^2,
+\]
+por lo que $m_g(2)=2$ y $A$ es diagonalizable.
+
+Para $B$,
+\[
+B-2I=\begin{pmatrix}0&1\\0&0\end{pmatrix},
+\]
+y
+\[
+E_2=\langle(1,0)\rangle.
+\]
+Así, $m_g(2)=1<2=m_a(2)$ y $B$ no es diagonalizable.
+\end{example}
+
+\begin{solvedexercise}
+Determinar para qué valores de $\alpha\in\R$ es diagonalizable la matriz
+\[
+M=\begin{pmatrix}
+2&-1&1\\
+0&\alpha&0\\
+2&0&3
+\end{pmatrix}.
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+El polinomio característico es
+\[
+p_M(\lambda)=(\alpha-\lambda)(4-\lambda)(1-\lambda).
+\]
+Si $\alpha\neq1,4$, la matriz tiene tres valores propios reales distintos y, por tanto, es diagonalizable.
+
+Debemos estudiar por separado los casos en los que aparece un valor propio repetido.
+
+Si $\alpha=1$, el valor propio $1$ tiene multiplicidad algebraica $2$. Al resolver
+\[
+(M-I)v=0
+\]
+se obtiene un espacio propio de dimensión $1$. Luego
+\[
+m_g(1)=1<2=m_a(1),
+\]
+y la matriz no es diagonalizable.
+
+Si $\alpha=4$, el valor propio $4$ tiene multiplicidad algebraica $2$ y su espacio propio tiene dimensión $1$. Tampoco es diagonalizable.
+
+Por tanto,
+\[
+\boxed{M\text{ es diagonalizable si y sólo si }\alpha\in\R\setminus\{1,4\}.}
+\]
+\end{solvedexercise}
+
+Este tipo de ejercicio es importante: cuando aparecen parámetros no basta con calcular formalmente los valores propios. Hay que localizar los valores del parámetro que cambian sus multiplicidades y estudiar separadamente esos casos.
+
+\subsection{¿Para qué sirve diagonalizar?}
+
+Si
+\[
+A=PDP^{-1},
+\]
+entonces
+\[
+A^2=PDP^{-1}PDP^{-1}=PD^2P^{-1},
+\]
+y, en general,
+\[
+\boxed{A^k=PD^kP^{-1}.}
+\]
+Como elevar una matriz diagonal a una potencia consiste simplemente en elevar sus elementos diagonales, la diagonalización simplifica de manera drástica el cálculo de potencias de matrices.
+
+\begin{example}[Intercambio térmico entre dos cuerpos]
+Supongamos que, tras cada intervalo de tiempo, las temperaturas de dos cuerpos se actualizan según
+\[
+\begin{pmatrix}
+T_{1,k+1}\\
+T_{2,k+1}
+\end{pmatrix}
+=
+\begin{pmatrix}
+\frac45&\frac15\\[1mm]
+\frac15&\frac45
+\end{pmatrix}
+\begin{pmatrix}
+T_{1,k}\\
+T_{2,k}
+\end{pmatrix}.
+\]
+La matriz
+\[
+A=\begin{pmatrix}
+\frac45&\frac15\\[1mm]
+\frac15&\frac45
+\end{pmatrix}
+\]
+tiene los valores propios
+\[
+\lambda_1=1,
+\qquad
+\lambda_2=\frac35,
+\]
+con vectores propios, respectivamente,
+\[
+v_1=(1,1),
+\qquad
+v_2=(1,-1).
+\]
+La dirección $v_1$ representa estados en los que ambos cuerpos tienen la misma temperatura; esa componente permanece constante. La dirección $v_2$ mide la diferencia de temperaturas y se multiplica en cada paso por $3/5$.
+
+Si escribimos el estado inicial como
+\[
+T_0=c_1v_1+c_2v_2,
+\]
+entonces
+\[
+T_k=A^kT_0=c_1v_1+c_2\left(\frac35\right)^kv_2.
+\]
+Cuando $k\to\infty$,
+\[
+\left(\frac35\right)^k\to0,
+\]
+de modo que desaparece progresivamente la diferencia de temperaturas. La diagonalización no sólo facilita el cálculo: separa el modelo en dos \emph{modos} con comportamientos diferentes.
+\end{example}
+
+El mismo principio aparece en modelos mecánicos de vibración, en sistemas lineales discretos, en redes acopladas y en modelos de transferencia entre compartimentos: elegir una base de vectores propios permite estudiar por separado componentes que, en las coordenadas originales, aparecen mezcladas.
+
+\subsection{Matrices simétricas y diagonalización ortogonal}
+
+Las matrices simétricas tienen propiedades especialmente favorables.
+
+\begin{theorem}[Teorema espectral]
+Toda matriz real simétrica $A=A^t$ posee valores propios reales y admite una base ortonormal de $\R^n$ formada por vectores propios.
+\end{theorem}
+
+En consecuencia, si $A$ es simétrica, existe una matriz ortogonal $P$ tal que
+\[
+P^tP=I,
+\qquad
+P^{-1}=P^t,
+\]
+y
+\[
+\boxed{P^tAP=D,}
+\]
+donde $D$ es diagonal.
+
+A esta operación se la denomina \emph{diagonalización ortogonal}. Es especialmente importante en ingeniería porque muchas matrices asociadas a energía, inercia, rigidez o covarianza son simétricas.
+
+\begin{example}[Modos de un sistema mecánico sencillo]
+Consideremos la matriz simétrica
+\[
+K=\begin{pmatrix}
+2&-1\\
+-1&2
+\end{pmatrix}.
+\]
+Sus valores propios son
+\[
+\lambda_1=1,
+\qquad
+\lambda_2=3,
+\]
+con vectores propios ortogonales
+\[
+v_1=(1,1),
+\qquad
+v_2=(1,-1).
+\]
+Tras normalizarlos obtenemos
+\[
+u_1=\frac1{\sqrt2}(1,1),
+\qquad
+u_2=\frac1{\sqrt2}(1,-1).
+\]
+La matriz
+\[
+P=\frac1{\sqrt2}
+\begin{pmatrix}
+1&1\\
+1&-1
+\end{pmatrix}
+\]
+es ortogonal y satisface
+\[
+P^tKP=\begin{pmatrix}1&0\\0&3\end{pmatrix}.
+\]
+Las dos direcciones propias representan dos patrones independientes de deformación del sistema: uno en el que ambas componentes evolucionan conjuntamente y otro en el que lo hacen en sentidos opuestos.
+\end{example}
+
+\section{Formas cuadráticas y diagonalización por congruencia}
+\label{sec:formas-cuadraticas}
+
+\subsection{Formas cuadráticas}
+
+Las expresiones cuadráticas en varias variables aparecen de manera natural al describir energías, errores, distancias o funciones de coste aproximadas. En dos variables, una expresión general de segundo grado homogénea es
+\[
+Q(x,y)=ax^2+2bxy+cy^2.
+\]
+Puede escribirse matricialmente como
+\[
+Q(x,y)=
+\begin{pmatrix}x&y\end{pmatrix}
+\begin{pmatrix}a&b\\b&c\end{pmatrix}
+\begin{pmatrix}x\\y\end{pmatrix}.
+\]
+
+\begin{definition}[Forma cuadrática]
+Una \emph{forma cuadrática} en $\R^n$ es una aplicación $Q:\R^n\to\R$ de la forma
+\[
+Q(x)=x^tAx,
+\]
+donde $A\in\mathcal M_n(\R)$ puede tomarse simétrica.
+\end{definition}
+
+La matriz simétrica asociada a una forma cuadrática es única. Los términos cuadrados ocupan la diagonal y cada coeficiente de un término cruzado $x_ix_j$ se reparte por mitades en las posiciones $(i,j)$ y $(j,i)$.
+
+\begin{example}
+La forma cuadrática
+\[
+Q(x,y,z)=3x^2+2y^2+5z^2+4xy-6xz+2yz
+\]
+tiene matriz asociada
+\[
+A=\begin{pmatrix}
+3&2&-3\\
+2&2&1\\
+-3&1&5
+\end{pmatrix},
+\]
+pues
+\[
+Q(x,y,z)=
+\begin{pmatrix}x&y&z\end{pmatrix}
+A
+\begin{pmatrix}x\\y\\z\end{pmatrix}.
+\]
+Obsérvese que, por ejemplo, las dos entradas $a_{12}=a_{21}=2$ producen conjuntamente el término $4xy$.
+\end{example}
+
+Si una expresión cuadrática se proporciona inicialmente mediante una matriz no simétrica $B$, podemos sustituirla por su parte simétrica
+\[
+A=\frac{B+B^t}{2},
+\]
+porque
+\[
+x^tBx=x^tAx.
+\]
+Por ello, en el estudio de formas cuadráticas podemos trabajar siempre con matrices simétricas.
+
+\subsection{Cambio de variables y congruencia}
+
+Supongamos que realizamos un cambio lineal de variables
+\[
+x=Py,
+\]
+donde $P$ es una matriz regular. Entonces
+\[
+Q(x)=x^tAx=(Py)^tA(Py)=y^tP^tAPy.
+\]
+Por tanto, la matriz de la forma cuadrática en las nuevas coordenadas es
+\[
+\boxed{B=P^tAP.}
+\]
+
+\begin{definition}[Matrices congruentes]
+Dos matrices cuadradas $A$ y $B$ son \emph{congruentes} si existe una matriz regular $P$ tal que
+\[
+B=P^tAP.
+\]
+\end{definition}
+
+Esta expresión se parece a la relación de semejanza, pero representa una transformación distinta:
+\[
+\boxed{\text{Semejanza: }B=P^{-1}AP,}
+\]
+\[
+\boxed{\text{Congruencia: }B=P^tAP.}
+\]
+La semejanza corresponde al cambio de base de una aplicación lineal de $V$ en sí mismo. La congruencia corresponde al cambio de variables de una forma cuadrática.
+
+\begin{example}
+Consideremos
+\[
+Q(x,y)=2x^2+4xy+5y^2,
+\qquad
+A=\begin{pmatrix}2&2\\2&5\end{pmatrix}.
+\]
+Introducimos el cambio
+\[
+\begin{pmatrix}x\\y\end{pmatrix}
+=P\begin{pmatrix}u\\v\end{pmatrix}.
+\]
+Si elegimos $P$ formado por vectores propios ortonormales de $A$, el Teorema espectral garantiza que
+\[
+P^tAP=D
+\]
+es diagonal. Así, en las nuevas variables desaparece el término cruzado $uv$ y la forma cuadrática se escribe como suma de cuadrados ponderados.
+\end{example}
+
+Cuando $P$ es ortogonal, se cumple $P^{-1}=P^t$. En ese caso particular,
+\[
+P^{-1}AP=P^tAP,
+\]
+de modo que una diagonalización ortogonal de una matriz simétrica es simultáneamente una diagonalización por semejanza y por congruencia. Esta coincidencia es una propiedad especial del caso ortogonal y no debe utilizarse para identificar ambos conceptos en general.
+
+\subsection{Diagonalización de una forma cuadrática}
+
+Diagonalizar una forma cuadrática significa encontrar un cambio de variables para eliminar los términos cruzados. Si $A$ es la matriz simétrica de $Q$, buscamos una matriz regular $P$ tal que
+\[
+P^tAP=D,
+\]
+con $D$ diagonal. Entonces, si $x=Py$,
+\[
+Q(x)=y^tDy
+=d_1y_1^2+\cdots+d_ny_n^2.
+\]
+
+Por el Teorema espectral, siempre podemos elegir $P$ ortogonal. En ese caso los coeficientes diagonales son los valores propios de $A$.
+
+\begin{solvedexercise}
+Reducir a forma diagonal mediante un cambio ortogonal la forma cuadrática
+\[
+Q(x,y)=5x^2-4xy+2y^2.
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+La matriz simétrica asociada es
+\[
+A=\begin{pmatrix}
+5&-2\\
+-2&2
+\end{pmatrix}.
+\]
+Su polinomio característico es
+\[
+\det(A-\lambda I)
+=(5-\lambda)(2-\lambda)-4
+=\lambda^2-7\lambda+6,
+\]
+por lo que
+\[
+\lambda_1=1,
+\qquad
+\lambda_2=6.
+\]
+
+Para $\lambda_1=1$ podemos tomar el vector propio $(1,2)$, y para $\lambda_2=6$, el vector $(2,-1)$. Son ortogonales. Normalizando,
+\[
+u_1=\frac1{\sqrt5}(1,2),
+\qquad
+u_2=\frac1{\sqrt5}(2,-1).
+\]
+Tomamos
+\[
+P=\frac1{\sqrt5}
+\begin{pmatrix}
+1&2\\
+2&-1
+\end{pmatrix}.
+\]
+Entonces $P$ es ortogonal y
+\[
+P^tAP=
+\begin{pmatrix}
+1&0\\
+0&6
+\end{pmatrix}.
+\]
+Si
+\[
+\begin{pmatrix}x\\y\end{pmatrix}
+=P\begin{pmatrix}u\\v\end{pmatrix},
+\]
+la forma cuadrática se convierte en
+\[
+\boxed{Q=u^2+6v^2.}
+\]
+El cambio de coordenadas ha eliminado el término cruzado.
+\end{solvedexercise}
+
+Esta reducción resulta especialmente útil cuando las variables originales están acopladas. Por ejemplo, una energía elástica de la forma
+\[
+E(x)=\frac12x^tKx
+\]
+puede contener términos cruzados que expresan interacción entre desplazamientos. Si $K$ es simétrica, una base ortonormal de vectores propios permite escribir la energía como suma de contribuciones independientes.
+
+
+\subsection{Diagonalización por congruencia mediante completación de cuadrados}
+
+La diagonalización ortogonal es especialmente cómoda cuando conocemos los valores y vectores propios de la matriz simétrica. Sin embargo, para diagonalizar una forma cuadrática por congruencia no es imprescindible utilizar una matriz ortogonal. También podemos realizar cambios lineales de variables obtenidos directamente al \emph{completar cuadrados}. Este procedimiento se conoce habitualmente como método de Lagrange.
+
+La idea consiste en transformar sucesivamente la expresión hasta eliminar los términos cruzados. Cada sustitución lineal invertible equivale a una congruencia sobre la matriz asociada.
+
+\begin{example}
+Consideremos
+\[
+Q(x,y)=2x^2+4xy+3y^2.
+\]
+Agrupamos los términos que contienen $x$:
+\[
+Q(x,y)=2(x^2+2xy)+3y^2.
+\]
+Completando el cuadrado,
+\[
+x^2+2xy=(x+y)^2-y^2,
+\]
+y, por tanto,
+\[
+Q(x,y)=2(x+y)^2+y^2.
+\]
+Definimos las nuevas variables
+\[
+u=x+y,
+\qquad
+v=y.
+\]
+Entonces
+\[
+\boxed{Q=2u^2+v^2.}
+\]
+
+El cambio inverso es
+\[
+x=u-v,
+\qquad
+y=v,
+\]
+es decir,
+\[
+\begin{pmatrix}x\\y\end{pmatrix}
+=
+P\begin{pmatrix}u\\v\end{pmatrix},
+\qquad
+P=\begin{pmatrix}1&-1\\0&1\end{pmatrix}.
+\]
+La matriz original es
+\[
+A=\begin{pmatrix}2&2\\2&3\end{pmatrix},
+\]
+y se verifica
+\[
+P^tAP=
+\begin{pmatrix}2&0\\0&1\end{pmatrix}.
+\]
+La matriz $P$ no es ortogonal, pero sí regular. Por tanto, hemos realizado una diagonalización por congruencia sin utilizar valores propios.
+\end{example}
+
+En dimensiones mayores se procede de forma análoga: se elige un término cuadrático con coeficiente no nulo, se completan cuadrados para eliminar los términos cruzados que contienen esa variable y se repite el proceso sobre las variables restantes. Si inicialmente no aparece ningún término cuadrático pero sí términos cruzados, puede realizarse primero un cambio elemental de variables que produzca uno.
+
+Este método resulta útil para distinguir claramente las dos ideas del capítulo: la diagonalización por semejanza busca una base de vectores propios de una aplicación lineal, mientras que la diagonalización por congruencia busca unas variables en las que una forma cuadrática quede expresada sin términos cruzados.
+
+\subsection{Clasificación de formas cuadráticas}
+
+El signo de una forma cuadrática describe el comportamiento de $Q(x)$ para vectores no nulos.
+
+\begin{definition}[Clasificación por el signo]
+Sea $Q(x)=x^tAx$ una forma cuadrática real. Diremos que $Q$ es:
+\begin{itemize}
+\item \emph{definida positiva} si $Q(x)>0$ para todo $x\neq0$;
+\item \emph{definida negativa} si $Q(x)<0$ para todo $x\neq0$;
+\item \emph{semidefinida positiva} si $Q(x)\geq0$ para todo $x$ y existe algún $x\neq0$ con $Q(x)=0$;
+\item \emph{semidefinida negativa} si $Q(x)\leq0$ para todo $x$ y existe algún $x\neq0$ con $Q(x)=0$;
+\item \emph{indefinida} si toma valores positivos y negativos.
+\end{itemize}
+\end{definition}
+
+Si $A$ es simétrica y la diagonalizamos ortogonalmente,
+\[
+P^tAP=\operatorname{diag}(\lambda_1,\ldots,\lambda_n),
+\]
+entonces
+\[
+Q=\lambda_1y_1^2+\cdots+\lambda_ny_n^2.
+\]
+Por tanto, la clasificación depende directamente del signo de los valores propios.
+
+\begin{theorem}
+Sea $A=A^t$. Entonces:
+\begin{itemize}
+\item $Q$ es definida positiva si y sólo si todos los valores propios de $A$ son positivos;
+\item $Q$ es definida negativa si y sólo si todos son negativos;
+\item $Q$ es semidefinida positiva si todos son no negativos y alguno es cero;
+\item $Q$ es semidefinida negativa si todos son no positivos y alguno es cero;
+\item $Q$ es indefinida si existen valores propios de signos distintos.
+\end{itemize}
+\end{theorem}
+
+\begin{example}[Energía y estabilidad]
+Una energía aproximada alrededor de una configuración de equilibrio puede tener la forma
+\[
+E(x)=\frac12x^tKx,
+\]
+donde $K$ es una matriz simétrica de rigidez. Si $K$ es definida positiva, cualquier desplazamiento no nulo produce un incremento positivo de energía. En cambio, si la forma es indefinida, existen direcciones en las que la expresión disminuye. La clasificación algebraica de la forma cuadrática tiene, por tanto, una interpretación directa sobre la respuesta del sistema.
+\end{example}
+
+Para matrices simétricas existe también un criterio que evita calcular explícitamente los valores propios.
+
+\begin{theorem}[Criterio de Sylvester]
+Sea $A=A^t\in\mathcal M_n(\R)$ y sean
+\[
+\Delta_k=\det A_k,
+\]
+donde $A_k$ es la submatriz principal formada por las primeras $k$ filas y columnas de $A$. Entonces $A$ es definida positiva si y sólo si
+\[
+\Delta_1>0,\quad\Delta_2>0,\quad\ldots,\quad\Delta_n>0.
+\]
+\end{theorem}
+
+Para determinar si una forma es definida negativa puede aplicarse el criterio a $-A$, o equivalentemente comprobar la alternancia de signos
+\[
+\Delta_1<0,\quad\Delta_2>0,\quad\Delta_3<0,\ldots
+\]
+El criterio de Sylvester es especialmente eficiente cuando únicamente interesa decidir la definitud y no necesitamos obtener las direcciones propias.
+
+\begin{solvedexercise}
+Clasificar la forma cuadrática
+\[
+Q(x,y,z)=2x^2+2y^2+3z^2+2xy-2xz.
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+La matriz asociada es
+\[
+A=\begin{pmatrix}
+2&1&-1\\
+1&2&0\\
+-1&0&3
+\end{pmatrix}.
+\]
+Calculamos los menores principales:
+\[
+\Delta_1=2>0,
+\]
+\[
+\Delta_2=\det\begin{pmatrix}2&1\\1&2\end{pmatrix}=3>0,
+\]
+y
+\[
+\Delta_3=\det A=7>0.
+\]
+Por el criterio de Sylvester,
+\[
+\boxed{Q\text{ es definida positiva}.}
+\]
+No ha sido necesario calcular los valores propios para responder a la pregunta.
+\end{solvedexercise}
+
+\subsection{Ley de inercia de Sylvester}
+
+Una forma cuadrática puede diagonalizarse por congruencia de muchas maneras diferentes. Los valores concretos de la diagonal pueden cambiar si el cambio de variables no es ortogonal, pero hay una información que permanece invariante.
+
+\begin{theorem}[Ley de inercia de Sylvester]
+Todas las matrices diagonales congruentes con una matriz simétrica real $A$ tienen el mismo número de elementos diagonales positivos, negativos y nulos.
+\end{theorem}
+
+Por tanto, aunque una transformación por congruencia pueda modificar los coeficientes de los cuadrados, no puede cambiar la naturaleza de la forma: definida positiva, definida negativa, semidefinida o indefinida.
+
+Este resultado permite entender por qué la clasificación de una forma cuadrática es una propiedad geométrica intrínseca y no depende del sistema de coordenadas elegido.
+
+\section*{Ejercicios propuestos}
+\addcontentsline{toc}{section}{Ejercicios propuestos}
+
+Los ejercicios de esta relación combinan cálculo directo, razonamiento sobre diagonalización, problemas con parámetros, interpretación de modelos y formas cuadráticas. Los marcados con \M están recomendados para comprobar o ampliar el trabajo manual con Wolfram Mathematica.
+
+\begin{enumerate}
+
+\item Calcular los valores propios y obtener una base de cada espacio propio de las matrices
+\[
+A=\begin{pmatrix}2&1\\1&2\end{pmatrix},
+\qquad
+B=\begin{pmatrix}1&2\\0&3\end{pmatrix},
+\qquad
+C=\begin{pmatrix}4&0&0\\1&2&0\\-1&3&1\end{pmatrix}.
+\]
+
+\item Determinar cuáles de los siguientes vectores son vectores propios de
+\[
+A=\begin{pmatrix}
+3&0&2\\
+1&3&1\\
+0&1&1
+\end{pmatrix}:
+\qquad
+u=(2,3,1),\quad v=(-2,1,1),\quad w=(-1,0,1).
+\]
+En cada caso afirmativo, determinar el valor propio asociado.
+
+\item Estudiar si la matriz
+\[
+A=\begin{pmatrix}
+4&-1&1\\
+0&3&0\\
+1&-1&4
+\end{pmatrix}
+\]
+es diagonalizable. En caso afirmativo, obtener matrices $P$ y $D$ tales que $A=PDP^{-1}$.
+
+\item Sabemos que la matriz
+\[
+M=\begin{pmatrix}
+x&1&u\\
+y&2&v\\
+z&-1&w
+\end{pmatrix}
+\]
+admite como vectores propios
+\[
+(1,1,0),\qquad(-1,0,2),\qquad(0,1,-1).
+\]
+Determinar todos los elementos de $M$ y sus valores propios.
+
+\item De la matriz
+\[
+A=\begin{pmatrix}
+1&2&\alpha\\
+2&1&\beta\\
+2&2&\gamma
+\end{pmatrix}
+\]
+se sabe que $\lambda=1$ es un valor propio y que $v=(1,1,1)$ es un vector propio asociado.
+\begin{enumerate}[label=\alph*)]
+\item Hallar $\alpha$, $\beta$ y $\gamma$.
+\item Calcular los restantes valores propios.
+\item Estudiar si la matriz resultante es diagonalizable.
+\end{enumerate}
+
+\item Determinar para qué valores de $\alpha\in\R$ la matriz
+\[
+M=\begin{pmatrix}
+2&-1&1\\
+0&\alpha&0\\
+2&0&3
+\end{pmatrix}
+\]
+es diagonalizable.
+
+\item Dada
+\[
+A=\begin{pmatrix}
+b&-2&6\\
+0&3&-8\\
+0&0&5
+\end{pmatrix},
+\]
+estudiar para qué valores de $b\in\R$ es diagonalizable.
+
+\item Dada la matriz
+\[
+A=\begin{pmatrix}
+3&0&2&0\\
+1&3&1&0\\
+0&1&1&0\\
+0&0&0&4
+\end{pmatrix},
+\]
+responder a las siguientes cuestiones:
+\begin{enumerate}[label=\alph*)]
+\item determinar cuáles de los vectores
+\[
+\begin{aligned}
+u&=(2,3,1,0), & v&=(0,1,0,1), & w&=(-2,1,1,0),\\
+r&=(0,1,0,-1), & h&=(-1,0,1,0). &&
+\end{aligned}
+\]
+son vectores propios;
+\item calcular una base y la dimensión de
+\[
+H=\{x\in\R^4:Ax=4x\};
+\]
+\item decidir si $A$ es diagonalizable;
+\item dada
+\[
+D=\begin{pmatrix}
+4&0&0&0\\
+0&2&0&0\\
+0&0&4&0\\
+0&0&0&1
+\end{pmatrix},
+\]
+obtener, si es posible, una matriz regular $P$ tal que $A=PDP^{-1}$.
+\end{enumerate}
+
+\item Sea
+\[
+A=\begin{pmatrix}
+1&1&0\\
+0&1&0\\
+0&0&2
+\end{pmatrix}.
+\]
+Calcular sus valores propios y sus multiplicidades algebraicas y geométricas. Explicar con precisión por qué es o no diagonalizable.
+
+\item Construir una matriz $3\times3$ que tenga valores propios $2,2,5$ y sea diagonalizable. Construir otra con los mismos valores propios que no sea diagonalizable. Justificar ambas respuestas sin limitarse a mostrar ejemplos numéricos.
+
+\item Sean $A$ y $B$ matrices semejantes. Justificar cuáles de las siguientes magnitudes deben coincidir y cuáles no necesariamente:
+\begin{enumerate}[label=\alph*)]
+\item determinante;
+\item traza;
+\item rango;
+\item elementos de la diagonal;
+\item valores propios;
+\item polinomio característico.
+\end{enumerate}
+
+\item Diagonalizar, si es posible,
+\[
+A=\begin{pmatrix}
+2&1\\
+1&2
+\end{pmatrix}
+\]
+y utilizar la diagonalización para obtener una expresión cerrada de $A^n$.
+
+\item Sea
+\[
+A=\begin{pmatrix}
+3&1\\
+0&2
+\end{pmatrix}.
+\]
+Calcular $A^{10}$ utilizando diagonalización. Comparar el número de operaciones necesarias con el que exigiría multiplicar la matriz diez veces.
+
+\item Una evolución discreta viene dada por
+\[
+x_{k+1}=Ax_k,
+\qquad
+A=\begin{pmatrix}
+0.7&0.2\\
+0.3&0.8
+\end{pmatrix}.
+\]
+\begin{enumerate}[label=\alph*)]
+\item Calcular valores y vectores propios de $A$.
+\item Diagonalizar $A$.
+\item Obtener una expresión para $x_k$ a partir de $x_0$.
+\item Interpretar qué componente del estado permanece y cuál se atenúa al aumentar $k$.
+\end{enumerate}
+
+\item En un modelo térmico simplificado, las temperaturas de dos zonas satisfacen
+\[
+T_{k+1}=
+\begin{pmatrix}
+0.8&0.2\\
+0.2&0.8
+\end{pmatrix}T_k.
+\]
+Si
+\[
+T_0=\begin{pmatrix}80\\20\end{pmatrix},
+\]
+utilizar la diagonalización para obtener $T_k$ y determinar el estado límite. Interpretar físicamente los dos vectores propios.
+
+\item Una matriz de rigidez simplificada de un sistema mecánico es
+\[
+K=\begin{pmatrix}
+2&-1\\
+-1&2
+\end{pmatrix}.
+\]
+Obtener una base ortonormal de vectores propios y diagonalizar ortogonalmente $K$. Interpretar las direcciones propias como modos independientes de deformación.
+
+\item Una red lineal de dos variables eléctricas está descrita por la matriz simétrica
+\[
+G=\begin{pmatrix}
+5&-2\\
+-2&5
+\end{pmatrix}.
+\]
+Calcular sus direcciones propias y explicar qué ventaja aporta expresar un vector de estado en esa base cuando se aplica repetidamente la transformación $G$.
+
+\item Determinar la matriz simétrica asociada a cada forma cuadrática:
+\begin{enumerate}[label=\alph*)]
+\item $Q(x,y)=3x^2+4xy+2y^2$;
+\item $Q(x,y,z)=x^2+2y^2+4z^2-6xy+2xz$;
+\item $Q(x_1,x_2,x_3)=2x_1x_2-4x_1x_3+6x_2x_3$.
+\end{enumerate}
+
+\item Para
+\[
+A=\begin{pmatrix}
+2&1\\
+1&3
+\end{pmatrix},
+\qquad
+P=\begin{pmatrix}
+1&1\\
+0&1
+\end{pmatrix},
+\]
+calcular $B=P^tAP$. Escribir la forma cuadrática $Q(x)=x^tAx$ en las nuevas variables determinadas por $x=Py$ y comprobar el resultado mediante sustitución directa.
+
+\item Diagonalizar ortogonalmente la forma cuadrática
+\[
+Q(x,y)=5x^2-4xy+2y^2
+\]
+y escribir explícitamente el cambio de coordenadas que elimina el término cruzado.
+
+\item Reducir por completación de cuadrados, sin calcular valores propios, la forma cuadrática
+\[
+Q(x,y,z)=2x^2+4xy+2xz+5y^2+2yz+2z^2.
+\]
+Escribir explícitamente el cambio lineal de variables empleado y la matriz $P$ que verifica $P^tAP=D$.
+
+\item Diagonalizar ortogonalmente
+\[
+Q(x,y)=4x^2+4xy+y^2.
+\]
+Clasificar la forma y representar verbalmente qué indica la existencia o no de direcciones no nulas en las que $Q$ vale cero.
+
+\item Clasificar mediante los valores propios las formas cuadráticas asociadas a
+\[
+A_1=\begin{pmatrix}2&1\\1&2\end{pmatrix},
+\qquad
+A_2=\begin{pmatrix}1&2\\2&1\end{pmatrix},
+\]
+\[
+A_3=\begin{pmatrix}1&-1\\-1&1\end{pmatrix},
+\qquad
+A_4=\begin{pmatrix}-2&0\\0&-5\end{pmatrix}.
+\]
+
+\item Utilizar el criterio de Sylvester para clasificar
+\[
+Q(x,y,z)=3x^2+2y^2+4z^2+2xy-2yz.
+\]
+Comprobar después la clasificación mediante los valores propios de la matriz asociada.
+
+\item La energía potencial elástica de un sistema idealizado viene dada por
+\[
+E(x_1,x_2)=\frac12\left(4x_1^2-4x_1x_2+3x_2^2\right).
+\]
+\begin{enumerate}[label=\alph*)]
+\item Obtener la matriz simétrica $K$ tal que $E(x)=\frac12x^tKx$.
+\item Determinar si la energía es positiva para todo desplazamiento no nulo.
+\item Hallar unas coordenadas ortogonales en las que la energía no contenga términos cruzados.
+\item Interpretar las nuevas direcciones como deformaciones desacopladas.
+\end{enumerate}
+
+\item Una aproximación cuadrática a una función de pérdidas de un dispositivo es
+\[
+L(x,y)=6x^2+4xy+3y^2.
+\]
+Determinar sus ejes principales mediante diagonalización ortogonal y decidir si $L$ puede tomar valores negativos. Explicar qué significa esta conclusión para una magnitud interpretada como pérdida.
+
+\item Para la forma
+\[
+Q(x,y,z)=x^2+y^2-z^2+2xy,
+\]
+obtener la matriz asociada, calcular sus valores propios y clasificarla. Encontrar además dos vectores no nulos $u$ y $v$ tales que $Q(u)>0$ y $Q(v)<0$.
+
+\item Razonar si las siguientes afirmaciones son verdaderas o falsas:
+\begin{enumerate}[label=\alph*)]
+\item Toda matriz con valores propios reales es diagonalizable.
+\item Toda matriz con valores propios distintos es diagonalizable.
+\item Toda matriz simétrica real es diagonalizable.
+\item Si una matriz es diagonalizable, todos sus valores propios son distintos.
+\item Dos matrices semejantes tienen los mismos valores propios.
+\item Dos matrices congruentes tienen necesariamente los mismos valores propios.
+\item Una diagonalización ortogonal de una matriz simétrica es a la vez una semejanza y una congruencia.
+\end{enumerate}
+
+\item Explicar con palabras propias la diferencia conceptual entre las expresiones
+\[
+P^{-1}AP
+\qquad\text{y}\qquad
+P^tAP.
+\]
+Indicar qué objeto matemático se está representando en cada caso y por qué confundir ambos cambios puede conducir a errores.
+
+\item \M Para los ejercicios 1--8, utilizar \texttt{Eigenvalues} y \texttt{Eigenvectors} para comprobar los valores y vectores propios obtenidos manualmente. En los casos con parámetros, estudiar primero a mano qué valores requieren una discusión separada y utilizar después el ordenador únicamente como comprobación.
+
+\item \M Para los ejercicios 12--17, construir manualmente $P$ y $D$ y comprobar en Mathematica las igualdades
+\[
+A=PDP^{-1}
+\qquad\text{o}\qquad
+P^tAP=D,
+\]
+según corresponda. Utilizar únicamente productos matriciales, \texttt{Inverse} y \texttt{Transpose}, evitando introducir comandos adicionales que automaticen por completo la diagonalización.
+
+\item \M En los ejercicios 18--26, comprobar la matriz simétrica asociada y sus valores propios. Comparar la clasificación obtenida a partir de los signos de los valores propios con la obtenida manualmente mediante el criterio de Sylvester cuando sea aplicable.
+
+\item (Examen) Sea
+\[
+A=\begin{pmatrix}
+2&1&0\\
+0&2&0\\
+0&0&3
+\end{pmatrix}.
+\]
+\begin{enumerate}[label=\alph*)]
+\item Calcular el polinomio característico y los valores propios.
+\item Determinar las multiplicidades algebraicas y geométricas.
+\item Decidir razonadamente si $A$ es diagonalizable.
+\item Si no lo es, modificar únicamente una entrada no diagonal de $A$ para obtener una matriz diagonalizable con los mismos valores propios y justificar la respuesta.
+\end{enumerate}
+
+\item (Examen) Sea
+\[
+A=\begin{pmatrix}
+2&1&1\\
+1&2&1\\
+1&1&2
+\end{pmatrix}.
+\]
+\begin{enumerate}[label=\alph*)]
+\item Obtener sus valores propios y una base ortonormal de vectores propios.
+\item Construir una matriz ortogonal $P$ tal que $P^tAP=D$.
+\item Calcular $A^{20}$ utilizando la diagonalización.
+\item Clasificar la forma cuadrática $Q(x)=x^tAx$.
+\end{enumerate}
+
+\item (Examen) Considérese la forma cuadrática
+\[
+Q(x,y,z)=2x^2+3y^2+2z^2+2xy-2yz.
+\]
+\begin{enumerate}[label=\alph*)]
+\item Obtener su matriz simétrica asociada.
+\item Clasificar la forma cuadrática.
+\item Obtener un cambio ortogonal de variables que la transforme en una forma diagonal.
+\item Indicar qué información sobre la forma permanece invariante si, en lugar de un cambio ortogonal, se utiliza cualquier cambio regular de variables.
+\end{enumerate}
+
+\end{enumerate}

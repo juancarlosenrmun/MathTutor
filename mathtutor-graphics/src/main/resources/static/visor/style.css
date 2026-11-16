@@ -992,3 +992,11 @@ canvas:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+/* UC-12/13/28: controles compactos y conversación legible en escritorio y móvil. */
+.tutor-controls, .curve-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin-block: 1.5rem; }
+.curve-controls > div { flex: 1 1 9rem; }
+.tutor-controls select, #tutor-message { font: inherit; padding: .8rem; border: 1px solid #a9b5a9; border-radius: .4rem; background: #fff; color: #253b2b; }
+#tutor-message { display: block; width: 100%; resize: vertical; margin-block: .5rem 1rem; }
+.tutor-history { max-height: 28rem; overflow-y: auto; padding: 1rem; border-block: 1px solid #c0cdc0; margin-block: 1.5rem; }
+.tutor-history p { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 70ch; }
+#tutor-composer { max-width: 50rem; margin-block: 1rem; }

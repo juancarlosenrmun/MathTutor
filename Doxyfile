@@ -1,0 +1,22 @@
+# Documentación de API Java. Ejecutar: doxygen Doxyfile
+PROJECT_NAME           = "MathTutor"
+PROJECT_BRIEF          = "Tutor adaptativo de Matemáticas"
+OUTPUT_DIRECTORY      = build/doxygen
+OUTPUT_LANGUAGE       = Spanish
+INPUT                 = mathtutor-common/src/main/java \
+                        mathtutor-tutor/src/main/java \
+                        mathtutor-llm/src/main/java \
+                        mathtutor-persistence/src/main/java \
+                        mathtutor-application/src/main/java
+FILE_PATTERNS         = *.java
+RECURSIVE             = YES
+INPUT_ENCODING        = UTF-8
+EXTRACT_ALL           = NO
+EXTRACT_PRIVATE       = NO
+JAVADOC_AUTOBRIEF     = YES
+GENERATE_HTML         = YES
+GENERATE_LATEX        = NO
+HAVE_DOT              = NO
+QUIET                 = YES
+WARN_IF_UNDOCUMENTED  = NO
+WARN_LOGFILE          = build/doxygen-warnings.log

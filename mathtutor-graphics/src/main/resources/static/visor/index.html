@@ -277,6 +277,15 @@
         </div>
       </section>
       <section data-view="laboratorio" class="lab" hidden>
+        <form id="curve-form" class="curve-controls" aria-label="Gráficas 2D">
+          <div><label for="curve-function">Función f(x)</label>
+          <input id="curve-function" value="x^2" required maxlength="200" aria-describedby="curve-help" /></div>
+          <div><label for="curve-min">Desde x =</label><input id="curve-min" type="number" value="-1" min="-10000" max="10000" step="any" required /></div>
+          <div><label for="curve-max">Hasta x =</label><input id="curve-max" type="number" value="1" min="-10000" max="10000" step="any" required /></div>
+          <button id="curve-draw" class="button" type="submit">Dibujar función, derivada y área</button>
+        </form>
+        <p id="curve-help" class="field-help">Usa x, números, + − * / ^, sin, cos, tan, exp, log, sqrt o abs. Ejemplos: x^2, sin(x), 1/x. La integral usa los extremos indicados.</p>
+        <p id="curve-result" role="status">Introduce una función para ver su gráfica 2D y sus aproximaciones numéricas.</p>
         <div class="page-heading">
           <div>
             <p class="overline">Laboratorio de matemáticas</p>
@@ -363,6 +372,12 @@
           <span id="workspace-role" class="badge" role="status">Alumno</span>
         </div>
         <div class="workspace-grid">
+          <section class="workspace-account" data-student hidden aria-labelledby="workspace-tutor-title">
+            <p class="overline">Tutor de Matemáticas</p>
+            <h2 id="workspace-tutor-title">Haz tu<br />pregunta.</h2>
+            <p>Elige funciones, derivadas e integrales o métodos 3D y conversa a tu ritmo.</p>
+            <a class="button" href="#/tutor">Abrir el tutor <span aria-hidden="true">↗</span></a>
+          </section>
           <section class="workspace-lab" aria-labelledby="workspace-lab-title">
             <div class="workspace-lab-copy">
               <p class="overline">Laboratorio 3D</p>
@@ -457,6 +472,27 @@
           <a class="button" href="#/laboratorio">Volver al laboratorio</a
           ><a class="text-link" href="#/acceso">Iniciar sesión</a>
         </div>
+      </section>
+      <section data-view="tutor" hidden aria-labelledby="tutor-title">
+        <p class="overline">Aprende a tu ritmo</p>
+        <h1 id="tutor-title">Tutor de Matemáticas.</h1>
+        <p>Selecciona un bloque antes de conversar. Iniciar otra conversación conserva el bloque de la anterior.</p>
+        <form id="tutor-select-form" class="tutor-controls">
+          <label for="tutor-block">Bloque temático</label>
+          <select id="tutor-block" required></select>
+          <button id="tutor-start" class="button" type="submit">Nueva conversación</button>
+        </form>
+        <p id="tutor-status" role="status">Inicia sesión como alumno para conversar con el tutor.</p>
+        <div id="tutor-history" class="tutor-history" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Conversación"></div>
+        <div id="tutor-composer" hidden>
+          <form id="tutor-form">
+            <label for="tutor-message">Tu pregunta</label>
+            <textarea id="tutor-message" required maxlength="4000" rows="3" placeholder="Escribe tu pregunta de Matemáticas…"></textarea>
+            <button id="tutor-send" class="button" type="submit">Enviar pregunta</button>
+          </form>
+          <button id="tutor-cancel" class="button secondary" type="button" disabled>Cancelar respuesta</button>
+        </div>
+        <a class="text-link" href="#/espacio">Volver a tu espacio</a>
       </section>
     </main>
     <footer class="site-footer">

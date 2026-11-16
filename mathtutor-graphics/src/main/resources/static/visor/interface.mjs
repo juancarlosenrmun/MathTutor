@@ -1,12 +1,12 @@
 import { SessionClient } from './session.mjs';
 
 const titles = { inicio: 'Inicio', acceso: 'Iniciar sesión', registro: 'Crear cuenta', espacio: 'Tu espacio',
-  laboratorio: 'Laboratorio 3D', cuenta: 'Tu cuenta', restringido: 'Acceso restringido' };
+  laboratorio: 'Laboratorio 3D', tutor: 'Tutor de Matemáticas', cuenta: 'Tu cuenta', restringido: 'Acceso restringido' };
 
 export function viewFor(hash, signedIn) {
   const requested = hash.replace('#/', '');
   const view = Object.hasOwn(titles, requested) ? requested : 'inicio';
-  if ((view === 'cuenta' || view === 'espacio') && !signedIn) return 'acceso';
+  if ((view === 'cuenta' || view === 'espacio' || view === 'tutor') && !signedIn) return 'acceso';
   if (signedIn && (view === 'acceso' || view === 'registro')) return 'espacio';
   return view;
 }
@@ -50,6 +50,7 @@ export function mountInterface(document, host, onView) {
     }
     for (const link of all('[data-guest]')) link.hidden = signedIn;
     for (const link of all('[data-member]')) link.hidden = !signedIn;
+    for (const link of all('[data-student]')) link.hidden = !signedIn || client.profile?.role !== 'ALUMNO';
     one('#role').textContent = client.profile?.role || 'Sin sesión';
     one('#account-email').textContent = client.profile?.email || '—';
     one('#permission-description').textContent = permissionDescription(client.profile?.role);
@@ -71,7 +72,7 @@ export function mountInterface(document, host, onView) {
       host.scrollTo(0, 0);
       currentView = view;
     }
-    onView(view);
+    onView(view, client);
   }
   function setBusy(value) {
     busy = value;

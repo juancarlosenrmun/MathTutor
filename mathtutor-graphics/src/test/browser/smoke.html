@@ -3,6 +3,7 @@
 <canvas width="640" height="480" style="width:640px;height:480px"></canvas><p id="status"></p>
 <script type="module">
 import { WebGLViewer } from '/visor/viewer.mjs';
+import { curve } from '/visor/curves.mjs';
 try {
   const canvas = document.querySelector('canvas');
   const viewer = new WebGLViewer(canvas, document.querySelector('#status'));
@@ -20,6 +21,16 @@ try {
   viewer.command('in');
   viewer.command('out');
   viewer.command('reset');
+  viewer.setGraph(curve('x^2', -1, 1));
+  gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  let yellow = 0, blue = 0, area = 0;
+  for (let i = 0; i < pixels.length; i += 4) {
+    if (pixels[i] > 200 && pixels[i+1] > 120 && pixels[i+2] < 100) yellow++;
+    if (pixels[i] > 50 && pixels[i] < 130 && pixels[i+1] > 130 && pixels[i+2] > 150 && pixels[i+2] > 2*pixels[i]) blue++;
+    if (pixels[i] > 20 && pixels[i] < 45 && pixels[i+1] > 55 && pixels[i+1] < 90) area++;
+  }
+  const graphicError = gl.getError();
+  if (yellow < 10 || blue < 10 || area < 100 || graphicError !== gl.NO_ERROR) throw new Error(`Gráfica 2D incompleta: ${yellow}/${blue}/${area}, WebGL ${graphicError}`);
   viewer.dispose();
   document.body.dataset.result = 'passed';
   document.body.dataset.drawn = drawn;

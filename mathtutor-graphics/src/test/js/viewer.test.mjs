@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WebGLViewer } from '../../main/resources/static/visor/viewer.mjs';
+import { curve } from '../../main/resources/static/visor/curves.mjs';
 import { fakeGl } from './fake-gl.mjs';
 
 function surface(gl = fakeGl()) {
@@ -14,6 +15,28 @@ function surface(gl = fakeGl()) {
   const host = { devicePixelRatio: 2, addEventListener() {}, removeEventListener() {} };
   return { canvas, listeners, host, status: { textContent: '' } };
 }
+
+test('UC-28 encuadra alturas y dominios grandes en escritorio y móvil y recupera la gráfica', () => {
+  const state = surface();
+  const viewer = new WebGLViewer(state.canvas,state.status,state.host);
+  for (const graph of [curve('100',-1,1),curve('0',-10000,10000)]) {
+    viewer.setGraph(graph);
+    for (const aspect of [2,.4]) {
+      const m = viewer.camera.matrix(aspect);
+      for (const p of graph.points.filter(p => p.y !== null)) {
+        const w = m[3]*p.x + m[7]*p.y + m[15];
+        assert.ok(Math.abs((m[0]*p.x + m[4]*p.y + m[12])/w) <= 1);
+        assert.ok(Math.abs((m[1]*p.x + m[5]*p.y + m[13])/w) <= 1);
+      }
+    }
+  }
+  state.listeners.get('webglcontextlost')({preventDefault(){}});
+  viewer.setGraph(curve('x^2',-1,1));
+  state.listeners.get('webglcontextrestored')();
+  assert.ok(viewer.pipeline.areaCount > 0);
+  viewer.command('reset'); assert.ok(viewer.camera.orthographicSpan);
+  viewer.dispose();
+});
 
 test('el visor redimensiona y responde a teclado, rueda y arrastre', () => {
   const { canvas, listeners, host, status } = surface();

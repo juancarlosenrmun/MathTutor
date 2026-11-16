@@ -1,0 +1,1491 @@
+\chapter{Geometría}
+\label{ch:geometria}
+
+La geometría analítica permite traducir problemas geométricos a ecuaciones y, recíprocamente, interpretar geométricamente sistemas de ecuaciones. En ingeniería esta doble lectura es especialmente útil: la posición de un eje, la orientación de una superficie, la trayectoria ideal de una herramienta, la dirección de una fuerza o la separación mínima entre dos elementos pueden describirse mediante puntos, vectores, rectas y planos.
+
+En el capítulo anterior hemos trabajado con espacios vectoriales, producto escalar y ortogonalidad. Ahora utilizaremos esas herramientas en $\R^2$ y $\R^3$ para estudiar la \emph{geometría afín} ---incidencia, paralelismo e intersecciones--- y la \emph{geometría euclídea} ---distancias, ángulos y perpendicularidad---. La intención es pasar con soltura entre diferentes registros: una descripción verbal de una situación, su representación vectorial y las ecuaciones que permiten resolverla.
+
+\section{Puntos y vectores en el plano y el espacio}
+\label{sec:geometria-vectores}
+
+\subsection{Coordenadas, vectores y distancia entre puntos}
+
+Fijado un sistema de referencia cartesiano, un punto del plano se representa mediante dos coordenadas,
+\[
+P=(p_1,p_2)\in\R^2,
+\]
+y un punto del espacio mediante tres,
+\[
+P=(p_1,p_2,p_3)\in\R^3.
+\]
+Conviene distinguir conceptualmente \emph{puntos} y \emph{vectores}. Un punto representa una posición; un vector representa un desplazamiento, una dirección o, en muchas aplicaciones, una magnitud física con módulo y dirección.
+
+Dados dos puntos $P$ y $Q$, el vector que lleva de $P$ a $Q$ es
+\[
+\overrightarrow{PQ}=Q-P.
+\]
+En $\R^3$, si
+\[
+P=(p_1,p_2,p_3),\qquad Q=(q_1,q_2,q_3),
+\]
+entonces
+\[
+\overrightarrow{PQ}
+=(q_1-p_1,q_2-p_2,q_3-p_3).
+\]
+
+\begin{definition}[Norma de un vector]
+Para $v=(v_1,\ldots,v_n)\in\R^n$, su \emph{norma euclídea} es
+\[
+\|v\|=\sqrt{v_1^2+\cdots+v_n^2}.
+\]
+\end{definition}
+
+La norma mide la longitud del vector. Si $v\neq0$, el vector
+\[
+\widehat v=\frac{v}{\|v\|}
+\]
+tiene norma $1$ y conserva la dirección y el sentido de $v$. Lo denominamos \emph{vector unitario} asociado a $v$.
+
+\begin{definition}[Distancia entre dos puntos]
+La distancia entre dos puntos $P,Q\in\R^n$ es
+\[
+d(P,Q)=\|Q-P\|.
+\]
+\end{definition}
+
+Así, en el espacio,
+\[
+d(P,Q)
+=\sqrt{(q_1-p_1)^2+(q_2-p_2)^2+(q_3-p_3)^2}.
+\]
+
+\begin{example}
+El extremo de un actuador se desplaza desde
+\[
+P=(1,-2,0.5)\ \mathrm{m}
+\]
+hasta
+\[
+Q=(4,2,2.5)\ \mathrm{m}.
+\]
+El desplazamiento es
+\[
+\overrightarrow{PQ}=(3,4,2)\ \mathrm{m},
+\]
+y la distancia recorrida en línea recta entre ambas posiciones es
+\[
+\|\overrightarrow{PQ}\|
+=\sqrt{3^2+4^2+2^2}
+=\sqrt{29}\ \mathrm{m}.
+\]
+La dirección unitaria del desplazamiento es
+\[
+\widehat{PQ}=\frac{1}{\sqrt{29}}(3,4,2).
+\]
+Si el movimiento se realizara exactamente siguiendo esa dirección, cualquier posición de la trayectoria podría escribirse como
+\[
+P+t\widehat{PQ},\qquad t\geq0.
+\]
+\end{example}
+
+La expresión anterior anticipa la ecuación vectorial de una recta: una posición inicial más un múltiplo de una dirección.
+
+\subsection{Producto escalar, ángulos y proyecciones}
+
+Recordemos que, dados $u,v\in\R^n$, su producto escalar es
+\[
+u\cdot v=u_1v_1+\cdots+u_nv_n.
+\]
+Además,
+\[
+u\cdot v=\|u\|\,\|v\|\cos\theta,
+\]
+donde $\theta\in[0,\pi]$ es el ángulo que forman los vectores no nulos $u$ y $v$. Por tanto,
+\[
+\cos\theta=\frac{u\cdot v}{\|u\|\,\|v\|}.
+\]
+
+\begin{proposition}[Criterio de ortogonalidad]
+Dos vectores $u$ y $v$ son ortogonales si y sólo si
+\[
+u\cdot v=0.
+\]
+\end{proposition}
+
+Esta igualdad permite traducir perpendicularidad geométrica en una ecuación algebraica.
+
+\begin{definition}[Proyección ortogonal sobre una dirección]
+Sean $u,v\in\R^n$, con $v\neq0$. La proyección ortogonal de $u$ sobre la dirección de $v$ es
+\[
+\operatorname{proj}_v(u)
+=\frac{u\cdot v}{v\cdot v}\,v.
+\]
+\end{definition}
+
+El vector $u$ puede descomponerse como
+\[
+u=u_{\parallel}+u_{\perp},
+\]
+donde
+\[
+u_{\parallel}=\operatorname{proj}_v(u),
+\qquad
+u_{\perp}=u-\operatorname{proj}_v(u),
+\]
+y $u_{\perp}\cdot v=0$.
+
+\begin{solvedexercise}
+Una fuerza
+\[
+F=(120,40,-20)\ \mathrm{N}
+\]
+actúa sobre un mecanismo cuyo desplazamiento permitido tiene la dirección
+\[
+d=(2,1,2).
+\]
+Calcular la componente vectorial de $F$ que actúa en la dirección del movimiento y la componente perpendicular.
+\tcblower
+\textbf{Resolución.}\par\smallskip
+La proyección de $F$ sobre $d$ es
+\[
+F_{\parallel}
+=\frac{F\cdot d}{d\cdot d}\,d.
+\]
+Como
+\[
+F\cdot d=120\cdot2+40\cdot1-20\cdot2=240,
+\]
+y
+\[
+d\cdot d=2^2+1^2+2^2=9,
+\]
+obtenemos
+\[
+F_{\parallel}=\frac{240}{9}(2,1,2)
+=\left(\frac{160}{3},\frac{80}{3},\frac{160}{3}\right)\ \mathrm{N}.
+\]
+Por tanto,
+\[
+F_{\perp}=F-F_{\parallel}
+=\left(\frac{200}{3},\frac{40}{3},-\frac{220}{3}\right)\ \mathrm{N}.
+\]
+Puede comprobarse que
+\[
+F_{\perp}\cdot d=0.
+\]
+La descomposición separa la parte de la fuerza que contribuye al movimiento permitido de la parte que actúa transversalmente sobre el mecanismo.
+\end{solvedexercise}
+
+En $\R^3$ también es útil describir una dirección mediante los ángulos que forma con los ejes coordenados. Si $v=(v_1,v_2,v_3)\neq0$ y $\alpha,\beta,\gamma$ son los ángulos con los ejes $OX$, $OY$ y $OZ$, respectivamente, entonces
+\[
+\cos\alpha=\frac{v_1}{\|v\|},
+\qquad
+\cos\beta=\frac{v_2}{\|v\|},
+\qquad
+\cos\gamma=\frac{v_3}{\|v\|},
+\]
+y, en consecuencia,
+\[
+\cos^2\alpha+\cos^2\beta+\cos^2\gamma=1.
+\]
+
+\subsection{Producto vectorial y producto mixto}
+
+En $\R^3$ disponemos de una operación adicional que produce un vector perpendicular a otros dos.
+
+\begin{definition}[Producto vectorial]
+Sean
+\[
+u=(u_1,u_2,u_3),\qquad v=(v_1,v_2,v_3).
+\]
+Su \emph{producto vectorial} es
+\[
+u\times v=
+\begin{vmatrix}
+\mathbf i&\mathbf j&\mathbf k\\
+u_1&u_2&u_3\\
+v_1&v_2&v_3
+\end{vmatrix},
+\]
+es decir,
+\[
+u\times v
+=
+(u_2v_3-u_3v_2,\,
+ u_3v_1-u_1v_3,\,
+ u_1v_2-u_2v_1).
+\]
+\end{definition}
+
+El producto vectorial satisface:
+\begin{itemize}
+\item $u\times v$ es ortogonal a $u$ y a $v$;
+\item $v\times u=-(u\times v)$;
+\item $u\times v=0$ si y sólo si $u$ y $v$ son linealmente dependientes;
+\item
+\[
+\|u\times v\|=\|u\|\,\|v\|\sin\theta.
+\]
+\end{itemize}
+
+La última propiedad tiene una interpretación geométrica inmediata:
+\[
+\text{Área del paralelogramo generado por }u,v
+=\|u\times v\|,
+\]
+y, por tanto,
+\[
+\text{Área del triángulo}
+=\frac12\|u\times v\|.
+\]
+
+\begin{example}
+Tres puntos de una placa son
+\[
+A=(1,0,0),\qquad B=(3,1,0),\qquad C=(2,0,2).
+\]
+Los vectores
+\[
+\overrightarrow{AB}=(2,1,0),
+\qquad
+\overrightarrow{AC}=(1,0,2)
+\]
+determinan la placa. Un vector perpendicular a ella es
+\[
+\overrightarrow{AB}\times\overrightarrow{AC}
+=
+\begin{vmatrix}
+\mathbf i&\mathbf j&\mathbf k\\
+2&1&0\\
+1&0&2
+\end{vmatrix}
+=(2,-4,-1).
+\]
+Este vector normal será precisamente el que utilicemos más adelante para obtener la ecuación cartesiana del plano que contiene la placa.
+\end{example}
+
+\begin{definition}[Producto mixto]
+Dados $u,v,w\in\R^3$, se denomina \emph{producto mixto} al número
+\[
+[u,v,w]=u\cdot(v\times w).
+\]
+\end{definition}
+
+Se verifica
+\[
+[u,v,w]
+=
+\det
+\begin{pmatrix}
+u_1&u_2&u_3\\
+v_1&v_2&v_3\\
+w_1&w_2&w_3
+\end{pmatrix}.
+\]
+Su valor absoluto es el volumen del paralelepípedo generado por $u,v,w$:
+\[
+V=|u\cdot(v\times w)|.
+\]
+Además,
+\[
+u,v,w\text{ son coplanarios}
+\quad\Longleftrightarrow\quad
+u\cdot(v\times w)=0.
+\]
+
+\begin{solvedexercise}
+Una fuerza $F=(0,150,60)$ N actúa en el punto cuyo vector de posición respecto de un eje de referencia es
+\[
+r=(0.4,0,0.2)\ \mathrm{m}.
+\]
+Calcular el momento de la fuerza respecto del origen,
+\[
+M=r\times F.
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Calculamos
+\[
+M=
+\begin{vmatrix}
+\mathbf i&\mathbf j&\mathbf k\\
+0.4&0&0.2\\
+0&150&60
+\end{vmatrix}
+=(-30,-24,60)\ \mathrm{N\,m}.
+\]
+El vector momento es perpendicular al plano generado por $r$ y $F$. Su módulo es
+\[
+\|M\|=\sqrt{(-30)^2+(-24)^2+60^2}
+=\sqrt{5076}\ \mathrm{N\,m}.
+\]
+\end{solvedexercise}
+
+\section{Rectas y planos}
+\label{sec:rectas-planos}
+
+\subsection{Rectas en el plano y en el espacio}
+
+Una recta queda determinada por un punto y una dirección.
+
+\begin{definition}[Ecuación vectorial de una recta]
+Sea $A\in\R^n$ y sea $v\in\R^n$, $v\neq0$. La recta que pasa por $A$ y tiene vector director $v$ es
+\[
+r:\quad X=A+tv,\qquad t\in\R.
+\]
+\end{definition}
+
+En el plano, si
+\[
+A=(a_1,a_2),\qquad v=(v_1,v_2),
+\]
+las ecuaciones paramétricas son
+\[
+\begin{cases}
+x=a_1+tv_1,\\
+y=a_2+tv_2,
+\end{cases}
+\qquad t\in\R.
+\]
+En el espacio,
+\[
+\begin{cases}
+x=a_1+tv_1,\\
+y=a_2+tv_2,\\
+z=a_3+tv_3.
+\end{cases}
+\]
+
+Cuando las componentes del vector director son no nulas, puede eliminarse el parámetro y escribirse la forma continua o simétrica
+\[
+\frac{x-a_1}{v_1}
+=
+\frac{y-a_2}{v_2}
+\]
+en el plano, y
+\[
+\frac{x-a_1}{v_1}
+=
+\frac{y-a_2}{v_2}
+=
+\frac{z-a_3}{v_3}
+\]
+en el espacio. Si alguna componente del vector director es cero, la coordenada correspondiente permanece constante y no debe dividirse por cero.
+
+En $\R^2$ una recta también puede expresarse mediante una ecuación cartesiana
+\[
+r:\quad Ax+By+C=0,
+\qquad (A,B)\neq(0,0).
+\]
+El vector
+\[
+n=(A,B)
+\]
+es normal a la recta. Por tanto, un vector director puede elegirse como
+\[
+v=(-B,A).
+\]
+Si $B\neq0$, la ecuación puede escribirse
+\[
+y=-\frac ABx-\frac CB.
+\]
+Así, la pendiente es $m=-A/B$.
+
+\begin{example}
+Hallar una ecuación de la recta del plano que pasa por
+\[
+P=(1,-2),\qquad Q=(5,1).
+\]
+Un vector director es
+\[
+v=Q-P=(4,3).
+\]
+Por tanto,
+\[
+(x,y)=(1,-2)+t(4,3),
+\]
+o, en forma paramétrica,
+\[
+\begin{cases}
+x=1+4t,\\
+y=-2+3t.
+\end{cases}
+\]
+Un vector normal es $n=(3,-4)$, ya que
+\[
+(3,-4)\cdot(4,3)=0.
+\]
+La ecuación cartesiana es entonces
+\[
+3(x-1)-4(y+2)=0,
+\]
+es decir,
+\[
+\boxed{3x-4y-11=0.}
+\]
+\end{example}
+
+Una recta del espacio también puede describirse como intersección de dos planos independientes:
+\[
+r:\quad
+\begin{cases}
+A_1x+B_1y+C_1z+D_1=0,\\
+A_2x+B_2y+C_2z+D_2=0.
+\end{cases}
+\]
+Si $n_1=(A_1,B_1,C_1)$ y $n_2=(A_2,B_2,C_2)$ no son paralelos, un vector director de la recta es
+\[
+v=n_1\times n_2.
+\]
+
+\begin{solvedexercise}
+El eje de una tubería recta pasa por los puntos
+\[
+A=(1,2,0),\qquad B=(4,-1,6).
+\]
+Obtener sus ecuaciones vectorial, paramétricas y, cuando sea posible, continuas.
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Un vector director es
+\[
+v=B-A=(3,-3,6)=3(1,-1,2).
+\]
+Podemos utilizar la dirección simplificada $(1,-1,2)$. La ecuación vectorial es
+\[
+\boxed{(x,y,z)=(1,2,0)+t(1,-1,2).}
+\]
+Las ecuaciones paramétricas son
+\[
+\boxed{
+\begin{cases}
+x=1+t,\\
+y=2-t,\\
+z=2t.
+\end{cases}}
+\]
+Como ninguna componente del vector director es nula,
+\[
+\boxed{x-1=-(y-2)=\frac z2.}
+\]
+Las tres expresiones describen exactamente el mismo conjunto de puntos.
+\end{solvedexercise}
+
+\subsection{Planos en el espacio}
+
+Un plano puede determinarse mediante un punto y dos direcciones linealmente independientes.
+
+\begin{definition}[Ecuación vectorial de un plano]
+Sean $A\in\R^3$ y $u,v\in\R^3$ linealmente independientes. El plano que pasa por $A$ y tiene direcciones $u$ y $v$ es
+\[
+\pi:\quad X=A+su+tv,
+\qquad s,t\in\R.
+\]
+\end{definition}
+
+Si
+\[
+A=(a_1,a_2,a_3),\quad
+u=(u_1,u_2,u_3),\quad
+v=(v_1,v_2,v_3),
+\]
+obtenemos las ecuaciones paramétricas
+\[
+\begin{cases}
+x=a_1+su_1+tv_1,\\
+y=a_2+su_2+tv_2,\\
+z=a_3+su_3+tv_3.
+\end{cases}
+\]
+
+Como $u\times v$ es perpendicular a ambas direcciones, puede utilizarse como vector normal del plano.
+
+\begin{definition}[Ecuación cartesiana de un plano]
+Un plano de $\R^3$ puede escribirse
+\[
+\pi:\quad Ax+By+Cz+D=0,
+\qquad (A,B,C)\neq(0,0,0).
+\]
+El vector
+\[
+n=(A,B,C)
+\]
+es un vector normal al plano.
+\end{definition}
+
+Si conocemos un punto $A=(a_1,a_2,a_3)$ y un vector normal $n=(n_1,n_2,n_3)$, la ecuación puede obtenerse directamente mediante
+\[
+n\cdot(X-A)=0,
+\]
+es decir,
+\[
+n_1(x-a_1)+n_2(y-a_2)+n_3(z-a_3)=0.
+\]
+
+Tres puntos no alineados $A,B,C$ determinan un plano. En este caso podemos tomar
+\[
+u=\overrightarrow{AB},
+\qquad
+v=\overrightarrow{AC},
+\]
+y calcular
+\[
+n=u\times v.
+\]
+
+\begin{solvedexercise}
+Una superficie plana de captación está determinada, en un sistema de coordenadas local, por los puntos
+\[
+A=(0,0,2),\qquad B=(4,0,3),\qquad C=(0,3,4).
+\]
+Obtener una ecuación cartesiana del plano y un vector normal unitario.
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Tomamos
+\[
+u=B-A=(4,0,1),
+\qquad
+v=C-A=(0,3,2).
+\]
+Un vector normal es
+\[
+n=u\times v
+=
+\begin{vmatrix}
+\mathbf i&\mathbf j&\mathbf k\\
+4&0&1\\
+0&3&2
+\end{vmatrix}
+=(-3,-8,12).
+\]
+Por tanto,
+\[
+-3(x-0)-8(y-0)+12(z-2)=0,
+\]
+y una ecuación cartesiana es
+\[
+\boxed{-3x-8y+12z-24=0.}
+\]
+Como
+\[
+\|n\|=\sqrt{9+64+144}=\sqrt{217},
+\]
+un vector normal unitario es
+\[
+\boxed{\widehat n=\frac1{\sqrt{217}}(-3,-8,12).}
+\]
+La orientación de una superficie puede describirse mediante su vector normal; por eso este tipo de cálculo aparece al estudiar superficies de montaje, paneles, placas y caras de elementos estructurales.
+\end{solvedexercise}
+
+\subsection{Posiciones relativas e intersecciones}
+
+Las posiciones relativas se estudian combinando información sobre direcciones con la compatibilidad de sistemas de ecuaciones. Este punto conecta directamente la geometría con los capítulos de matrices y sistemas lineales.
+
+\paragraph{Dos rectas en el plano.}
+Sean
+\[
+r:A_1x+B_1y+C_1=0,
+\qquad
+s:A_2x+B_2y+C_2=0.
+\]
+El sistema formado por ambas ecuaciones puede ser:
+\begin{itemize}
+\item compatible determinado: las rectas son secantes;
+\item compatible indeterminado: las rectas son coincidentes;
+\item incompatible: las rectas son paralelas distintas.
+\end{itemize}
+
+Equivalentemente, si $v_r$ y $v_s$ son vectores directores, entonces las rectas son paralelas cuando $v_r$ y $v_s$ son proporcionales.
+
+\paragraph{Recta y plano en el espacio.}
+Sean
+\[
+r:X=A+tv,
+\qquad
+\pi:n\cdot(X-P)=0.
+\]
+La cantidad $n\cdot v$ determina la situación:
+\begin{itemize}
+\item si $n\cdot v\neq0$, la recta corta al plano en un único punto;
+\item si $n\cdot v=0$ y $A\in\pi$, la recta está contenida en el plano;
+\item si $n\cdot v=0$ y $A\notin\pi$, la recta es paralela al plano y no lo corta.
+\end{itemize}
+
+\begin{example}
+Sea
+\[
+r:(x,y,z)=(1,0,2)+t(2,1,-1)
+\]
+y
+\[
+\pi: x-2y+z-5=0.
+\]
+El vector normal del plano es
+\[
+n=(1,-2,1).
+\]
+Como
+\[
+n\cdot v=(1,-2,1)\cdot(2,1,-1)=2-2-1=-1\neq0,
+\]
+la recta es secante al plano. Sustituyendo las ecuaciones paramétricas
+\[
+x=1+2t,\quad y=t,\quad z=2-t
+\]
+en la ecuación del plano,
+\[
+(1+2t)-2t+(2-t)-5=0,
+\]
+de donde
+\[
+t=-2.
+\]
+El punto de intersección es
+\[
+\boxed{(-3,-2,4).}
+\]
+\end{example}
+
+\paragraph{Dos planos.}
+Sean
+\[
+\pi_1:n_1\cdot X+d_1=0,
+\qquad
+\pi_2:n_2\cdot X+d_2=0.
+\]
+Si $n_1$ y $n_2$ no son proporcionales, los planos se cortan en una recta cuyo vector director puede tomarse como
+\[
+v=n_1\times n_2.
+\]
+Si los vectores normales son proporcionales, los planos son paralelos o coincidentes; para distinguir ambos casos basta comprobar si un punto de uno de ellos pertenece al otro.
+
+\paragraph{Dos rectas en el espacio.}
+Sean
+\[
+r:A+tu,
+\qquad
+s:B+\lambda v.
+\]
+Si $u$ y $v$ son proporcionales, las rectas son paralelas o coincidentes. Si no son proporcionales, resolvemos
+\[
+A+tu=B+\lambda v.
+\]
+Si el sistema tiene solución, las rectas son secantes. Si no tiene solución, son \emph{rectas cruzadas}: no son paralelas, pero tampoco se cortan.
+
+Una caracterización útil de la coplanaridad es
+\[
+(B-A)\cdot(u\times v)=0.
+\]
+Cuando $u$ y $v$ no son paralelos, las rectas son secantes si y sólo si son coplanarias; si el producto mixto anterior es no nulo, son cruzadas.
+
+\begin{solvedexercise}
+Estudiar la posición relativa de
+\[
+r:(x,y,z)=(1,0,1)+t(1,2,-1)
+\]
+y
+\[
+s:(x,y,z)=(0,1,2)+\lambda(2,1,1).
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Los vectores directores
+\[
+u=(1,2,-1),\qquad v=(2,1,1)
+\]
+no son proporcionales. Buscamos una posible intersección resolviendo
+\[
+(1,0,1)+t(1,2,-1)
+=(0,1,2)+\lambda(2,1,1).
+\]
+Esto equivale a
+\[
+\begin{cases}
+1+t=2\lambda,\\
+2t=1+\lambda,\\
+1-t=2+\lambda.
+\end{cases}
+\]
+De la segunda ecuación,
+\[
+\lambda=2t-1.
+\]
+Sustituyendo en la primera,
+\[
+1+t=4t-2
+\quad\Longrightarrow\quad
+ t=1,
+\]
+y entonces $\lambda=1$. Sin embargo, la tercera ecuación daría
+\[
+0=3,
+\]
+lo cual es imposible. Por tanto, las rectas no se cortan.
+
+Como tampoco son paralelas,
+\[
+\boxed{r\text{ y }s\text{ son rectas cruzadas}.}
+\]
+\end{solvedexercise}
+
+\section{Problemas métricos}
+\label{sec:problemas-metricos}
+
+\subsection{Distancias}
+
+La distancia entre objetos geométricos se define como la menor distancia entre sus puntos. Las fórmulas que utilizaremos proceden de proyecciones ortogonales y productos vectoriales.
+
+\paragraph{Distancia de un punto a una recta del plano.}
+Sea
+\[
+r:Ax+By+C=0
+\]
+y sea $P=(p_1,p_2)$. Entonces
+\[
+\boxed{
+ d(P,r)=
+ \frac{|Ap_1+Bp_2+C|}{\sqrt{A^2+B^2}}.}
+\]
+
+Esta expresión puede interpretarse proyectando el vector que une $P$ con un punto cualquiera de la recta sobre el vector normal $n=(A,B)$.
+
+\begin{example}
+Calcular la distancia del punto $P=(3,-1)$ a la recta
+\[
+r:2x-y-4=0.
+\]
+Aplicando la fórmula,
+\[
+d(P,r)
+=\frac{|2\cdot3-(-1)-4|}{\sqrt{2^2+(-1)^2}}
+=\frac{3}{\sqrt5}.
+\]
+Por tanto,
+\[
+\boxed{d(P,r)=\frac{3}{\sqrt5}.}
+\]
+\end{example}
+
+\paragraph{Distancia de un punto a una recta del espacio.}
+Sea
+\[
+r:X=A+tv
+\]
+y sea $P\in\R^3$. El área del paralelogramo generado por $P-A$ y $v$ es
+\[
+\|(P-A)\times v\|.
+\]
+También es igual a base por altura,
+\[
+\|v\|\,d(P,r).
+\]
+Por tanto,
+\[
+\boxed{
+ d(P,r)=\frac{\|(P-A)\times v\|}{\|v\|}.}
+\]
+
+\begin{solvedexercise}
+Calcular la distancia del punto
+\[
+P=(1,-2,3)
+\]
+a la recta
+\[
+r:(x,y,z)=(3,-1,0)+t(-1,1,1).
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Tomamos
+\[
+A=(3,-1,0),
+\qquad
+v=(-1,1,1).
+\]
+Entonces
+\[
+P-A=(-2,-1,3)
+\]
+y
+\[
+(P-A)\times v
+=
+\begin{vmatrix}
+\mathbf i&\mathbf j&\mathbf k\\
+-2&-1&3\\
+-1&1&1
+\end{vmatrix}
+=(-4,-1,-3).
+\]
+Por tanto,
+\[
+d(P,r)
+=\frac{\sqrt{16+1+9}}{\sqrt{1+1+1}}
+=\boxed{\sqrt{\frac{26}{3}}}.
+\]
+\end{solvedexercise}
+
+\paragraph{Distancia de un punto a un plano.}
+Sea
+\[
+\pi:Ax+By+Cz+D=0
+\]
+y $P=(p_1,p_2,p_3)$. Entonces
+\[
+\boxed{
+ d(P,\pi)
+ =\frac{|Ap_1+Bp_2+Cp_3+D|}{\sqrt{A^2+B^2+C^2}}.}
+\]
+
+De nuevo, el numerador mide ---salvo el factor $\|n\|$--- la componente del desplazamiento en la dirección normal al plano.
+
+\begin{example}
+Una carcasa metálica ocupa el plano
+\[
+\pi:2x-y+2z-6=0.
+\]
+Un sensor está situado en
+\[
+P=(3,1,4).
+\]
+La separación perpendicular entre el sensor y la superficie es
+\[
+d(P,\pi)
+=\frac{|2\cdot3-1+2\cdot4-6|}{\sqrt{2^2+(-1)^2+2^2}}
+=\frac{7}{3}.
+\]
+La distancia mínima es, por tanto,
+\[
+\boxed{\frac73}
+\]
+en las unidades del sistema de coordenadas utilizado.
+\end{example}
+
+\paragraph{Distancias entre objetos paralelos.}
+Si dos rectas del plano son paralelas,
+\[
+r:Ax+By+C_1=0,
+\qquad
+s:Ax+By+C_2=0,
+\]
+entonces
+\[
+\boxed{
+ d(r,s)=\frac{|C_2-C_1|}{\sqrt{A^2+B^2}}.}
+\]
+Análogamente, para dos planos paralelos
+\[
+\pi_1:Ax+By+Cz+D_1=0,
+\qquad
+\pi_2:Ax+By+Cz+D_2=0,
+\]
+se tiene
+\[
+\boxed{
+ d(\pi_1,\pi_2)
+ =\frac{|D_2-D_1|}{\sqrt{A^2+B^2+C^2}}.}
+\]
+
+\paragraph{Distancia entre dos rectas cruzadas.}
+Sean
+\[
+r:A+tu,
+\qquad
+s:B+\lambda v,
+\]
+con $u\times v\neq0$. Si las rectas son cruzadas, el vector $u\times v$ es perpendicular a ambas direcciones. La distancia es la proyección de $B-A$ sobre esa dirección común:
+\[
+\boxed{
+ d(r,s)
+ =\frac{|(B-A)\cdot(u\times v)|}{\|u\times v\|}.}
+\]
+Si las rectas son secantes, el numerador vale cero y la fórmula proporciona, correctamente, distancia nula.
+
+\subsection{Ángulos entre rectas y planos}
+
+La medida de ángulos se reduce al producto escalar entre vectores directores o vectores normales.
+
+\paragraph{Ángulo entre dos rectas.}
+Si $u$ y $v$ son vectores directores de dos rectas, el ángulo geométrico entre ellas se toma habitualmente como el menor de los dos posibles, por lo que
+\[
+\boxed{
+\cos\theta
+=\frac{|u\cdot v|}{\|u\|\,\|v\|},
+\qquad
+0\leq\theta\leq\frac\pi2.}
+\]
+
+\paragraph{Ángulo entre dos planos.}
+Si $n_1$ y $n_2$ son vectores normales de los planos, el ángulo entre los planos es el ángulo agudo entre sus normales:
+\[
+\boxed{
+\cos\theta
+=\frac{|n_1\cdot n_2|}{\|n_1\|\,\|n_2\|}.}
+\]
+
+\paragraph{Ángulo entre una recta y un plano.}
+Sea $v$ un vector director de la recta y $n$ un vector normal al plano. Si $\alpha$ es el ángulo entre la recta y el plano, entonces
+\[
+\alpha+\theta=\frac\pi2,
+\]
+donde $\theta$ es el ángulo entre $v$ y $n$. Por tanto,
+\[
+\boxed{
+\sin\alpha
+=\frac{|v\cdot n|}{\|v\|\,\|n\|}.}
+\]
+
+\begin{solvedexercise}
+Una conducción rectilínea tiene dirección
+\[
+v=(2,-1,2)
+\]
+y atraviesa una pared cuyo plano es
+\[
+\pi:x+2y+2z-8=0.
+\]
+Calcular el ángulo que forma la conducción con la pared.
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Un vector normal al plano es
+\[
+n=(1,2,2).
+\]
+Entonces
+\[
+v\cdot n=2-2+4=4,
+\]
+\[
+\|v\|=3,
+\qquad
+\|n\|=3.
+\]
+Por tanto,
+\[
+\sin\alpha=\frac49,
+\]
+y
+\[
+\boxed{\alpha=\arcsin\left(\frac49\right).}
+\]
+Esta es la inclinación de la conducción respecto de la superficie, no respecto de la normal a la superficie.
+\end{solvedexercise}
+
+Las condiciones de paralelismo y perpendicularidad se obtienen como casos particulares. Por ejemplo:
+\begin{itemize}
+\item dos rectas son perpendiculares si sus vectores directores tienen producto escalar cero;
+\item dos planos son perpendiculares si sus normales tienen producto escalar cero;
+\item una recta es perpendicular a un plano si su vector director es paralelo al vector normal del plano;
+\item una recta es paralela a un plano si su vector director es ortogonal al normal del plano.
+\end{itemize}
+
+\subsection{Proyecciones y puntos de mínima distancia}
+
+Las fórmulas de distancia proporcionan un número, pero en muchos problemas interesa además localizar el punto que realiza esa distancia mínima.
+
+\paragraph{Proyección de un punto sobre una recta.}
+Sea
+\[
+r:X=A+tv
+\]
+y sea $P$ un punto. El pie de la perpendicular $H$ es un punto de la recta,
+\[
+H=A+t_0v,
+\]
+y debe satisfacer
+\[
+(P-H)\cdot v=0.
+\]
+Sustituyendo,
+\[
+(P-A-t_0v)\cdot v=0,
+\]
+de donde
+\[
+\boxed{
+ t_0=\frac{(P-A)\cdot v}{v\cdot v}.}
+\]
+Así,
+\[
+\boxed{
+ H=A+\frac{(P-A)\cdot v}{v\cdot v}\,v.}
+\]
+
+\paragraph{Proyección de un punto sobre un plano.}
+Sea
+\[
+\pi:n\cdot(X-A)=0
+\]
+y $P$ un punto. El punto proyectado $H$ debe encontrarse sobre la recta perpendicular al plano que pasa por $P$:
+\[
+H=P-tn.
+\]
+Imponiendo $H\in\pi$,
+\[
+n\cdot(P-tn-A)=0,
+\]
+por lo que
+\[
+t=\frac{n\cdot(P-A)}{n\cdot n}.
+\]
+En consecuencia,
+\[
+\boxed{
+ H=P-\frac{n\cdot(P-A)}{n\cdot n}\,n.}
+\]
+
+\begin{solvedexercise}
+Una herramienta se encuentra en
+\[
+P=(4,1,5)
+\]
+y debe aproximarse perpendicularmente a la superficie
+\[
+\pi:2x-y+2z-7=0.
+\]
+Determinar el punto $H$ de la superficie al que llega siguiendo la trayectoria más corta y la longitud de dicha trayectoria.
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Tomamos
+\[
+n=(2,-1,2).
+\]
+Podemos utilizar cualquier punto del plano; por ejemplo, $A=(0,-7,0)$ satisface
+\[
+2\cdot0-(-7)+2\cdot0-7=0.
+\]
+Entonces
+\[
+P-A=(4,8,5),
+\]
+y
+\[
+n\cdot(P-A)=8-8+10=10,
+\qquad
+n\cdot n=9.
+\]
+Por tanto,
+\[
+H=P-\frac{10}{9}(2,-1,2)
+=\left(\frac{16}{9},\frac{19}{9},\frac{25}{9}\right).
+\]
+La longitud de la trayectoria es
+\[
+\|P-H\|
+=\frac{10}{9}\|n\|
+=\frac{10}{3}.
+\]
+Así,
+\[
+\boxed{
+H=\left(\frac{16}{9},\frac{19}{9},\frac{25}{9}\right),
+\qquad
+d(P,\pi)=\frac{10}{3}.}
+\]
+Como comprobación, al sustituir $H$ en la ecuación del plano se obtiene cero.
+\end{solvedexercise}
+
+Los problemas métricos suelen requerir combinar varias de las ideas del capítulo. Antes de utilizar una fórmula conviene identificar con precisión qué objetos intervienen y qué información los determina: puntos, vectores directores y normales. Después se traduce el problema a productos escalares, productos vectoriales o sistemas lineales.
+
+\begin{example}[Distancia entre dos ejes no coplanarios]
+Dos ejes de una instalación se modelizan mediante
+\[
+r:(x,y,z)=(0,0,0)+t(1,0,1),
+\]
+\[
+s:(x,y,z)=(1,2,0)+\lambda(0,1,1).
+\]
+Como
+\[
+u=(1,0,1),\qquad v=(0,1,1),
+\]
+no son paralelos. Además,
+\[
+u\times v=(-1,-1,1).
+\]
+Con $A=(0,0,0)$ y $B=(1,2,0)$,
+\[
+(B-A)\cdot(u\times v)
+=(1,2,0)\cdot(-1,-1,1)=-3\neq0,
+\]
+por lo que las rectas son cruzadas. Su distancia es
+\[
+d(r,s)
+=\frac{3}{\sqrt3}
+=\boxed{\sqrt3}.
+\]
+El mismo producto mixto que detecta que las rectas no son coplanarias proporciona, tras normalizar, la separación mínima entre ellas.
+\end{example}
+
+\section*{Ejercicios propuestos}
+\addcontentsline{toc}{section}{Ejercicios propuestos}
+
+Los ejercicios siguientes combinan cálculo vectorial, obtención de ecuaciones, estudio de posiciones relativas y problemas métricos. Algunos proceden del tipo de ejercicios utilizados en cursos anteriores y otros amplían la colección para trabajar de forma integrada los contenidos del capítulo. Los marcados con \M son especialmente adecuados para ser resueltos o comprobados también con \textit{Wolfram Mathematica}.
+
+\begin{enumerate}
+
+\item Dados los puntos
+\[
+A=(1,-4),\qquad B=(5,7),
+\]
+calcular $\overrightarrow{AB}$, la distancia $d(A,B)$ y un vector unitario con la dirección de $A$ hacia $B$.
+
+\item Dados
+\[
+P=(1,2,3),\qquad Q=(5,-3,1),
+\]
+calcular la distancia entre ambos puntos. Determinar además el punto medio del segmento $PQ$.
+
+\item Para
+\[
+u=(2,-1,3),\qquad v=(1,4,-2),
+\]
+calcular:
+\begin{enumerate}[label=\alph*)]
+\item $u\cdot v$;
+\item las normas de $u$ y $v$;
+\item el ángulo que forman;
+\item la proyección de $u$ sobre $v$;
+\item una descomposición $u=u_{\parallel}+u_{\perp}$ respecto de la dirección de $v$.
+\end{enumerate}
+
+\item Determinar el valor de $a\in\R$ para que los vectores
+\[
+u=(1,a,2),\qquad v=(2,-1,1)
+\]
+sean ortogonales. Para ese valor, calcular el área del paralelogramo que generan.
+
+\item Dados
+\[
+u=(1,2,-1),\qquad v=(2,0,3),
+\]
+calcular $u\times v$ y comprobar que el resultado es ortogonal a ambos vectores.
+
+\item Calcular el área del triángulo de vértices
+\[
+A=(1,0,2),\qquad B=(3,-1,1),\qquad C=(0,2,4).
+\]
+
+\item Estudiar si los vectores
+\[
+u=(1,2,0),\qquad v=(0,1,1),\qquad w=(2,5,1)
+\]
+son coplanarios. En caso contrario, calcular el volumen del paralelepípedo que generan.
+
+\item Un brazo mecánico aplica una fuerza
+\[
+F=(80,30,-40)\ \mathrm{N}
+\]
+en un punto cuyo vector de posición respecto del eje de giro es
+\[
+r=(0.25,0.10,0)\ \mathrm{m}.
+\]
+Calcular el momento $M=r\times F$ y su módulo.
+
+\item Una corriente de fluido tiene velocidad
+\[
+v=(3,4,0)\ \mathrm{m/s}
+\]
+y una sección de control posee vector normal unitario
+\[
+n=\frac{1}{3}(2,-1,2).
+\]
+Calcular la componente de la velocidad normal a la sección y la componente tangencial.
+
+\item Hallar las ecuaciones vectorial y paramétricas de la recta del plano que pasa por
+\[
+P=(2,-1),\qquad Q=(-1,5),
+\]
+y obtener después una ecuación cartesiana.
+
+\item Hallar la ecuación de la recta que pasa por $P=(3,1)$ y es perpendicular a
+\[
+r:2x-3y+4=0.
+\]
+
+\item Estudiar la posición relativa de las rectas
+\[
+r:2x-y+1=0,
+\qquad
+s:4x-2y-5=0.
+\]
+Calcular la distancia entre ellas cuando proceda.
+
+\item Hallar las ecuaciones vectorial, paramétricas y continuas de la recta del espacio que pasa por
+\[
+P=(1,0,-1),\qquad Q=(2,1,-3).
+\]
+
+\item Hallar la recta que pasa por $A=(1,-3,0)$ y es paralela al vector $u\times v$, siendo
+\[
+u=(-1,-1,2),\qquad v=(6,0,0).
+\]
+
+\item La trayectoria ideal del extremo de un robot pasa por el punto
+\[
+A=(0.5,1,0)
+\]
+y tiene dirección
+\[
+v=(2,-1,3).
+\]
+Determinar el punto alcanzado para $t=2$ y decidir si
+\[
+P=(4.5,-1,6)
+\]
+pertenece a la trayectoria.
+
+\item Obtener una ecuación cartesiana del plano que pasa por
+\[
+P=(0,1,-1),\qquad Q=(2,3,-5),\qquad R=(1,4,3).
+\]
+
+\item Hallar la ecuación del plano cuyo vector normal es
+\[
+n=(-1,2,-3)
+\]
+y que pasa por
+\[
+A=(2,0,4).
+\]
+
+\item Hallar las ecuaciones paramétricas y cartesianas del plano determinado por
+\[
+A=(1,-3,2),\qquad u=(2,1,0),\qquad v=(-1,0,3).
+\]
+
+\item Determinar el valor de $a$ para que el punto
+\[
+P=(1,a,2)
+\]
+pertenezca al plano
+\[
+\pi:2x-y+3z-5=0.
+\]
+Para ese valor, obtener una recta perpendicular a $\pi$ que pase por $P$.
+
+\item Una placa de intercambio térmico está contenida en el plano que pasa por los puntos
+\[
+A=(0,0,0),\qquad B=(2,1,0),\qquad C=(0,2,1).
+\]
+Obtener un vector normal unitario a la placa y su ecuación cartesiana.
+
+\item Estudiar la posición relativa de la recta
+\[
+r:(x,y,z)=(1,2,-1)+t(1,-1,2)
+\]
+y el plano
+\[
+\pi:2x+y-z-4=0.
+\]
+Si se cortan, calcular el punto de intersección.
+
+\item Estudiar la posición relativa de
+\[
+r:(x,y,z)=(1,0,0)+t(1,2,1)
+\]
+y
+\[
+s:(x,y,z)=(0,1,1)+\lambda(2,4,2).
+\]
+
+\item Estudiar la posición relativa de
+\[
+r:(x,y,z)=(1,0,1)+t(1,1,0)
+\]
+y
+\[
+s:(x,y,z)=(0,1,2)+\lambda(0,1,1).
+\]
+Si son secantes, calcular el punto de corte; si son cruzadas, justificarlo mediante un producto mixto.
+
+\item Estudiar la posición relativa de los planos
+\[
+\pi_1:x+y-z+1=0,
+\qquad
+\pi_2:2x-y+z-3=0.
+\]
+Si se cortan, obtener una ecuación paramétrica de la recta de intersección.
+
+\item Estudiar, según el valor del parámetro $a$, la posición relativa de los planos
+\[
+\pi_1:x+2y-z=1,
+\qquad
+\pi_2:2x+4y-2z=a.
+\]
+
+\item Calcular la distancia del punto
+\[
+P=(2,-3)
+\]
+a la recta
+\[
+r:3x+4y-7=0.
+\]
+Obtener además el pie de la perpendicular desde $P$ a $r$.
+
+\item Calcular la distancia del punto
+\[
+P=(1,-2,3)
+\]
+a la recta
+\[
+r:(x,y,z)=(3,-1,0)+t(-1,1,1).
+\]
+Obtener el punto de la recta más próximo a $P$.
+
+\item Calcular la distancia del punto
+\[
+P=(1,2,3)
+\]
+al plano
+\[
+\pi:2x+3y-z=-7.
+\]
+Obtener también la proyección ortogonal de $P$ sobre $\pi$.
+
+\item Calcular la distancia entre los planos paralelos
+\[
+\pi_1:2x-y+2z-3=0,
+\qquad
+\pi_2:4x-2y+4z+5=0.
+\]
+Antes de aplicar una fórmula, escribir ambos planos con el mismo vector normal.
+
+\item Calcular la distancia entre las rectas
+\[
+r:(x,y,z)=(0,0,0)+t(1,1,0),
+\]
+\[
+s:(x,y,z)=(1,0,2)+\lambda(1,-1,0).
+\]
+Estudiar primero su posición relativa.
+
+\item Hallar el ángulo agudo entre las rectas cuyas direcciones son
+\[
+u=(1,2,2),\qquad v=(2,-1,2).
+\]
+
+\item Hallar el ángulo entre los planos
+\[
+\pi_1:x+2y-2z+1=0,
+\qquad
+\pi_2:2x-y+2z-3=0.
+\]
+
+\item Hallar el ángulo que forma la recta
+\[
+r:(x,y,z)=(1,0,2)+t(2,1,-2)
+\]
+con el plano
+\[
+\pi:x-y+2z=0.
+\]
+
+\item Una conducción debe atravesar perpendicularmente una pared
+\[
+\pi:2x-y+2z-9=0.
+\]
+Si el punto de partida es
+\[
+P=(1,2,0),
+\]
+obtener la recta de perforación, el punto donde alcanza la pared y la distancia recorrida hasta ella.
+
+\item Una cámara de inspección está situada en
+\[
+P=(5,2,3)
+\]
+y debe orientarse hacia el punto más próximo del eje de una tubería
+\[
+r:(x,y,z)=(1,0,1)+t(2,1,0).
+\]
+Determinar dicho punto, la distancia y un vector unitario que indique la dirección desde la cámara hasta la tubería.
+
+\item En un sistema eléctrico tridimensional, dos tramos rectilíneos de cableado idealizados tienen ejes
+\[
+r:(x,y,z)=(0,0,1)+t(1,2,0),
+\]
+\[
+s:(x,y,z)=(2,0,0)+\lambda(0,1,2).
+\]
+Estudiar si los ejes se cortan. Si son cruzados, calcular su separación mínima.
+
+\item En una instalación energética, la superficie de un panel tiene normal
+\[
+n=(1,-2,2)
+\]
+y la dirección de incidencia de un haz se modeliza mediante
+\[
+v=(-2,1,-2).
+\]
+Calcular el ángulo entre el haz y la superficie. Determinar también el ángulo entre el haz y la normal.
+
+\item Una tubería de proceso tiene eje
+\[
+r:(x,y,z)=(2,1,0)+t(1,-2,2),
+\]
+y debe atravesar el plano
+\[
+\pi:x+y+z-6=0.
+\]
+Determinar el punto de paso y el ángulo de incidencia. Interpretar qué ocurriría si el vector director se modificase a $v=(1,-2,1)$.
+
+\item \M Comprobar con Mathematica los ejercicios 3--9 utilizando únicamente productos escalares, \texttt{Norm} y \texttt{Cross} cuando corresponda. Para el ángulo entre dos vectores puede evaluarse
+\[
+\operatorname{ArcCos}\left(\frac{u\cdot v}{\|u\|\|v\|}\right).
+\]
+Comparar siempre el resultado con el cálculo manual.
+
+\item \M En los ejercicios 10--25, utilizar \texttt{Solve} para comprobar pertenencias e intersecciones. Plantear primero manualmente las ecuaciones y utilizar el ordenador únicamente para resolver o verificar el sistema resultante.
+
+\item \M En los ejercicios 26--38, comprobar las distancias y proyecciones con combinaciones de \texttt{Norm}, producto escalar y \texttt{Cross}. No introducir comandos específicos de geometría: el objetivo es reutilizar las mismas operaciones vectoriales estudiadas en la teoría.
+
+\item (Examen) Dados
+\[
+r:(x,y,z)=(1,-1,2)+t(1,2,-1)
+\]
+y
+\[
+\pi:2x-y+z-4=0,
+\]
+se pide:
+\begin{enumerate}[label=\alph*)]
+\item estudiar la posición relativa de $r$ y $\pi$;
+\item calcular, si existe, su punto de intersección;
+\item hallar el ángulo entre la recta y el plano;
+\item calcular la distancia del punto $P=(3,0,1)$ al plano y su proyección ortogonal sobre él.
+\end{enumerate}
+
+\item (Examen) Sean las rectas
+\[
+r:(x,y,z)=(1,0,0)+t(1,1,2),
+\]
+\[
+s:(x,y,z)=(0,2,1)+\lambda(2,-1,1).
+\]
+\begin{enumerate}[label=\alph*)]
+\item estudiar su posición relativa;
+\item calcular la distancia entre ambas;
+\item obtener un vector perpendicular a las dos direcciones;
+\item si son cruzadas, explicar geométricamente por qué el vector que realiza la distancia mínima debe ser paralelo a ese vector perpendicular común.
+\end{enumerate}
+
+\item (Examen) Una superficie plana queda determinada por
+\[
+A=(1,0,1),\qquad B=(3,1,0),\qquad C=(0,2,2).
+\]
+Una trayectoria rectilínea parte de
+\[
+P=(2,-1,4)
+\]
+con dirección $v=(1,1,-2)$. Se pide:
+\begin{enumerate}[label=\alph*)]
+\item obtener la ecuación cartesiana del plano $ABC$;
+\item estudiar la posición relativa de la trayectoria y el plano;
+\item calcular, si existe, el punto de intersección;
+\item calcular el ángulo entre la trayectoria y el plano;
+\item obtener la distancia de $P$ al plano y el punto de la superficie más próximo a $P$.
+\end{enumerate}
+
+\end{enumerate}

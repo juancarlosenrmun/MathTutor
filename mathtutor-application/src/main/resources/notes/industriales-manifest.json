@@ -1,0 +1,79 @@
+{
+  "title": "Matemáticas I — Ingenierías de la rama industrial",
+  "authors": [
+    "Diego García Zamora",
+    "Nuria V. Castillo González"
+  ],
+  "institution": "Universidad de Jaén",
+  "chapters": [
+    {
+      "source": "Capitulos/Tema1_Numeros_Reales_Complejos.tex",
+      "sha256": "425795803981c72c689763f2e66f5eda5d842526d8207ef3a03059a923b6a191",
+      "resource": "industriales-01-numeros-reales-complejos.tex",
+      "module": "funciones",
+      "topic": "numeros-reales-complejos",
+      "chunks": 9
+    },
+    {
+      "source": "Capitulos/Tema2_Funciones_Continuidad.tex",
+      "sha256": "b40d150bcea5f287b9bc418f901fe612964f0d5dcc4c775fb86adf18451d4173",
+      "resource": "industriales-02-funciones-continuidad.tex",
+      "module": "funciones",
+      "topic": "funciones-continuidad",
+      "chunks": 16
+    },
+    {
+      "source": "Capitulos/Tema3_Calculo_Diferencial.tex",
+      "sha256": "9940b67fcbc0878362525e23e3fdd873ead822063f8691994d6b85b559e14489",
+      "resource": "industriales-03-calculo-diferencial.tex",
+      "module": "derivadas-integrales",
+      "topic": "calculo-diferencial",
+      "chunks": 22
+    },
+    {
+      "source": "Capitulos/Tema4_Calculo_Integral.tex",
+      "sha256": "faf58f57181fd6147696495ea2cba4d86660606f58e07d3075c41862ef68a108",
+      "resource": "industriales-04-calculo-integral.tex",
+      "module": "derivadas-integrales",
+      "topic": "calculo-integral",
+      "chunks": 18
+    },
+    {
+      "source": "Capitulos/Tema5_Matrices.tex",
+      "sha256": "4c3cf9572064b64d17d8dd00e1181fbf09569413967f1ee73dc0b753afd6dba0",
+      "resource": "industriales-05-matrices.tex",
+      "module": "metodos-3d",
+      "topic": "matrices",
+      "chunks": 14
+    },
+    {
+      "source": "Capitulos/Tema6_Espacios_Vectoriales_Aplicaciones_Lineales.tex",
+      "sha256": "c430eff306e55da44ebe8cb9e21880ede4ba0cb0f74e74eac4fe2c6a829de8ad",
+      "resource": "industriales-06-espacios-vectoriales.tex",
+      "module": "metodos-3d",
+      "topic": "espacios-vectoriales",
+      "chunks": 15
+    },
+    {
+      "source": "Capitulos/Tema7_Diagonalizacion.tex",
+      "sha256": "77965bbdf506bb65e5a10d9d0664c862a246b8beb41b539c01d7880fb5b6910a",
+      "resource": "industriales-07-diagonalizacion.tex",
+      "module": "metodos-3d",
+      "topic": "diagonalizacion",
+      "chunks": 14
+    },
+    {
+      "source": "Capitulos/Tema8_Geometria.tex",
+      "sha256": "1b3611b44d6645b951feabf9d926f998242b0597fd974ed04685ed0612a841a5",
+      "resource": "industriales-08-geometria.tex",
+      "module": "metodos-3d",
+      "topic": "geometria",
+      "chunks": 13
+    }
+  ],
+  "excluded_from_index": [
+    "Ejercicios propuestos (reservados para UC-22)",
+    "Glosario de Mathematica",
+    "Preámbulo y bibliografía"
+  ]
+}

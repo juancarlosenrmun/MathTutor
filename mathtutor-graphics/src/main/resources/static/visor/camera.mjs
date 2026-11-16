@@ -3,6 +3,7 @@ export class Camera {
   constructor() { this.reset(); }
 
   reset() {
+    this.orthographicSpan = null;
     this.yaw = 0.6;
     this.pitch = 0.4;
     this.distance = 7;
@@ -37,7 +38,12 @@ export class Camera {
     const view = [right[0], up[0], back[0], 0, right[1], up[1], back[1], 0,
       right[2], up[2], back[2], 0, -dot(right), -dot(up), -dot(back) - this.distance, 1];
     const f = 1 / Math.tan(Math.PI / 8), near = 0.1, far = 200;
-    const projection = [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0,
+    let projection;
+    if (this.orthographicSpan) {
+      const halfHeight = Math.max(this.orthographicSpan[1]/2, this.orthographicSpan[0]/(2*aspect)) * 1.15 * this.distance/7;
+      projection = [1/(halfHeight*aspect),0,0,0,0,1/halfHeight,0,0,0,0,
+        -2/(far-near),0,0,0,-(far+near)/(far-near),1];
+    } else projection = [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0,
       (far + near) / (near - far), -1, 0, 0, 2 * far * near / (near - far), 0];
     const result = new Float32Array(16);
     for (let column = 0; column < 4; column++) {
