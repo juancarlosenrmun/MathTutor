@@ -31,7 +31,7 @@ try {
   const go = async view => { win.location.hash = '#/' + view; await settle(); };
   const visible = () => [...doc.querySelectorAll('[data-view]')].filter(node => !node.hidden);
   assert(visible().length === 1, 'Debe haber una sola vista activa');
-  for (const width of [1200, 375]) {
+  for (const width of [1440, 1024, 768, 375, 320]) {
     frame.style.width = width + 'px';
     for (const view of ['inicio', 'acceso', 'registro', 'laboratorio', 'restringido']) {
       await go(view);
@@ -55,7 +55,7 @@ try {
   assert(doc.querySelector('#account-email').textContent === 'alumno@ejemplo.es', 'Correo no mostrado');
   const call = win.testState.calls.find(([path]) => path.endsWith('register'));
   assert(JSON.parse(call[1].body).role === 'ALUMNO', 'Registro permite escalar rol');
-  for (const width of [1200, 375]) {
+  for (const width of [1440, 1024, 768, 375, 320]) {
     frame.style.width = width + 'px';
     for (const view of ['espacio', 'cuenta', 'laboratorio', 'tutor']) {
       await go(view);

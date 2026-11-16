@@ -1,7 +1,7 @@
 import { SessionClient } from './session.mjs';
 
 const titles = { inicio: 'Inicio', acceso: 'Iniciar sesión', registro: 'Crear cuenta', espacio: 'Tu espacio',
-  laboratorio: 'Laboratorio 3D', tutor: 'Tutor de Matemáticas', cuenta: 'Tu cuenta', restringido: 'Acceso restringido' };
+  laboratorio: 'Laboratorio', tutor: 'Tutor de Matemáticas', cuenta: 'Tu cuenta', restringido: 'Acceso restringido' };
 
 export function viewFor(hash, signedIn) {
   const requested = hash.replace('#/', '');
@@ -20,7 +20,7 @@ export function permissionDescription(role) {
 export function workspaceFor(role) {
   return {
     ALUMNO: { label: 'Alumno', title: 'Tu espacio de aprendizaje.',
-      description: 'Empieza por el laboratorio: explora los ejes, mueve la cámara y encuentra tu perspectiva.' },
+      description: 'Elige un bloque para conversar con el tutor o explora funciones, derivadas e integrales en el laboratorio.' },
     PROFESOR: { label: 'Profesor', title: 'Tu espacio docente.',
       description: 'Explora el laboratorio y consulta los permisos vigentes de tu cuenta de profesor.' },
     ADMIN: { label: 'Administrador', title: 'Tu espacio de administración.',

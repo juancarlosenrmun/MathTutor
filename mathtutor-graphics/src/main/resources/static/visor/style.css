@@ -1000,3 +1000,22 @@ canvas:focus-visible {
 .tutor-history { max-height: 28rem; overflow-y: auto; padding: 1rem; border-block: 1px solid #c0cdc0; margin-block: 1.5rem; }
 .tutor-history p { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 70ch; }
 #tutor-composer { max-width: 50rem; margin-block: 1rem; }
+
+.tutor-layout { display: grid; grid-template-columns: minmax(15rem, 1fr) minmax(0, 2fr); gap: 3rem; padding-bottom: 3rem; }
+.tutor-guide { border-top: 2px solid #285b43; padding-top: 1.5rem; }
+.tutor-guide h2, .tutor-conversation h2 { font-size: 1.5rem; }
+.tutor-guide p { line-height: 1.7; }
+.tutor-guide .tutor-controls { display: grid; align-items: stretch; }
+.tutor-controls select { width: 100%; min-width: 0; }
+.tutor-conversation { min-width: 0; padding: 1.5rem; background: #fff; border: 1px solid #c0cdc0; border-radius: .5rem; }
+.tutor-history:empty::before { content: 'Tu próxima idea empieza con una pregunta. Selecciona un bloque para comenzar.'; color: #626e65; }
+.tutor-history { min-height: 10rem; }
+.tutor-question { margin-left: auto; background: #edf2eb; padding: 1rem; border-radius: .5rem; }
+.tutor-answer { padding: .5rem 0 1rem; line-height: 1.8; }
+.curve-controls { padding: 1.25rem; background: #edf2eb; border-radius: .5rem; }
+.curve-controls input { width: 100%; }
+@media (max-width: 760px) {
+  .tutor-layout { grid-template-columns: 1fr; gap: 1.5rem; }
+  .tutor-conversation { padding: 1rem; }
+  .curve-controls .button { width: 100%; white-space: normal; }
+}
