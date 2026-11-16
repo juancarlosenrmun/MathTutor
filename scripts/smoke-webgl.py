@@ -15,14 +15,26 @@ EVIDENCE = ROOT / "mathtutor-graphics/build/reports/client-browser"
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        if self.path == "/smoke.html":
-            content = (ROOT / "mathtutor-graphics/src/test/browser/smoke.html").read_bytes()
+        if self.path == "/api/csrf-token":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"csrfToken":"smoke"}')
+        elif self.path in ("/smoke.html", "/frontend.html"):
+            content = (ROOT / "mathtutor-graphics/src/test/browser" / self.path.lstrip("/")).read_bytes()
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
             self.wfile.write(content)
         else:
             super().do_GET()
+
+    def do_POST(self):
+        # Servidor estático de pruebas: ninguna sesión persistente.
+        self.send_response(401)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(b'{}')
 
     def log_message(self, *_):
         pass
@@ -46,7 +58,7 @@ def main():
                 result = subprocess.run([browser, "--headless", "--no-first-run", "--no-default-browser-check",
                     "--no-sandbox", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
                     "--disable-background-networking", f"--user-data-dir={profile}",
-                    "--virtual-time-budget=3000", "--dump-dom",
+                    "--virtual-time-budget=10000", "--dump-dom",
                     f"http://127.0.0.1:{server.server_port}{route}"],
                     capture_output=True, timeout=45, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
                 dom = result.stdout.decode("utf-8", errors="replace")
@@ -55,6 +67,9 @@ def main():
                     (EVIDENCE / f"{name}.log").write_bytes(result.stderr)
                     raise SystemExit(f"Prueba de navegador fallida: {name}; consulta {EVIDENCE}")
                 print(f"WebGL2 real: {name} correcto")
+        subprocess.run(["node", str(ROOT / "scripts/smoke-frontend.mjs"), browser,
+                        f"http://127.0.0.1:{server.server_port}", str(EVIDENCE)],
+                       check=True, timeout=90)
     finally:
         server.shutdown()
         server.server_close()
