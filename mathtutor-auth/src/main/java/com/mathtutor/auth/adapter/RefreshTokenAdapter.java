@@ -1,201 +1,169 @@
 package com.mathtutor.auth.adapter;
 
 import com.mathtutor.common.auth.port.TokenServicePort;
-import com.mathtutor.common.port.PasswordEncoderPort;
 import com.mathtutor.persistence.entity.RefreshToken;
-import com.mathtutor.persistence.entity.User;
 import com.mathtutor.persistence.repository.RefreshTokenRepository;
 import com.mathtutor.persistence.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.util.HexFormat;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
-/**
- * Adaptador para almacenamiento de refresh tokens en base de datos.
- * Implementa rotación de tokens con family tracking y detección de reuso (revocación de familia completa).
- */
+/** Almacena tokens de alta entropia por huella SHA-256 indexada, sin guardar el valor en claro. */
 @Component
 public class RefreshTokenAdapter {
-
     private final RefreshTokenRepository repository;
     private final UserRepository userRepository;
-    private final PasswordEncoderPort passwordEncoder;
 
-    public RefreshTokenAdapter(RefreshTokenRepository repository, UserRepository userRepository, PasswordEncoderPort passwordEncoder) {
+    @org.springframework.beans.factory.annotation.Value("${jwt.refresh-token-expiration-days:7}")
+    private long refreshTokenExpirationDays = 7;
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        if (refreshTokenExpirationDays <= 0 || refreshTokenExpirationDays > Integer.MAX_VALUE / 86400) {
+            throw new IllegalStateException("La duracion del refresh debe ser positiva y compatible con maxAge");
+        }
+    }
+
+    public RefreshTokenAdapter(RefreshTokenRepository repository, UserRepository userRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Almacena un nuevo refresh token en la BD.
-     * Genera un familyId nuevo para tracking de rotación.
-     *
-     * @return refresh token JWT (el mismo que se pasó como rawToken)
-     */
     @Transactional
     public String storeRefreshToken(Long userId, String email, String role, String rawToken) {
-        // Generar familyId único para esta cadena de rotación
-        String familyId = UUID.randomUUID().toString();
-        return storeRefreshTokenWithFamily(userId, email, role, rawToken, familyId);
+        return storeRefreshTokenWithFamily(userId, email, role, rawToken, UUID.randomUUID().toString());
     }
 
-    /**
-     * Almacena un refresh token en la BD con un familyId específico (para rotación).
-     *
-     * @return refresh token JWT (el mismo que se pasó como rawToken)
-     */
     @Transactional
     public String storeRefreshTokenWithFamily(Long userId, String email, String role, String rawToken, String familyId) {
-        // Hash del token con Argon2id
-        String tokenHash = passwordEncoder.encode(rawToken);
-
         Instant now = Instant.now();
-        Instant expiresAt = now.plusSeconds(7 * 24 * 60 * 60); // 7 días
-
-        RefreshToken entity = new RefreshToken(tokenHash, userId, familyId, expiresAt, now);
-        repository.save(entity);
-        return rawToken; // Devolver el token en claro para que el cliente lo reciba
+        repository.save(new RefreshToken(digest(rawToken), userId, familyId,
+                now.plusSeconds(refreshTokenExpirationDays * 86400), now));
+        return rawToken;
     }
 
-    /**
-     * Valida un refresh token contra la BD.
-     * Verifica: hash coincide, no revocado, no expirado.
-     * <p>
-     * Read-only transacción: solo lectura. La detección de reuso se maneja
-     * en el endpoint /refresh, no aquí.
-     */
     @Transactional(readOnly = true)
     public Optional<TokenServicePort.TokenValidationResult> validateRefreshToken(String rawToken) {
-        // Buscar todos los tokens y verificar hash
-        var allTokens = repository.findAll();
+        return repository.findByTokenHash(digest(rawToken)).flatMap(this::validateStoredToken);
+    }
 
-        for (var token : allTokens) {
-            try {
-                if (passwordEncoder.matches(rawToken, token.getTokenHash())) {
-                    // Verificar no revocado
-                    if (token.isRevoked()) {
-                        // Token ya revocado - no revocar familia aquí (solo en /refresh)
-                        return Optional.empty();
-                    }
-                    // Verificar no expirado
-                    if (token.getExpiresAt().isBefore(Instant.now())) {
-                        return Optional.empty();
-                    }
-
-                    // Obtener email y role del usuario
-                    var userOpt = userRepository.findById(token.getUserId());
-                    String email = userOpt.map(User::getEmail).orElse("");
-                    String role = userOpt.map(u -> u.getRole().name()).orElse("");
-
-                    return Optional.of(new TokenServicePort.TokenValidationResult(
-                        token.getUserId(),
-                        email,
-                        role,
-                        token.getFamilyId(),
-                        token.getId().toString()
-                    ));
-                }
-            } catch (Exception e) {
-                // Hash inválido, continuar con siguiente
-            }
+    private Optional<TokenServicePort.TokenValidationResult> validateStoredToken(RefreshToken token) {
+        if (token.isRevoked() || !token.getExpiresAt().isAfter(Instant.now())) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        return userRepository.findById(token.getUserId()).filter(user -> user.isActive())
+                .map(user -> new TokenServicePort.TokenValidationResult(user.getId(), user.getEmail(),
+                        user.getRole().name(), token.getFamilyId(), token.getId().toString()));
+    }
+
+    /** El bloqueo serializa reutilizaciones; sustitucion y revocacion se confirman juntas. */
+    @Transactional
+    public Optional<Rotation> rotateRefreshToken(String rawToken,
+            Function<TokenServicePort.TokenValidationResult, String> tokenFactory) {
+        var existing = lockTokenAndOwner(rawToken);
+        if (existing.isEmpty()) {
+            return Optional.empty();
+        }
+        RefreshToken previous = existing.get();
+        if (previous.isRevoked()) {
+            repository.revokeFamily(previous.getFamilyId(), Instant.now());
+            return Optional.empty();
+        }
+        var validation = validateStoredToken(previous);
+        if (validation.isEmpty()) {
+            return Optional.empty();
+        }
+        var user = validation.get();
+        String replacement = tokenFactory.apply(user);
+        previous.setRevoked(true);
+        previous.setRevokedAt(Instant.now());
+        repository.save(previous);
+        storeRefreshTokenWithFamily(user.userId(), user.email(), user.role(), replacement, user.familyId());
+        return Optional.of(new Rotation(replacement, user));
+    }
+
+    public record Rotation(String refreshToken, TokenServicePort.TokenValidationResult user) {}
+
+    /** Revoca el linaje completo serializando el cierre con cualquier rotacion concurrente. */
+    @Transactional
+    public void revokeRefreshSession(String rawToken) {
+        lockTokenAndOwner(rawToken).ifPresent(token ->
+                repository.revokeFamily(token.getFamilyId(), Instant.now()));
     }
 
     /**
-     * Revoca un token individual (logout normal o rotación).
+     * Todas las rotaciones y cierres de sesión de un usuario comparten este
+     * bloqueo. El token se lee una segunda vez tras tomarlo para ver el estado
+     * comprometido más reciente de su familia.
      */
+    private Optional<RefreshToken> lockTokenAndOwner(String rawToken) {
+        String tokenHash = digest(rawToken);
+        Optional<Long> userId = repository.findUserIdByTokenHash(tokenHash);
+        if (userId.isEmpty()) {
+            return Optional.empty();
+        }
+        if (userRepository.findByIdForUpdate(userId.get()).isEmpty()) {
+            return Optional.empty();
+        }
+        return repository.findByTokenHashForUpdate(tokenHash);
+    }
+
     @Transactional
     public void revokeRefreshToken(String tokenId) {
         if (tokenId == null || tokenId.isBlank()) {
             return;
         }
         try {
-            Long id = Long.valueOf(tokenId);
-            repository.findById(id).ifPresent(token -> {
+            repository.findById(Long.valueOf(tokenId)).ifPresent(token -> {
                 token.setRevoked(true);
                 token.setRevokedAt(Instant.now());
                 repository.save(token);
             });
-        } catch (NumberFormatException e) {
-            // tokenId no es un número válido, no hacer nada
+        } catch (NumberFormatException ignored) {
+            // Identificador de persistencia invalido: no hay token que revocar.
         }
     }
 
-    /**
-     * Revoca TODA la familia de tokens (detección de reuso - ataque de replay).
-     * Se llama cuando se detecta que un token ya revocado se intenta usar de nuevo.
-     */
     @Transactional
     public void revokeTokenFamily(String familyId) {
-        int revokedCount = repository.revokeFamily(familyId, Instant.now());
-        // Log de seguridad: se revocaron X tokens de la familia Y por detección de reuso
+        repository.revokeFamily(familyId, Instant.now());
     }
 
-    /**
-     * Limpia tokens expirados (job periódico).
-     */
     @Transactional
     public void cleanupExpiredTokens() {
         repository.deleteByExpiresAtBefore(Instant.now());
     }
 
-    /**
-     * Busca tokens activos de un usuario.
-     */
     @Transactional(readOnly = true)
     public Optional<RefreshToken> findActiveByUserId(Long userId) {
-        return repository.findByUserIdAndRevokedFalse(userId).stream().findFirst();
+        return repository.findByUserIdAndRevokedFalse(userId).stream()
+                .filter(token -> token.getExpiresAt().isAfter(Instant.now())).findFirst();
     }
 
-    /**
-     * Verifica si un refresh token existe en BD pero está revocado (indicando reuso).
-     *
-     * @param rawToken token de refresco en claro
-     * @return true si el token existe y está revocado
-     */
     @Transactional(readOnly = true)
     public boolean isRefreshTokenRevoked(String rawToken) {
-        var allTokens = repository.findAll();
-
-        for (var token : allTokens) {
-            try {
-                if (passwordEncoder.matches(rawToken, token.getTokenHash())) {
-                    return token.isRevoked();
-                }
-            } catch (Exception e) {
-                // Hash inválido, continuar con siguiente
-            }
-        }
-        return false;
+        return repository.findByTokenHash(digest(rawToken)).map(RefreshToken::isRevoked).orElse(false);
     }
 
-    /**
-     * Obtiene el familyId de un refresh token revocado (para revocar la familia completa).
-     *
-     * @param rawToken token de refresco en claro
-     * @return familyId si el token existe y está revocado, null en caso contrario
-     */
     @Transactional(readOnly = true)
     public String getFamilyIdForRevokedToken(String rawToken) {
-        var allTokens = repository.findAll();
+        return repository.findByTokenHash(digest(rawToken)).filter(RefreshToken::isRevoked)
+                .map(RefreshToken::getFamilyId).orElse(null);
+    }
 
-        for (var token : allTokens) {
-            try {
-                if (passwordEncoder.matches(rawToken, token.getTokenHash())) {
-                    if (token.isRevoked()) {
-                        return token.getFamilyId();
-                    }
-                }
-            } catch (Exception e) {
-                // Hash inválido, continuar con siguiente
-            }
+    private String digest(String token) {
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException("SHA-256 no disponible", impossible);
         }
-        return null;
     }
 }

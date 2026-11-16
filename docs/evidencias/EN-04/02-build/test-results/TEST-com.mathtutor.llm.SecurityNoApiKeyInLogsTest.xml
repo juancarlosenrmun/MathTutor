@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.llm.SecurityNoApiKeyInLogsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:56.384Z" hostname="DESKTOP-KREG294" time="0.035">
+  <properties/>
+  <testcase name="testApiKeyUsedOnlyInHeaders()" classname="com.mathtutor.llm.SecurityNoApiKeyInLogsTest" time="0.005"/>
+  <testcase name="testNoApiKeyInEmbeddingRequestResponse()" classname="com.mathtutor.llm.SecurityNoApiKeyInLogsTest" time="0.022"/>
+  <testcase name="testNoSensitiveDataInConfigToString()" classname="com.mathtutor.llm.SecurityNoApiKeyInLogsTest" time="0.005"/>
+  <testcase name="testConfigurationPropertiesNotLogged()" classname="com.mathtutor.llm.SecurityNoApiKeyInLogsTest" time="0.001"/>
+  <testcase name="testErrorMessagesDoNotLeakApiKeys()" classname="com.mathtutor.llm.SecurityNoApiKeyInLogsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

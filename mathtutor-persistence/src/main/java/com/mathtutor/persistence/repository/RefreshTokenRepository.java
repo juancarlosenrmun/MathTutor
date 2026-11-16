@@ -18,10 +18,21 @@ import java.util.Optional;
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT rt FROM RefreshToken rt WHERE rt.tokenHash = :tokenHash")
+    Optional<RefreshToken> findByTokenHashForUpdate(@Param("tokenHash") String tokenHash);
+
     /**
      * Busca un refresh token por su hash.
      */
     Optional<RefreshToken> findByTokenHash(String tokenHash);
+
+    /**
+     * Obtiene el propietario sin asociar la entidad al contexto de persistencia.
+     * Permite adquirir el bloqueo del usuario antes de releer el token bloqueado.
+     */
+    @Query("SELECT rt.userId FROM RefreshToken rt WHERE rt.tokenHash = :tokenHash")
+    Optional<Long> findUserIdByTokenHash(@Param("tokenHash") String tokenHash);
 
     /**
      * Busca todos los tokens de una familia (para detección de reuso).

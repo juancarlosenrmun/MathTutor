@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="POST /api/auth/logout" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:35.347Z" hostname="DESKTOP-KREG294" time="0.023">
+  <properties/>
+  <testcase name="Debe limpiar cookie incluso sin usuario autenticado" classname="com.mathtutor.auth.controller.AuthControllerTest$Logout" time="0.013"/>
+  <testcase name="Debe hacer logout y limpiar cookie cuando usuario autenticado" classname="com.mathtutor.auth.controller.AuthControllerTest$Logout" time="0.01"/>
+  <system-out><![CDATA[01:54:35.351 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.351 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.351 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:35.367 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.367 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.367 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

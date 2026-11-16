@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Email-based Rate Limiting (Credential Stuffing Protection)" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:48.279Z" hostname="DESKTOP-KREG294" time="1.681">
+  <properties/>
+  <testcase name="Debe resetear email rate limit tras login exitoso" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$EmailBasedRateLimiting" time="1.397"/>
+  <testcase name="Email rate limit debe ser case-insensitive" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$EmailBasedRateLimiting" time="0.005"/>
+  <testcase name="No debe resetear email rate limit tras login fallido por password" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$EmailBasedRateLimiting" time="0.008"/>
+  <testcase name="Debe permitir login cuando email rate limit no se excede" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$EmailBasedRateLimiting" time="0.217"/>
+  <testcase name="Debe bloquear credential stuffing: mismo email desde diferentes IPs" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$EmailBasedRateLimiting" time="0.023"/>
+  <testcase name="Debe aplicar email rate limit antes de verificar usuario (previene credential stuffing)" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$EmailBasedRateLimiting" time="0.007"/>
+  <testcase name="Debe bloquear login cuando email rate limit se excede (credential stuffing)" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$EmailBasedRateLimiting" time="0.005"/>
+  <system-out><![CDATA[LoginUseCase.execute: email=test@test.com, ipAddress=192.168.1.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:192.168.1.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test@test.com
+LoginUseCase.execute: email=  TEST@TEST.COM  , ipAddress=1.2.3.4
+LoginUseCase.execute: ipRateLimitKey=login:ip:1.2.3.4
+LoginUseCase.execute: emailRateLimitKey=login:email:test@test.com
+LoginUseCase.execute: email=test@test.com, ipAddress=192.168.1.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:192.168.1.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test@test.com
+LoginUseCase.execute: email=test@test.com, ipAddress=192.168.1.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:192.168.1.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test@test.com
+LoginUseCase.execute: email=victim@test.com, ipAddress=192.168.1.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:192.168.1.1
+LoginUseCase.execute: emailRateLimitKey=login:email:victim@test.com
+LoginUseCase.execute: email=victim@test.com, ipAddress=192.168.1.2
+LoginUseCase.execute: ipRateLimitKey=login:ip:192.168.1.2
+LoginUseCase.execute: emailRateLimitKey=login:email:victim@test.com
+LoginUseCase.execute: email=victim@test.com, ipAddress=10.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:10.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:victim@test.com
+LoginUseCase.execute: email=victim@test.com, ipAddress=172.16.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:172.16.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:victim@test.com
+LoginUseCase.execute: email=victim@test.com, ipAddress=203.0.113.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:203.0.113.1
+LoginUseCase.execute: emailRateLimitKey=login:email:victim@test.com
+LoginUseCase.execute: email=nonexistent@test.com, ipAddress=192.168.1.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:192.168.1.1
+LoginUseCase.execute: emailRateLimitKey=login:email:nonexistent@test.com
+LoginUseCase.execute: email=test@test.com, ipAddress=192.168.1.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:192.168.1.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test@test.com
+]]></system-out>
+  <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (C:\Users\Juank\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.14.15\b4cc9d88d5de562bf75b3a54ab436ad01b3f72d\byte-buddy-agent-1.14.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

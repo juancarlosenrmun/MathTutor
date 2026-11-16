@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.llm.DeterministicEmbeddingModelTest" tests="25" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:56.165Z" hostname="DESKTOP-KREG294" time="0.217">
+  <properties/>
+  <testcase name="Embed de lista con nulls maneja gracefully" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.124"/>
+  <testcase name="Embedding de texto muy largo funciona correctamente" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.003"/>
+  <testcase name="Embeddings son consistentes entre llamadas separadas" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="Embedding está normalizado (longitud 1)" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="Embed de lista retorna lista de embeddings" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="Embeddings preservan similitud semántica aproximada" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.002"/>
+  <testcase name="Mismo texto produce mismo embedding (determinista)" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.0"/>
+  <testcase name="Determinismo: mismo hash produce mismo embedding aunque contenido diferente pero mismo hashCode" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.0"/>
+  <testcase name="Embeddings de lista son consistentes" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.0"/>
+  <testcase name="Textos diferentes producen embeddings diferentes" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.0"/>
+  <testcase name="Vector normalizado tiene todos los valores en rango [-1, 1]" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.003"/>
+  <testcase name="Embed de lista vacía retorna lista vacía" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.0"/>
+  <testcase name="Embedding de caracteres Unicode funciona" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.0"/>
+  <testcase name="Embedding de null retorna vector de ceros" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="Embedding de números y símbolos especiales" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.0"/>
+  <testcase name="Embedding de tabs y newlines retorna vector de ceros" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="Embedding de solo espacios retorna vector de ceros (sin normalizar)" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="Embedding de texto vacío retorna vector de ceros" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="[1] x^2" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.009"/>
+  <testcase name="[2] \sin(x)" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="[3] \frac{\mathrm{d}f}{\mathrm{d}x}" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="[4] \int_{a}^{b} f(x) \mathrm{d}x" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="[5] Teorema fundamental del cálculo" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="[6] Regla de la cadena: (f∘g)'(x) = f'(g(x))·g'(x)" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.001"/>
+  <testcase name="Dimensión es 384" classname="com.mathtutor.llm.DeterministicEmbeddingModelTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

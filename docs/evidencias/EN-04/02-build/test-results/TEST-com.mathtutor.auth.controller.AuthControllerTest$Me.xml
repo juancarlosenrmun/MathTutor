@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="GET /api/auth/me" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:35.199Z" hostname="DESKTOP-KREG294" time="0.085">
+  <properties/>
+  <testcase name="Debe retornar info del usuario autenticado" classname="com.mathtutor.auth.controller.AuthControllerTest$Me" time="0.072"/>
+  <testcase name="Debe retornar 401 cuando no hay usuario autenticado" classname="com.mathtutor.auth.controller.AuthControllerTest$Me" time="0.012"/>
+  <system-out><![CDATA[01:54:35.208 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.208 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.208 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+01:54:35.275 [Test worker] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+01:54:35.275 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+01:54:35.275 [Test worker] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

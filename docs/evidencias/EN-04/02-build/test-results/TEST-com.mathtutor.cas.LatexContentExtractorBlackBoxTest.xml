@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" tests="21" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:39.251Z" hostname="DESKTOP-KREG294" time="0.301">
+  <properties/>
+  <testcase name="Extrae entorno paso" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.125"/>
+  <testcase name="Extrae fórmulas inline $...$" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Extrae múltiples entornos del mismo tipo" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Extrae fórmulas display $$...$$" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Ignora entornos no reconocidos" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Maneja contenido nulo o vacío" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.0"/>
+  <testcase name="Retorna error si dificultad no es número" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Retorna error si no hay entornos válidos" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Extrae entorno conceptoClave" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="[1] 1" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.009"/>
+  <testcase name="[2] 2" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.0"/>
+  <testcase name="[3] 3" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.0"/>
+  <testcase name="Extrae entorno solucion (con y sin acento)" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Retorna error si falta macro dificultad" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Retorna error si falta macro bloque" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.0"/>
+  <testcase name="Extrae entorno enunciado" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.0"/>
+  <testcase name="Extrae entorno errorTipico (con y sin acento)" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Retorna error si falta macro tema" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Extrae macros básicas: bloque, tema, dificultad" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.0"/>
+  <testcase name="Extrae fórmulas mixtas inline y display" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <testcase name="Extrae entorno ejercicio" classname="com.mathtutor.cas.LatexContentExtractorBlackBoxTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

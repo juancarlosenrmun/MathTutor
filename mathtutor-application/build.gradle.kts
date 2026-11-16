@@ -3,6 +3,7 @@ plugins {
     id("application")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
+    id("com.github.jk1.dependency-license-report")
     // JaCoCo applied from parent build.gradle.kts
 }
 
@@ -34,6 +35,7 @@ dependencies {
 
     // Flyway (not a Spring Boot starter in 3.x, use core)
     implementation("org.flywaydb:flyway-core")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
     // Database
     runtimeOnly("org.postgresql:postgresql")
@@ -53,6 +55,9 @@ dependencies {
     implementation(project(":mathtutor-graphics"))
     implementation(project(":mathtutor-tutor"))
 
+    // Spring AI Model for EmbeddingModel interface
+    implementation("org.springframework.ai:spring-ai-model")
+
     // Lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -66,8 +71,12 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
     testImplementation("io.projectreactor:reactor-test")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.4.0")
+    testRuntimeOnly("com.h2database:h2")
     // JUnit Platform Launcher required for Gradle JVM Test Suite
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
+    // PIT mutation testing - JUnit 5 plugin
+    testRuntimeOnly("org.pitest:pitest-junit5-plugin:1.2.3")
 }
 
 // Module-specific JaCoCo exclusions
@@ -79,24 +88,25 @@ tasks.withType<Test> {
     // Pass Docker configuration to test JVM for Testcontainers
     // Use BOTH system properties and environment variables to ensure Testcontainers sees them
     // Testcontainers checks: 1) env vars, 2) system properties, 3) defaults
-    systemProperty("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
-    systemProperty("DOCKER_HOST", "unix:///var/run/docker.sock")
-    systemProperty("TESTCONTAINERS_RYUK_DISABLED", "true")
-    systemProperty("testcontainers.docker.socket.override", "/var/run/docker.sock")
-    systemProperty("docker.host", "unix:///var/run/docker.sock")
-    environment("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
-    environment("DOCKER_HOST", "unix:///var/run/docker.sock")
-    environment("TESTCONTAINERS_RYUK_DISABLED", "true")
+    // Testcontainers detecta Docker en Windows y Linux y respeta el entorno del usuario.
 
     // JVM Test Suite workaround: configure fork options to avoid EOFException on Windows
     // Use a dedicated fork with isolated classloader
     maxParallelForks = 1
     forkEvery = 100
-    jvmArgs = listOf("-Xmx2g", "-XX:+UseSerialGC", "-Dtestcontainers.ryuk.disabled=true", "-Dorg.testcontainers.ryuk.disabled=true")
+    jvmArgs = listOf("-Xmx2g", "-XX:+UseSerialGC")
     // Ensure test results are written immediately
     testLogging {
         events("passed", "skipped", "failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
+// Exclude all external API tests from the regular test run: consumen cuota y no son deterministas.
+// Exclude detector-demo tagged tests (demonstration test that deliberately fails to prove detector works)
+tasks.named<Test>("test") {
+    useJUnitPlatform {
+        excludeTags("real-api", "external-api", "detector-demo")
     }
 }
 
@@ -107,3 +117,76 @@ application {
 springBoot {
     mainClass.set("com.mathtutor.application.MathTutorApplication")
 }
+
+// realApiTest task: runs tests tagged with "real-api" only if GOOGLE_AI_API_KEY is set
+tasks.register("realApiTest", Test::class) {
+    group = "Verification"
+    description = "Runs real API integration tests (requires GOOGLE_AI_API_KEY env var)"
+
+    // Explicitly configure test class directories and classpath from test source set
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags("real-api")
+    }
+
+    // Disable test logging that could leak secrets
+    testLogging {
+        events("failed", "skipped")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStandardStreams = false
+    }
+
+    // Load .env file from project root and set GOOGLE_AI_API_KEY as system property for test JVM
+    doFirst {
+        val rootDir = project.rootProject.projectDir
+        val envFile = file("$rootDir/.env")
+        var apiKey: String? = null
+        if (envFile.exists()) {
+            envFile.readLines().forEach { rawLine ->
+                val line = rawLine.trim()
+                if (line.isNotEmpty() && !line.startsWith("#")) {
+                    val parts = line.split("=", limit = 2)
+                    if (parts.size == 2) {
+                        val key = parts[0]
+                        val value = parts[1]
+                        systemProperty(key, value)
+                        environment(key, value)
+                        if (key == "GOOGLE_AI_API_KEY") {
+                            apiKey = value
+                        }
+                    }
+                }
+            }
+        }
+        // Also check system env and system properties
+        if (apiKey == null) {
+            apiKey = System.getenv("GOOGLE_AI_API_KEY") ?: systemProperties["GOOGLE_AI_API_KEY"]?.toString()
+        }
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            logger.lifecycle("Skipping realApiTest: GOOGLE_AI_API_KEY not set. Set it in .env or environment to run real API tests.")
+            enabled = false
+        }
+    }
+}
+
+// detectorDemoTest task: runs the demonstration test that deliberately logs a key to prove detector works
+tasks.register("detectorDemoTest", Test::class) {
+    group = "Verification"
+    description = "Runs detector demo test (DELIBERATELY FAILS to prove detector catches logged keys)"
+
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags("detector-demo")
+    }
+
+    testLogging {
+        events("passed", "failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStandardStreams = true
+    }
+}
+

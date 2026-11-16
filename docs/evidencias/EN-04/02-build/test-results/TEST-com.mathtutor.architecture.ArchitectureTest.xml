@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.architecture.ArchitectureTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:55:12.381Z" hostname="DESKTOP-KREG294" time="1.561">
+  <properties/>
+  <testcase name="persistence_only_depends_on_common" classname="com.mathtutor.architecture.ArchitectureTest" time="1.471"/>
+  <testcase name="auth_only_depends_on_common_and_persistence" classname="com.mathtutor.architecture.ArchitectureTest" time="0.001"/>
+  <testcase name="llm_only_depends_on_common" classname="com.mathtutor.architecture.ArchitectureTest" time="0.001"/>
+  <testcase name="graphics_only_depends_on_common" classname="com.mathtutor.architecture.ArchitectureTest" time="0.0"/>
+  <testcase name="tutor_only_depends_on_common" classname="com.mathtutor.architecture.ArchitectureTest" time="0.001"/>
+  <testcase name="cas_only_depends_on_common" classname="com.mathtutor.architecture.ArchitectureTest" time="0.0"/>
+  <testcase name="no_cycles_between_modules" classname="com.mathtutor.architecture.ArchitectureTest" time="0.084"/>
+  <testcase name="application_connects_modules" classname="com.mathtutor.architecture.ArchitectureTest" time="0.0"/>
+  <testcase name="common_has_no_external_dependencies" classname="com.mathtutor.architecture.ArchitectureTest" time="0.0"/>
+  <testcase name="web_depends_on_application_modules" classname="com.mathtutor.architecture.ArchitectureTest" time="0.0"/>
+  <system-out><![CDATA[2026-11-13T01:55:12.394+01:00  INFO 39172 --- [    Test worker] com.tngtech.archunit.core.PluginLoader   : Detected Java version 21.0.12.1
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -19,6 +19,8 @@ import java.util.Optional;
 @Repository
 public interface TutorSessionRepository extends JpaRepository<TutorSession, Long> {
 
+    boolean existsByIdAndUserId(Long id, Long userId);
+
     List<TutorSession> findByUser(User user);
 
     List<TutorSession> findByUserAndStatus(User user, TutorSession.SessionStatus status);

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.common.dto.HelpLevelTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:50.392Z" hostname="DESKTOP-KREG294" time="0.01">
+  <properties/>
+  <testcase name="shouldCompareCorrectly()" classname="com.mathtutor.common.dto.HelpLevelTest" time="0.006"/>
+  <testcase name="shouldHaveFourLevelsInOrder()" classname="com.mathtutor.common.dto.HelpLevelTest" time="0.001"/>
+  <testcase name="shouldParseFromString()" classname="com.mathtutor.common.dto.HelpLevelTest" time="0.001"/>
+  <testcase name="shouldGetCorrectOrdinal()" classname="com.mathtutor.common.dto.HelpLevelTest" time="0.0"/>
+  <testcase name="shouldThrowOnInvalidValue()" classname="com.mathtutor.common.dto.HelpLevelTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

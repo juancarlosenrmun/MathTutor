@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.persistence.repository.ExerciseRepositoryTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:55:11.726Z" hostname="DESKTOP-KREG294" time="0.087">
+  <properties/>
+  <testcase name="shouldFindByType()" classname="com.mathtutor.persistence.repository.ExerciseRepositoryTest" time="0.016"/>
+  <testcase name="shouldFindByModule()" classname="com.mathtutor.persistence.repository.ExerciseRepositoryTest" time="0.012"/>
+  <testcase name="shouldFindByModuleAndDifficultyRange()" classname="com.mathtutor.persistence.repository.ExerciseRepositoryTest" time="0.014"/>
+  <testcase name="shouldFindByTopic()" classname="com.mathtutor.persistence.repository.ExerciseRepositoryTest" time="0.013"/>
+  <testcase name="shouldSaveAndFindExerciseByExternalId()" classname="com.mathtutor.persistence.repository.ExerciseRepositoryTest" time="0.01"/>
+  <testcase name="shouldReturnTrueWhenExternalIdExists()" classname="com.mathtutor.persistence.repository.ExerciseRepositoryTest" time="0.014"/>
+  <system-out><![CDATA[Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        e1_0.id,
+        e1_0.difficulty,
+        e1_0.external_id,
+        e1_0.module_id,
+        e1_0.reference_solution_latex,
+        e1_0.statement_latex,
+        e1_0.topic_id,
+        e1_0.type 
+    from
+        exercises e1_0 
+    where
+        e1_0.type=?
+Hibernate: 
+    select
+        e1_0.id,
+        e1_0.difficulty,
+        e1_0.external_id,
+        e1_0.module_id,
+        e1_0.reference_solution_latex,
+        e1_0.statement_latex,
+        e1_0.topic_id,
+        e1_0.type 
+    from
+        exercises e1_0 
+    where
+        e1_0.type=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        e1_0.id,
+        e1_0.difficulty,
+        e1_0.external_id,
+        e1_0.module_id,
+        e1_0.reference_solution_latex,
+        e1_0.statement_latex,
+        e1_0.topic_id,
+        e1_0.type 
+    from
+        exercises e1_0 
+    where
+        e1_0.module_id=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        e1_0.id,
+        e1_0.difficulty,
+        e1_0.external_id,
+        e1_0.module_id,
+        e1_0.reference_solution_latex,
+        e1_0.statement_latex,
+        e1_0.topic_id,
+        e1_0.type 
+    from
+        exercises e1_0 
+    where
+        e1_0.module_id=? 
+        and e1_0.difficulty between ? and ?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        e1_0.id,
+        e1_0.difficulty,
+        e1_0.external_id,
+        e1_0.module_id,
+        e1_0.reference_solution_latex,
+        e1_0.statement_latex,
+        e1_0.topic_id,
+        e1_0.type 
+    from
+        exercises e1_0 
+    where
+        e1_0.topic_id=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        e1_0.id,
+        e1_0.difficulty,
+        e1_0.external_id,
+        e1_0.module_id,
+        e1_0.reference_solution_latex,
+        e1_0.statement_latex,
+        e1_0.topic_id,
+        e1_0.type 
+    from
+        exercises e1_0 
+    where
+        e1_0.external_id=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        exercises
+        (difficulty, external_id, module_id, reference_solution_latex, statement_latex, topic_id, type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, default)
+Hibernate: 
+    select
+        e1_0.id 
+    from
+        exercises e1_0 
+    where
+        e1_0.external_id=? 
+    fetch
+        first ? rows only
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

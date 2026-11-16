@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:59.837Z" hostname="DESKTOP-KREG294" time="0.446">
+  <properties/>
+  <testcase name="retrieve sin filtro de módulo ni tema" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.121"/>
+  <testcase name="retrieve solo con filtro de módulo" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.005"/>
+  <testcase name="retrieve genera embedding y construye SQL con parámetros correctos" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.005"/>
+  <testcase name="retrieve con query null retorna lista vacía" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.004"/>
+  <testcase name="indexAtStartup no hace nada si no hay chunks" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.004"/>
+  <testcase name="indexAtStartup llama a embeddingModel.embed con el contenido correcto" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.004"/>
+  <testcase name="retrieve solo con filtro de tema" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.004"/>
+  <testcase name="retrieve con query vacía retorna lista vacía" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.002"/>
+  <testcase name="retrieve mapea correctamente los campos del ResultSet" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.286"/>
+  <testcase name="retrieve retorna lista vacía cuando JDBC no encuentra resultados" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.003"/>
+  <testcase name="indexAtStartup genera embeddings solo para chunks sin embedding" classname="com.mathtutor.llm.retriever.PgVectorRetrieverWhiteBoxTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

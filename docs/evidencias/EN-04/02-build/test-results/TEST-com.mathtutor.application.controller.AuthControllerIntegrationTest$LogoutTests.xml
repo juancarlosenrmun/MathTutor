@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="POST /api/auth/logout" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:51:30.545Z" hostname="DESKTOP-KREG294" time="0.296">
+  <properties/>
+  <testcase name="Debe cerrar sesión y limpiar cookie refresh_token" classname="com.mathtutor.application.controller.AuthControllerIntegrationTest$LogoutTests" time="0.292"/>
+  <system-out><![CDATA[2026-11-13T01:51:30.698+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: remoteAddr = '127.0.0.1', trustedProxies configured = false
+2026-11-13T01:51:30.698+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: localhost detected, trusting forwarding headers
+2026-11-13T01:51:30.698+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Forwarded-For header = 'null'
+2026-11-13T01:51:30.698+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: X-Real-IP header = 'null'
+2026-11-13T01:51:30.698+01:00  INFO 36136 --- [mathtutor] [    Test worker] c.m.auth.controller.AuthController       : extractClientIp: no forwarding headers, using remoteAddr = '127.0.0.1'
+LoginUseCase.execute: email=test1794531090550@example.com, ipAddress=127.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:127.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test1794531090550@example.com
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

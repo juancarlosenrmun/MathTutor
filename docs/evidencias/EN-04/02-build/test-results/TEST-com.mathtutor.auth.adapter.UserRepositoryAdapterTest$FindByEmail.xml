@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="findByEmail" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:32.570Z" hostname="DESKTOP-KREG294" time="0.004">
+  <properties/>
+  <testcase name="Debe retornar usuario si existe" classname="com.mathtutor.auth.adapter.UserRepositoryAdapterTest$FindByEmail" time="0.002"/>
+  <testcase name="Debe retornar empty si no existe" classname="com.mathtutor.auth.adapter.UserRepositoryAdapterTest$FindByEmail" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Login exitoso" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:50.037Z" hostname="DESKTOP-KREG294" time="0.026">
+  <properties/>
+  <testcase name="Debe autenticar PROFESOR y ADMIN" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$SuccessfulLogin" time="0.005"/>
+  <testcase name="Debe ignorar espacios en email" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$SuccessfulLogin" time="0.004"/>
+  <testcase name="Debe autenticar usuario con credenciales válidas" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$SuccessfulLogin" time="0.01"/>
+  <testcase name="Debe ser case-insensitive para email" classname="com.mathtutor.common.auth.domain.LoginUseCaseTest$SuccessfulLogin" time="0.004"/>
+  <system-out><![CDATA[LoginUseCase.execute: email=prof@test.com, ipAddress=10.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:10.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:prof@test.com
+LoginUseCase.execute: email=admin@test.com, ipAddress=10.0.0.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:10.0.0.1
+LoginUseCase.execute: emailRateLimitKey=login:email:admin@test.com
+LoginUseCase.execute: email=  test@example.com  , ipAddress=1.2.3.4
+LoginUseCase.execute: ipRateLimitKey=login:ip:1.2.3.4
+LoginUseCase.execute: emailRateLimitKey=login:email:test@example.com
+LoginUseCase.execute: email=test@example.com, ipAddress=192.168.1.1
+LoginUseCase.execute: ipRateLimitKey=login:ip:192.168.1.1
+LoginUseCase.execute: emailRateLimitKey=login:email:test@example.com
+LoginUseCase.execute: email=TEST@EXAMPLE.COM, ipAddress=1.2.3.4
+LoginUseCase.execute: ipRateLimitKey=login:ip:1.2.3.4
+LoginUseCase.execute: emailRateLimitKey=login:email:test@example.com
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mathtutor.persistence.repository.TopicRepositoryTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:55:12.092Z" hostname="DESKTOP-KREG294" time="0.04">
+  <properties/>
+  <testcase name="shouldFindTopicsByModuleOrderedByDifficulty()" classname="com.mathtutor.persistence.repository.TopicRepositoryTest" time="0.01"/>
+  <testcase name="shouldFindTopicsByModule()" classname="com.mathtutor.persistence.repository.TopicRepositoryTest" time="0.009"/>
+  <testcase name="shouldSaveAndFindTopicByCode()" classname="com.mathtutor.persistence.repository.TopicRepositoryTest" time="0.007"/>
+  <testcase name="shouldReturnTrueWhenCodeExists()" classname="com.mathtutor.persistence.repository.TopicRepositoryTest" time="0.008"/>
+  <system-out><![CDATA[Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.code,
+        t1_0.difficulty,
+        t1_0.module_id,
+        t1_0.name 
+    from
+        topics t1_0 
+    where
+        t1_0.module_id=? 
+    order by
+        t1_0.difficulty
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.code,
+        t1_0.difficulty,
+        t1_0.module_id,
+        t1_0.name 
+    from
+        topics t1_0 
+    where
+        t1_0.module_id=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    select
+        t1_0.id,
+        t1_0.code,
+        t1_0.difficulty,
+        t1_0.module_id,
+        t1_0.name 
+    from
+        topics t1_0 
+    where
+        t1_0.code=?
+Hibernate: 
+    insert 
+    into
+        modules
+        (code, name, id) 
+    values
+        (?, ?, default)
+Hibernate: 
+    insert 
+    into
+        topics
+        (code, difficulty, module_id, name, id) 
+    values
+        (?, ?, ?, ?, default)
+Hibernate: 
+    select
+        t1_0.id 
+    from
+        topics t1_0 
+    where
+        t1_0.code=? 
+    fetch
+        first ? rows only
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

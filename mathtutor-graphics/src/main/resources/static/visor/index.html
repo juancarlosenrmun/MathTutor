@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visor de Matemáticas · MathTutor</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./main.mjs"></script>
+</head>
+<body>
+  <header><a href="/visor/index.html" aria-label="MathTutor, inicio">MathTutor</a><span>Laboratorio de Matemáticas</span></header>
+  <main>
+    <p class="eyebrow">EXPLORACIÓN · ESPACIO 3D</p>
+    <h1>Una perspectiva diferente.</h1>
+    <p class="intro">Explora el sistema de coordenadas. Gira la cámara, acércate y encuentra tu punto de vista.</p>
+    <section aria-labelledby="viewer-title">
+      <div class="toolbar"><h2 id="viewer-title">Visor 3D</h2><div class="controls" aria-label="Controles de cámara">
+        <button type="button" data-camera="in">Acercar</button>
+        <button type="button" data-camera="out">Alejar</button>
+        <button type="button" data-camera="reset">Restablecer vista</button>
+      </div></div>
+      <canvas tabindex="0" aria-label="Sistema de ejes tridimensional. X rojo, Y verde, Z azul." aria-describedby="instructions graphic-status">
+        Sistema cartesiano con tres ejes perpendiculares: X, Y y Z, centrados en el origen.
+      </canvas>
+      <p id="graphic-status" role="status">Preparando visor…</p>
+      <p id="instructions">Arrastra o usa las flechas para orbitar. Mayús + arrastre o flechas para desplazar. Rueda o + / − para zoom. Inicio para restablecer.</p>
+    </section>
+    <aside aria-label="Sesión y permisos">
+      <div><h2>Tu sesión</h2><p>Rol actual: <strong id="role" role="status">Sin sesión</strong></p></div>
+      <form><label>Correo electrónico<input name="email" type="email" autocomplete="username" required></label>
+        <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Iniciar sesión</button>
+      </form>
+    </aside>
+  </main>
+  <footer>MathTutor · Tutor adaptativo de Matemáticas</footer>
+</body>
+</html>

@@ -12,7 +12,7 @@ import java.time.Instant;
 
 /**
  * Entidad JPA para tokens de refresco con rotación y detección de reuso.
- * Almacena hash del token (Argon2id), ID de familia para rotación, y estado de revocación.
+ * Almacena huella SHA-256 del token de alta entropía, ID de familia para rotación, y estado de revocación.
  */
 @Entity
 @Table(
