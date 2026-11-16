@@ -1,7 +1,6 @@
 package com.mathtutor.cas;
 
 import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IExpr;
 import org.slf4j.Logger;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Conversor de LaTeX a Symja usando el parser nativo de Symja.
@@ -29,7 +29,7 @@ import java.util.List;
  * Limitaciones conocidas / falsos negativos documentados:
  * 1. Simplificación no siempre llega a 0 para expresiones equivalentes complejas
  *    - Ej: sin(x)^2 + cos(x)^2 - 1 puede no simplificarse a 0 directamente
- *    - Mitigación: fallback a evaluación numérica en múltiples puntos
+ *    - Mitigación: FullSimplify; el muestreo numérico solo descarta equivalencias
  * 2. Integrales definidas con límites complejos pueden fallar
  * 3. Algunas funciones especiales (Bessel, Gamma, etc.) requieren Hipparchus
  * 4. Parseo LaTeX estricto: requiere sintaxis LaTeX correcta y balanceada
@@ -38,9 +38,9 @@ import java.util.List;
 public class LatexToSymjaConverter {
 
     private static final Logger log = LoggerFactory.getLogger(LatexToSymjaConverter.class);
+    private static final Pattern POWERED_FUNCTION = Pattern.compile(
+            "\\\\(?:sin|cos|tan|cot|sec|csc|ln|log|exp)\\(([^()]*)\\)(?=\\s*\\^)");
 
-    private final TeXParser texParser = new TeXParser();
-    private final ExprEvaluator evaluator = new ExprEvaluator();
 
     /**
      * Convierte una expresión LaTeX a formato Symja (AST evaluable).
@@ -49,15 +49,21 @@ public class LatexToSymjaConverter {
      * @return Expresión Symja parseada, o null si falla el parseo
      */
     public IExpr parseLatex(String latex) {
+        return parseLatex(latex, new ExprEvaluator());
+    }
+
+    private IExpr parseLatex(String latex, ExprEvaluator evaluator) {
         if (latex == null || latex.trim().isEmpty()) {
             return null;
         }
 
-        String cleanLatex = latex.trim();
+        // Symja necesita agrupar la función para no convertir sin(x)^2 en sin(x^2).
+        String cleanLatex = POWERED_FUNCTION.matcher(latex.trim()).replaceAll("($0)");
 
         try {
             // Symja puede parsear LaTeX directamente via TeXParser
-            IExpr expr = texParser.parse(cleanLatex);
+            evaluator.parse("0"); // Activa el motor de esta operación en el hilo actual.
+            IExpr expr = new TeXParser().parse(cleanLatex);
             log.debug("LaTeX -> Symja AST: '{}' -> {}", cleanLatex, expr);
             return expr;
         } catch (Exception e) {
@@ -100,17 +106,18 @@ public class LatexToSymjaConverter {
      * Retorna resultado de tres estados para evitar falsos positivos.
      *
      * Estados:
-     * - EQUIVALENTE: Simbólicamente idénticas, diferencia simplifica a 0, o numéricamente equivalentes
-     * - NO_EQUIVALENTE: Diferencia > tolerancia, o diferencia constante no nula detectada
-     * - INDETERMINADO: Pocos puntos válidos (<2), dominios disjuntos, error de parseo/evaluación
+     * - EQUIVALENTE: Simbólicamente idénticas, diferencia simplifica a 0, verificadas por simplificación completa
+     * - NO_EQUIVALENTE: Diferencia numérica mayor que la tolerancia en algún punto
+     * - INDETERMINADO: Solo evidencia numérica, dominios disjuntos, error de parseo/evaluación
      *
      * @param latex1 Primera expresión LaTeX
      * @param latex2 Segunda expresión LaTeX
      * @return Resultado de tres estados
      */
     public EquivalenceResult areEquivalentThreeState(String latex1, String latex2) {
-        IExpr expr1 = parseLatex(latex1);
-        IExpr expr2 = parseLatex(latex2);
+        ExprEvaluator evaluator = new ExprEvaluator();
+        IExpr expr1 = parseLatex(latex1, evaluator);
+        IExpr expr2 = parseLatex(latex2, evaluator);
 
         if (expr1 == null || expr2 == null) {
             // No se puede parsear: indeterminado
@@ -139,8 +146,16 @@ public class LatexToSymjaConverter {
                 return EquivalenceResult.EQUIVALENTE;
             }
 
+            IExpr fullSimplified = evaluator.eval("FullSimplify(" + diff + ")");
+            if (fullSimplified.isZero()) {
+                return EquivalenceResult.EQUIVALENTE;
+            }
+            if (fullSimplified.isNumber()) {
+                return EquivalenceResult.NO_EQUIVALENTE;
+            }
+
             // Si no es exactamente 0, intentar evaluación numérica en varios puntos
-            // como respaldo para casos donde la simplificación no llega a 0
+            // para descartar diferencias cuando no hay prueba simbólica
             return evaluateNumericallyThreeState(expr1, expr2);
 
         } catch (Exception e) {
@@ -152,67 +167,36 @@ public class LatexToSymjaConverter {
 
     /**
      * Evalúa dos expresiones numéricamente en varios puntos con resultado de tres estados.
-     * Rechaza diferencias constantes (ej: x vs x+1e-10) y dominios disjuntos.
+     * Solo permite refutar equivalencias; coincidir en los puntos no es una prueba.
      */
     private EquivalenceResult evaluateNumericallyThreeState(IExpr expr1, IExpr expr2) {
-        try {
-            double[] testPoints = {-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 3.0, 5.0};
-            double diffSum = 0.0;
-            int validCount = 0;
-            double maxAbsDiff = 0.0;
-
-            for (double x : testPoints) {
-                try {
-                    // Sustituir x por el valor de prueba
-                    IExpr xExpr = evaluator.defineVariable("x", x);
-                    IExpr sub1 = expr1.subs(xExpr, evaluator.parse(String.valueOf(x)));
-                    IExpr sub2 = expr2.subs(xExpr, evaluator.parse(String.valueOf(x)));
-
-                    double val1 = sub1.evalf();
-                    double val2 = sub2.evalf();
-
-                    if (Double.isNaN(val1) || Double.isNaN(val2) || Double.isInfinite(val1) || Double.isInfinite(val2)) {
-                        continue;
-                    }
-
-                    double diff = val1 - val2;
-                    maxAbsDiff = Math.max(maxAbsDiff, Math.abs(diff));
-                    diffSum += diff;
-                    validCount++;
-
-                    // Diferencia absoluta > tolerancia en CUALQUIER punto → NO_EQUIVALENTE
-                    if (Math.abs(diff) > 1e-9) {
-                        return EquivalenceResult.NO_EQUIVALENTE;
-                    }
-                } catch (Exception e) {
-                    // Punto no evaluable (ej: sqrt(-1)) → saltar, no cuenta como válido
-                    continue;
+        double[] testPoints = {-2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 3.0, 5.0};
+        for (double point : testPoints) {
+            try {
+                double first = evaluateAt(expr1, "x", point);
+                double second = evaluateAt(expr2, "x", point);
+                if (Math.abs(first - second) > 1e-9) {
+                    return EquivalenceResult.NO_EQUIVALENTE;
                 }
+            } catch (RuntimeException ignored) {
+                // Un punto fuera del dominio no aporta evidencia de equivalencia.
             }
-
-            // Debe haber al menos 2 puntos de evaluación válida para considerar equivalente
-            // Esto evita falsos positivos con dominios disjuntos (ej: sqrt(x) vs sqrt(-x) solo x=0)
-            if (validCount < 2) {
-                return EquivalenceResult.INDETERMINADO;
-            }
-
-            // Rechazar diferencia constante no nula (ej: x vs x + 1e-10 en todos los puntos)
-            // Si la diferencia es constante y ≠ 0, no son equivalentes
-            double avgDiff = diffSum / validCount;
-            if (Math.abs(avgDiff) > 1e-12) {
-                return EquivalenceResult.NO_EQUIVALENTE;
-            }
-
-            // Si llegamos aquí: todos los puntos válidos tienen diferencia < 1e-9
-            // y la diferencia promedio ≈ 0 → EQUIVALENTE
-            return EquivalenceResult.EQUIVALENTE;
-
-        } catch (Exception e) {
-            log.debug("Error in numeric evaluation: {}", e.getMessage());
-            return EquivalenceResult.INDETERMINADO;
         }
+        // Coincidir en una muestra finita nunca demuestra una identidad simbólica.
+        return EquivalenceResult.INDETERMINADO;
     }
 
+    /** Evalúa sin asignar símbolos ni conservar estado entre peticiones. */
+    double evaluateAt(IExpr expression, String variable, double value) {
+        ExprEvaluator evaluator = new ExprEvaluator();
+        IExpr localExpression = evaluator.parse(expression.toString());
+        IExpr substituted = localExpression.subs(evaluator.parse(variable), evaluator.parse(Double.toString(value)));
+        double result = substituted.evalf();
+        if (!Double.isFinite(result)) {
+            throw new IllegalArgumentException("La expresión no tiene un valor real finito en el punto");
+        }
+        return result;
+    }
     /**
      * Calcula la derivada simbólica de una expresión LaTeX respecto a una variable.
      *
@@ -221,7 +205,11 @@ public class LatexToSymjaConverter {
      * @return Derivada en formato Symja string, o null si falla
      */
     public String derive(String latex, String variable) {
-        IExpr expr = parseLatex(latex);
+        if (!isValidVariable(variable)) {
+            return null;
+        }
+        ExprEvaluator evaluator = new ExprEvaluator();
+        IExpr expr = parseLatex(latex, evaluator);
         if (expr == null) {
             return null;
         }
@@ -245,7 +233,11 @@ public class LatexToSymjaConverter {
      * @return Integral en formato Symja string, o null si falla
      */
     public String integrate(String latex, String variable) {
-        IExpr expr = parseLatex(latex);
+        if (!isValidVariable(variable)) {
+            return null;
+        }
+        ExprEvaluator evaluator = new ExprEvaluator();
+        IExpr expr = parseLatex(latex, evaluator);
         if (expr == null) {
             return null;
         }
@@ -272,7 +264,11 @@ public class LatexToSymjaConverter {
      * @return Valor numérico de la integral definida, o null si falla
      */
     public Double integrateDefinite(String latex, String variable, double lower, double upper) {
-        IExpr expr = parseLatex(latex);
+        if (!isValidVariable(variable)) {
+            return null;
+        }
+        ExprEvaluator evaluator = new ExprEvaluator();
+        IExpr expr = parseLatex(latex, evaluator);
         if (expr == null) {
             return null;
         }
@@ -301,11 +297,16 @@ public class LatexToSymjaConverter {
         }
 
         // Symja tiene soporte amplio; solo reportar lo que falle al parsear
-        IExpr expr = parseLatex(latex);
+        ExprEvaluator evaluator = new ExprEvaluator();
+        IExpr expr = parseLatex(latex, evaluator);
         if (expr == null) {
             unsupported.add("No se pudo parsear como LaTeX válido para Symja");
         }
 
         return unsupported;
+    }
+
+    private boolean isValidVariable(String variable) {
+        return variable != null && variable.matches("[A-Za-z][A-Za-z0-9]*");
     }
 }

@@ -18,6 +18,20 @@ import static org.mockito.Mockito.mock;
  */
 class SpringAiPgVectorConfigTest {
 
+    @Test
+    void googleProfileUsesOneEmbeddingClientAndOneQuotaCounter() {
+        new org.springframework.boot.test.context.runner.ApplicationContextRunner()
+                .withInitializer(context -> context.getEnvironment().setActiveProfiles("spring-ai-pgvector", "google-ai-studio"))
+                .withPropertyValues("spring.ai.google.ai-studio.api-key=test-key")
+                .withBean(JdbcTemplate.class, () -> mock(JdbcTemplate.class))
+                .withUserConfiguration(SpringAiPgVectorConfig.class, SpringAiGoogleAiStudioEmbeddingModel.class)
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).hasSingleBean(EmbeddingModel.class);
+                    assertThat(context.getBean(EmbeddingModel.class).dimensions()).isEqualTo(768);
+                });
+    }
+
     @Configuration
     static class TestConfig {
         @Bean

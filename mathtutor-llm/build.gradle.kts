@@ -24,26 +24,23 @@ dependencyManagement {
 
 dependencies {
     implementation(project(":mathtutor-common"))
-    implementation(project(":mathtutor-persistence"))
+
     implementation("io.projectreactor:reactor-core")
 
     // pgvector Java client for direct vector operations
     implementation("com.pgvector:pgvector:0.1.6")
 
     // Spring JDBC for database operations
-    implementation("org.springframework:spring-jdbc:6.1.6")
+    implementation("org.springframework:spring-jdbc")
 
     // Spring Context for DI and annotations (@Component, @Configuration, @Bean, @Profile)
-    implementation("org.springframework:spring-context:6.1.6")
+    implementation("org.springframework:spring-context")
 
     // Spring Boot Autoconfigure for @ConfigurationProperties, @EnableConfigurationProperties
     implementation("org.springframework.boot:spring-boot-autoconfigure")
 
     // Validation API for @Validated, @NotNull, @DecimalMin, @DecimalMax
     implementation("jakarta.validation:jakarta.validation-api:3.1.1")
-
-    // Spring Data JPA for JpaRepository
-    implementation("org.springframework.data:spring-data-jpa:3.2.5")
 
     // Vector store para pgvector (version from Spring AI BOM)
     implementation("org.springframework.ai:spring-ai-pgvector-store")
@@ -88,24 +85,7 @@ tasks.named<Test>("test") {
     useJUnitPlatform {
         excludeTags("real-api")
     }
-    doFirst {
-        val rootDir = project.rootProject.projectDir
-        val envFile = file("$rootDir/.env")
-        if (envFile.exists()) {
-            envFile.readLines().forEach { rawLine ->
-                val line = rawLine.trim()
-                if (line.isNotEmpty() && !line.startsWith("#")) {
-                    val parts = line.split("=", limit = 2)
-                    if (parts.size == 2) {
-                        val key = parts[0]
-                        val value = parts[1]
-                        systemProperty(key, value)
-                        environment(key, value)
-                    }
-                }
-            }
-        }
-    }
+
 }
 
 // realApiTest task: runs tests tagged with "real-api" only if GOOGLE_AI_API_KEY is set

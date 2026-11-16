@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 class LatexToSymjaCorpusTest {
 
     private final LatexToSymjaConverter converter = new LatexToSymjaConverter();
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper().enable(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
 
     @TestFactory
     @DisplayName("Corpus LaTeX→Symja: equivalencias positivas por categoría")
@@ -114,7 +114,7 @@ class LatexToSymjaCorpusTest {
                     JsonNode tc = it.next();
                     String id = tc.get("id").asText();
                     String latex = tc.get("latex").asText();
-                    String expectedSymja = tc.get("symja").asText();
+
 
                     String testName = categoryName + "." + id + ": parse '" + latex + "'";
                     tests.add(DynamicTest.dynamicTest(testName, () -> {
@@ -124,6 +124,10 @@ class LatexToSymjaCorpusTest {
                             .isNotNull();
                         // Verificar que al menos parsea (Symja AST no vacío)
                         assertThat(symja).isNotEmpty();
+                        var evaluator = new org.matheclipse.core.eval.ExprEvaluator();
+                        assertThat(evaluator.eval(symja))
+                                .as("AST de %s", latex)
+                                .isEqualTo(evaluator.eval(tc.path("symja").asText()));
                     }));
                 }
             });

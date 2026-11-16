@@ -19,7 +19,7 @@ import org.springframework.util.Assert;
  * Perfiles disponibles:
  * - "spring-ai-pgvector" + "ollama": usa OllamaEmbeddingModel local (nomic-embed-text, 768 dim)
  * - "spring-ai-pgvector" + "openai": usa OpenAiEmbeddingModel (requiere API key en OPENAI_API_KEY)
- * - "spring-ai-pgvector" + "google-ai-studio": usa Google AI Studio (Gemini text-embedding-004, 768 dim)
+     * - "spring-ai-pgvector" + "google-ai-studio": usa Google AI Studio (gemini-embedding-001, 768 dim)
  * - "spring-ai-pgvector" (solo): usa DeterministicEmbeddingModel para tests sin claves API (384 dim)
  * - "spring-ai-pgvector" + "deterministic": usa SlowDeterministicEmbeddingModel para tests RNF-03 (2s delay)
  */
@@ -46,17 +46,8 @@ public class SpringAiPgVectorConfig {
         return new OpenAiEmbeddingModel(openAiApi);
     }
 
-    @Bean
-    @Profile("google-ai-studio")
-    @Primary
-    public EmbeddingModel googleAiStudioEmbeddingModel(
-            @Value("${spring.ai.google.ai-studio.api-key:}") String apiKey,
-            @Value("${spring.ai.google.ai-studio.embedding-model:text-embedding-004}") String embeddingModel,
-            @Value("${spring.ai.google.ai-studio.embedding-dimensions:768}") int dimensions,
-            @Value("${spring.ai.google.ai-studio.max-retries:3}") int maxRetries,
-            @Value("${spring.ai.google.ai-studio.max-requests-per-minute:60}") int maxRequestsPerMinute) {
-        return new SpringAiGoogleAiStudioEmbeddingModel(apiKey, embeddingModel, dimensions, maxRetries, maxRequestsPerMinute);
-    }
+    // El componente SpringAiGoogleAiStudioEmbeddingModel es el único bean Google.
+    // Evita dos clientes y dos contadores de cuota independientes para el mismo modelo.
 
     /**
      * Perfil "deterministic": usa DeterministicEmbeddingModel envuelto con retraso

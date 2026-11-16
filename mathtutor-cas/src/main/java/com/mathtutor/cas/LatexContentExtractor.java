@@ -34,7 +34,7 @@ public class LatexContentExtractor {
 
     // Patrones para entornos LaTeX
     private static final Pattern ENVIRONMENT_PATTERN = Pattern.compile(
-            "\\\\begin\\{([^}]+)\\}(.*?)\\\\end\\{\\1\\}",
+            "(?=\\\\begin\\{([^}]+)\\}(.*?)\\\\end\\{\\1\\})",
             Pattern.DOTALL
     );
 
@@ -253,41 +253,11 @@ public class LatexContentExtractor {
      * Útil para obtener fórmulas de un paso, solución, etc.
      */
     public List<String> extractFormulasFromEnvironment(String environmentContent) {
-        List<String> formulas = new ArrayList<>();
         if (environmentContent == null) {
-            return formulas;
+            return new ArrayList<>();
         }
-
-        // Mismo enfoque: primero display, luego inline
-        StringBuilder textWithoutDisplay = new StringBuilder(environmentContent);
-        Pattern displayPattern = Pattern.compile("\\$\\$(.*?)\\$\\$", Pattern.DOTALL);
-        Matcher displayMatcher = displayPattern.matcher(environmentContent);
-
-        int offset = 0;
-        while (displayMatcher.find()) {
-            String formula = displayMatcher.group(1).trim();
-            if (!formula.isEmpty()) {
-                formulas.add(formula);
-            }
-            int start = displayMatcher.start() + offset;
-            int end = displayMatcher.end() + offset;
-            for (int i = start; i < end; i++) {
-                if (i < textWithoutDisplay.length()) {
-                    textWithoutDisplay.setCharAt(i, ' ');
-                }
-            }
-        }
-
-        // Fórmulas inline $...$ - BROKEN FOR TEST
-        Pattern inlinePattern = Pattern.compile("\\$(.*?)\\$");
-        Matcher inlineMatcher = inlinePattern.matcher(textWithoutDisplay);
-        while (inlineMatcher.find()) {
-            String formula = inlineMatcher.group(1).trim();
-            if (!formula.isEmpty()) {
-                formulas.add(formula);
-            }
-        }
-
-        return formulas;
+        ExtractionResult.Builder builder = ExtractionResult.builder();
+        extractFormulas(environmentContent, builder);
+        return builder.formulas;
     }
 }

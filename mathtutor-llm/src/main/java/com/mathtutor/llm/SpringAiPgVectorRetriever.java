@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +43,7 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(propagation = Propagation.NEVER)
     public List<NoteChunk> retrieve(String query, String module, String topic) {
         if (query == null || query.trim().isEmpty()) {
             return List.of();
@@ -97,7 +98,8 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
      * Índice manual de documentos (para tests que insertan datos directamente en BD).
      * Convierte NoteChunk del dominio a Document de Spring AI y los añade al VectorStore.
      */
-    public void indexDocuments(List<com.mathtutor.persistence.entity.NoteChunk> chunks) {
+    @Transactional(propagation = Propagation.NEVER)
+    public void indexDocuments(List<NoteChunk> chunks) {
         if (chunks == null || chunks.isEmpty()) {
             return;
         }
@@ -112,8 +114,7 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
     private NoteChunk documentToNoteChunk(Document doc) {
         Map<String, Object> metadata = doc.getMetadata();
         return new NoteChunk(
-                // id no está en metadata por defecto, se usa 0L
-                0L,
+                metadata.get("id") instanceof Number id ? id.longValue() : 0L,
                 doc.getText(),
                 null, // embedding no se devuelve en búsqueda
                 (String) metadata.getOrDefault("type", "UNKNOWN"),
@@ -124,17 +125,17 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
         );
     }
 
-    private Document noteChunkToDocument(com.mathtutor.persistence.entity.NoteChunk chunk) {
+    private Document noteChunkToDocument(NoteChunk chunk) {
         Map<String, Object> metadata = new HashMap<>();
-        metadata.put("id", chunk.getId() != null ? chunk.getId() : 0L);
-        metadata.put("type", chunk.getType());
-        metadata.put("source_file", chunk.getSourceFile());
-        metadata.put("module_code", chunk.getModuleCode());
-        metadata.put("topic_code", chunk.getTopicCode());
-        metadata.put("version", chunk.getVersion());
+        metadata.put("id", chunk.id() != null ? chunk.id() : 0L);
+        metadata.put("type", chunk.type());
+        metadata.put("source_file", chunk.sourceFile());
+        metadata.put("module_code", chunk.moduleCode());
+        metadata.put("topic_code", chunk.topicCode());
+        metadata.put("version", chunk.version());
 
         return Document.builder()
-                .text(chunk.getContent())
+                .text(chunk.content())
                 .metadata(metadata)
                 .build();
     }

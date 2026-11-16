@@ -58,8 +58,8 @@ class SpringAiGoogleAiStudioChatModelRealApiTest {
         registry.add("spring.ai.vectorstore.pgvector.initialize-schema", () -> "false");
         registry.add("spring.ai.google.ai-studio.api-key", () -> apiKey);
         // Use gemini-2.5-flash (model specified in .env GOOGLE_AI_CHAT_MODEL)
-        registry.add("spring.ai.google.ai-studio.chat-model", () -> "gemini-2.5-flash");
-        registry.add("spring.ai.google.ai-studio.max-retries", () -> "3");
+        registry.add("spring.ai.google.ai-studio.chat-model", () -> System.getenv().getOrDefault("GOOGLE_AI_CHAT_MODEL", "gemini-3.5-flash-lite"));
+        registry.add("spring.ai.google.ai-studio.max-retries", () -> "0");
         registry.add("spring.ai.google.ai-studio.max-requests-per-minute", () -> "5");
         registry.add("spring.ai.google.ai-studio.temperature", () -> "0.7");
         registry.add("spring.ai.google.ai-studio.max-output-tokens", () -> "8192");
