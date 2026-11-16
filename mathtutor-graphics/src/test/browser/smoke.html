@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8"><title>Prueba real WebGL2</title>
+<canvas width="640" height="480" style="width:640px;height:480px"></canvas><p id="status"></p>
+<script type="module">
+import { WebGLViewer } from '/visor/viewer.mjs';
+try {
+  const canvas = document.querySelector('canvas');
+  const viewer = new WebGLViewer(canvas, document.querySelector('#status'));
+  const gl = viewer.gl;
+  const pixels = new Uint8Array(canvas.width * canvas.height * 4);
+  gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  let drawn = 0;
+  for (let i = 0; i < pixels.length; i += 4) {
+    if (pixels[i] > 50 || pixels[i + 1] > 50 || pixels[i + 2] > 50) drawn++;
+  }
+  if (drawn < 20 || gl.getError() !== gl.NO_ERROR) throw new Error('No se dibujan los ejes');
+  const original = [...viewer.camera.matrix(1)];
+  canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+  if (original.every((value, i) => value === viewer.camera.matrix(1)[i])) throw new Error('Cámara inmóvil');
+  viewer.command('in');
+  viewer.command('out');
+  viewer.command('reset');
+  viewer.dispose();
+  document.body.dataset.result = 'passed';
+  document.body.dataset.drawn = drawn;
+} catch (error) {
+  document.body.dataset.result = 'failed';
+  document.querySelector('#status').textContent = error.message;
+}
+</script></html>

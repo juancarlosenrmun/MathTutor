@@ -47,3 +47,21 @@ tasks.withType<Test> {
         exclude("com.mathtutor.graphics.dto.**")
     }
 }
+
+// V8 mide el cliente real; solo se excluye main.mjs, punto de arranque sin lógica.
+val clientTest by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Pruebas del visor con cobertura V8 obligatoria (80 % líneas / 70 % ramas)"
+    workingDir(rootProject.projectDir)
+    val evidence = layout.buildDirectory.dir("reports/client").get().asFile
+    doFirst { evidence.mkdirs() }
+    commandLine("node", "--test", "--experimental-test-coverage",
+        "--test-coverage-include=**/static/visor/*.mjs",
+        "--test-coverage-exclude=**/main.mjs",
+        "--test-coverage-lines=80", "--test-coverage-branches=70",
+        "--test-reporter=spec", "--test-reporter=lcov",
+        "--test-reporter-destination=stdout",
+        "--test-reporter-destination=${evidence.resolve("lcov.info").absolutePath}",
+        "mathtutor-graphics/src/test/js/*.test.mjs")
+}
+tasks.named("check") { dependsOn(clientTest) }
