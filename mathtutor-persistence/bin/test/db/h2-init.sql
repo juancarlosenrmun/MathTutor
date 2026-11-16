@@ -1,2 +1,0 @@
--- H2 no soporta pgvector, usamos tipos compatibles
--- Los tests que usan pgvector se saltarán en H2

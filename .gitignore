@@ -1,14 +1,26 @@
 # Obsidian: estado local de cada dispositivo
-brain/.obsidian/workspace.json
-brain/.obsidian/workspaces.json
-brain/.obsidian/cache
-brain/.trash/
+**/.obsidian/workspace.json
+**/.obsidian/workspaces.json
+**/.obsidian/cache/
+**/.trash/
 # Secretos
 .env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
 *.local
 # Java y Node
 target/
 build/
+**/bin/
+**/__pycache__/
+*.pyc
+*.class
+coverage/
 .jdk/
 .java/
 node_modules/
@@ -24,18 +36,16 @@ node_modules/
 .claude/settings.local.json
 .claude/worktrees/
 CLAUDE.local.md
-.java/
-.jdk/
+# Distribuciones locales; conservar gradle/wrapper y lockfiles
 gradle/lib/
 gradle/bin/
-
-.java/
-.jdk/
-gradle/lib/
-gradle/bin/
-.gradle
+.gradle/
 
 .superpowers
 
 EN-04-evidencias.zip
+docs/evidencias/*.zip
+*.bak
+.DS_Store
+Thumbs.db
 docs/evidencias/EN-04/SHA256SUMS
