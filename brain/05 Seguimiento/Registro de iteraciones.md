@@ -1,3 +1,11 @@
+## 2026-11-16 19:03 · Sprint 01 · Cierre técnico, UC-03 y UC-27
+- **Petición**: completar S1, comentarios y calidad, cobertura y `.gitignore` apto para GitHub/CI.
+- **Implementado**: política de permisos y propiedad; rol vigente por petición; alta pública sin privilegios; cliente WebGL2/GLSL propio con cámara, controles y recuperación; polling seguro de permisos; CI con V8 y navegador real; corrección de la puerta JUnit por `@DisplayName`; limpieza de artefactos del índice.
+- **Pruebas**: Java 737 caja blanca y 126 caja negra/integración (863 total), 0 fallos/omitidas; cliente 11, navegador real 2, puerta Python 4. Revisión independiente: corregidos bfcache y respuestas de permisos obsoletas.
+- **Cobertura**: todos los módulos cumplen 80/70 y tutor 90/90; persistencia 84,05/72,92 (mínimo); cliente V8 100/98,10. Informes enlazados en [[Sprint 01]]. No se atribuyen resultados históricos de PIT ni API externa a esta ejecución.
+- **Ramas**: implementación en `sprint-1` (PR a DEV existente), diagramas en DOC; no se modifica main. Se conservan cambios previos y se separan las eliminaciones documentales encontradas.
+- **Pendiente**: CI remoto y merge en DEV. Checklist técnica 5/5; cierre formal en curso.
+
 ﻿## 2026-11-12 10:00 · Sprint 01 · **REVERSIÓN REPLANIFICACIÓN** — UC-03 y UC-27 vuelven a S1; EN-04 en verificación rigurosa
 - **Motivo**: Auditoría del usuario rechaza cierre S1 con UC-03/UC-27 sin iniciar y EN-04 con salvedades. Reversión de la entrada 08:30.
 - **Cambio**: S1 real = **10/33 pts cerrados** (EN-01 ✅ 5, UC-01 ✅ 5). EN-04 (5) en verificación; UC-03 (5) y UC-27 (13) **pendientes en S1**. S2 vuelve a 32 pts (sin sobrecarga).
@@ -5,6 +13,13 @@
 - **EN-04 bloques pendientes (1.1–1.11)**: Umbral con datos (E), E2E real (D), Chat Gemini SSE (F), Perfiles arranque seguro (H), RNF-03 demo fallo (G), Fallback 3 estados (I), Corpus 10 cat+negativos (J), Cobertura retriever/adapters (L), PIT cas≥80% (K), Licencias consolidadas (M), Test seguridad clave (A).
 - **Build**: ./gradlew clean check --no-daemon --no-scan → **BUILD SUCCESSFUL** (tests pasan, CI verde).
 - **Próximo**: Implementar y verificar 1.1–1.11 en orden TDD; solo entonces EN-04 = VERIFICADO (5 pts) y S1 cerraría con 15/33 (EN-01+UC-01+EN-04). UC-03/UC-27 requieren implementación completa en S1.
+
+## 2026-11-16 17:00 · Sprint 01 · Auditoría y corrección técnica
+- **Petición**: revisar S1 sin implementar casos de uso nuevos; usar Google AI Studio gratuito sin consumir cuota en pruebas ordinarias.
+- **Implementado/corregido**: Flyway y composición modular; Testcontainers PostgreSQL+pgvector; sesión y rotación de refresh serializada por usuario; contrato de errores de seguridad; CAS sin estado contaminado; adaptadores Google/Spring AI con SSE y errores controlados; pruebas de red externa excluidas de la suite normal.
+- **Pruebas**: caja blanca y negra ampliadas, incluida concurrencia real de refresh y migración contra PostgreSQL. Las pruebas de API externa quedan etiquetadas.
+- **Cobertura**: JaCoCo verificado: application 97,6/100; auth 96,8/85,6; cas 92,3/87,3; common 88,5/97,9; llm 95,2/86,5; persistence 84,0/72,9; tutor 100/100; graphics 100/100 (líneas/ramas). Cumplen 80/70 y tutor 90/90.
+- **Pendiente**: UC-03 (autorización por recurso) y UC-27 (visor WebGL) no existen aún; permanecen sin marcar. La ruta JDBC legacy de recuperación requiere retirada o adecuación antes de declararla soportada.
 
 # Registro de iteraciones
 

@@ -1,8 +1,11 @@
-﻿# Progreso global
+# Progreso global
+
+> [!note] Estado vigente
+> S1: cinco elementos implementados y verificados; pendiente CI remoto e integración en DEV. Véase [[Sprint 01]].
 
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
-| [[Sprint 01\|S1]] | Base tÃ©cnica, acceso y visor inicial | 33 | **33/33 pts** | **COMPLETADO — EN-01 âœ… (5), EN-04 âœ… (5 verificado sin salvedades), UC-01 âœ… (5 D1â€“D10), UC-03 🔄 (5), UC-27 🔄 (13); License report âœ…, PIT mutation testing âœ…, Clean build âœ…** |
+| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 verificados (33/33 pts); integración pendiente | en curso |
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y grÃ¡ficas 2D | 32 | 0/4 | pendiente |
 | [[Sprint 03\|S3]] | RAG, interpretaciÃ³n de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | VerificaciÃ³n con CAS, contexto, registro y especificaciÃ³n grÃ¡fica | 33 | 0/5 | pendiente |
