@@ -240,3 +240,11 @@ ExerciseRun --> HelpLevel
 - El rol incluido en el JWT no decide los permisos: se consulta el usuario activo persistido en cada petición. Cambios de rol y desactivaciones se aplican sin renovar el token.
 - El registro público solo admite ALUMNO; no permite elegir PROFESOR ni ADMIN. La provisión de roles privilegiados y los flujos administrativos continúan fuera del alcance de S1.
 - UC-27 añade clases del cliente (`WebGLViewer`, `Camera`, `ShaderPipeline`, `SessionClient`), sin cambios en el modelo persistente. Véase [[Diagrama de clases]].
+
+## Invariantes implementadas en Sprint 02
+
+- Las nuevas sesiones de tutoría siempre tienen bloque temático y propietario autenticado. Cambiar de bloque crea otra `TutorSession`; las anteriores mantienen el suyo. La nulabilidad heredada de la columna `module_id` se conserva para datos existentes de S1.
+- El catálogo contiene `funciones`, `derivadas-integrales` y `metodos-3d`, accesibles para cualquier alumno. No se incorpora el concepto de clase ni grupos de alumnos.
+- Los recursos LaTeX incluidos en `notes/` llevan bloque, tema y dificultad 1–3. Cada sección autocontenida de 150–400 palabras produce un fragmento con fuente y versión SHA-256 truncada a 20 caracteres. Las fórmulas se conservan sin compilar LaTeX.
+- Los fragmentos de UC-14 se indexan en `vector_store`, con metadatos `module_code`, `topic_code`, `source_file`, `type`, `version` y `managed_by`. No se duplica esa instantánea en la entidad JPA heredada `NoteChunk`.
+- Las gráficas 2D son geometría efímera del cliente: no se añade una entidad ni se persiste una especificación gráfica. La derivada y la integral son aproximaciones numéricas; los intervalos del parser rechazan dominios potencialmente indefinidos y el control de cuadratura rechaza estimaciones inconsistentes.

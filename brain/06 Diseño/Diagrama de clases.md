@@ -272,3 +272,43 @@ SessionClient --> AuthController : login CSRF y me cada 3 segundos
 - El cliente `/visor/index.html` incluye ejes de referencia, controles de órbita, zoom y desplazamiento por ratón/teclado, recuperación del contexto y errores en español. El pipeline usa shaders propios; dibuja bajo demanda, libera GPU al salir y conserva funcionamiento al volver desde la caché de navegación.
 - El rol visible se consulta cada 3 s con timeout de 2 s y rechazo de respuestas obsoletas; el token se conserva únicamente en memoria. Pruebas Node con cobertura V8 y smoke Chromium que compila shaders y comprueba píxeles reales.
 - Las gráficas, superficies, iluminación, selección e interpretación de especificaciones siguen perteneciendo a sus sprints. Véase [[Sprint 01]].
+
+## Incremento implementado en Sprint 02
+
+El catálogo y las sesiones de UC-12 se exponen mediante `TutorSessionController`, `TutorSessions` y el puerto `TutorSessionStore`. `TutorSessionStoreAdapter` termina su transacción antes de devolver una instantánea. Cada selección crea una sesión nueva; no existe endpoint para cambiar el módulo de una sesión. La propiedad se comprueba antes de invocar el LLM. Los endpoints del alumno requieren el rol ALUMNO y CSRF en POST.
+
+`TutorChatController` entrega un POST SSE con eventos JSON TOKEN/DONE/ERROR. `TutorConversation` llama una sola vez al gateway por suscripción y no reintenta ni mantiene transacciones. Se desactiva Open EntityManager in View en todos los perfiles. El cliente conserva solo el historial visible en memoria: el contexto conversacional persistente corresponde a UC-20, no a este incremento.
+
+```mermaid
+classDiagram
+    class TutorSessionController
+    class TutorChatController
+    class TutorSessions
+    class TutorConversation
+    class TutorSessionStore {
+      <<interface>>
+      +modules()
+      +create(userId, moduleCode)
+      +findOwned(sessionId, userId)
+    }
+    class TutorSessionStoreAdapter
+    class NoteIndexStartup
+    class LatexNotes
+    class NoteIndex {
+      <<interface>>
+      +synchronize(chunks)
+    }
+    class PgVectorNoteIndex
+    class LlmGateway
+    TutorSessionController --> TutorSessions
+    TutorChatController --> TutorConversation
+    TutorConversation --> TutorSessions
+    TutorConversation --> LlmGateway
+    TutorSessions --> TutorSessionStore
+    TutorSessionStore <|.. TutorSessionStoreAdapter
+    NoteIndexStartup --> LatexNotes
+    NoteIndexStartup --> NoteIndex
+    NoteIndex <|.. PgVectorNoteIndex
+```
+
+`PgVectorNoteIndex` utiliza el overload de documentos de Spring AI para generar embeddings de documentos, fuera de cualquier transacción. Después sustituye atómicamente solo las filas etiquetadas `managed_by=UC-14` en la tabla estándar `vector_store`. La búsqueda de UC-15 podrá consumir esos metadatos sin otra copia del índice. En el cliente, `expression/curve` calculan geometría y aproximaciones; `ShaderPipeline.setGraph` dibuja segmentos y trapecios triangulados, y `Camera` adapta la proyección ortográfica para 2D.
