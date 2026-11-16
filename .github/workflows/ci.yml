@@ -33,7 +33,9 @@ jobs:
       - name: Verify Docker is running
         run: docker version
       - name: Test integration verification gate
-        run: python3 scripts/test_verify_integration_results.py
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Verify imported LaTeX notes are reproducible
+        run: python3 scripts/import_industriales.py --check
       - name: Build, integration tests and coverage thresholds
         run: ./gradlew clean check jacocoAggregateReport --no-daemon --no-scan
       - name: Verify integration tests were executed
