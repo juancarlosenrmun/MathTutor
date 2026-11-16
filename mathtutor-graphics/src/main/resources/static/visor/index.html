@@ -1,38 +1,431 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Visor de Matemáticas · MathTutor</title>
-  <link rel="stylesheet" href="./style.css">
-  <script type="module" src="./main.mjs"></script>
-</head>
-<body>
-  <header><a href="/visor/index.html" aria-label="MathTutor, inicio">MathTutor</a><span>Laboratorio de Matemáticas</span></header>
-  <main>
-    <p class="eyebrow">EXPLORACIÓN · ESPACIO 3D</p>
-    <h1>Una perspectiva diferente.</h1>
-    <p class="intro">Explora el sistema de coordenadas. Gira la cámara, acércate y encuentra tu punto de vista.</p>
-    <section aria-labelledby="viewer-title">
-      <div class="toolbar"><h2 id="viewer-title">Visor 3D</h2><div class="controls" aria-label="Controles de cámara">
-        <button type="button" data-camera="in">Acercar</button>
-        <button type="button" data-camera="out">Alejar</button>
-        <button type="button" data-camera="reset">Restablecer vista</button>
-      </div></div>
-      <canvas tabindex="0" aria-label="Sistema de ejes tridimensional. X rojo, Y verde, Z azul." aria-describedby="instructions graphic-status">
-        Sistema cartesiano con tres ejes perpendiculares: X, Y y Z, centrados en el origen.
-      </canvas>
-      <p id="graphic-status" role="status">Preparando visor…</p>
-      <p id="instructions">Arrastra o usa las flechas para orbitar. Mayús + arrastre o flechas para desplazar. Rueda o + / − para zoom. Inicio para restablecer.</p>
-    </section>
-    <aside aria-label="Sesión y permisos">
-      <div><h2>Tu sesión</h2><p>Rol actual: <strong id="role" role="status">Sin sesión</strong></p></div>
-      <form><label>Correo electrónico<input name="email" type="email" autocomplete="username" required></label>
-        <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
-        <button type="submit">Iniciar sesión</button>
-      </form>
-    </aside>
-  </main>
-  <footer>MathTutor · Tutor adaptativo de Matemáticas</footer>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f7f2" />
+    <meta
+      name="description"
+      content="Tu espacio para explorar las matemáticas. Crea tu cuenta y descubre el sistema de coordenadas con el laboratorio 3D de MathTutor."
+    />
+    <title>Inicio · MathTutor</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="./main.mjs"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Saltar al contenido</a>
+    <header class="site-header">
+      <a class="brand" href="#/inicio" aria-label="MathTutor, inicio"
+        ><span class="brand-symbol" aria-hidden="true">m.</span>MathTutor</a
+      >
+      <nav aria-label="Navegación principal">
+        <a href="#/inicio" data-nav="inicio">Inicio</a
+        ><a href="#/laboratorio" data-nav="laboratorio">Laboratorio 3D</a>
+      </nav>
+      <div class="header-actions">
+        <a class="quiet-link" href="#/acceso" data-guest>Iniciar sesión</a
+        ><a class="button small" href="#/registro" data-guest>Crear cuenta</a
+        ><a class="button secondary small" href="#/cuenta" data-member hidden
+          >Tu cuenta <span aria-hidden="true">↗</span></a
+        >
+      </div>
+    </header>
+    <main id="main" tabindex="-1">
+      <p id="notice" class="notice" role="status" hidden></p>
+      <button
+        id="retry-logout"
+        data-logout
+        type="button"
+        class="button secondary"
+        hidden
+      >
+        Reintentar cierre de sesión
+      </button>
+      <section data-view="inicio" class="home">
+        <div class="hero">
+          <div class="hero-copy">
+            <p class="overline">
+              <span class="status-dot" aria-hidden="true"></span> Un espacio
+              para entender
+            </p>
+            <h1>Las matemáticas,<br />desde otra<br />perspectiva.</h1>
+            <p class="lead">
+              A veces, entender empieza por mirar de otra manera. Explora,
+              cambia de perspectiva y haz tuyas las matemáticas.
+            </p>
+            <div class="hero-actions">
+              <a class="button" href="#/laboratorio"
+                >Explorar el laboratorio <span aria-hidden="true">↗</span></a
+              ><a class="text-link" href="#/registro">Crear tu cuenta</a>
+            </div>
+            <p class="subtle hero-note">
+              A tu ritmo. Con espacio para descubrir.
+            </p>
+          </div>
+          <figure class="coordinate-art" aria-labelledby="art-caption">
+            <svg
+              viewBox="0 0 520 440"
+              role="img"
+              aria-label="Ilustración de un sistema de coordenadas tridimensional con ejes X, Y y Z"
+            >
+              <defs>
+                <pattern
+                  id="dots"
+                  width="22"
+                  height="22"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <circle cx="1" cy="1" r="1" fill="#d3dbd1" />
+                </pattern>
+              </defs>
+              <rect width="520" height="440" fill="url(#dots)" />
+              <g fill="none" stroke="#c0cdc0" stroke-width="1">
+                <path d="M90 278 260 180 430 278 260 376Z" />
+                <path
+                  d="m132 254 170 98m-128-122 170 98m-128-122 170 98M132 302l170-98m-128 122 170-98m-128 122 170-98"
+                />
+              </g>
+              <g fill="none" stroke-width="1.8">
+                <path d="M105 367 420 185" stroke="#a55e50" />
+                <path d="M101 186 417 368" stroke="#49795c" />
+                <path d="M260 376V61" stroke="#53768a" />
+              </g>
+              <g fill="none" stroke="#285b43" stroke-width="1.4">
+                <path d="m181 229 79-46 79 46v91l-79 46-79-46Z" />
+                <path d="m181 229 79 46 79-46m-79 46v91" />
+                <path
+                  d="m181 229 79-46 79 46-79 46Z"
+                  fill="#dce8d8"
+                  fill-opacity=".65"
+                />
+              </g>
+              <circle cx="260" cy="275" r="5" fill="#285b43" />
+              <g font-family="Georgia,serif" font-size="20">
+                <text x="431" y="186" fill="#985345">x</text>
+                <text x="425" y="382" fill="#366648">y</text>
+                <text x="272" y="65" fill="#456579">z</text>
+                <text x="269" y="299" fill="#68736c" font-size="15">O</text>
+              </g>
+            </svg>
+            <figcaption id="art-caption">
+              <span>Una idea. Tres dimensiones.</span
+              ><span class="subtle">x, y, z</span>
+            </figcaption>
+          </figure>
+        </div>
+        <div class="home-bottom">
+          <p>Menos memorizar.<br /><strong>Más comprender.</strong></p>
+          <div>
+            <h2>Cambia tu punto de vista</h2>
+            <p>
+              Gira los ejes, acércate y recorre el espacio. El laboratorio es un
+              lugar para empezar a explorar.
+            </p>
+            <a class="text-link" href="#/laboratorio"
+              >Abrir el visor 3D <span aria-hidden="true">↗</span></a
+            >
+          </div>
+          <div>
+            <h2>Un espacio propio</h2>
+            <p>
+              Accede con tu cuenta y consulta tu sesión y tus permisos en un
+              mismo lugar.
+            </p>
+            <a class="text-link" href="#/acceso"
+              >Entrar en tu cuenta <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
+      </section>
+      <section data-view="acceso" class="auth-layout" hidden>
+        <div class="auth-intro">
+          <p class="overline">Tu espacio de aprendizaje</p>
+          <h1>Qué bien<br />verte de nuevo.</h1>
+          <p class="lead">Entra en tu cuenta y sigue explorando a tu ritmo.</p>
+          <div class="math-note" aria-hidden="true">
+            ∀ idea, una perspectiva.
+          </div>
+        </div>
+        <div class="form-panel">
+          <h2>Iniciar sesión</h2>
+          <p class="subtle">
+            ¿Primera vez aquí? <a href="#/registro">Crea tu cuenta</a>
+          </p>
+          <form data-auth="login">
+            <label for="login-email">Correo electrónico</label
+            ><input
+              id="login-email"
+              name="email"
+              type="email"
+              autocomplete="username"
+              spellcheck="false"
+              inputmode="email"
+              maxlength="254"
+              required
+              placeholder="tu@correo.es"
+            /><label for="login-password">Contraseña</label>
+            <div class="password-field">
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+              /><button
+                type="button"
+                data-password="login-password"
+                aria-pressed="false"
+                aria-label="Mostrar contraseña"
+              >
+                Mostrar
+              </button>
+            </div>
+            <p
+              class="form-error"
+              data-error
+              role="alert"
+              tabindex="-1"
+              hidden
+            ></p>
+            <button class="button full" type="submit">Iniciar sesión</button>
+          </form>
+          <p class="form-footnote">
+            Tu sesión se mantiene de forma segura en este navegador.
+          </p>
+          <a class="text-link" href="#/laboratorio"
+            >Explorar el laboratorio sin cuenta</a
+          >
+        </div>
+      </section>
+      <section data-view="registro" class="auth-layout" hidden>
+        <div class="auth-intro">
+          <p class="overline">Empieza por la curiosidad</p>
+          <h1>Tu próxima<br />idea empieza<br />aquí.</h1>
+          <p class="lead">
+            Crea tu cuenta de alumno y encuentra una nueva forma de mirar las
+            matemáticas.
+          </p>
+          <div class="math-note" aria-hidden="true">
+            El primer paso también cuenta.
+          </div>
+        </div>
+        <div class="form-panel">
+          <h2>Crear cuenta</h2>
+          <p class="subtle">
+            ¿Ya tienes una cuenta? <a href="#/acceso">Inicia sesión</a>
+          </p>
+          <form data-auth="register">
+            <label for="register-email">Correo electrónico</label
+            ><input
+              id="register-email"
+              name="email"
+              type="email"
+              autocomplete="username"
+              inputmode="email"
+              spellcheck="false"
+              maxlength="254"
+              required
+              placeholder="tu@correo.es"
+            /><label for="register-password">Contraseña</label>
+            <div class="password-field">
+              <input
+                id="register-password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                minlength="12"
+                required
+                aria-describedby="password-help"
+              /><button
+                type="button"
+                data-password="register-password"
+                aria-pressed="false"
+                aria-label="Mostrar contraseña"
+              >
+                Mostrar
+              </button>
+            </div>
+            <p id="password-help" class="field-help">
+              Al menos 12 caracteres, con mayúsculas, minúsculas, números y un
+              símbolo.
+            </p>
+            <label for="register-confirm">Repetir contraseña</label
+            ><input
+              id="register-confirm"
+              name="confirm"
+              type="password"
+              autocomplete="new-password"
+              minlength="12"
+              required
+            />
+            <p
+              class="form-error"
+              data-error
+              role="alert"
+              tabindex="-1"
+              hidden
+            ></p>
+            <button class="button full" type="submit">
+              Crear cuenta de alumno
+            </button>
+          </form>
+          <p class="form-footnote">
+            Las cuentas de profesor y administrador las gestiona el centro.
+          </p>
+        </div>
+      </section>
+      <section data-view="laboratorio" class="lab" hidden>
+        <div class="page-heading">
+          <div>
+            <p class="overline">Laboratorio de matemáticas</p>
+            <h1>Explora el espacio.</h1>
+            <p class="subtle">Tres ejes. Infinitas formas de mirar.</p>
+          </div>
+          <a class="text-link" href="#/inicio">Volver al inicio</a>
+        </div>
+        <div class="lab-layout">
+          <section class="viewer-panel" aria-labelledby="viewer-title">
+            <div class="viewer-toolbar">
+              <h2 id="viewer-title">Sistema de coordenadas</h2>
+              <span class="viewer-tag">Vista 3D</span>
+            </div>
+            <div class="canvas-wrap">
+              <canvas
+                tabindex="0"
+                aria-label="Sistema de ejes tridimensional. X rojo, Y verde, Z azul."
+                aria-describedby="instructions graphic-status"
+                >Sistema cartesiano con tres ejes perpendiculares: X, Y y Z,
+                centrados en el origen.</canvas
+              >
+              <div class="axis-legend" aria-label="Leyenda de ejes">
+                <span><i class="axis-x"></i>X</span
+                ><span><i class="axis-y"></i>Y</span
+                ><span><i class="axis-z"></i>Z</span>
+              </div>
+            </div>
+            <div class="camera-toolbar" aria-label="Controles de cámara">
+              <div>
+                <button type="button" data-camera="out" aria-label="Alejar">
+                  −</button
+                ><button type="button" data-camera="in" aria-label="Acercar">
+                  +
+                </button>
+              </div>
+              <button type="button" data-camera="reset">
+                Restablecer vista
+              </button>
+            </div>
+            <p id="graphic-status" class="graphic-status" role="status">
+              Preparando visor…
+            </p>
+          </section>
+          <aside class="lab-guide">
+            <p class="overline">Encuentra tu perspectiva</p>
+            <h2>El espacio,<br />en tus manos.</h2>
+            <p>
+              Prueba a girar la cámara. Cada eje sigue ahí, aunque lo veas de
+              otra forma.
+            </p>
+            <details open>
+              <summary>Cómo moverte</summary>
+              <dl id="instructions">
+                <dt>Girar</dt>
+                <dd>Arrastra o usa las flechas.</dd>
+                <dt>Acercar y alejar</dt>
+                <dd>Rueda del ratón o teclas + y −.</dd>
+                <dt>Desplazar</dt>
+                <dd>Mayús + arrastre o flechas.</dd>
+                <dt>Volver al origen</dt>
+                <dd>Botón Restablecer o tecla Inicio.</dd>
+              </dl>
+            </details>
+            <p class="field-help">
+              En pantallas táctiles, arrastra para girar y usa los botones para
+              el zoom.
+            </p>
+            <div class="lab-tip">
+              <span aria-hidden="true">↗</span>
+              <p>Elige un eje y observa cómo cambia al mover la cámara.</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+      <section data-view="cuenta" class="account" hidden>
+        <div class="page-heading">
+          <div>
+            <p class="overline">Tu espacio</p>
+            <h1>Tu cuenta.</h1>
+            <p class="subtle">Los detalles de tu sesión, en un vistazo.</p>
+          </div>
+          <a class="button" href="#/laboratorio"
+            >Ir al laboratorio <span aria-hidden="true">↗</span></a
+          >
+        </div>
+        <div class="account-layout">
+          <section class="account-details" aria-labelledby="session-title">
+            <div class="section-title">
+              <h2 id="session-title">Sesión actual</h2>
+              <span class="badge">Activa</span>
+            </div>
+            <dl>
+              <dt>Correo electrónico</dt>
+              <dd id="account-email"></dd>
+              <dt>Rol actual</dt>
+              <dd id="role" role="status">Sin sesión</dd>
+            </dl>
+            <p class="subtle">
+              Tus permisos se actualizan automáticamente si el centro cambia tu
+              rol.
+            </p>
+            <button
+              id="logout"
+              data-logout
+              type="button"
+              class="button secondary"
+            >
+              Cerrar sesión
+            </button>
+          </section>
+          <section class="permission-panel" aria-labelledby="permissions-title">
+            <h2 id="permissions-title">Tu acceso</h2>
+            <p id="permission-description"></p>
+            <ul>
+              <li>Explorar el laboratorio 3D</li>
+              <li>Consultar tu cuenta y tus permisos</li>
+            </ul>
+            <p class="field-help">
+              Cada recurso comprueba tus permisos y su propiedad antes de
+              permitir el acceso.
+            </p>
+          </section>
+        </div>
+      </section>
+      <section data-view="restringido" class="empty-state" hidden>
+        <span class="empty-symbol" aria-hidden="true">∅</span>
+        <p class="overline">Acceso restringido</p>
+        <h1>Este espacio tiene<br />otros permisos.</h1>
+        <p>
+          Tu cuenta no tiene acceso a este recurso. Puedes volver al laboratorio
+          o iniciar sesión con otra cuenta.
+        </p>
+        <div class="hero-actions">
+          <a class="button" href="#/laboratorio">Volver al laboratorio</a
+          ><a class="text-link" href="#/acceso">Iniciar sesión</a>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <span class="brand-footer">MathTutor</span
+      ><span>Un espacio para entender las matemáticas.</span
+      ><a href="#/laboratorio"
+        >Empieza a explorar <span aria-hidden="true">↗</span></a
+      >
+    </footer>
+    <noscript
+      ><p class="notice">
+        Activa JavaScript para navegar, acceder a tu cuenta y utilizar el visor
+        3D.
+      </p></noscript
+    >
+  </body>
 </html>
