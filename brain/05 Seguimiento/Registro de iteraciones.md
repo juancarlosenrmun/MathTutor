@@ -1,4 +1,13 @@
-﻿## 2026-11-16 23:51 · Sprint 02 · Corpus Industriales y cierre con CI e integración
+﻿## 2026-11-17 00:06 · Sprint 02 · Integración frontend
+
+- **Petición/rama**: crear y seleccionar «Sprint 2 Frontend», buscar skills frontend e incorporar las funciones S2. DEV actualizada y rama `Sprint-2-Frontend` activa (Git no admite espacios). Ejecutado `npx skills find frontend`; aplicadas las skills locales de frontend, TDD, revisión, verificación y Obsidian.
+- **Implementado**: navegación al tutor por rol, selección y conversación en columnas adaptables, integración de función/derivada/integral en laboratorio y textos actualizados del espacio del alumno. Corregidos inicio sin catálogo, borrador al cambiar identidad y alta tardía al salir; tres regresiones observadas en rojo y después en verde. UC-14 conserva indexación al arrancar; sin funciones de S3.
+- **Pruebas**: 47 Node (caja blanca y contratos simulados; tres nuevas de caja blanca), tres verificaciones Chromium de caja negra; responsive a 320/375/768/1024/1440 px y capturas del tutor revisadas. Regresión completa de 906 Java sin fallos ni omisiones; puerta PostgreSQL/pgvector correcta. Sin llamadas a proveedores LLM reales.
+- **Cobertura/build**: build completo y JaCoCo agregado correctos. Ocho módulos en umbral; mínimo persistence 85,06 % líneas / 72,92 % ramas; tutor 96,43/96,67. V8 99,88/93,97. Sin nuevas exclusiones. Informes habituales y logs `.sprint02-frontend-*.log`.
+- **Commits**: `0c5c3fa` (estados del chat), `cce9da7` (interfaz); diseño y diagramas en DOC (`0f5dd4a`), sin mezclar ramas ni cofirmar. Revisión propia sin bloqueantes.
+- **Pendiente/estado**: CI remota e integración de la ampliación en DEV. Base 4/4 UC y 32/32 puntos; ampliación 4/5; checklist total **29/30**, `estado: en curso`. main intacta.
+
+## 2026-11-16 23:51 · Sprint 02 · Corpus Industriales y cierre con CI e integración
 
 - **Petición**: lanzar las pruebas de CI e integrar en DEV; incorporar durante la ejecución los apuntes LaTeX de `Apuntes/Industriales`.
 - **Implementado**: ocho capítulos adaptados al contrato de UC-14, 121 fragmentos en tres bloques; doce fuentes preservadas byte a byte, autoría y manifiesto SHA-256. Importador determinista sin dependencias, macros matemáticas expandidas, entornos/fórmulas y parejas teorema–demostración indivisibles. Las tres notas introductorias se sustituyen por los apuntes aportados. Ejercicios propuestos y glosario conservados como fuentes no indexadas; banco UC-22/S3 sin anticipar.

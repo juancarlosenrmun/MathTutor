@@ -2,7 +2,7 @@
 sprint: S2
 objetivo: Chat con LLM, apuntes indexados y gráficas 2D
 puntos: 32
-estado: completado
+estado: en curso
 ---
 # Sprint 02 · Chat con LLM, apuntes indexados y gráficas 2D
 
@@ -57,6 +57,26 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 - [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+### 2026-11-17 00:06 · Ampliación frontend
+
+- **Petición/rama**: crear «Sprint 2 Frontend», ejecutar find-skills para frontend e incorporar las funciones S2. DEV actualizada; creada y seleccionada `Sprint-2-Frontend` (Git no admite espacios). Búsqueda `npx skills find frontend` ejecutada; aplicadas las skills locales de frontend, TDD, revisión, verificación y Obsidian.
+- **Implementado**: tutor en navegación y espacio del alumno; selección de bloque junto al chat, estados de carga y vaciado de historial explicados. Laboratorio con función, intervalo, derivada e integral aproximadas presentado antes del visor. Diseño existente adaptado a móvil. UC-14 conserva indexación al arrancar, sin panel ni recuperación de S3.
+- **Correcciones**: catálogo pendiente bloquea el inicio; cambio de identidad limpia borrador e historial; salir durante una operación invalida resultados tardíos. Tres regresiones reproducidas en rojo y después en verde. Sin cambios en backend, entidades ni contratos públicos.
+- **Pruebas**: 47 Node correctas (caja blanca y contratos simulados; tres nuevas de caja blanca); tres comprobaciones Chromium de caja negra (pipeline, página y contrato de interfaz/SSE). Responsive a 320/375/768/1024/1440 px; capturas del tutor en escritorio/móvil inspeccionadas. Regresión completa: 906 Java, cero fallos u omisiones; puerta PostgreSQL/pgvector correcta. Sin llamadas a proveedores LLM reales.
+- **Cobertura/build**: `gradlew.bat build jacocoAggregateReport --no-daemon --no-scan` correcto. V8 99,88 % líneas / 93,97 % ramas; JaCoCo en umbral en los ocho módulos, mínimo persistence 85,06/72,92; tutor 96,43/96,67. Sin nuevas exclusiones. Informes en rutas habituales y logs `.sprint02-frontend-*.log`.
+- **Revisión/commits**: diff revisado por corrección, seguridad, arquitectura y presentación, sin bloqueantes. Código en `0c5c3fa` y `cce9da7`; diseño y diagramas por separado en DOC (`0f5dd4a`), sin cofirma ni cambios en main.
+- **Pendiente**: CI remota e integración de esta ampliación en DEV. Base 4/4 UC, 32/32 puntos y 25/25 comprobaciones históricas; ampliación 4/5, total **29/30**; `estado: en curso`.
+
+## Checklist de ampliación frontend
+
+- [x] Integrar las funciones S2 en las vistas y navegación existentes.
+- [x] Pruebas de caja blanca y regresiones de estados del tutor.
+- [x] Caja negra Chromium, responsive y revisión de capturas.
+- [x] Build local, V8 y JaCoCo en umbral.
+- [ ] CI remota verde e integración de la ampliación en DEV.
+
+## Historial de la base S2
 
 ### 2026-11-16 23:51 · Apuntes Industriales, CI e integración en DEV
 
