@@ -47,6 +47,7 @@ test('selección previa, POST protegido, respuesta progresiva y sesión nueva', 
   await f.submit('tutor-form'); // No hay sesión todavía.
   assert.equal(f.client.calls.filter(([p]) => p.endsWith('/messages')).length,0);
   await f.submit('tutor-select-form');
+  f.nodes['tutor-message'].value = '¿Qué es una función?';
   await f.submit('tutor-form');
   assert.equal(f.nodes['tutor-history'].children[1].textContent,'Tutor: Función ñ');
   const [, options] = f.client.calls.find(([p]) => p.endsWith('/messages'));
@@ -60,7 +61,7 @@ test('errores, mensajes vacíos, cancelación y pérdida de acceso no reutilizan
   f.client.fail = true; await f.ui.sync('tutor');
   assert.match(f.nodes['tutor-status'].textContent,/No se pudieron/);
   await f.submit('tutor-select-form');
-  f.client.fail = false; await f.submit('tutor-select-form');
+  f.client.fail = false; await f.ui.sync('tutor'); await f.submit('tutor-select-form');
   f.nodes['tutor-message'].value = ' '; await f.submit('tutor-form');
   f.nodes['tutor-message'].value = 'a'.repeat(4001); await f.submit('tutor-form');
   f.client.fail = true; f.nodes['tutor-message'].value = 'hola'; await f.submit('tutor-form');
@@ -70,4 +71,35 @@ test('errores, mensajes vacíos, cancelación y pérdida de acceso no reutilizan
   assert.equal(f.nodes['tutor-composer'].hidden,true);
   f.client.token = 'jwt'; f.client.profile.role = 'PROFESOR'; await f.ui.sync('tutor');
   assert.equal(f.nodes['tutor-composer'].hidden,true);
+});
+
+
+test('el bloque no permite iniciar hasta que el catálogo esté disponible', async () => {
+  const f = fixture();
+  assert.equal(f.nodes['tutor-start'].disabled, true);
+  await f.ui.sync('tutor');
+  assert.equal(f.nodes['tutor-start'].disabled, false);
+});
+
+test('perder la identidad elimina también el borrador privado', async () => {
+  const f = fixture(); await f.ui.sync('tutor');
+  f.nodes['tutor-message'].value = 'Mi pregunta privada';
+  f.client.token = null; await f.ui.sync('tutor');
+  assert.equal(f.nodes['tutor-message'].value, '');
+  assert.match(f.nodes['tutor-status'].textContent, /Inicia sesi/);
+});
+
+test('salir durante el alta descarta la sesión tardía y permite volver a empezar', async () => {
+  const f = fixture(); await f.ui.sync('tutor');
+  const original = f.client.fetch;
+  let complete;
+  f.client.fetch = (path, options) => path.endsWith('/sessions')
+    ? new Promise(resolve => { complete = resolve; }) : original(path, options);
+  const pending = f.submit('tutor-select-form');
+  await new Promise(resolve => setImmediate(resolve));
+  await f.ui.sync('inicio');
+  complete({ok:true,json:async () => ({id:99})}); await pending;
+  await f.ui.sync('tutor');
+  assert.equal(f.nodes['tutor-composer'].hidden, true);
+  assert.equal(f.nodes['tutor-start'].disabled, false);
 });
