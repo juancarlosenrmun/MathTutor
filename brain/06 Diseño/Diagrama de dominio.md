@@ -248,3 +248,7 @@ ExerciseRun --> HelpLevel
 - Los recursos LaTeX incluidos en `notes/` llevan bloque, tema y dificultad 1–3. Cada sección autocontenida de 150–400 palabras produce un fragmento con fuente y versión SHA-256 truncada a 20 caracteres. Las fórmulas se conservan sin compilar LaTeX.
 - Los fragmentos de UC-14 se indexan en `vector_store`, con metadatos `module_code`, `topic_code`, `source_file`, `type`, `version` y `managed_by`. No se duplica esa instantánea en la entidad JPA heredada `NoteChunk`.
 - Las gráficas 2D son geometría efímera del cliente: no se añade una entidad ni se persiste una especificación gráfica. La derivada y la integral son aproximaciones numéricas; los intervalos del parser rechazan dominios potencialmente indefinidos y el control de cuadratura rechaza estimaciones inconsistentes.
+
+### Procedencia de los apuntes de Industriales
+
+Los temas iniciales se sustituyen por ocho temas del corpus de Industriales, repartidos entre los tres bloques existentes, sin añadir entidades ni módulos. Cada fragmento mantiene el archivo derivado como fuente; `industriales-manifest.json` relaciona esa fuente con el capítulo original, su SHA-256, tema y módulo. Las parejas de resultado y demostración no se separan. Los ejercicios propuestos se conservan en las fuentes, sin crear todavía entidades Exercise ni anticipar UC-22.

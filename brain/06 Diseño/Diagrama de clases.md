@@ -312,3 +312,7 @@ classDiagram
 ```
 
 `PgVectorNoteIndex` utiliza el overload de documentos de Spring AI para generar embeddings de documentos, fuera de cualquier transacción. Después sustituye atómicamente solo las filas etiquetadas `managed_by=UC-14` en la tabla estándar `vector_store`. La búsqueda de UC-15 podrá consumir esos metadatos sin otra copia del índice. En el cliente, `expression/curve` calculan geometría y aproximaciones; `ShaderPipeline.setGraph` dibuja segmentos y trapecios triangulados, y `Camera` adapta la proyección ortográfica para 2D.
+
+### Importación del corpus Industriales
+
+El flujo de UC-14 añade un importador offline (`scripts/import_industriales.py`) y un manifiesto de procedencia. El runtime conserva `NoteIndexStartup → LatexNotes → NoteIndex`: no lee el directorio externo del usuario ni ejecuta los fuentes. Se indexan ocho recursos de tema, con 121 fragmentos; los doce archivos fuente de referencia quedan excluidos por el glob no recursivo. La CI comprueba que los derivados se regeneran exactamente.

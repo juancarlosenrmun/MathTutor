@@ -19,7 +19,7 @@ Los eventos son TOKEN (delta original), DONE (fin normal) o ERROR (mensaje gené
 
 Activar el perfil `notes-indexing` junto al proveedor de embeddings y la infraestructura PostgreSQL. Ese perfil incluye `spring-ai-pgvector`; por ejemplo, con el proveedor ya configurado por entorno: `dev,google-ai-studio,notes-indexing`. El perfil `dev` por sí solo conserva el stub de S1 y no efectúa llamadas externas. Las claves permanecen fuera del repositorio. El test de arranque suministra un modelo determinista en lugar de credenciales.
 
-Cada recurso `mathtutor-application/src/main/resources/notes/*.tex` representa un tema. La versión inicial incluye tres notas introductorias; no constituye el temario completo que aportarán los autores externos.
+Cada recurso `mathtutor-application/src/main/resources/notes/*.tex` representa un tema. El corpus actual contiene ocho capítulos de Industriales y 121 fragmentos; sustituye las tres notas introductorias de la primera iteración. Las fuentes y el manifiesto permiten verificar su procedencia y regeneración.
 
 ```latex
 \bloque{funciones}
@@ -49,3 +49,17 @@ La derivada usa diferencias centrales. La integral con signo usa Simpson con com
 - `doxygen Doxyfile`: API Java en `build/doxygen/html/index.html`. Los comentarios usan sintaxis Doxygen. Las advertencias heredadas de Result y NoteChunkStore quedan registradas en `build/doxygen-warnings.log`; no proceden de las clases nuevas.
 
 Exclusiones: se mantienen únicamente la clase de arranque `MathTutorApplication`, los DTO sin lógica de `common/dto` y el bootstrap cliente `main.mjs`. No se excluyen servicios, adaptadores, controladores, parser, cliente ni política pedagógica. Las cifras finales y el estado de integración se registran en [[Registro de iteraciones]] de la rama de desarrollo.
+
+## Corpus Industriales integrado
+
+El importador `scripts/import_industriales.py` sustituye las notas introductorias por ocho capítulos y 121 fragmentos. Fuentes de Matemáticas I de Diego García Zamora y Nuria V. Castillo González, Universidad de Jaén, aportadas por el usuario. Snapshot de doce archivos bajo `notes/sources/industriales/`, fuera del glob de indexación; `.gitattributes` conserva sus bytes para verificar los SHA-256 de `industriales-manifest.json`.
+
+| Capítulos | Bloque | Temas |
+|---|---|---|
+| 1–2 | funciones | Números reales/complejos; funciones y continuidad |
+| 3–4 | derivadas-integrales | Cálculo diferencial e integral |
+| 5–8 | metodos-3d | Matrices, espacios vectoriales, diagonalización y geometría |
+
+Los capítulos algebraicos aportan fundamentos del bloque 3D; no se crean módulos nuevos. La dificultad se inicializa a 1 por contrato, sin inferir evaluación ni progresión pedagógica. Se conserva toda la teoría normalizada y los ejemplos resueltos; el listado final de ejercicios propuestos se reserva para UC-22/S3 y permanece en los originales. El glosario de Mathematica, preámbulo y bibliografía se preservan como referencia no indexada.
+
+La partición respeta 150–400 palabras y mantiene completos entornos, fórmulas multilínea y parejas enunciado–demostración. Solo se expanden macros conocidas y se retira formato editorial; no se compila ni ejecuta LaTeX. Todas las transformaciones son deterministas. Para actualizar: `python scripts/import_industriales.py --source RUTA_A_INDUSTRIALES`; para verificar desde el snapshot incluido: `python scripts/import_industriales.py --check`. CI comprueba tanto el importador como la reproducibilidad.
