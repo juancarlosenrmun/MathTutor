@@ -134,13 +134,13 @@ collect_files() {
     log_info "Secrets masked and synced to evidence directory."
 }
 
-# Generate SHA256SUMS
+# Generate SHA256SUMS (from temp dir, same source as zip)
 generate_sha256sums() {
     log_info "Generating SHA256SUMS..."
     local original_pwd=$(pwd)
-    cd "$EVIDENCE_ROOT"
+    cd "$TMP_DIR/evidence"
     # Use find -print0 and xargs -0 to handle filenames with spaces
-    find . -type f ! -name "$SHA256SUMS" ! -name "$OUTPUT_ZIP" ! -name "collect-evidence.sh" -print0 | sort -z | xargs -0 sha256sum > "$original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
+    find . -type f -print0 | sort -z | xargs -0 sha256sum > "$original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
     cd - >/dev/null
     log_info "SHA256SUMS generated at $original_pwd/$EVIDENCE_ROOT/$SHA256SUMS"
 }
