@@ -9,6 +9,8 @@ spring:
   # Perfil de desarrollo con PostgreSQL local (Docker Compose)
   profiles:
     active: dev
+    group:
+      notes-indexing: spring-ai-pgvector
 
 # RAG Configuration
 tutor:
