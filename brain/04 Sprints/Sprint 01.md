@@ -90,6 +90,8 @@ Diseño y plan: conservar HTML/CSS/ES modules y APIs existentes. Frente a añadi
 - [x] EN-01/EN-04: conservar build e integración técnica existentes; regresiones verificadas sin llamadas remotas al LLM.
 - [ ] CI de la ampliación en verde e integración en DEV.
 
+PR de la ampliación: [#8 · Frontend minimalista del sprint 1](https://github.com/juancarlosenrmun/MathTutor/pull/8), `Sprint-1-Frontend` → `DEV`, abierta el 2026-11-16 22:39. Sin conflictos según GitHub; CI iniciada y pendiente. Se reejecutan 31 pruebas cliente con cobertura 99,80/96,98 y las tres comprobaciones Chromium antes de publicar. La casilla de CI/integración permanece sin marcar hasta disponer de ambas evidencias; estado `en curso`.
+
 Secuencia ejecutada: pruebas de sesión fallidas → cliente de registro/refresh/logout → vistas semánticas y CSS → navegación y formularios → revisión independiente → regresiones y corrección de renovación entre pestañas, polling obsoleto y salto al contenido → build y cobertura. Commits sin cofirma. Skills instaladas globalmente: `anthropics/skills:frontend-design` y `vercel-labs/agent-skills:web-design-guidelines`; se aplican junto a frontend-ui-engineering, TDD y obsidian-markdown.
 
 ### Evidencia local de la ampliación

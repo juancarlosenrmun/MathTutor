@@ -1,3 +1,10 @@
+## 2026-11-16 22:39 · Sprint 01 · PR frontend hacia DEV
+
+- **Petición**: «haz pr a DEV».
+- **Resultado**: publicada `Sprint-1-Frontend` y creada [PR #8](https://github.com/juancarlosenrmun/MathTutor/pull/8) hacia `DEV`, abierta y sin conflictos según GitHub. No se fusiona; main permanece intacta. Descripción incluye alcance de S1 y evidencias; diseño y diagramas siguen separados en DOC.
+- **Verificación de esta petición**: 31 pruebas cliente (caja blanca/contratos simulados), cero fallos/omitidas, V8 99,80 % líneas / 96,98 % ramas con puerta 80/70; tres comprobaciones Chromium (caja negra: pipeline, página y contrato frontend) correctas. `git diff --check origin/DEV...HEAD` correcto. Se conserva la evidencia Java/JaCoCo de la iteración anterior (863 pruebas, 737 blanca / 126 negra); no se atribuye una nueva ejecución Java a esta petición.
+- **CI y pendiente**: CI de la PR iniciada, todavía sin resultado; pendiente de CI verde y posterior integración en DEV. La checklist mantiene base 5/5 UC/EN y ampliación 4/5; estado `en curso`. Registro, progreso y nota del sprint se actualizan en commit sin cofirma dentro de la PR.
+
 ## 2026-11-16 22:21 · Sprint 01 · Vistas con contexto de los diez sprints
 
 - **Petición**: leer todos los sprints para entender el producto e implementar las vistas de sprint 1. Se mantiene la rama `Sprint-1-Frontend`, inicialmente limpia, y los commits sin cofirma.

@@ -9,9 +9,11 @@ Ampliación frontend (2026-11-16 22:10): seis vistas, 29 pruebas Node, tres comp
 
 Revisión con contexto de los diez sprints (2026-11-16 22:21): siete vistas de S1, incluido espacio autenticado por rol; 31 pruebas Node, V8 99,80/96,98, JaCoCo en umbral y contrato Chromium correcto. Iteración 3/3 local; ampliación 4/5 pendiente de CI remota e integración. El resto de sprints no cambia de estado.
 
+Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlosenrmun/MathTutor/pull/8) abierta, sin conflictos y con CI iniciada. Se conserva 4/5 en la ampliación hasta CI verde e integración.
+
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
-| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 base (33/33 pts); frontend 4/5 | en curso (ampliación frontend) |
+| [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 base (33/33 pts); frontend 4/5 | en curso (PR #8 a DEV) |
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 0/4 | pendiente |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 0/5 | pendiente |
