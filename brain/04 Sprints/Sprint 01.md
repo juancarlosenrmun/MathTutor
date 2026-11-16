@@ -106,3 +106,19 @@ Secuencia ejecutada: pruebas de sesión fallidas → cliente de registro/refresh
 - EN-01 y EN-04 son infraestructura/spike; no requieren nuevas vistas de usuario. Se mantienen fuera de alcance chat, recuperación de contraseña, gráficas y administración de otros sprints.
 - El cierre fallido borra el token local y ofrece reintentar la revocación de la cookie; ninguna respuesta de permisos anterior puede ocultar ese reintento. Web Locks coordina mutaciones de cookie entre pestañas en navegadores modernos/contexto seguro; entornos antiguos sin esta API no coordinan pestañas.
 - La evidencia anterior de 5/5 UC/EN integrados permanece válida para el sprint base. La ampliación frontend queda **4/5 comprobaciones**, pendiente de CI remota e integración en DEV; no se fusiona ni se modifica main. Por esta ampliación el frontmatter pasa a `en curso`.
+
+## Revisión de vistas con visión global de S1–S10
+
+Se leen los diez sprints completos para situar S1 en el producto: S2 conversación y módulos; S3 RAG/expresiones/superficies; S4 progreso y verificación; S5 tutor socrático y tangentes; S6 controles y seguridad; S7 recuperación y selección; S8 derechos, docencia y administración; S9 auditoría/degradación/animación; S10 postprocesamiento y rendimiento. El mapa y sus decisiones están en [[Sprint 01 - Diseño frontend]], actualizado en DOC.
+
+La iteración de S1 implementa siete vistas: inicio, acceso, registro, espacio autenticado, laboratorio, cuenta y acceso restringido. La portada explica el tutor adaptativo en desarrollo; tras registro o login se abre `#/espacio`. Allí se muestran el rol vigente y accesos reales al laboratorio y a la cuenta. Las cuentas de alumno/profesor/administrador tienen textos propios sin habilitar paneles de otros sprints. Cuenta y laboratorio permiten volver al espacio. No se añaden chat, selección de módulos, historial, estadísticas, subida de apuntes ni datos simulados al producto.
+
+- [x] UC-01: recorrido acceso/registro → espacio → cuenta/laboratorio, sin perder sesión; verificado en Node y Chromium.
+- [x] UC-03: espacio protegido y presentación por rol vigente, cambio sin reautenticar y caducidad; sin conceder nuevos permisos.
+- [x] UC-27: laboratorio conservado, navegación contextual y diseño adaptable; sin regresiones en pipeline/cámara.
+
+Verificación local de esta iteración: 31 pruebas Node, V8 **99,80 % líneas / 96,98 % ramas**; `:mathtutor-graphics:check jacocoAggregateReport` correcto. Java: 863 pruebas (737 blanca / 126 negra), cero fallos/omitidas, JaCoCo en umbral en todos los módulos. Tres comprobaciones Chromium correctas; se prueban todas las vistas públicas y autenticadas a 1200/375 px, con diez capturas incluyendo espacio alumno/docente/administrativo y móvil. Cuatro regresiones Python y puerta PostgreSQL/pgvector correctas. Revisión independiente sin defectos bloqueantes.
+
+Vista previa reiniciada con los recursos actuales en `http://127.0.0.1:8081/visor/index.html`: salud HTTP 200, siete vistas y módulo `workspaceFor` comprobados. Secreto JWT nuevo únicamente en entorno del proceso; no se crean cuentas de prueba ni se realizan llamadas al LLM.
+
+Estado de la iteración: **3/3 comprobaciones locales**. La ampliación frontend conserva **4/5**, pendiente únicamente de CI remota e integración en DEV. El sprint base conserva 5/5 UC/EN; frontmatter `en curso` mientras siga pendiente la integración de la ampliación.

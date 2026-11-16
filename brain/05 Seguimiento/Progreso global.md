@@ -7,6 +7,8 @@
 
 Ampliación frontend (2026-11-16 22:10): seis vistas, 29 pruebas Node, tres comprobaciones Chromium y cuatro regresiones Python correctas. Build y cobertura en umbral; vista previa en `http://127.0.0.1:8081/visor/index.html`. Estado de la ampliación: 4/5, pendiente CI remota e integración.
 
+Revisión con contexto de los diez sprints (2026-11-16 22:21): siete vistas de S1, incluido espacio autenticado por rol; 31 pruebas Node, V8 99,80/96,98, JaCoCo en umbral y contrato Chromium correcto. Iteración 3/3 local; ampliación 4/5 pendiente de CI remota e integración. El resto de sprints no cambia de estado.
+
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
 | [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 base (33/33 pts); frontend 4/5 | en curso (ampliación frontend) |
