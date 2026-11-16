@@ -12,11 +12,11 @@
 
 Para ejecución directa en esta sesión, con test-driven-development, springboot-tdd, incremental-implementation y verification-before-completion.
 
-- [ ] UC-12: pruebas de catálogo, módulo inválido, propiedad y sesión nueva; puerto SessionStore, servicio, adaptador JPA y API; migración del catálogo. Ejecutar unitarias y contrato PostgreSQL; commit independiente.
-- [ ] UC-13: pruebas de deltas, error, cancelación, mensaje vacío/límite y única llamada; orquestador y POST SSE, cliente accesible integrado con autenticación. Verificar ausencia de transacción durante la suscripción; commit independiente.
-- [ ] UC-14: pruebas de metadatos, secciones, comentarios LaTeX, fórmulas, errores, idempotencia y actualización; parser y arranque del indexador con recursos de ejemplo; PostgreSQL/pgvector. Commit independiente.
-- [ ] UC-28: pruebas numéricas de función, derivada y área, discontinuidades, límites e inyección; controles y geometría WebGL2. Node/V8 y navegador; commit independiente.
-- [ ] Ejecutar check, JaCoCo agregado, puerta de integración y revisión completa. Registrar cifras y exclusiones; actualizar [[Diagrama de dominio]] y [[Diagrama de clases]] en DOC y seguimiento en Sprint-2. No marcar integración ni CI sin evidencia remota.
+- [x] UC-12: pruebas de catálogo, módulo inválido, propiedad y sesión nueva; puerto SessionStore, servicio, adaptador JPA y API; migración del catálogo. Ejecutar unitarias y contrato PostgreSQL; commit independiente.
+- [x] UC-13: pruebas de deltas, error, cancelación, mensaje vacío/límite y única llamada; orquestador y POST SSE, cliente accesible integrado con autenticación. Verificar ausencia de transacción durante la suscripción; commit independiente.
+- [x] UC-14: pruebas de metadatos, secciones, comentarios LaTeX, fórmulas, errores, idempotencia y actualización; parser y arranque del indexador con recursos de ejemplo; PostgreSQL/pgvector. Commit independiente.
+- [x] UC-28: pruebas numéricas de función, derivada y área, discontinuidades, límites e inyección; controles y geometría WebGL2. Node/V8 y navegador; commit independiente.
+- [x] Ejecutar check, JaCoCo agregado, puerta de integración y revisión completa. Registrar cifras y exclusiones; actualizar [[Diagrama de dominio]] y [[Diagrama de clases]] en DOC y seguimiento en Sprint-2. No marcar integración ni CI sin evidencia remota.
 
 ## Revisión de riesgos
 
