@@ -8,6 +8,8 @@ REQUIRED = {
     "com.mathtutor.application.controller.AuthControllerIntegrationTest",
     "com.mathtutor.application.retriever.SpringAiPgVectorRetrieverIntegrationTest",
     "com.mathtutor.application.Rnf03NoOpenTransactionDuringLlmCallTest",
+    "com.mathtutor.application.controller.TutorApiIntegrationTest",
+    "com.mathtutor.application.NoteStartupIntegrationTest",
 }
 
 
