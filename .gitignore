@@ -42,6 +42,7 @@ gradle/bin/
 .gradle/
 
 .superpowers
+.worktrees/
 
 EN-04-evidencias.zip
 docs/evidencias/*.zip
