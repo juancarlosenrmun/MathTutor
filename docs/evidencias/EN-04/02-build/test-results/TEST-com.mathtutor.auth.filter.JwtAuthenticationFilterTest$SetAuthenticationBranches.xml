@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="setAuthentication() - Cobertura de ramas" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:35.619Z" hostname="DESKTOP-KREG294" time="0.223">
-  <properties/>
-  <testcase name="Debe crear AuthenticatedUser con role correcto" classname="com.mathtutor.auth.filter.JwtAuthenticationFilterTest$SetAuthenticationBranches" time="0.22"/>
-  <testcase name="Debe establecer detalles de autenticación con WebAuthenticationDetailsSource" classname="com.mathtutor.auth.filter.JwtAuthenticationFilterTest$SetAuthenticationBranches" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

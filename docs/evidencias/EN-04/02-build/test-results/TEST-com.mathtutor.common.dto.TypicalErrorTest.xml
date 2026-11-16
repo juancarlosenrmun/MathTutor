@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.mathtutor.common.dto.TypicalErrorTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:50.508Z" hostname="DESKTOP-KREG294" time="0.0">
-  <properties/>
-  <testcase name="shouldCreateTypicalErrorWithAllFields()" classname="com.mathtutor.common.dto.TypicalErrorTest" time="0.0"/>
-  <testcase name="shouldImplementEqualsAndHashCode()" classname="com.mathtutor.common.dto.TypicalErrorTest" time="0.0"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

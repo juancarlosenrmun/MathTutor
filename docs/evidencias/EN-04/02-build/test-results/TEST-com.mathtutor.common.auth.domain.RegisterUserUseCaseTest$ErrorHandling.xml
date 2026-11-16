@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="Manejo de errores" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:50.090Z" hostname="DESKTOP-KREG294" time="0.011">
-  <properties/>
-  <testcase name="Debe fallar si repositorio lanza excepción al guardar" classname="com.mathtutor.common.auth.domain.RegisterUserUseCaseTest$ErrorHandling" time="0.011"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="extractToken() - Cobertura de ramas" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:35.843Z" hostname="DESKTOP-KREG294" time="0.006">
-  <properties/>
-  <testcase name="Debe retornar token de header cuando cookie existe pero es otro nombre" classname="com.mathtutor.auth.filter.JwtAuthenticationFilterTest$ExtractTokenBranches" time="0.001"/>
-  <testcase name="Debe retornar null cuando no hay cookies ni header" classname="com.mathtutor.auth.filter.JwtAuthenticationFilterTest$ExtractTokenBranches" time="0.002"/>
-  <testcase name="Debe retornar null cuando cookie access_token tiene valor null" classname="com.mathtutor.auth.filter.JwtAuthenticationFilterTest$ExtractTokenBranches" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
