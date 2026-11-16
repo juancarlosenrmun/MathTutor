@@ -32,12 +32,17 @@ function combine(op, left, right) {
 function functionBounds(name, fn, range) {
   const [lo,hi] = range;
   if (!range.every(Number.isFinite)) return unknown;
+  if (lo === hi) return [fn(lo),fn(lo)];
   if ((name === 'sqrt' && lo < 0) || (name === 'log' && lo <= 0)) return unknown;
   if (name === 'tan' && Math.floor((lo+Math.PI/2)/Math.PI) !== Math.floor((hi+Math.PI/2)/Math.PI)) return unknown;
   if (name === 'sin' || name === 'cos') {
-    if (hi-lo >= 2*Math.PI) return [-1,1];
+    // Más de un cuarto de período por intervalo no permite una curva fiable.
+    if (hi-lo > Math.PI/2) return unknown;
     const values = [fn(lo),fn(hi)], shift = name === 'sin' ? Math.PI/2 : 0;
-    for (let k = Math.ceil((lo-shift)/Math.PI); k*Math.PI+shift <= hi; k++) values.push(fn(k*Math.PI+shift));
+    const first = Math.ceil((lo-shift)/Math.PI);
+    if (!Number.isSafeInteger(first)) return unknown;
+    const critical = first*Math.PI+shift;
+    if (critical <= hi) values.push(fn(critical));
     return [Math.min(...values),Math.max(...values)];
   }
   const values = [fn(lo),fn(hi)];

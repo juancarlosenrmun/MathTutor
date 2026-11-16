@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { expression, curve, mountCurveControls } from '../../main/resources/static/visor/curves.mjs';
 import { element } from './ui-fixture.mjs';
+import { spawnSync } from 'node:child_process';
 
 test('precedencia, potencias, signos y funciones permitidas', () => {
   for (const [source, x, expected] of [['x^2', 3, 9], ['-x^2', 3, -9], ['2^-2', 0, .25],
@@ -32,6 +33,15 @@ test('discontinuidades y raíces fuera del dominio no producen áreas falsas', (
   assert.equal(curve('0.001/(x-0.123)', -1, 1).area, null);
   assert.ok(curve('0.001/(x-0.123)', -1, 1).points.some(p => !p.connected && p.x > -1));
   assert.equal(curve('cos(256*pi*x)', -1, 1).area, null);
+  assert.equal(curve('cos(1024*pi*x)', -1, 1).area, null);
+});
+
+test('argumentos trigonométricos grandes terminan con trabajo acotado', () => {
+  const module = new URL('../../main/resources/static/visor/curves.mjs',import.meta.url).href;
+  const result = spawnSync(process.execPath,['--input-type=module','-e',
+    `import {curve} from ${JSON.stringify(module)}; curve('sin(1e20)',-1,1); curve('cos(1e20+x*1e20)',-1,1);`],
+    {timeout:2000,windowsHide:true});
+  assert.ifError(result.error); assert.equal(result.status,0);
 });
 test('valores límite de dominio y muestras', () => {
   for (const [a,b,n] of [[0,0,128], [2,1,128], [NaN,1,128], [-10001,1,128],
