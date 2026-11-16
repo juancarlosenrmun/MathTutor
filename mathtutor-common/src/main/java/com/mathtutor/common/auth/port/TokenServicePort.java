@@ -54,7 +54,7 @@ public interface TokenServicePort {
      * @param userId     ID del usuario
      * @param email      email del usuario
      * @param role       rol del usuario
-     * @param rawToken   token de refresco en claro (se hasheará con Argon2id)
+     * @param rawToken   token de refresco en claro (se almacena su huella SHA-256)
      * @return refresh token JWT (el mismo que se pasó como rawToken)
      */
     String storeRefreshToken(Long userId, String email, String role, String rawToken);
@@ -82,7 +82,7 @@ public interface TokenServicePort {
     /**
      * Revoca un refresh token individual (logout o rotación normal).
      *
-     * @param tokenId ID del token a revocar (jti del JWT)
+     * @param tokenId ID del registro persistido que se revoca
      */
     void revokeRefreshToken(String tokenId);
 

@@ -28,15 +28,17 @@ import java.util.UUID;
 @Component
 public class TokenServiceAdapter implements TokenServicePort {
 
+    private static final com.fasterxml.jackson.databind.ObjectMapper JSON = new com.fasterxml.jackson.databind.ObjectMapper();
+
     // En producción, esto debería venir de configuración externa (Spring Vault, env vars)
     @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${jwt.access-token-expiration-minutes:15}")
-    private long accessTokenExpirationMinutes;
+    private long accessTokenExpirationMinutes = 15;
 
     @Value("${jwt.refresh-token-expiration-days:7}")
-    private long refreshTokenExpirationDays;
+    private long refreshTokenExpirationDays = 7;
 
     private SecretKey secretKey;
     private final RefreshTokenAdapter refreshTokenAdapter;
@@ -59,6 +61,10 @@ public class TokenServiceAdapter implements TokenServicePort {
                     "JWT secret must be at least 256 bits (32 characters). "
                     + "Current length: " + jwtSecret.getBytes(StandardCharsets.UTF_8).length + " bytes."
             );
+        }
+        if (accessTokenExpirationMinutes <= 0 || accessTokenExpirationMinutes > Integer.MAX_VALUE / 60
+                || refreshTokenExpirationDays <= 0 || refreshTokenExpirationDays > Integer.MAX_VALUE / 86400) {
+            throw new IllegalStateException("Las duraciones de los tokens deben ser positivas y estar acotadas");
         }
         this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
@@ -103,15 +109,10 @@ public class TokenServiceAdapter implements TokenServicePort {
                     .parseSignedClaims(token)
                     .getPayload();
 
-            // Verificar si es un refresh token revocado en BD
+            // Un refresh token nunca autoriza peticiones de recursos.
             String tokenId = claims.getId();
             if (tokenId != null) {
-                // Para refresh tokens, delegar a RefreshTokenAdapter
-                var validationResult = refreshTokenAdapter.validateRefreshToken(token);
-                if (validationResult.isEmpty()) {
-                    throw new InvalidTokenException("Refresh token has been revoked or is invalid");
-                }
-                // Token válido, continuar con claims normales
+                throw new InvalidTokenException("Refresh token cannot be used as an access token");
             }
 
             Map<String, Object> result = new HashMap<>();
@@ -124,66 +125,37 @@ public class TokenServiceAdapter implements TokenServicePort {
             return result;
         } catch (ExpiredJwtException e) {
             throw new InvalidTokenException("Token has expired", e);
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             throw new InvalidTokenException("Invalid token: " + e.getMessage(), e);
         }
     }
 
     @Override
     public Map<String, Object> extractClaims(String token) {
-        // Decode JWT payload (middle part) without verifying signature
-        // JWT format: header.payload.signature
-        String[] parts = token.split("\\.");
+        String[] parts = token.split("\\.", -1);
         if (parts.length != 3) {
             throw new IllegalArgumentException("Invalid JWT format");
         }
-
-        String payload = parts[1];
-        // Base64URL decode (add padding if needed)
-        String padded = payload + "=".repeat((4 - payload.length() % 4) % 4);
-        byte[] decoded = Base64.getUrlDecoder().decode(padded);
-        String json = new String(decoded, StandardCharsets.UTF_8);
-
-        // Parse JSON manually (simple approach for known claims)
-        Map<String, Object> result = new HashMap<>();
-        // Extract userId (subject)
-        String subject = extractJsonValue(json, "sub");
-        if (subject != null) {
-            result.put("userId", Long.valueOf(subject));
-        }
-        result.put("email", extractJsonValue(json, "email"));
-        result.put("role", extractJsonValue(json, "role"));
-        result.put("tokenId", extractJsonValue(json, "jti"));
-        // issuedAt and expiresAt are numeric timestamps
-        String iat = extractJsonValue(json, "iat");
-        if (iat != null) {
-            result.put("issuedAt", Date.from(Instant.ofEpochSecond(Long.parseLong(iat))));
-        }
-        String exp = extractJsonValue(json, "exp");
-        if (exp != null) {
-            result.put("expiresAt", Date.from(Instant.ofEpochSecond(Long.parseLong(exp))));
-        }
-        return result;
-    }
-
-    private String extractJsonValue(String json, String key) {
-        String searchKey = "\"" + key + "\"";
-        int start = json.indexOf(searchKey);
-        if (start == -1) return null;
-        start = json.indexOf(":", start);
-        if (start == -1) return null;
-        start++;
-        while (start < json.length() && Character.isWhitespace(json.charAt(start))) start++;
-        if (start >= json.length()) return null;
-        if (json.charAt(start) == '"') {
-            start++;
-            int end = json.indexOf("\"", start);
-            if (end == -1) return null;
-            return json.substring(start, end);
-        } else {
-            int end = start;
-            while (end < json.length() && (Character.isDigit(json.charAt(end)) || json.charAt(end) == '-')) end++;
-            return json.substring(start, end);
+        try {
+            Map<String, Object> payload = JSON.readValue(
+                    Base64.getUrlDecoder().decode(parts[1]),
+                    new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+            Map<String, Object> result = new HashMap<>();
+            if (payload.get("sub") instanceof String subject) {
+                result.put("userId", Long.valueOf(subject));
+            }
+            result.put("email", payload.get("email"));
+            result.put("role", payload.get("role"));
+            result.put("tokenId", payload.get("jti"));
+            if (payload.get("iat") instanceof Number issuedAt) {
+                result.put("issuedAt", Date.from(Instant.ofEpochSecond(issuedAt.longValue())));
+            }
+            if (payload.get("exp") instanceof Number expiresAt) {
+                result.put("expiresAt", Date.from(Instant.ofEpochSecond(expiresAt.longValue())));
+            }
+            return result;
+        } catch (java.io.IOException | IllegalArgumentException invalid) {
+            throw new IllegalArgumentException("Invalid JWT payload", invalid);
         }
     }
 
@@ -206,6 +178,23 @@ public class TokenServiceAdapter implements TokenServicePort {
         // Almacenar en BD con el familyId específico - returns the refresh token
         return refreshTokenAdapter.storeRefreshTokenWithFamily(userId, email, role, refreshToken, familyId);
     }
+
+    /** Rota y consume el refresh bajo el bloqueo transaccional del adaptador. */
+    public Optional<TokenRotation> rotateRefreshToken(String rawToken) {
+        return refreshTokenAdapter.rotateRefreshToken(rawToken, user -> generateRefreshToken(
+                user.userId(), user.email(), user.role(), UUID.randomUUID().toString()))
+                .map(rotation -> {
+                    var user = rotation.user();
+                    return new TokenRotation(generateAccessToken(user.userId(), user.email(), user.role()),
+                            rotation.refreshToken(), user.email(), user.role());
+                });
+    }
+
+    public void revokeRefreshSession(String rawToken) {
+        refreshTokenAdapter.revokeRefreshSession(rawToken);
+    }
+
+    public record TokenRotation(String accessToken, String refreshToken, String email, String role) {}
 
     @Override
     public Optional<TokenValidationResult> validateRefreshToken(String rawToken) {

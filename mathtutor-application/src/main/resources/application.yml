@@ -46,7 +46,7 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    baseline-on-migrate: true
+    baseline-on-migrate: false
 
   # Spring AI (configurar cuando se use)
   ai:
@@ -54,16 +54,27 @@ spring:
       api-key: ${SPRING_AI_OPENAI_API_KEY:}
     ollama:
       base-url: ${SPRING_AI_OLLAMA_BASE_URL:http://localhost:11434}
+
+---
+
+# El proveedor Google puede activarse junto a cualquier perfil de infraestructura.
+spring:
+  config:
+    activate:
+      on-profile: google-ai-studio
+  ai:
     google:
       ai-studio:
         api-key: ${GOOGLE_AI_API_KEY:}
         embedding-model: ${GOOGLE_AI_EMBEDDING_MODEL:gemini-embedding-001}
         embedding-dimensions: 768
-        chat-model: ${GOOGLE_AI_CHAT_MODEL:gemini-2.5-flash}
+        chat-model: ${GOOGLE_AI_CHAT_MODEL:gemini-3.5-flash-lite}
         temperature: 0.7
         max-output-tokens: 8192
-        max-retries: 5
-        max-requests-per-minute: 100
+        # Una petición de generación por turno: no reintentar ni cambiar a un modelo de pago.
+        max-retries: 0
+        # Ajustar a la cuota del proyecto/modelo en AI Studio; no hay RPM universal del nivel gratuito.
+        max-requests-per-minute: ${GOOGLE_AI_MAX_REQUESTS_PER_MINUTE:5}
 
 ---
 
@@ -81,7 +92,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: false
 
   flyway:

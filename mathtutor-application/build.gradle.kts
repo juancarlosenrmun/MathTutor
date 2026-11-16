@@ -35,6 +35,7 @@ dependencies {
 
     // Flyway (not a Spring Boot starter in 3.x, use core)
     implementation("org.flywaydb:flyway-core")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
     // Database
     runtimeOnly("org.postgresql:postgresql")
@@ -70,6 +71,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("nl.jqno.equalsverifier:equalsverifier:3.18")
     testImplementation("io.projectreactor:reactor-test")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.4.0")
     testRuntimeOnly("com.h2database:h2")
     // JUnit Platform Launcher required for Gradle JVM Test Suite
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.3")
@@ -86,20 +88,13 @@ tasks.withType<Test> {
     // Pass Docker configuration to test JVM for Testcontainers
     // Use BOTH system properties and environment variables to ensure Testcontainers sees them
     // Testcontainers checks: 1) env vars, 2) system properties, 3) defaults
-    systemProperty("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
-    systemProperty("DOCKER_HOST", "unix:///var/run/docker.sock")
-    systemProperty("TESTCONTAINERS_RYUK_DISABLED", "true")
-    systemProperty("testcontainers.docker.socket.override", "/var/run/docker.sock")
-    systemProperty("docker.host", "unix:///var/run/docker.sock")
-    environment("TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock")
-    environment("DOCKER_HOST", "unix:///var/run/docker.sock")
-    environment("TESTCONTAINERS_RYUK_DISABLED", "true")
+    // Testcontainers detecta Docker en Windows y Linux y respeta el entorno del usuario.
 
     // JVM Test Suite workaround: configure fork options to avoid EOFException on Windows
     // Use a dedicated fork with isolated classloader
     maxParallelForks = 1
     forkEvery = 100
-    jvmArgs = listOf("-Xmx2g", "-XX:+UseSerialGC", "-Dtestcontainers.ryuk.disabled=true", "-Dorg.testcontainers.ryuk.disabled=true")
+    jvmArgs = listOf("-Xmx2g", "-XX:+UseSerialGC")
     // Ensure test results are written immediately
     testLogging {
         events("passed", "skipped", "failed")
@@ -107,11 +102,11 @@ tasks.withType<Test> {
     }
 }
 
-// Exclude real-api tagged tests from regular test run (they require GOOGLE_AI_API_KEY)
+// Exclude all external API tests from the regular test run: consumen cuota y no son deterministas.
 // Exclude detector-demo tagged tests (demonstration test that deliberately fails to prove detector works)
 tasks.named<Test>("test") {
     useJUnitPlatform {
-        excludeTags("real-api", "detector-demo")
+        excludeTags("real-api", "external-api", "detector-demo")
     }
 }
 

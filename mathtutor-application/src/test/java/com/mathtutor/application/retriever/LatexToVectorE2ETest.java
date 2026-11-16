@@ -71,8 +71,8 @@ class LatexToVectorE2ETest {
         registry.add("spring.ai.google.ai-studio.api-key", () -> apiKey);
         registry.add("spring.ai.google.ai-studio.embedding-model", () -> "gemini-embedding-001");
         registry.add("spring.ai.google.ai-studio.embedding-dimensions", () -> "768");
-        registry.add("spring.ai.google.ai-studio.max-retries", () -> "5");
-        registry.add("spring.ai.google.ai-studio.max-requests-per-minute", () -> "100");
+        registry.add("spring.ai.google.ai-studio.max-retries", () -> "0");
+        registry.add("spring.ai.google.ai-studio.max-requests-per-minute", () -> System.getenv().getOrDefault("GOOGLE_AI_MAX_REQUESTS_PER_MINUTE", "5"));
         // JWT configuration for tests (required by TokenServiceAdapter)
         registry.add("jwt.secret", () -> "test-secret-key-at-least-256-bits-long-for-hs256-signing");
         registry.add("jwt.access-token-expiration-minutes", () -> "15");
@@ -96,13 +96,20 @@ class LatexToVectorE2ETest {
     @Autowired
     private TopicRepository topicRepository;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     private Module calculusModule;
     private Topic derivativesTopic;
 
     @BeforeEach
     void setUp() {
-        // Crear módulo y tema de prueba (usar códigos únicos para evitar conflictos entre tests)
-        String testSuffix = "_" + System.currentTimeMillis() + "_" + Thread.currentThread().threadId();
+        // Corpus aislado y determinista: evita acumular vectores de pruebas anteriores.
+        jdbcTemplate.execute("DELETE FROM vector_store");
+        jdbcTemplate.execute("DELETE FROM note_chunks");
+        jdbcTemplate.execute("DELETE FROM topics");
+        jdbcTemplate.execute("DELETE FROM modules");
+        String testSuffix = "_E2E";
 
         calculusModule = new Module();
         calculusModule.setCode("CALCULUS" + testSuffix);
@@ -216,7 +223,7 @@ class LatexToVectorE2ETest {
         // ============================================================
         // PASO 4: Indexar en pgvector usando Google AI Studio embeddings
         // ============================================================
-        springAiRetriever.indexDocuments(chunks);
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(chunks));
 
         // ============================================================
         // PASO 5: Búsqueda por similitud - consultas en dominio
@@ -297,7 +304,7 @@ class LatexToVectorE2ETest {
         List<com.mathtutor.persistence.entity.NoteChunk> chunks = List.of(
             createChunk(join(extraction.getEnvironments().get("solucion")), "SOLUCION", "integrales_solucion.tex")
         );
-        springAiRetriever.indexDocuments(chunks);
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(chunks));
 
         // Buscar por fórmula integral x^2
         List<NoteChunk> results = ragRetriever.retrieve("integral de x al cuadrado de 0 a 1", calculusModule.getCode(), derivativesTopic.getCode());

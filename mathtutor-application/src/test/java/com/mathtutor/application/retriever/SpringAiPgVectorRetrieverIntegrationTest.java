@@ -15,7 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -35,7 +36,7 @@ import static org.assertj.core.api.Assertions.*;
 @SpringBootTest(classes = MathTutorApplication.class)
 @ActiveProfiles({"spring-ai-pgvector", "deterministic"})
 @Testcontainers(disabledWithoutDocker = true)
-@Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class SpringAiPgVectorRetrieverIntegrationTest {
 
     @Container
@@ -80,11 +81,19 @@ class SpringAiPgVectorRetrieverIntegrationTest {
     @Autowired
     private TopicRepository topicRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     private Module testModule;
     private Topic testTopic;
 
     @BeforeEach
     void setUp() {
+        // Cada prueba prepara datos confirmados: el proveedor nunca se llama dentro de una transacción.
+        jdbcTemplate.execute("DELETE FROM vector_store");
+        jdbcTemplate.execute("DELETE FROM note_chunks");
+        jdbcTemplate.execute("DELETE FROM topics");
+        jdbcTemplate.execute("DELETE FROM modules");
         // Crear módulo y tema de prueba (no borrar para evitar cascade a note_chunks)
         testModule = new Module();
         testModule.setCode("CALCULUS");
@@ -117,7 +126,7 @@ class SpringAiPgVectorRetrieverIntegrationTest {
             "EJEMPLO", "ejemplo_derivada.tex");
 
         // Indexar en VectorStore
-        springAiRetriever.indexDocuments(List.of(chunk1, chunk2, chunk3));
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(List.of(chunk1, chunk2, chunk3)));
 
         // Verificar que se indexaron
         // (La verificación real se hace en retrieve)
@@ -134,7 +143,7 @@ class SpringAiPgVectorRetrieverIntegrationTest {
             "TEOREMA", "regla_producto.tex");
 
         // Indexar en VectorStore
-        springAiRetriever.indexDocuments(List.of(chunk1, chunk2, chunk3));
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(List.of(chunk1, chunk2, chunk3)));
 
         // Recuperar con filtro por módulo y tema - buscar texto exacto
         List<NoteChunk> results = ragRetriever.retrieve("Derivada de seno x es coseno x",
@@ -172,7 +181,7 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         algChunk.setModule(otherModule);
         algChunk.setTopic(otherTopic);
 
-        springAiRetriever.indexDocuments(List.of(calcChunk, algChunk));
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(List.of(calcChunk, algChunk)));
 
         // Buscar solo en módulo de cálculo - buscar texto exacto
         List<NoteChunk> results = ragRetriever.retrieve("Derivada de x^2 es 2x",
@@ -202,7 +211,7 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         integChunk.setModule(testModule);
         integChunk.setTopic(otherTopic);
 
-        springAiRetriever.indexDocuments(List.of(derivChunk, integChunk));
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(List.of(derivChunk, integChunk)));
 
         // Buscar solo en tema de derivadas - buscar texto exacto
         List<NoteChunk> results = ragRetriever.retrieve("Derivada de x^n = n*x^(n-1)",
@@ -224,7 +233,7 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         chunk2.setModule(testModule);
         chunk2.setTopic(testTopic);
 
-        springAiRetriever.indexDocuments(List.of(chunk1, chunk2));
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(List.of(chunk1, chunk2)));
 
         // Buscar sin filtros - buscar texto exacto
         List<NoteChunk> results = ragRetriever.retrieve("Teorema fundamental del cálculo", null, null);
@@ -239,7 +248,7 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         chunk.setModule(testModule);
         chunk.setTopic(testTopic);
 
-        springAiRetriever.indexDocuments(List.of(chunk));
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(List.of(chunk)));
 
         // Buscar algo que no existe - texto que no coincide con nada
         List<NoteChunk> results = ragRetriever.retrieve("Texto que no existe en ningún chunk",
@@ -257,7 +266,7 @@ class SpringAiPgVectorRetrieverIntegrationTest {
         chunk.setTopic(testTopic);
         chunk.setVersion("v1");
 
-        springAiRetriever.indexDocuments(List.of(chunk));
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(List.of(chunk)));
 
         List<NoteChunk> results = ragRetriever.retrieve("Contenido de prueba",
             testModule.getCode(), testTopic.getCode());

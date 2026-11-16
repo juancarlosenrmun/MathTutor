@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -46,8 +47,66 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = MathTutorApplication.class)
 @AutoConfigureMockMvc
 @Testcontainers(disabledWithoutDocker = true)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @DisplayName("AuthController Integration Tests")
 class AuthControllerIntegrationTest {
+
+    @Test
+    void servesWebGlClientWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/visor/index.html"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("lang=\"es\"")));
+        mockMvc.perform(get("/visor/pipeline.mjs"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", org.hamcrest.Matchers.containsString("javascript")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("#version 300 es")));
+    }
+
+    @Autowired
+    private com.mathtutor.persistence.repository.TutorSessionRepository sessions;
+
+    @Test
+    void sessionAuthorizationRequiresOwnershipAndCurrentRole() throws Exception {
+        User owner = userRepositoryPort.save(User.create(UUID.randomUUID() + "@test.es", "hash", User.Role.ALUMNO));
+        User other = userRepositoryPort.save(User.create(UUID.randomUUID() + "@test.es", "hash", User.Role.ALUMNO));
+        var session = new com.mathtutor.persistence.entity.TutorSession();
+        var entity = new com.mathtutor.persistence.entity.User();
+        entity.setId(owner.id());
+        session.setUser(entity);
+        session.setStatus(com.mathtutor.persistence.entity.TutorSession.SessionStatus.ACTIVA);
+        Long id = sessions.saveAndFlush(session).getId();
+        String token = tokenServiceAdapter.generateAccessToken(owner.id(), owner.email(), "ALUMNO");
+        String otherToken = tokenServiceAdapter.generateAccessToken(other.id(), other.email(), "ALUMNO");
+
+        mockMvc.perform(get("/api/access/sessions/" + id)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/access/sessions/" + id).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/access/sessions/" + id).header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/access/sessions/" + Long.MAX_VALUE).header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/access/sessions/0").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+
+        // El mismo JWT deja de autorizar inmediatamente tras cambiar el rol en BD.
+        userRepositoryPort.save(User.withId(owner.id(), owner.email(), owner.passwordHash(),
+                User.Role.PROFESOR, true, null, owner.createdAt()));
+        mockMvc.perform(get("/api/access/sessions/" + id).header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
+                .andExpect(jsonPath("$.data.role").value("PROFESOR"));
+        userRepositoryPort.save(User.withId(owner.id(), owner.email(), owner.passwordHash(),
+                User.Role.ADMIN, true, null, owner.createdAt()));
+        mockMvc.perform(get("/api/access/sessions/" + id).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+        String adminToken = tokenServiceAdapter.generateAccessToken(owner.id(), owner.email(), "ADMIN");
+        mockMvc.perform(get("/api/access/sessions/" + Long.MAX_VALUE).header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isForbidden());
+        userRepositoryPort.save(User.withId(owner.id(), owner.email(), owner.passwordHash(),
+                User.Role.ADMIN, false, null, owner.createdAt()));
+        mockMvc.perform(get("/api/access/sessions/" + id).header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
 
     /**
      * RequestPostProcessor para establecer la IP remota en MockMvc.
@@ -101,6 +160,9 @@ class AuthControllerIntegrationTest {
     private RateLimitAdapter rateLimitAdapter;
 
     @Autowired
+    private com.mathtutor.persistence.repository.RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     private String testEmail;
@@ -113,6 +175,87 @@ class AuthControllerIntegrationTest {
         testPassword = "TestPass123!";
         // Limpiar rate limit antes de cada test para evitar interferencias
         rateLimitAdapter.clear();
+    }
+
+    @Test
+    @DisplayName("Registro exige CSRF antes de crear una cookie de sesion")
+    void shouldRequireCsrfForRegistration() throws Exception {
+        mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(java.util.Map.of(
+                        "email", testEmail, "password", "StrongPass123!", "role", "ALUMNO"))))
+                .andExpect(status().isForbidden());
+        assertThat(userRepositoryPort.existsByEmail(testEmail)).isFalse();
+    }
+
+    @Test
+    @DisplayName("El registro público rechaza profesor y administrador")
+    void shouldRejectPublicAdministratorRegistration() throws Exception {
+        for (String role : java.util.List.of("PROFESOR", "ADMIN")) {
+            mockMvc.perform(registrationRequest().contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(java.util.Map.of(
+                            "email", testEmail, "password", "StrongPass123!", "role", role))))
+                    .andExpect(status().isBadRequest());
+        }
+        assertThat(userRepositoryPort.existsByEmail(testEmail)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Refresh no permite acceso como bearer y el rol se actualiza sin reautenticar")
+    void shouldSeparateTokenUsesAndRefreshAuthorities() throws Exception {
+        User saved = userRepositoryPort.save(User.create(testEmail, "unused-hash", User.Role.ADMIN));
+        String access = tokenServiceAdapter.generateAccessToken(saved.id(), saved.email(), "ADMIN");
+        String refresh = tokenServiceAdapter.storeRefreshToken(saved.id(), saved.email(), "ADMIN", "unused");
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + refresh))
+                .andExpect(status().isUnauthorized());
+        userRepositoryPort.save(User.withId(saved.id(), saved.email(), saved.passwordHash(),
+                User.Role.ALUMNO, true, null, saved.createdAt()));
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + access))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.role").value("ALUMNO"));
+        userRepositoryPort.save(User.withId(saved.id(), saved.email(), saved.passwordHash(),
+                User.Role.ALUMNO, false, null, saved.createdAt()));
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + access))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Dos refresh concurrentes no crean dos sesiones y el replay revoca la familia")
+    void shouldSerializeConcurrentRefreshAndRevokeReplayedFamily() throws Exception {
+        User saved = userRepositoryPort.save(User.create(testEmail, "unused-hash", User.Role.ALUMNO));
+        String original = tokenServiceAdapter.storeRefreshToken(saved.id(), saved.email(), "ALUMNO", "unused");
+        var ready = new java.util.concurrent.CountDownLatch(2);
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try (var executor = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            java.util.concurrent.Callable<Optional<TokenServiceAdapter.TokenRotation>> action = () -> {
+                ready.countDown();
+                if (!start.await(10, java.util.concurrent.TimeUnit.SECONDS)) {
+                    throw new IllegalStateException("No se pudo iniciar la prueba concurrente");
+                }
+                return tokenServiceAdapter.rotateRefreshToken(original);
+            };
+            var first = executor.submit(action);
+            var second = executor.submit(action);
+            assertThat(ready.await(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+            var a = first.get(20, java.util.concurrent.TimeUnit.SECONDS);
+            var b = second.get(20, java.util.concurrent.TimeUnit.SECONDS);
+            assertThat(java.util.stream.Stream.of(a, b).filter(Optional::isPresent).count()).isEqualTo(1);
+            var winner = a.or(() -> b).orElseThrow();
+            assertThat(tokenServiceAdapter.validateRefreshToken(winner.refreshToken())).isEmpty();
+        }
+    }
+
+    @Test
+    @DisplayName("Cerrar sesion sin access revoca refresh en servidor")
+    void shouldLogoutExpiredAccessSession() throws Exception {
+        User saved = userRepositoryPort.save(User.create(testEmail, "unused-hash", User.Role.ALUMNO));
+        String refresh = tokenServiceAdapter.storeRefreshToken(saved.id(), saved.email(), "ALUMNO", "unused");
+        String replacement = tokenServiceAdapter.rotateRefreshToken(refresh).orElseThrow().refreshToken();
+        String csrfToken = getCsrfToken();
+        mockMvc.perform(post("/api/auth/logout").cookie(new Cookie("refresh_token", refresh), new Cookie("XSRF-TOKEN", csrfTokenCookie))
+                        .header("X-XSRF-TOKEN", csrfToken))
+                .andExpect(status().isOk());
+        assertThat(tokenServiceAdapter.validateRefreshToken(refresh)).isEmpty();
+        assertThat(tokenServiceAdapter.validateRefreshToken(replacement)).isEmpty();
     }
 
     @Nested
@@ -130,7 +273,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-            MvcResult result = mockMvc.perform(post("/api/auth/register")
+            MvcResult result = mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isCreated())
@@ -169,13 +312,13 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isCreated());
 
             // Intentar registrar el mismo email
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isBadRequest())
@@ -194,7 +337,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isBadRequest())
@@ -212,7 +355,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isBadRequest())
@@ -229,7 +372,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isBadRequest())
@@ -252,7 +395,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isCreated());
@@ -371,7 +514,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(registerBody))
                     .andExpect(status().isCreated());
@@ -455,7 +598,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(registerBody))
                     .andExpect(status().isCreated());
@@ -678,18 +821,13 @@ class AuthControllerIntegrationTest {
             String familyId = UUID.randomUUID().toString();
             String expiredRawToken = "expired-refresh-token-" + UUID.randomUUID();
 
-            // Hashear el token
-            String tokenHash = passwordEncoderPort.encode(expiredRawToken);
-            Instant past = Instant.now().minusSeconds(3600); // 1 hora atrás
+            String tokenHash = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(expiredRawToken.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+            Instant past = Instant.now().minusSeconds(3600);
+            refreshTokenRepository.saveAndFlush(new RefreshToken(tokenHash, userId, familyId, past, Instant.now()));
+            assertThat(refreshTokenRepository.findByTokenHash(tokenHash)).isPresent();
+            assertThat(tokenServiceAdapter.validateRefreshToken(expiredRawToken)).isEmpty();
 
-            // Insertar directamente en BD usando el repository (acceso vía adapter reflection)
-            // Como no tenemos acceso directo al repository, usamos una aproximación:
-            // Creamos un token que sabemos que expirará y lo validamos via adapter
-            var validationOpt = tokenServiceAdapter.validateRefreshToken(expiredRawToken);
-            assertThat(validationOpt).isEmpty();
-
-            // Test via endpoint: usar un token con formato válido pero que no existe en BD
-            // (simula un token que fue limpiado por expiración)
             String csrfToken = getCsrfToken();
 
             MvcResult result = mockMvc.perform(post("/api/auth/refresh")
@@ -750,7 +888,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(registerBody))
                     .andExpect(status().isCreated());
@@ -863,7 +1001,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(registerBody))
                     .andExpect(status().isCreated());
@@ -976,7 +1114,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(newEmail, testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestBody))
                     .andExpect(status().isCreated())
@@ -1040,7 +1178,7 @@ class AuthControllerIntegrationTest {
                 }
                 """.formatted(testEmail, testPassword);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(registrationRequest()
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerBody))
                     .andExpect(status().isCreated());
@@ -1351,75 +1489,27 @@ class AuthControllerIntegrationTest {
         }
 
         @Test
-        @DisplayName("Debe confiar en X-Forwarded-For para localhost (desarrollo)")
-        void shouldTrustXForwardedForForLocalhost() throws Exception {
-            // En el entorno de test, MockMvc usa 127.0.0.1 como remoteAddr
-            // El código trata localhost como de confianza y permite X-Forwarded-For
-            String wrongPassword = "WrongPass123!";
-            String requestBody = """
-                {
-                    "email": "%s",
-                    "password": "%s"
-                }
-                """.formatted("test-localhost@example.com", wrongPassword);
-
-            // Simular request desde localhost con X-Forwarded-For
-            String csrfToken = getCsrfToken();
-            mockMvc.perform(post("/api/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .header("X-XSRF-TOKEN", csrfToken)
-                            .header("X-Forwarded-For", "203.0.113.195") // IP externa simulada
-                            .with(remoteAddr("127.0.0.1")) // localhost
-                            .cookie(new Cookie("XSRF-TOKEN", csrfTokenCookie))
-                            .content(requestBody))
-                    .andExpect(status().isUnauthorized());
-
-            // Segundo intento con DIFERENTE X-Forwarded-For pero MISMO remoteAddr (localhost)
-            // Como localhost es de confianza, debe usar X-Forwarded-For para rate limit
-            // Por tanto, este debería ser un intento NUEVO (distinta IP en header)
-            String csrfToken2 = getCsrfToken();
-            mockMvc.perform(post("/api/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .header("X-XSRF-TOKEN", csrfToken2)
-                            .header("X-Forwarded-For", "198.51.100.1") // IP distinta
-                            .with(remoteAddr("127.0.0.1")) // Mismo localhost
-                            .cookie(new Cookie("XSRF-TOKEN", csrfTokenCookie))
-                            .content(requestBody))
-                    .andExpect(status().isUnauthorized()); // Nuevo intento (IP distinta en header)
+        @DisplayName("Localhost sin proxy configurado no permite evadir limite mediante X-Forwarded-For")
+        void shouldIgnoreSpoofedForwardedForOnLocalhost() throws Exception {
+            assertSharedRemoteIpLimit("X-Forwarded-For");
         }
 
         @Test
-        @DisplayName("Debe usar X-Real-IP cuando X-Forwarded-For no está presente")
-        void shouldUseXRealIpWhenNoXForwardedFor() throws Exception {
-            String wrongPassword = "WrongPass123!";
-            String requestBody = """
-                {
-                    "email": "%s",
-                    "password": "%s"
-                }
-                """.formatted("test-xrealip@example.com", wrongPassword);
+        @DisplayName("Localhost sin proxy configurado no permite evadir limite mediante X-Real-IP")
+        void shouldIgnoreSpoofedRealIpOnLocalhost() throws Exception {
+            assertSharedRemoteIpLimit("X-Real-IP");
+        }
 
-            // Con localhost, X-Real-IP debe ser usado
-            String csrfToken = getCsrfToken();
-            mockMvc.perform(post("/api/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .header("X-XSRF-TOKEN", csrfToken)
-                            .header("X-Real-IP", "203.0.113.195")
-                            .with(remoteAddr("127.0.0.1"))
-                            .cookie(new Cookie("XSRF-TOKEN", csrfTokenCookie))
-                            .content(requestBody))
-                    .andExpect(status().isUnauthorized());
-
-            // Segundo intento con diferente X-Real-IP
-            String csrfToken2 = getCsrfToken();
-            mockMvc.perform(post("/api/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .header("X-XSRF-TOKEN", csrfToken2)
-                            .header("X-Real-IP", "198.51.100.1")
-                            .with(remoteAddr("127.0.0.1"))
-                            .cookie(new Cookie("XSRF-TOKEN", csrfTokenCookie))
-                            .content(requestBody))
-                    .andExpect(status().isUnauthorized());
+        private void assertSharedRemoteIpLimit(String header) throws Exception {
+            for (int attempt = 0; attempt < 6; attempt++) {
+                String csrf = getCsrfToken();
+                mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .header("X-XSRF-TOKEN", csrf).header(header, "203.0.113." + (attempt + 1))
+                        .with(remoteAddr("127.0.0.1")).cookie(new Cookie("XSRF-TOKEN", csrfTokenCookie))
+                        .content(objectMapper.writeValueAsString(java.util.Map.of(
+                                "email", "unknown-" + attempt + "@example.com", "password", "WrongPass123!"))))
+                        .andExpect(status().is(attempt == 5 ? 429 : 401));
+            }
         }
     }
 
@@ -1443,6 +1533,12 @@ class AuthControllerIntegrationTest {
      * Obtiene el token CSRF desde el endpoint /api/csrf-token.
      * Devuelve el valor del token para usar en el header X-XSRF-TOKEN.
      */
+    private MockHttpServletRequestBuilder registrationRequest() throws Exception {
+        String token = getCsrfToken();
+        return post("/api/auth/register").header("X-XSRF-TOKEN", token)
+                .cookie(new Cookie("XSRF-TOKEN", csrfTokenCookie));
+    }
+
     private String getCsrfToken() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/csrf-token"))
                 .andExpect(status().isOk())

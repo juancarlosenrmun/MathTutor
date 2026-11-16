@@ -16,6 +16,14 @@ repositories {
     maven { url = uri("https://repo.spring.io/milestone") }
 }
 
+dependencyManagement {
+    imports {
+        // Docker Desktop 29 rechaza el cliente API usado por la versión gestionada
+        // por Boot 3.4.0; esta BOM mantiene los módulos Testcontainers coherentes.
+        mavenBom("org.testcontainers:testcontainers-bom:1.21.4")
+    }
+}
+
 dependencies {
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -36,6 +44,9 @@ dependencies {
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.21.4"))
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
     testRuntimeOnly("com.h2database:h2:2.2.224")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
     testImplementation("org.assertj:assertj-core:3.24.2")

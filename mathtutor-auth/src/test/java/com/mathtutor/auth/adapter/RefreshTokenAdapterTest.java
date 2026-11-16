@@ -8,301 +8,200 @@ import com.mathtutor.persistence.repository.RefreshTokenRepository;
 import com.mathtutor.persistence.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.function.Function;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Tests para RefreshTokenAdapter.
- * Verifica almacenamiento, validación, rotación y detección de reuso de refresh tokens.
- */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("RefreshTokenAdapter")
+@DisplayName("RefreshTokenAdapter: almacenamiento indexado y rotaci?n at?mica")
 class RefreshTokenAdapterTest {
-
-    @Mock
-    private RefreshTokenRepository refreshTokenRepository;
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private PasswordEncoderPort passwordEncoder;
-
+    @Mock private RefreshTokenRepository refreshTokenRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private PasswordEncoderPort passwordEncoder;
     private RefreshTokenAdapter adapter;
 
-    @BeforeEach
-    void setUp() {
-        adapter = new RefreshTokenAdapter(refreshTokenRepository, userRepository, passwordEncoder);
+    @BeforeEach void setUp() {
+        adapter = new RefreshTokenAdapter(refreshTokenRepository, userRepository);
     }
 
-    @Nested
-    @DisplayName("storeRefreshToken()")
-    class StoreRefreshToken {
-
-        @Test
-        @DisplayName("Debe almacenar refresh token con familyId nuevo y retornar token en claro")
-        void shouldStoreWithNewFamilyIdAndReturnRawToken() {
-            // Given
-            String rawToken = "raw-refresh-token-jwt";
-            String encodedHash = "argon2id$hash$value";
-            when(passwordEncoder.encode(rawToken)).thenReturn(encodedHash);
-
-            RefreshToken savedToken = new RefreshToken(encodedHash, 1L, "family-123", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            savedToken.setId(1L);
-            when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(savedToken);
-
-            // When
-            String result = adapter.storeRefreshToken(1L, "test@example.com", "ALUMNO", rawToken);
-
-            // Then
-            assertThat(result).isEqualTo(rawToken);
-            verify(passwordEncoder).encode(rawToken);
-            verify(refreshTokenRepository).save(argThat(token ->
-                    token.getTokenHash().equals(encodedHash) &&
-                    token.getUserId() == 1L &&
-                    token.getFamilyId() != null &&
-                    !token.getFamilyId().isBlank() &&
-                    token.getExpiresAt().isAfter(Instant.now())
-            ));
-        }
-
-        @Test
-        @DisplayName("Debe generar familyId único en cada llamada")
-        void shouldGenerateUniqueFamilyIdEachCall() {
-            // Given
-            when(passwordEncoder.encode(anyString())).thenReturn("hash");
-            when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(invocation -> {
-                RefreshToken t = invocation.getArgument(0);
-                t.setId(1L);
-                return t;
-            });
-
-            // When
-            String result1 = adapter.storeRefreshToken(1L, "test@example.com", "ALUMNO", "token1");
-            String result2 = adapter.storeRefreshToken(1L, "test@example.com", "ALUMNO", "token2");
-
-            // Then
-            assertThat(result1).isEqualTo("token1");
-            assertThat(result2).isEqualTo("token2");
-            verify(refreshTokenRepository, times(2)).save(any(RefreshToken.class));
-        }
+    private RefreshToken token(boolean revoked, Instant expiry) {
+        RefreshToken token = new RefreshToken("hash", 1L, "family", expiry, Instant.now());
+        token.setId(42L);
+        token.setRevoked(revoked);
+        return token;
     }
 
-    @Nested
-    @DisplayName("storeRefreshTokenWithFamily()")
-    class StoreRefreshTokenWithFamily {
-
-        @Test
-        @DisplayName("Debe almacenar refresh token con familyId específico y retornar token en claro")
-        void shouldStoreWithSpecificFamilyIdAndReturnRawToken() {
-            // Given
-            String rawToken = "raw-refresh-token-jwt";
-            String familyId = "existing-family-456";
-            String encodedHash = "argon2id$hash$value";
-            when(passwordEncoder.encode(rawToken)).thenReturn(encodedHash);
-
-            RefreshToken savedToken = new RefreshToken(encodedHash, 1L, familyId, Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            savedToken.setId(2L);
-            when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(savedToken);
-
-            // When
-            String result = adapter.storeRefreshTokenWithFamily(1L, "test@example.com", "ALUMNO", rawToken, familyId);
-
-            // Then
-            assertThat(result).isEqualTo(rawToken);
-            verify(passwordEncoder).encode(rawToken);
-            verify(refreshTokenRepository).save(argThat(token ->
-                    token.getTokenHash().equals(encodedHash) &&
-                    token.getUserId() == 1L &&
-                    token.getFamilyId().equals(familyId)
-            ));
-        }
+    private void activeUser() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(User.builder().id(1L)
+                .email("test@example.com").passwordHash("hash").role(User.Role.ALUMNO).active(true).build()));
+        lenient().when(userRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(User.builder().id(1L)
+                .email("test@example.com").passwordHash("hash").role(User.Role.ALUMNO).active(true).build()));
     }
 
-    @Nested
-    @DisplayName("validateRefreshToken()")
-    class ValidateRefreshToken {
+    @Test void storesConfiguredExpiryInsteadOfSevenDays() {
+        org.springframework.test.util.ReflectionTestUtils.setField(adapter, "refreshTokenExpirationDays", 1L);
+        adapter.init();
+        Instant before = Instant.now();
+        adapter.storeRefreshToken(1L, "test@example.com", "ALUMNO", "token");
+        verify(refreshTokenRepository).save(argThat(token -> token.getExpiresAt()
+                .isAfter(before.plusSeconds(86399)) && token.getExpiresAt().isBefore(Instant.now().plusSeconds(86401))));
+    }
 
-        @Test
-        @DisplayName("Debe retornar TokenValidationResult cuando token es válido")
-        void shouldReturnValidationResultWhenTokenValid() {
-            // Given
-            String rawToken = "valid-raw-token";
-            String tokenHash = "argon2id$hash$value";
-            String familyId = "family-123";
-            Instant now = Instant.now();
-            Instant expiresAt = now.plusSeconds(7 * 24 * 60 * 60);
+    @Test void rejectsNonPositiveAndOverflowExpiryConfiguration() {
+        org.springframework.test.util.ReflectionTestUtils.setField(adapter, "refreshTokenExpirationDays", 0L);
+        assertThatThrownBy(adapter::init).isInstanceOf(IllegalStateException.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(adapter, "refreshTokenExpirationDays", Long.MAX_VALUE);
+        assertThatThrownBy(adapter::init).isInstanceOf(IllegalStateException.class);
+    }
 
-            RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, familyId, expiresAt, now);
-            tokenEntity.setId(42L);
-            tokenEntity.setRevoked(false);
+    @Test void storesDeterministicDigestWithoutPasswordHashing() {
+        assertThat(adapter.storeRefreshToken(1L, "test@example.com", "ALUMNO", "random-jwt")).isEqualTo("random-jwt");
+        ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
+        verify(refreshTokenRepository).save(captor.capture());
+        assertThat(captor.getValue().getTokenHash()).matches("[0-9a-f]{64}");
+        assertThat(captor.getValue().getFamilyId()).isNotBlank();
+        assertThat(captor.getValue().getExpiresAt()).isAfter(Instant.now());
+        verifyNoInteractions(passwordEncoder);
+    }
 
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(true);
+    @Test void storesExistingFamily() {
+        adapter.storeRefreshTokenWithFamily(1L, "test@example.com", "ALUMNO", "new-jwt", "family");
+        verify(refreshTokenRepository).save(argThat(value -> value.getFamilyId().equals("family")));
+    }
 
-            User userEntity = User.builder()
-                    .id(1L)
-                    .email("test@example.com")
-                    .passwordHash("pwd")
-                    .role(User.Role.ALUMNO)
-                    .active(true)
-                    .build();
-            when(userRepository.findById(1L)).thenReturn(Optional.of(userEntity));
+    @Test void validatesUsingIndexedDigest() {
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(token(false, Instant.now().plusSeconds(60))));
+        activeUser();
+        var result = adapter.validateRefreshToken("random-jwt").orElseThrow();
+        assertThat(result.userId()).isEqualTo(1L);
+        assertThat(result.role()).isEqualTo("ALUMNO");
+        assertThat(result.tokenId()).isEqualTo("42");
+        assertThat(result.familyId()).isEqualTo("family");
+        verify(refreshTokenRepository, never()).findAll();
+        verifyNoInteractions(passwordEncoder);
+    }
 
-            // When
-            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
+    @Test void rejectsUnknownToken() {
+        assertThat(adapter.validateRefreshToken("unknown")).isEmpty();
+    }
 
-            // Then
-            assertThat(result).isPresent();
-            TokenServicePort.TokenValidationResult validation = result.get();
-            assertThat(validation.userId()).isEqualTo(1L);
-            assertThat(validation.email()).isEqualTo("test@example.com");
-            assertThat(validation.role()).isEqualTo("ALUMNO");
-            assertThat(validation.familyId()).isEqualTo(familyId);
-            assertThat(validation.tokenId()).isEqualTo("42");
-        }
+    @Test void rejectsRevokedToken() {
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(token(true, Instant.now().plusSeconds(60))));
+        assertThat(adapter.validateRefreshToken("revoked")).isEmpty();
+        verifyNoInteractions(userRepository);
+    }
 
-        @Test
-        @DisplayName("Debe retornar empty cuando token no coincide con ningún hash")
-        void shouldReturnEmptyWhenTokenDoesNotMatchAnyHash() {
-            // Given
-            String rawToken = "invalid-token";
-            String tokenHash = "argon2id$hash$value";
+    @Test void rejectsExpiredToken() {
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(token(false, Instant.now().minusSeconds(1))));
+        assertThat(adapter.validateRefreshToken("expired")).isEmpty();
+    }
 
-            RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, "family-1", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(false);
+    @Test void rejectsMissingUser() {
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(token(false, Instant.now().plusSeconds(60))));
+        assertThat(adapter.validateRefreshToken("missing-user")).isEmpty();
+    }
 
-            // When
-            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
+    @Test void rejectsInactiveUser() {
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(token(false, Instant.now().plusSeconds(60))));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(User.builder().id(1L).active(false).build()));
+        assertThat(adapter.validateRefreshToken("inactive-user")).isEmpty();
+    }
 
-            // Then
-            assertThat(result).isEmpty();
-        }
+    @Test void rotatesUnderDatabaseLockAndPreservesFamily() {
+        RefreshToken previous = token(false, Instant.now().plusSeconds(60));
+        when(refreshTokenRepository.findUserIdByTokenHash(anyString())).thenReturn(Optional.of(1L));
+        when(refreshTokenRepository.findByTokenHashForUpdate(anyString())).thenReturn(Optional.of(previous));
+        activeUser();
+        var result = adapter.rotateRefreshToken("old", claims -> "new");
+        assertThat(result.orElseThrow().refreshToken()).isEqualTo("new");
+        assertThat(previous.isRevoked()).isTrue();
+        assertThat(previous.getRevokedAt()).isNotNull();
+        verify(refreshTokenRepository).save(argThat(value -> value != previous && value.getFamilyId().equals("family")));
+    }
 
-        @Test
-        @DisplayName("Debe retornar empty cuando token ya está revocado (detección de reuso se maneja en endpoint /refresh)")
-        void shouldReturnEmptyWhenTokenAlreadyRevoked() {
-            // Given
-            String rawToken = "revoked-token";
-            String tokenHash = "argon2id$hash$value";
-            String familyId = "family-reuse";
+    @Test void revokesWholeFamilyOnReplayWithoutCreatingNewToken() {
+        when(refreshTokenRepository.findUserIdByTokenHash(anyString())).thenReturn(Optional.of(1L));
+        when(userRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(User.builder().id(1L).active(true).build()));
+        when(refreshTokenRepository.findByTokenHashForUpdate(anyString())).thenReturn(Optional.of(token(true, Instant.now().plusSeconds(60))));
+        assertThat(adapter.rotateRefreshToken("old", claims -> "new")).isEmpty();
+        verify(refreshTokenRepository).revokeFamily(eq("family"), any(Instant.class));
+        verify(refreshTokenRepository, never()).save(any());
+    }
 
-            RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, familyId, Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            tokenEntity.setId(1L);
-            tokenEntity.setRevoked(true); // Ya revocado
-            tokenEntity.setRevokedAt(Instant.now());
+    @Test void rejectsUnknownRotation() {
+        assertThat(adapter.rotateRefreshToken("unknown", claims -> "new")).isEmpty();
+    }
 
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(true);
+    @Test void rejectsExpiredRotation() {
+        when(refreshTokenRepository.findUserIdByTokenHash(anyString())).thenReturn(Optional.of(1L));
+        when(userRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(User.builder().id(1L).active(true).build()));
+        when(refreshTokenRepository.findByTokenHashForUpdate(anyString())).thenReturn(Optional.of(token(false, Instant.now().minusSeconds(1))));
+        assertThat(adapter.rotateRefreshToken("expired", claims -> "new")).isEmpty();
+    }
 
-            // When
-            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
+    @Test void doesNotConsumeTokenIfReplacementGenerationFails() {
+        RefreshToken previous = token(false, Instant.now().plusSeconds(60));
+        when(refreshTokenRepository.findUserIdByTokenHash(anyString())).thenReturn(Optional.of(1L));
+        when(refreshTokenRepository.findByTokenHashForUpdate(anyString())).thenReturn(Optional.of(previous));
+        activeUser();
+        assertThatThrownBy(() -> adapter.rotateRefreshToken("old", claims -> { throw new IllegalStateException("failure"); }))
+                .isInstanceOf(IllegalStateException.class);
+        assertThat(previous.isRevoked()).isFalse();
+        verify(refreshTokenRepository, never()).save(any());
+    }
 
-            // Then - validateRefreshToken es readOnly, solo retorna empty para tokens revocados
-            // La revocación de familia se hace en el endpoint /refresh (AuthController)
-            assertThat(result).isEmpty();
-            verify(refreshTokenRepository, never()).revokeFamily(anyString(), any(Instant.class));
-        }
+    @Test void revokesSessionFamilyUnderLockEvenIfTokenAlreadyRevoked() {
+        when(refreshTokenRepository.findUserIdByTokenHash(anyString())).thenReturn(Optional.of(1L));
+        when(userRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(User.builder().id(1L).active(true).build()));
+        when(refreshTokenRepository.findByTokenHashForUpdate(anyString()))
+                .thenReturn(Optional.of(token(true, Instant.now().plusSeconds(60))));
+        adapter.revokeRefreshSession("old");
+        verify(refreshTokenRepository).revokeFamily(eq("family"), any(Instant.class));
+    }
 
-        @Test
-        @DisplayName("Debe retornar empty cuando token está expirado")
-        void shouldReturnEmptyWhenTokenExpired() {
-            // Given
-            String rawToken = "expired-token";
-            String tokenHash = "argon2id$hash$value";
+    @Test void unknownLogoutIsIdempotent() {
+        adapter.revokeRefreshSession("unknown");
+        verify(refreshTokenRepository, never()).revokeFamily(anyString(), any());
+    }
 
-            RefreshToken tokenEntity = new RefreshToken(tokenHash, 1L, "family-1", Instant.now().minusSeconds(3600), Instant.now()); // Expirado hace 1 hora
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(true);
+    @Test void locksTheUserBeforeRefreshingOrRevokingAnyFamilyMember() {
+        RefreshToken previous = token(false, Instant.now().plusSeconds(60));
+        when(refreshTokenRepository.findUserIdByTokenHash(anyString())).thenReturn(Optional.of(1L));
+        when(refreshTokenRepository.findByTokenHashForUpdate(anyString())).thenReturn(Optional.of(previous));
+        activeUser();
 
-            // When
-            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
+        adapter.rotateRefreshToken("old", ignored -> "new");
+        adapter.revokeRefreshSession("old");
 
-            // Then
-            assertThat(result).isEmpty();
-            verify(refreshTokenRepository, never()).revokeFamily(anyString(), any(Instant.class));
-        }
+        verify(userRepository, times(2)).findByIdForUpdate(1L);
+        verify(refreshTokenRepository, times(2)).findByTokenHashForUpdate(anyString());
+    }
 
-        @Test
-        @DisplayName("Debe retornar empty cuando usuario no existe en BD")
-        void shouldReturnEmptyWhenUserNotFound() {
-            // Given
-            String rawToken = "valid-token";
-            String tokenHash = "argon2id$hash$value";
+    @Test void identifiesRevokedTokensByDigest() {
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(token(true, Instant.now().plusSeconds(60))));
+        assertThat(adapter.isRefreshTokenRevoked("old")).isTrue();
+        assertThat(adapter.getFamilyIdForRevokedToken("old")).isEqualTo("family");
+    }
 
-            RefreshToken tokenEntity = new RefreshToken(tokenHash, 999L, "family-1", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(tokenEntity));
-            when(passwordEncoder.matches(rawToken, tokenHash)).thenReturn(true);
-            when(userRepository.findById(999L)).thenReturn(Optional.empty());
+    @Test void unknownTokenHasNoFamily() {
+        assertThat(adapter.isRefreshTokenRevoked("unknown")).isFalse();
+        assertThat(adapter.getFamilyIdForRevokedToken("unknown")).isNull();
+    }
 
-            // When
-            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
-
-            // Then
-            assertThat(result).isEmpty();
-        }
-
-        @Test
-        @DisplayName("Debe manejar excepción de passwordEncoder.matches y continuar con siguiente token")
-        void shouldHandleExceptionInMatchesAndContinue() {
-            // Given
-            String rawToken = "valid-token";
-            String badHash = "bad-hash";
-            String goodHash = "argon2id$hash$value";
-
-            RefreshToken badToken = new RefreshToken(badHash, 1L, "family-1", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            RefreshToken goodToken = new RefreshToken(goodHash, 2L, "family-2", Instant.now().plusSeconds(7 * 24 * 60 * 60), Instant.now());
-            goodToken.setId(2L);
-            goodToken.setRevoked(false);
-
-            when(refreshTokenRepository.findAll()).thenReturn(List.of(badToken, goodToken));
-            when(passwordEncoder.matches(rawToken, badHash)).thenThrow(new RuntimeException("Invalid hash format"));
-            when(passwordEncoder.matches(rawToken, goodHash)).thenReturn(true);
-
-            User userEntity = User.builder()
-                    .id(2L)
-                    .email("test2@example.com")
-                    .passwordHash("pwd")
-                    .role(User.Role.PROFESOR)
-                    .active(true)
-                    .build();
-            when(userRepository.findById(2L)).thenReturn(Optional.of(userEntity));
-
-            // When
-            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken(rawToken);
-
-            // Then
-            assertThat(result).isPresent();
-            assertThat(result.get().userId()).isEqualTo(2L);
-            assertThat(result.get().email()).isEqualTo("test2@example.com");
-            assertThat(result.get().role()).isEqualTo("PROFESOR");
-        }
-
-        @Test
-        @DisplayName("Debe retornar empty cuando BD está vacía")
-        void shouldReturnEmptyWhenDatabaseEmpty() {
-            // Given
-            when(refreshTokenRepository.findAll()).thenReturn(List.of());
-
-            // When
-            Optional<TokenServicePort.TokenValidationResult> result = adapter.validateRefreshToken("any-token");
-
-            // Then
-            assertThat(result).isEmpty();
-        }
+    @Test void activeTokenIsNotReplay() {
+        when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(token(false, Instant.now().plusSeconds(60))));
+        assertThat(adapter.isRefreshTokenRevoked("current")).isFalse();
+        assertThat(adapter.getFamilyIdForRevokedToken("current")).isNull();
     }
 
     @Nested

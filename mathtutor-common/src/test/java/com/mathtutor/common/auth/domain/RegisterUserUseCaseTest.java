@@ -83,23 +83,16 @@ class RegisterUserUseCaseTest {
         }
 
         @Test
-        @DisplayName("Debe permitir registrar PROFESOR y ADMIN")
-        void shouldAllowRegisteringProfessorAndAdmin() {
-            // Given
-            when(userRepositoryPort.existsByEmail(anyString())).thenReturn(false);
-            when(passwordEncoderPort.encode(anyString())).thenReturn("encoded");
-            when(userRepositoryPort.save(any())).thenAnswer(invocation -> {
-                User user = invocation.getArgument(0);
-                return User.withId(1L, user.email(), user.passwordHash(), user.role(), user.active(), user.anonymizedAt(), user.createdAt());
-            });
-
+        @DisplayName("El registro público no concede roles de profesor ni administrador")
+        void shouldRejectPublicAdminRegistration() {
             // When & Then - PROFESOR
             Result<Long> profResult = useCase.execute("prof@test.com", "StrongPass123!", User.Role.PROFESOR);
-            assertThat(profResult.isSuccess()).isTrue();
+            assertThat(profResult.isFailure()).isTrue();
 
             // When & Then - ADMIN
             Result<Long> adminResult = useCase.execute("admin@test.com", "StrongPass123!", User.Role.ADMIN);
-            assertThat(adminResult.isSuccess()).isTrue();
+            assertThat(adminResult.isFailure()).isTrue();
+            verify(userRepositoryPort, never()).save(any());
         }
     }
 

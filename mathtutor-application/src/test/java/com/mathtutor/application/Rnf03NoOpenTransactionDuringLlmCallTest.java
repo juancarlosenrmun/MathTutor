@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -58,6 +59,7 @@ import static org.assertj.core.api.Assertions.*;
 @SpringBootTest(classes = com.mathtutor.application.MathTutorApplication.class)
 @ActiveProfiles({"spring-ai-pgvector", "deterministic"})
 @Testcontainers(disabledWithoutDocker = true)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Tag("rnf03")
 class Rnf03NoOpenTransactionDuringLlmCallTest {
 
@@ -131,7 +133,7 @@ class Rnf03NoOpenTransactionDuringLlmCallTest {
 
         // Indexar corpus de prueba
         List<NoteChunk> chunks = createStaticTestCorpus();
-        springAiRetriever.indexDocuments(chunks);
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(chunks));
     }
 
     /**

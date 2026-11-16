@@ -111,6 +111,10 @@ public class RegisterUserUseCase {
             return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "Rol es obligatorio");
         }
 
+        if (role != User.Role.ALUMNO) {
+            // El rol solicitado no es una fuente de autoridad para el alta pública.
+            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "El registro público solo permite el rol alumno");
+        }
         return Result.ok(null);
     }
 }

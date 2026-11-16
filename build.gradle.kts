@@ -1,5 +1,6 @@
 import java.io.File
 import java.math.BigDecimal
+import org.gradle.internal.os.OperatingSystem
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 
@@ -98,6 +99,16 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+        // Docker Desktop expone el motor Linux mediante este pipe. Se puede
+        // sobrescribir con -PdockerHost o DOCKER_HOST en instalaciones no estándar.
+        if (OperatingSystem.current().isWindows) {
+            val dockerHost = providers.gradleProperty("dockerHost")
+                .orElse(providers.environmentVariable("DOCKER_HOST"))
+                .orElse("npipe:////./pipe/dockerDesktopLinuxEngine")
+                .get()
+            environment("DOCKER_HOST", dockerHost)
+            systemProperty("docker.host", dockerHost)
+        }
         testLogging {
             events("passed", "skipped", "failed")
         }
@@ -112,162 +123,91 @@ subprojects {
         }
     }
 
-    // Per-module coverage verification (80% lines / 70% branches) - only if tests exist
+    // Umbrales obligatorios para todos los m?dulos, sin omitir adaptadores ni seguridad.
     afterEvaluate {
-        if (tasks.findByName("jacocoTestCoverageVerification") != null) {
-            // Skip coverage verification for modules with integration tests requiring Docker
-            if (project.name != "mathtutor-application" && project.name != "mathtutor-llm") {
-                tasks.named<org.gradle.testing.jacoco.tasks.JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-                    violationRules {
-                        rule {
-                            limit {
-                                counter = "LINE"
-                                value = "COVEREDRATIO"
-                                // mathtutor-cas: 80% (core LatexToSymjaConverter at 87%, CasConfig excluded - Spring config, 0% coverage)
-                                minimum = BigDecimal("0.80")
-                            }
-                            // Exclude port interfaces (contracts, not implementation) for mathtutor-common
-                            if (project.name == "mathtutor-common") {
-                                excludes = listOf("com.mathtutor.common.port.*")
-                            }
-                            // Exclude config for mathtutor-cas (Spring config class, 0% coverage - no logic to test)
-                            if (project.name == "mathtutor-cas") {
-                                excludes = listOf("com/mathtutor/cas/CasConfig")
-                            }
-                            // Exclude SecurityConfig for mathtutor-auth (Spring config class, 0% coverage - no logic to test)
-                            if (project.name == "mathtutor-auth") {
-                                excludes = listOf("com/mathtutor/auth/config/SecurityConfig")
-                            }
-                            // Exclude entity and repository for mathtutor-persistence (generated code, 0% logic)
-                            if (project.name == "mathtutor-persistence") {
-                                excludes = listOf("com/mathtutor/persistence/entity/**", "com/mathtutor/persistence/repository/**")
-                            }
-                        }
-                        rule {
-                            limit {
-                                counter = "BRANCH"
-                                value = "COVEREDRATIO"
-                                minimum = BigDecimal("0.70")
-                            }
-                            if (project.name == "mathtutor-common") {
-                                excludes = listOf("com.mathtutor.common.port.*")
-                            }
-                            if (project.name == "mathtutor-cas") {
-                                excludes = listOf("com/mathtutor/cas/CasConfig")
-                            }
-                            if (project.name == "mathtutor-persistence") {
-                                excludes = listOf("com/mathtutor/persistence/entity/**", "com/mathtutor/persistence/repository/**")
-                            }
-                        }
+        tasks.named<org.gradle.testing.jacoco.tasks.JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+            violationRules {
+                rule {
+                    limit {
+                        counter = "LINE"
+                        value = "COVEREDRATIO"
+                        minimum = BigDecimal(if (project.name == "mathtutor-tutor") "0.90" else "0.80")
                     }
-                    // Also filter classDirectories to exclude port interfaces from verification data
-                    // Filter classDirectories to exclude port interfaces, entities, repositories, mappers, and adapters from verification data
-                    if (project.name == "mathtutor-common") {
-                        classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
-                            exclude("**/port/**/*.class")
-                        } })
+                    limit {
+                        counter = "BRANCH"
+                        value = "COVEREDRATIO"
+                        minimum = BigDecimal(if (project.name == "mathtutor-tutor") "0.90" else "0.70")
                     }
-                    if (project.name == "mathtutor-persistence") {
-                        classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
-                            exclude("**/entity/**/*.class")
-                            exclude("**/repository/**/*.class")
-                            exclude("**/mapper/**/*.class")
-                            exclude("**/adapter/**/*.class")
-                        } })
-                    }
-                    if (project.name == "mathtutor-cas") {
-                        classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
-                            exclude("**/CasConfig.class")
-                        } })
-                    }
-                    if (project.name == "mathtutor-auth") {
-                        classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
-                            exclude("**/config/SecurityConfig.class")
-                        } })
-                    }
-                    dependsOn("jacocoTestReport")
-                }
-
-                // Ensure coverage verification runs in verify phase
-                tasks.named("check") {
-                    dependsOn("jacocoTestCoverageVerification")
                 }
             }
+            dependsOn("test", "jacocoTestReport")
+        }
+        tasks.named("check") { dependsOn("jacocoTestCoverageVerification") }
+    }
+}
+
+// Las pruebas de integraci?n de application tambi?n ejercitan adaptadores de otros m?dulos.
+// Todos los informes y verificaciones usan la misma evidencia y las mismas exclusiones.
+gradle.projectsEvaluated {
+    val testTasks = subprojects.map { it.tasks.named<Test>("test") }
+    val executionFiles = files(subprojects.map { it.layout.buildDirectory.file("jacoco/test.exec") })
+    subprojects.forEach { module ->
+        val classes = module.extensions.getByType<SourceSetContainer>()["main"].output.classesDirs
+        val measuredClasses = classes.asFileTree.matching {
+            // Arranque sin l?gica y records DTO sin m?todos propios: ?nicas exclusiones.
+            exclude("com/mathtutor/application/MathTutorApplication.class")
+            exclude { entry ->
+                entry.path.startsWith("com/mathtutor/common/dto/") &&
+                    !entry.name.startsWith("PedagogicalAction")
+            }
+        }
+        module.tasks.withType<org.gradle.testing.jacoco.tasks.JacocoReport>().configureEach {
+            mustRunAfter(testTasks)
+            executionData.setFrom(executionFiles)
+            classDirectories.setFrom(measuredClasses)
+        }
+        module.tasks.withType<org.gradle.testing.jacoco.tasks.JacocoCoverageVerification>().configureEach {
+            executionData.setFrom(executionFiles)
+            classDirectories.setFrom(measuredClasses)
+            dependsOn(testTasks)
         }
     }
 }
 
-// Aggregated coverage report across all modules (root project only)
-// Run with: ./gradlew jacocoAggregateReport
+// Informe agregado reproducible incluso tras un checkout limpio.
 tasks.register<org.gradle.testing.jacoco.tasks.JacocoReport>("jacocoAggregateReport") {
     group = "Reporting"
-    description = "Generates an aggregated JaCoCo coverage report for all subprojects"
-
+    description = "Genera cobertura agregada con las mismas exclusiones que cada modulo"
     reports {
         html.required.set(true)
         xml.required.set(true)
-        csv.required.set(false)
         html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/aggregate/html"))
         xml.outputLocation.set(layout.buildDirectory.file("reports/jacoco/aggregate/jacoco.xml"))
     }
-
-    // Configure at configuration time to collect execution data from all subprojects
-    // This must be at configuration time, not doLast, so that JaCoCo's onlyIf sees the data
-    val subprojectsWithJacoco = subprojects.filter { it.plugins.hasPlugin("jacoco") && it.extensions.findByType(SourceSetContainer::class.java) != null }
-
-    // Collect source directories, class directories, and execution data from all subprojects
-    val allSourceDirs = mutableListOf<File>()
-    val allClassDirs = mutableListOf<File>()
-    val allExecData = mutableListOf<File>()
-
-    for (subproject in subprojectsWithJacoco) {
-        val sourceSets = subproject.extensions.getByType(SourceSetContainer::class.java)
-        val mainSourceSet = sourceSets["main"] as SourceSet
-        allSourceDirs.addAll(mainSourceSet.allSource.srcDirs)
-        allClassDirs.addAll(mainSourceSet.output.classesDirs.files)
-
-        // Find execution data files in build/jacoco/
-        val jacocoDir = File(subproject.layout.buildDirectory.get().asFile, "jacoco")
-        if (jacocoDir.exists()) {
-            jacocoDir.listFiles()?.filter { it.extension == "exec" }?.forEach { allExecData.add(it) }
-        }
-    }
-
-    sourceDirectories.setFrom(allSourceDirs)
-    classDirectories.setFrom(allClassDirs)
-    executionData.setFrom(allExecData)
-
-    // Set jacocoClasspath to resolve the JaCoCo runtime (required by JacocoReport)
-    // Configured in tasks.withType block below to get task as receiver
-
-    // Global exclusions for aggregated report
-    classDirectories.setFrom(classDirectories.files.map { fileTree(it) {
-        exclude("**/*Application*.class")
-        exclude("**/dto/**/*.class")
-        exclude("**/model/**/*.class")
-        exclude("**/port/**/*.class")
-        exclude("**/record/**/*.class")
-        exclude("**/*$$*") // Lambdas/anonymous classes
-    } })
 }
-
-// Configure jacocoAggregateReport task properties (jacocoClasspath)
-    // Using afterEvaluate to access task by name and configure via setProperty
-    afterEvaluate {
-        val aggregateReport = tasks.named("jacocoAggregateReport").get() as org.gradle.testing.jacoco.tasks.JacocoReport
-        // toolVersion uses default (0.8.14) - Kotlin can't resolve property on JacocoReport
-        val jacocoConfig = project.configurations.create("jacocoAggregateClasspath")
-        val deps = mutableListOf<org.gradle.api.artifacts.Dependency>()
-        deps.add(project.dependencies.create("org.jacoco:org.jacoco.agent:0.8.14"))
-        deps.add(project.dependencies.create("org.jacoco:org.jacoco.core:0.8.14"))
-        deps.add(project.dependencies.create("org.jacoco:org.jacoco.report:0.8.14"))
-        jacocoConfig.dependencies.addAll(deps)
-        aggregateReport.setJacocoClasspath(jacocoConfig)
+val aggregateJacocoClasspath = configurations.create("jacocoAggregateClasspath")
+dependencies {
+    add(aggregateJacocoClasspath.name, "org.jacoco:org.jacoco.ant:0.8.14")
+}
+gradle.projectsEvaluated {
+    tasks.named<org.gradle.testing.jacoco.tasks.JacocoReport>("jacocoAggregateReport") {
+        dependsOn(subprojects.map { it.tasks.named<Test>("test") })
+        jacocoClasspath = aggregateJacocoClasspath
+        sourceDirectories.setFrom(subprojects.map {
+            it.extensions.getByType<SourceSetContainer>()["main"].allSource.srcDirs
+        })
+        classDirectories.setFrom(subprojects.map {
+            it.extensions.getByType<SourceSetContainer>()["main"].output.classesDirs.asFileTree.matching {
+                exclude("com/mathtutor/application/MathTutorApplication.class")
+                exclude { entry ->
+                    entry.path.startsWith("com/mathtutor/common/dto/") &&
+                        !entry.name.startsWith("PedagogicalAction")
+                }
+            }
+        })
+        executionData.setFrom(subprojects.map { it.layout.buildDirectory.file("jacoco/test.exec") })
     }
-
-    // realApiTest task is configured per-module in each module's build.gradle.kts
-    // Only mathtutor-llm has real-api tagged tests (SpringAiGoogleAiStudioEmbeddingModelRealApiTest)
-    // Other modules don't need this task
+}
 
     // Configure dependency-license-report plugin for consolidated reports
 subprojects {

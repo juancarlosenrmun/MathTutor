@@ -2,6 +2,9 @@ package com.mathtutor.auth.filter;
 
 import com.mathtutor.auth.adapter.TokenServiceAdapter;
 import com.mathtutor.common.auth.port.TokenServicePort;
+import com.mathtutor.common.auth.port.UserRepositoryPort;
+import com.mathtutor.common.auth.domain.User;
+import java.util.Optional;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -46,13 +49,45 @@ class JwtAuthenticationFilterTest {
     @Mock
     private FilterChain filterChain;
 
+    @Mock
+    private UserRepositoryPort users;
+
     private JwtAuthenticationFilter filter;
 
     @BeforeEach
     void setUp() {
-        filter = new JwtAuthenticationFilter(tokenServiceAdapter);
+        filter = new JwtAuthenticationFilter(tokenServiceAdapter, users);
+        when(users.findActiveByEmail(anyString())).thenAnswer(invocation -> {
+            String email = invocation.getArgument(0);
+            long id = email.equals("user@test.com") ? 42L : email.equals("header@test.com") ? 2L : email.equals("test@role.com") ? 99L : 1L;
+            User.Role role = email.equals("user@test.com") ? User.Role.ADMIN : email.equals("header@test.com") ? User.Role.PROFESOR : User.Role.ALUMNO;
+            return Optional.of(User.withId(id, email, "hash", role, true, null, java.time.Instant.now()));
+        });
         // Limpiar contexto de seguridad antes de cada test
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    @DisplayName("Aplica cambio de rol sin renovar JWT (RNF-04)")
+    void shouldUseCurrentRoleInsteadOfJwtRole() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Bearer old-admin");
+        when(tokenServiceAdapter.validateToken("old-admin")).thenReturn(Map.of("userId", 1L, "email", "test@example.com", "role", "ADMIN"));
+        filter.doFilterInternal(request, response, filterChain);
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getAuthorities())
+                .extracting("authority").containsExactly("ROLE_ALUMNO");
+    }
+
+    @Test
+    @DisplayName("Rechaza usuario desactivado y un email reasignado a otra identidad")
+    void shouldRejectMissingAndReassignedUser() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Bearer stale");
+        when(tokenServiceAdapter.validateToken("stale")).thenReturn(Map.of("userId", 2L, "email", "test@example.com", "role", "ADMIN"));
+        when(users.findActiveByEmail("test@example.com")).thenReturn(Optional.empty());
+        filter.doFilterInternal(request, response, filterChain);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        when(users.findActiveByEmail("test@example.com")).thenReturn(Optional.of(User.withId(3L, "test@example.com", "hash", User.Role.ADMIN, true, null, java.time.Instant.now())));
+        filter.doFilterInternal(request, response, filterChain);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
     @Nested
@@ -454,9 +489,9 @@ class JwtAuthenticationFilterTest {
             var user = (JwtAuthenticationFilter.AuthenticatedUser) auth.getPrincipal();
             assertThat(user.id()).isEqualTo(99L);
             assertThat(user.email()).isEqualTo("test@role.com");
-            assertThat(user.role()).isEqualTo("CUSTOM_ROLE");
+            assertThat(user.role()).isEqualTo("ALUMNO");
             assertThat(auth.getAuthorities()).hasSize(1);
-            assertThat(auth.getAuthorities().iterator().next().getAuthority()).isEqualTo("ROLE_CUSTOM_ROLE");
+            assertThat(auth.getAuthorities().iterator().next().getAuthority()).isEqualTo("ROLE_ALUMNO");
         }
 
         @Test

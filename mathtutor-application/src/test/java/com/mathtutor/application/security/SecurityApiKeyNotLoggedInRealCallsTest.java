@@ -1,6 +1,5 @@
 package com.mathtutor.application.security;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
@@ -92,16 +91,6 @@ class SecurityApiKeyNotLoggedInRealCallsTest {
 
         rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         rootLogger.addAppender(listAppender);
-        rootLogger.setLevel(Level.DEBUG);
-
-        // También capturar logs de Spring WebClient/RestClient
-        Logger springWebLogger = (Logger) LoggerFactory.getLogger("org.springframework.web");
-        springWebLogger.addAppender(listAppender);
-        springWebLogger.setLevel(Level.DEBUG);
-
-        Logger httpClientLogger = (Logger) LoggerFactory.getLogger("org.apache.http");
-        httpClientLogger.addAppender(listAppender);
-        httpClientLogger.setLevel(Level.DEBUG);
     }
 
     @AfterEach
@@ -162,6 +151,7 @@ class SecurityApiKeyNotLoggedInRealCallsTest {
      * Se ejecuta SIN key real (usa FAKE_API_KEY inyectada).
      */
     @Test
+    @Tag("external-api")
     void realApiCall_with4xxError_doesNotLogApiKey() {
         // Given: Usamos la FAKE_API_KEY inyectada via @DynamicPropertySource
         // Esta key NO es válida y generará un error 401/403 de Google AI Studio
@@ -246,6 +236,7 @@ class SecurityApiKeyNotLoggedInRealCallsTest {
      * (sin logueo deliberado). Se ejecuta SIN key real.
      */
     @Test
+    @Tag("external-api")
     void fakeKeyNotLoggedInNormalOperation() {
         // Given: FAKE_API_KEY inyectada via @DynamicPropertySource
         String fakeKey = FAKE_API_KEY;

@@ -71,6 +71,37 @@ class AuthControllerTest {
         };
     }
 
+    @Test
+    @DisplayName("Cerrar sesión revoca refresh aunque el access haya expirado")
+    void shouldRevokeRefreshWithoutAccessPrincipal() {
+        var response = new org.springframework.mock.web.MockHttpServletResponse();
+        controller.logout(null, "refresh", response);
+        verify(tokenServiceAdapter).revokeRefreshSession("refresh");
+        org.assertj.core.api.Assertions.assertThat(response.getCookie("refresh_token").getMaxAge()).isZero();
+    }
+
+    @Test void shouldSetCookieExpiryFromConfiguration() {
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "refreshTokenExpirationDays", 1L);
+        when(registerUserUseCase.execute(anyString(), anyString(), any())).thenReturn(Result.ok(1L));
+        when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString())).thenReturn("access");
+        when(tokenServiceAdapter.storeRefreshToken(anyLong(), anyString(), anyString(), anyString())).thenReturn("refresh");
+        var response = new org.springframework.mock.web.MockHttpServletResponse();
+        controller.register(new AuthController.RegisterRequest("test@example.com", "StrongPass123!", User.Role.ALUMNO), response);
+        org.assertj.core.api.Assertions.assertThat(response.getCookie("refresh_token").getMaxAge()).isEqualTo(86400);
+    }
+
+    @Test void shouldLoadProxyConfigurationAfterInjection() throws Exception {
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "trustedProxiesConfig", "10.0.0.0/8");
+        controller.initializeTrustedProxies();
+        when(loginUseCase.execute("test@example.com", "password1234", "203.0.113.50"))
+                .thenReturn(Result.fail(Result.ErrorCode.INVALID_PASSWORD, "Credenciales invalidas"));
+        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"test@example.com\",\"password\":\"password1234\"}")
+                        .with(remoteAddr("10.0.0.1")).header("X-Forwarded-For", "203.0.113.50"))
+                .andExpect(status().isUnauthorized());
+        verify(loginUseCase).execute("test@example.com", "password1234", "203.0.113.50");
+    }
+
     @Nested
     @DisplayName("POST /api/auth/register")
     class Register {
@@ -377,92 +408,21 @@ class AuthControllerTest {
     @Nested
     @DisplayName("POST /api/auth/refresh")
     class Refresh {
-
-        @Test
-        @DisplayName("Debe refrescar tokens y retornar nuevos tokens con rotación")
-        void shouldRefreshTokensAndRotate() throws Exception {
-            // Given
-            String oldRefreshToken = "old-refresh-token";
-            String oldTokenId = UUID.randomUUID().toString();
-            String familyId = "family-123";
-
-            when(tokenServiceAdapter.validateRefreshToken(oldRefreshToken))
-                    .thenReturn(Optional.of(new TokenServicePort.TokenValidationResult(1L, "test@example.com", "ALUMNO", familyId, oldTokenId)));
-            when(tokenServiceAdapter.generateAccessToken(1L, "test@example.com", "ALUMNO"))
-                    .thenReturn("new-access-token");
-            when(tokenServiceAdapter.generateRefreshToken(eq(1L), eq("test@example.com"), eq("ALUMNO"), anyString()))
-                    .thenReturn("new-refresh-token-jwt");
-            when(tokenServiceAdapter.storeRefreshTokenWithFamily(eq(1L), eq("test@example.com"), eq("ALUMNO"), anyString(), eq(familyId)))
-                    .thenReturn("new-stored-refresh-token");
-
-            // When / Then
-            mockMvc.perform(post("/api/auth/refresh")
-                            .cookie(new Cookie("refresh_token", oldRefreshToken)))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.accessToken").value("new-access-token"))
-                    .andExpect(jsonPath("$.data.email").value("test@example.com"))
-                    .andExpect(jsonPath("$.data.role").value("ALUMNO"))
-                    .andExpect(cookie().exists("refresh_token"))
-                    .andExpect(cookie().httpOnly("refresh_token", true))
-                    .andExpect(cookie().secure("refresh_token", true));
-
-            verify(tokenServiceAdapter).validateRefreshToken(oldRefreshToken);
-            verify(tokenServiceAdapter).revokeRefreshToken(oldTokenId);
-            verify(tokenServiceAdapter).generateAccessToken(1L, "test@example.com", "ALUMNO");
-            verify(tokenServiceAdapter).generateRefreshToken(eq(1L), eq("test@example.com"), eq("ALUMNO"), anyString());
-            verify(tokenServiceAdapter).storeRefreshTokenWithFamily(eq(1L), eq("test@example.com"), eq("ALUMNO"), anyString(), eq(familyId));
+        @Test void rotatesTokensAtomically() throws Exception {
+            when(tokenServiceAdapter.rotateRefreshToken("old")).thenReturn(Optional.of(
+                    new TokenServiceAdapter.TokenRotation("access", "refresh", "test@example.com", "ALUMNO")));
+            mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("refresh_token", "old")))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.data.accessToken").value("access"))
+                    .andExpect(cookie().value("refresh_token", "refresh"));
         }
-
-        @Test
-        @DisplayName("Debe retornar 401 cuando no hay refresh token en cookie")
-        void shouldReturn401WhenNoRefreshToken() throws Exception {
-            // When / Then
-            mockMvc.perform(post("/api/auth/refresh"))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error").value("Refresh token no proporcionado"));
+        @Test void rejectsMissingToken() throws Exception {
+            mockMvc.perform(post("/api/auth/refresh")).andExpect(status().isUnauthorized());
+            verifyNoInteractions(tokenServiceAdapter);
         }
-
-        @Test
-        @DisplayName("Debe retornar 401 cuando refresh token es inválido (no encontrado en BD)")
-        void shouldReturn401WhenRefreshTokenInvalid() throws Exception {
-            // Given
-            when(tokenServiceAdapter.validateRefreshToken("invalid-token"))
-                    .thenReturn(Optional.empty());
-
-            // When / Then
-            mockMvc.perform(post("/api/auth/refresh")
-                            .cookie(new Cookie("refresh_token", "invalid-token")))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error").value("Refresh token inválido, revocado o expirado"))
-                    .andExpect(cookie().maxAge("refresh_token", 0));
-
-            verify(tokenServiceAdapter).validateRefreshToken("invalid-token");
-        }
-
-        @Test
-        @DisplayName("Debe rotar token incluso cuando oldTokenId es null")
-        void shouldRotateTokenEvenWhenOldTokenIdNull() throws Exception {
-            // Given
-            String familyId = "family-123";
-            when(tokenServiceAdapter.validateRefreshToken("token-without-id"))
-                    .thenReturn(Optional.of(new TokenServicePort.TokenValidationResult(1L, "test@example.com", "ALUMNO", familyId, null)));
-            when(tokenServiceAdapter.generateAccessToken(1L, "test@example.com", "ALUMNO"))
-                    .thenReturn("new-access");
-            when(tokenServiceAdapter.generateRefreshToken(eq(1L), eq("test@example.com"), eq("ALUMNO"), anyString()))
-                    .thenReturn("new-refresh");
-            when(tokenServiceAdapter.storeRefreshTokenWithFamily(eq(1L), eq("test@example.com"), eq("ALUMNO"), anyString(), eq(familyId)))
-                    .thenReturn("new-stored-refresh");
-
-            // When / Then
-            mockMvc.perform(post("/api/auth/refresh")
-                            .cookie(new Cookie("refresh_token", "token-without-id")))
-                    .andExpect(status().isOk());
-
-            verify(tokenServiceAdapter, never()).revokeRefreshToken(anyString());
-            verify(tokenServiceAdapter).storeRefreshTokenWithFamily(eq(1L), eq("test@example.com"), eq("ALUMNO"), anyString(), eq(familyId));
+        @Test void rejectsInvalidTokenAndClearsCookie() throws Exception {
+            when(tokenServiceAdapter.rotateRefreshToken("invalid")).thenReturn(Optional.empty());
+            mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("refresh_token", "invalid")))
+                    .andExpect(status().isUnauthorized()).andExpect(cookie().maxAge("refresh_token", 0));
         }
     }
 
@@ -770,7 +730,7 @@ class AuthControllerTest {
         void shouldUseFirstIpInXForwardedForChain() throws Exception {
             // Given
             LoginUseCase.LoginResult loginResult = new LoginUseCase.LoginResult(1L, User.Role.ALUMNO);
-            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("198.51.100.1")))
+            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("192.0.2.1")))
                     .thenReturn(Result.ok(loginResult));
             when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString()))
                     .thenReturn("access-token");
@@ -794,15 +754,15 @@ class AuthControllerTest {
                     .andExpect(status().isOk());
 
             // Then - primera IP es el cliente original
-            verify(loginUseCase).execute("test@example.com", "password1234", "198.51.100.1");
+            verify(loginUseCase).execute("test@example.com", "password1234", "192.0.2.1");
         }
 
         @Test
-        @DisplayName("Localhost (127.0.0.1) siempre de confianza para desarrollo")
-        void shouldTrustLocalhostForDevelopment() throws Exception {
+        @DisplayName("Localhost requiere confianza configurada")
+        void shouldNotTrustLocalhostWithoutExplicitConfiguration() throws Exception {
             // Given - controller SIN trusted proxies configurados
             LoginUseCase.LoginResult loginResult = new LoginUseCase.LoginResult(1L, User.Role.ALUMNO);
-            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("203.0.113.50")))
+            when(loginUseCase.execute(eq("test@example.com"), eq("password1234"), eq("127.0.0.1")))
                     .thenReturn(Result.ok(loginResult));
             when(tokenServiceAdapter.generateAccessToken(anyLong(), anyString(), anyString()))
                     .thenReturn("access-token");
@@ -826,7 +786,7 @@ class AuthControllerTest {
                     .andExpect(status().isOk());
 
             // Then - localhost siempre de confianza en desarrollo
-            verify(loginUseCase).execute("test@example.com", "password1234", "203.0.113.50");
+            verify(loginUseCase).execute("test@example.com", "password1234", "127.0.0.1");
         }
     }
 }

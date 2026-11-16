@@ -19,7 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -50,7 +50,6 @@ record QueryModulePair(String query, String moduleCode) {}
 @ActiveProfiles({"spring-ai-pgvector", "google-ai-studio"})
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("real-api")
-@Transactional
 class SimilarityThresholdValidationTest {
 
     @Container
@@ -75,8 +74,8 @@ class SimilarityThresholdValidationTest {
         registry.add("spring.ai.google.ai-studio.api-key", () -> apiKey);
         registry.add("spring.ai.google.ai-studio.embedding-model", () -> "gemini-embedding-001");
         registry.add("spring.ai.google.ai-studio.embedding-dimensions", () -> "768");
-        registry.add("spring.ai.google.ai-studio.max-retries", () -> "5");
-        registry.add("spring.ai.google.ai-studio.max-requests-per-minute", () -> "100");
+        registry.add("spring.ai.google.ai-studio.max-retries", () -> "0");
+        registry.add("spring.ai.google.ai-studio.max-requests-per-minute", () -> System.getenv().getOrDefault("GOOGLE_AI_MAX_REQUESTS_PER_MINUTE", "5"));
         // JWT configuration for tests
         registry.add("jwt.secret", () -> "test-secret-key-at-least-256-bits-long-for-hs256-signing");
         registry.add("jwt.access-token-expiration-minutes", () -> "15");
@@ -98,6 +97,9 @@ class SimilarityThresholdValidationTest {
     @Autowired
     private RagProperties ragProperties;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     private Module calculusModule;
     private Topic derivativesTopic;
     private Topic integralsTopic;
@@ -113,6 +115,10 @@ class SimilarityThresholdValidationTest {
 
     @BeforeEach
     void setUp() {
+        jdbcTemplate.execute("DELETE FROM vector_store");
+        jdbcTemplate.execute("DELETE FROM note_chunks");
+        jdbcTemplate.execute("DELETE FROM topics");
+        jdbcTemplate.execute("DELETE FROM modules");
         // Crear módulos y temas de prueba
         calculusModule = new Module();
         calculusModule.setCode("CALCULUS");
@@ -149,7 +155,7 @@ class SimilarityThresholdValidationTest {
         // CORPUS IN-DOMAIN: 30+ fragmentos matemáticos de cálculo/álgebra
         // ============================================================
         List<com.mathtutor.persistence.entity.NoteChunk> inDomainChunks = createInDomainCorpus();
-        springAiRetriever.indexDocuments(inDomainChunks);
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(inDomainChunks));
 
         // ============================================================
         // CONSULTAS IN-DOMAIN (≥30): Deben recuperar resultados con similitud ≥ threshold
@@ -252,7 +258,7 @@ class SimilarityThresholdValidationTest {
         List<com.mathtutor.persistence.entity.NoteChunk> allChunks = new ArrayList<>();
         allChunks.addAll(createInDomainCorpus());
         allChunks.addAll(createOutOfDomainCorpus());
-        springAiRetriever.indexDocuments(allChunks);
+        springAiRetriever.indexDocuments(com.mathtutor.application.retriever.NoteChunkTestData.toDto(allChunks));
 
         // Query específica de derivadas en módulo CALCULUS
         List<com.mathtutor.common.dto.NoteChunk> calcResults = ragRetriever.retrieve(

@@ -1,6 +1,7 @@
 package com.mathtutor.auth.config;
 
 import com.mathtutor.auth.adapter.TokenServiceAdapter;
+import com.mathtutor.common.auth.port.UserRepositoryPort;
 import com.mathtutor.auth.filter.JwtAuthenticationFilter;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,13 +44,16 @@ public class SecurityConfig {
 
     private final TokenServiceAdapter tokenServiceAdapter;
 
-    public SecurityConfig(TokenServiceAdapter tokenServiceAdapter) {
+    private final UserRepositoryPort users;
+
+    public SecurityConfig(TokenServiceAdapter tokenServiceAdapter, UserRepositoryPort users) {
         this.tokenServiceAdapter = tokenServiceAdapter;
+        this.users = users;
     }
 
     @PostConstruct
     public void init() {
-        log.info("SecurityConfig initialized - CSRF config: ignoringRequestMatchers=/api/auth/register,/api/csrf-token");
+        log.info("Seguridad inicializada: CSRF protege todos los métodos no seguros");
     }
 
     @Bean
@@ -61,22 +65,11 @@ public class SecurityConfig {
         http
                 // CSRF habilitado con CookieCsrfTokenRepository (double-submit cookie pattern)
                 // withHttpOnlyFalse() permite que JavaScript lea la cookie XSRF-TOKEN para AJAX
-                // Ignorar CSRF para endpoints públicos. requireCsrfProtectionMatcher: CSRF solo para métodos no seguros (POST, PUT, DELETE, PATCH)
+                // Todos los métodos no seguros requieren CSRF, incluido el registro.
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(csrfTokenRequestHandler)
-                        // Custom matcher que combina: ignorar paths específicos + solo métodos no seguros requieren CSRF
-                        .requireCsrfProtectionMatcher(request -> {
-                            String uri = request.getRequestURI();
-                            // Ignorar CSRF para endpoints públicos
-                            if ("/api/auth/register".equals(uri) || "/api/csrf-token".equals(uri)) {
-                                return false;
-                            }
-                            // Comportamiento por defecto: no requerir CSRF para métodos seguros (GET, HEAD, TRACE, OPTIONS)
-                            String method = request.getMethod();
-                            boolean require = !("GET".equals(method) || "HEAD".equals(method) || "TRACE".equals(method) || "OPTIONS".equals(method));
-                            return require;
-                        })
+
                 )
                 // CORS configurado
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -86,8 +79,9 @@ public class SecurityConfig {
                 )
                 // Configuración de autorización
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/logout", "/api/auth/refresh").permitAll()
                         .requestMatchers("/api/csrf-token").permitAll()
+                        .requestMatchers("/visor/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/info").permitAll()
                         .anyRequest().authenticated()
@@ -98,13 +92,13 @@ public class SecurityConfig {
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"success\":false,\"data\":null,\"error\":\"No autenticado\"}");
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"error\":\"Forbidden\",\"message\":\"Access denied\"}");
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"success\":false,\"data\":null,\"error\":\"Prohibido\"}");
                         })
                 );
 
@@ -113,7 +107,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(tokenServiceAdapter);
+        return new JwtAuthenticationFilter(tokenServiceAdapter, users);
     }
 
     @Bean
