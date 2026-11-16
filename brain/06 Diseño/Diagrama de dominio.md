@@ -1,5 +1,9 @@
 # Diagrama de dominio
 
+## Presentación S2 · Integración frontend
+
+[[Sprint 02 - Frontend]] no modifica entidades ni multiplicidades. La selección de bloque prepara una nueva `TutorSession`; no modifica el módulo de la sesión activa. Historial visible y borrador son datos efímeros en memoria que se eliminan al cambiar de identidad. Las gráficas y aproximaciones numéricas siguen siendo recursos efímeros del cliente.
+
 ## Ampliación frontend S1 · 2026-11-16
 
 [[Sprint 01 - Diseño frontend]] incorpora siete vistas —incluido el espacio autenticado con presentación por rol— y amplía el cliente de sesión, sin modificar entidades, relaciones, roles, propiedad ni esquema persistente. El registro público sigue restringido a `ALUMNO`; `User` y la familia de `RefreshToken` conservan su modelo. Las mutaciones de la cookie se coordinan entre pestañas con Web Locks. La lectura de los diez sprints orienta el diseño, sin adelantar su implementación. Véase [[Diagrama de clases]].

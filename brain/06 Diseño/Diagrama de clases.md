@@ -1,5 +1,9 @@
 # Diagrama de clases general
 
+## Cliente S2 · Integración frontend
+
+[[Sprint 02 - Frontend]] mantiene `mountInterface → mountTutor.sync` y `mountCurveControls → WebGLViewer`. El tutor controla por separado catálogo cargado, petición en curso e identidad. Una generación invalida resultados tardíos al salir durante una operación; el cambio de identidad limpia también el borrador. Las vistas usan los adaptadores existentes, sin nuevas clases persistentes.
+
 ## Cliente del sprint 1 · Ampliación frontend
 
 Vistas y decisiones: [[Sprint 01 - Diseño frontend]]. El módulo gráfico y sus clases de cámara/pipeline se conservan; la interfaz añade navegación y gestión completa de sesión.
