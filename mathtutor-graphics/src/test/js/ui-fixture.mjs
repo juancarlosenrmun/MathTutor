@@ -8,7 +8,8 @@
 export function fixture() {
   const nodes = Object.fromEntries(['notice', 'retry-logout', 'role', 'account-email', 'permission-description', 'main', 'logout', 'graphic-status'].map(id => ['#' + id, element()]));
   nodes['.skip-link'] = element();
-  const views = ['inicio','acceso','registro','laboratorio','cuenta','restringido'].map(view => element({ dataset: { view } }));
+  for (const id of ['workspace-role', 'workspace-title', 'workspace-description']) nodes['#' + id] = element();
+  const views = ['inicio','acceso','registro','espacio','laboratorio','cuenta','restringido'].map(view => element({ dataset: { view } }));
   const navs = ['inicio', 'laboratorio'].map(nav => element({ dataset: { nav } }));
   const forms = ['login', 'register'].map(auth => {
     const error = element(), button = element({ textContent: auth });

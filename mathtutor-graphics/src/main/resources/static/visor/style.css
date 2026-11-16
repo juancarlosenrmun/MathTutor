@@ -615,6 +615,78 @@ canvas:focus-visible {
 .lab-tip p {
   font-size: 0.8rem;
 }
+.workspace {
+  padding-bottom: 70px;
+}
+.workspace .page-heading {
+  align-items: center;
+}
+.workspace .page-heading .subtle {
+  max-width: 650px;
+}
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: 24px;
+  padding-top: 12px;
+}
+.workspace-lab {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 36px;
+  border-radius: 8px;
+  background: var(--green-light);
+}
+.workspace-lab h2,
+.workspace-account h2 {
+  font: 2.6rem/1.1 Georgia, "Times New Roman", serif;
+  letter-spacing: -.04em;
+}
+.workspace-lab-copy > p:not(.overline),
+.workspace-account > p:not(.overline) {
+  color: var(--muted);
+  font-size: .88rem;
+  margin-top: 22px;
+}
+.workspace-lab .button {
+  margin-top: 26px;
+}
+.workspace-account {
+  padding: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.workspace-account .text-link {
+  display: inline-block;
+  margin-top: 28px;
+}
+.workspace-note {
+  color: var(--muted);
+  font-size: .8rem;
+  margin-top: 30px;
+}
+@media (max-width: 1000px) {
+  .workspace-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+  .workspace-lab { grid-template-columns: 1fr; padding: 28px; }
+  .workspace-axes { display: none; }
+  .workspace-account { padding: 28px; }
+}
+@media (max-width: 700px) {
+  .workspace .page-heading { align-items: flex-start; }
+  .workspace-grid { grid-template-columns: 1fr; padding-top: 0; }
+  .workspace-lab { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); padding: 25px; gap: 0; }
+  .workspace-axes { display: block; }
+  .workspace-lab h2, .workspace-account h2 { font-size: 2.2rem; }
+  .workspace-lab .button { padding: 12px 15px; gap: 10px; }
+  .workspace-account { padding: 25px; }
+}
+@media (max-width: 420px) {
+  .workspace-lab { grid-template-columns: 1fr; }
+  .workspace-axes { display: none; }
+}
 .account {
   padding-bottom: 90px;
 }

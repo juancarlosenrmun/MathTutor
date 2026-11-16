@@ -34,7 +34,7 @@ test('login y registro reales, limpieza de contraseña, estado ocupado y logout'
     assert.equal(f.forms[index].button.disabled, true);
     await f.submit(f.forms[index]); await f.app.updateRole();
     await submission;
-    assert.equal(f.host.location.hash, '#/cuenta');
+    assert.equal(f.host.location.hash, '#/espacio');
     assert.equal(f.forms[index].elements.password.value, '');
     assert.equal(f.forms[index].button.disabled, false);
     assert.match(f.nodes['#notice'].textContent, index ? /cuenta está lista/ : /iniciado sesión/);
@@ -44,6 +44,22 @@ test('login y registro reales, limpieza de contraseña, estado ocupado y logout'
     assert.equal(f.app.client.token, null); assert.equal(f.host.location.hash, '#/acceso');
     assert.match(f.nodes['#notice'].textContent, /cerrado/);
   }
+});
+
+test('el espacio autenticado refleja cambios de rol sin crear rutas de sprints futuros', async () => {
+  const f = fixture(); f.host.location.hash = '#/espacio'; f.state.restore = true;
+  const app = mountInterface(f.doc, f.host, () => {}); await app.ready;
+  assert.equal(f.views.find(view => !view.hidden).dataset.view, 'espacio');
+  assert.equal(f.doc.title, 'Tu espacio · MathTutor');
+  assert.equal(f.nodes['#workspace-role'].textContent, 'Alumno');
+  assert.match(f.nodes['#workspace-title'].textContent, /aprendizaje/);
+  for (const [role, label] of [['PROFESOR', 'Profesor'], ['ADMIN', 'Administrador']]) {
+    f.state.role = role; await app.updateRole();
+    assert.equal(f.nodes['#workspace-role'].textContent, label);
+    assert.match(f.nodes['#workspace-description'].textContent, /laboratorio/);
+  }
+  f.state.status = 401; await app.updateRole();
+  assert.equal(f.views.find(view => !view.hidden).dataset.view, 'acceso');
 });
 
 test('validación de confirmación y errores del API enfocados sin filtrar detalles', async () => {

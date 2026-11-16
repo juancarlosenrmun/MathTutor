@@ -1,13 +1,13 @@
 import { SessionClient } from './session.mjs';
 
-const titles = { inicio: 'Inicio', acceso: 'Iniciar sesión', registro: 'Crear cuenta',
+const titles = { inicio: 'Inicio', acceso: 'Iniciar sesión', registro: 'Crear cuenta', espacio: 'Tu espacio',
   laboratorio: 'Laboratorio 3D', cuenta: 'Tu cuenta', restringido: 'Acceso restringido' };
 
 export function viewFor(hash, signedIn) {
   const requested = hash.replace('#/', '');
   const view = Object.hasOwn(titles, requested) ? requested : 'inicio';
-  if (view === 'cuenta' && !signedIn) return 'acceso';
-  if (signedIn && (view === 'acceso' || view === 'registro')) return 'cuenta';
+  if ((view === 'cuenta' || view === 'espacio') && !signedIn) return 'acceso';
+  if (signedIn && (view === 'acceso' || view === 'registro')) return 'espacio';
   return view;
 }
 
@@ -15,6 +15,18 @@ export function permissionDescription(role) {
   return { ALUMNO: 'Acceso a tus contenidos y recursos propios.',
     PROFESOR: 'Permisos de profesor: contenido y estadísticas agregadas.',
     ADMIN: 'Permisos de administración del centro.' }[role] || 'Sin permisos asignados. Contacta con tu centro.';
+}
+
+export function workspaceFor(role) {
+  return {
+    ALUMNO: { label: 'Alumno', title: 'Tu espacio de aprendizaje.',
+      description: 'Empieza por el laboratorio: explora los ejes, mueve la cámara y encuentra tu perspectiva.' },
+    PROFESOR: { label: 'Profesor', title: 'Tu espacio docente.',
+      description: 'Explora el laboratorio y consulta los permisos vigentes de tu cuenta de profesor.' },
+    ADMIN: { label: 'Administrador', title: 'Tu espacio de administración.',
+      description: 'Consulta tu cuenta y tus permisos actuales. También puedes explorar el laboratorio.' },
+  }[role] || { label: 'Sin rol asignado', title: 'Tu espacio.',
+    description: 'Consulta tu cuenta para comprobar tus permisos actuales.' };
 }
 
 /** Navegación local: el token nunca viaja en enlaces ni se guarda en disco. */
@@ -41,6 +53,10 @@ export function mountInterface(document, host, onView) {
     one('#role').textContent = client.profile?.role || 'Sin sesión';
     one('#account-email').textContent = client.profile?.email || '—';
     one('#permission-description').textContent = permissionDescription(client.profile?.role);
+    const workspace = workspaceFor(client.profile?.role);
+    one('#workspace-role').textContent = workspace.label;
+    one('#workspace-title').textContent = workspace.title;
+    one('#workspace-description').textContent = workspace.description;
     document.title = `${titles[view]} · MathTutor`;
     if (currentView !== view) {
       for (const input of all('input[type="password"], [data-visible-password]')) input.value = '';
@@ -101,7 +117,7 @@ export function mountInterface(document, host, onView) {
         await client[form.dataset.auth](form.elements.email.value.trim(), password.value);
         await client.role();
         if (!client.token) throw new Error('Tu sesión ha terminado. Vuelve a iniciar sesión.');
-        if (host.location.hash === route) host.location.hash = '#/cuenta';
+        if (host.location.hash === route) host.location.hash = '#/espacio';
         announce(form.dataset.auth === 'register' ? 'Tu cuenta está lista. Bienvenido a MathTutor.' : 'Has iniciado sesión.');
       } catch (failure) {
         if (failure.status === 403) host.location.hash = '#/restringido';

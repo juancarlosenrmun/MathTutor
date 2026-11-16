@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><meta charset="utf-8"><title>Contrato del frontend S1</title>
+<html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Contrato del frontend S1</title>
 <body><p id="result">Verificando interfaz…</p><iframe title="MathTutor bajo prueba" style="width:1200px;height:900px;border:0"></iframe>
 <script type="module">
 const frame = document.querySelector('iframe');
@@ -36,6 +36,7 @@ try {
     }
   }
   await go('cuenta'); assert(visible()[0].dataset.view === 'acceso', 'Cuenta sin protección');
+  await go('espacio'); assert(visible()[0].dataset.view === 'acceso', 'Espacio sin protección');
   await go('registro');
   const register = doc.querySelector('[data-auth="register"]');
   register.elements.email.value = 'alumno@ejemplo.es';
@@ -45,10 +46,25 @@ try {
   register.elements.confirm.value = 'UnaClaveSegura12!';
   register.dispatchEvent(new Event('submit', { cancelable: true }));
   await idle();
-  assert(visible()[0].dataset.view === 'cuenta', 'Registro no abre cuenta: ' + register.querySelector('[data-error]').textContent);
+  assert(visible()[0].dataset.view === 'espacio', 'Registro no abre tu espacio: ' + register.querySelector('[data-error]').textContent);
   assert(doc.querySelector('#account-email').textContent === 'alumno@ejemplo.es', 'Correo no mostrado');
   const call = win.testState.calls.find(([path]) => path.endsWith('register'));
   assert(JSON.parse(call[1].body).role === 'ALUMNO', 'Registro permite escalar rol');
+  for (const width of [1200, 375]) {
+    frame.style.width = width + 'px';
+    for (const view of ['espacio', 'cuenta', 'laboratorio']) {
+      await go(view);
+      assert(visible()[0].dataset.view === view, 'Ruta autenticada incorrecta: ' + view);
+      assert(doc.documentElement.scrollWidth <= doc.documentElement.clientWidth + 1, 'Desbordamiento autenticado: ' + view);
+    }
+  }
+  await go('espacio');
+  for (const [role, label] of [['ALUMNO', 'Alumno'], ['PROFESOR', 'Profesor'], ['ADMIN', 'Administrador']]) {
+    win.testState.role = role; await win.testApp.updateRole();
+    assert(doc.querySelector('#workspace-role').textContent === label, 'Espacio con rol obsoleto');
+  }
+  assert(!doc.querySelector('[data-view="espacio"] a[href="#/chat"]'), 'Se adelanta el chat de S2');
+  await go('cuenta');
   win.testState.role = 'PROFESOR'; await win.testApp.updateRole();
   assert(doc.querySelector('#role').textContent === 'PROFESOR', 'Rol obsoleto');
   await go('laboratorio');
@@ -68,6 +84,7 @@ try {
   win.testState.status = 200;
   login.elements.password.value = 'UnaClaveSegura12!'; login.dispatchEvent(new Event('submit', { cancelable: true }));
   await idle();
+  assert(visible()[0].dataset.view === 'espacio', 'Login no abre tu espacio');
   win.testState.status = 403; await win.testApp.updateRole(); await settle();
   assert(visible()[0].dataset.view === 'restringido', '403 sin vista de acceso restringido');
   const { SessionClient } = await import('/visor/session.mjs');
