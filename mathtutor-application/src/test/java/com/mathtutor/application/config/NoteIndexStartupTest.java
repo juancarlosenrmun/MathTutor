@@ -15,8 +15,15 @@ class NoteIndexStartupTest {
         new NoteIndexStartup(index).run(null);
         @SuppressWarnings("unchecked") ArgumentCaptor<List<NoteChunk>> capture = ArgumentCaptor.forClass(List.class);
         verify(index).synchronize(capture.capture());
-        assertThat(capture.getValue()).hasSize(3).extracting(NoteChunk::moduleCode)
-                .containsExactlyInAnyOrder("funciones", "derivadas-integrales", "metodos-3d");
+        assertThat(capture.getValue()).hasSize(121).extracting(NoteChunk::moduleCode)
+                .containsOnly("funciones", "derivadas-integrales", "metodos-3d");
+        assertThat(capture.getValue()).extracting(NoteChunk::topicCode).containsOnly(
+                "numeros-reales-complejos", "funciones-continuidad", "calculo-diferencial", "calculo-integral",
+                "matrices", "espacios-vectoriales", "diagonalizacion", "geometria");
+        assertThat(capture.getValue()).allSatisfy(chunk -> {
+            assertThat(chunk.sourceFile()).startsWith("industriales-");
+            assertThat(chunk.content()).doesNotContain("\\tcblower", "\\label{");
+        });
     }
     @Test void propagatesIndexFailureSoStartupDoesNotPretendSuccess() {
         var index = mock(NoteIndex.class);

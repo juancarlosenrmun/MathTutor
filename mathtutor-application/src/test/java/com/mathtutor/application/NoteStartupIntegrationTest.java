@@ -43,9 +43,10 @@ class NoteStartupIntegrationTest {
     @Autowired NoteIndexStartup startup;
     @Test void startupHasAlreadyIndexedThreeModulesAndRestartIsIdempotent() throws Exception {
         var ids = jdbc.queryForList("SELECT id::text FROM vector_store ORDER BY id", String.class);
-        assertThat(ids).hasSize(3);
+        assertThat(ids).hasSize(121);
         assertThat(jdbc.queryForList("SELECT metadata->>'module_code' FROM vector_store", String.class))
-                .containsExactlyInAnyOrder("funciones", "derivadas-integrales", "metodos-3d");
+                .containsOnly("funciones", "derivadas-integrales", "metodos-3d");
+        assertThat(jdbc.queryForObject("SELECT count(DISTINCT metadata->>'source_file') FROM vector_store", Integer.class)).isEqualTo(8);
         startup.run(null);
         assertThat(jdbc.queryForList("SELECT id::text FROM vector_store ORDER BY id", String.class)).isEqualTo(ids);
     }

@@ -1,0 +1,1412 @@
+\chapter{Espacios vectoriales y aplicaciones lineales}
+\label{ch:espacios}
+
+En el capítulo anterior hemos utilizado vectores como columnas de números y hemos comprobado que conceptos como el rango o la resolución de un sistema dependen, en último término, de si unas filas o columnas contienen información independiente. El lenguaje de los \emph{espacios vectoriales} permite formular estas ideas de manera general y entender qué tienen en común objetos aparentemente distintos, como vectores de $\R^n$, polinomios, matrices o señales.
+
+En ingeniería, elegir un conjunto adecuado de variables independientes es una decisión esencial. Las componentes de una fuerza dependen del sistema de referencia; un estado físico puede describirse mediante distintas coordenadas; varios sensores pueden proporcionar información redundante; y una transformación lineal puede convertir magnitudes de entrada en respuestas de un sistema. Las nociones de dependencia lineal, base, dimensión, ortogonalidad, núcleo e imagen formalizan precisamente estas cuestiones.
+
+A lo largo del capítulo trabajaremos principalmente en espacios vectoriales reales de dimensión finita. El objetivo no es acumular definiciones abstractas, sino aprender a pasar con soltura entre tres descripciones complementarias: ecuaciones, conjuntos de generadores y coordenadas respecto de una base.
+
+\section{Espacios vectoriales y subespacios}
+\label{sec:espacios-subespacios}
+
+\subsection{Espacios vectoriales}
+
+La suma de vectores y el producto de un vector por un número aparecen de forma natural en $\R^n$. La estructura de espacio vectorial conserva precisamente las propiedades algebraicas esenciales de estas dos operaciones.
+
+\begin{definition}[Espacio vectorial]
+Un \emph{espacio vectorial real} es un conjunto no vacío $V$ cuyos elementos, llamados \emph{vectores}, pueden sumarse entre sí y multiplicarse por números reales de manera que, para cualesquiera $u,v,w\in V$ y $\alpha,\beta\in\R$, se verifican:
+\begin{enumerate}
+\item $u+v\in V$ y $\alpha u\in V$;
+\item $u+v=v+u$;
+\item $(u+v)+w=u+(v+w)$;
+\item existe un vector $0\in V$ tal que $u+0=u$;
+\item para cada $u\in V$ existe $-u\in V$ tal que $u+(-u)=0$;
+\item $\alpha(u+v)=\alpha u+\alpha v$;
+\item $(\alpha+\beta)u=\alpha u+\beta u$;
+\item $(\alpha\beta)u=\alpha(\beta u)$ y $1u=u$.
+\end{enumerate}
+\end{definition}
+
+El ejemplo fundamental es $\R^n$, con las operaciones componente a componente. Sin embargo, no es el único.
+
+\begin{example}
+Son espacios vectoriales reales:
+\begin{itemize}
+\item $\R^n$;
+\item el conjunto $\mathcal M_{m\times n}(\R)$ de matrices reales de tamaño $m\times n$;
+\item el conjunto $\mathcal P_n$ de polinomios reales de grado menor o igual que $n$;
+\item el conjunto de funciones reales continuas en un intervalo, con las operaciones habituales.
+\end{itemize}
+En cada caso, el vector nulo es diferente: en $\R^n$ es $(0,\ldots,0)$, en $\mathcal M_{m\times n}(\R)$ es la matriz nula y en $\mathcal P_n$ es el polinomio idénticamente nulo.
+\end{example}
+
+El uso de la palabra \emph{vector} es, por tanto, más amplio que el de una flecha en el plano o el espacio. Lo que importa es que los objetos puedan combinarse linealmente respetando las propiedades anteriores.
+
+\subsection{Subespacios vectoriales}
+
+En muchas situaciones no necesitamos utilizar todo el espacio, sino únicamente los vectores que satisfacen determinadas restricciones. Por ejemplo, los desplazamientos admisibles de un sistema pueden estar sujetos a ciertas ecuaciones lineales, o varias magnitudes pueden estar ligadas por balances homogéneos.
+
+\begin{definition}[Subespacio vectorial]
+Sea $V$ un espacio vectorial. Un subconjunto no vacío $W\subseteq V$ es un \emph{subespacio vectorial} de $V$ si, con las mismas operaciones de $V$, es también un espacio vectorial.
+\end{definition}
+
+No es necesario comprobar una a una todas las propiedades de la definición.
+
+\begin{theorem}[Criterio de subespacio]
+Sea $V$ un espacio vectorial y sea $W\subseteq V$, $W\neq\varnothing$. Entonces $W$ es un subespacio vectorial si y sólo si
+\[
+u,v\in W,\quad \alpha,\beta\in\R
+\quad\Longrightarrow\quad
+\alpha u+\beta v\in W.
+\]
+\end{theorem}
+
+Una consecuencia inmediata es que todo subespacio debe contener al vector nulo. Esta observación permite descartar muchos conjuntos sin realizar más cálculos.
+
+\begin{example}
+Consideremos
+\[
+W=\{(x,y,z)\in\R^3:x+y-z=0\}.
+\]
+El vector nulo pertenece a $W$. Si $u=(x_1,y_1,z_1)$ y $v=(x_2,y_2,z_2)$ pertenecen a $W$, entonces
+\[
+x_1+y_1-z_1=0,
+\qquad
+x_2+y_2-z_2=0.
+\]
+Para $\alpha,\beta\in\R$,
+\[
+\begin{aligned}
+&(\alpha x_1+\beta x_2)+(\alpha y_1+\beta y_2)
+ -(\alpha z_1+\beta z_2)\\
+&\qquad=\alpha(x_1+y_1-z_1)+\beta(x_2+y_2-z_2)=0.
+\end{aligned}
+\]
+Por tanto, $W$ es un subespacio de $\R^3$.
+
+En cambio,
+\[
+H=\{(x,y,z)\in\R^3:x+y-z=1\}
+\]
+no es un subespacio, pues $(0,0,0)\notin H$. Geométricamente, $W$ es un plano que pasa por el origen, mientras que $H$ es un plano paralelo a él que no pasa por el origen.
+\end{example}
+
+\begin{example}[Matrices simétricas]
+Sea
+\[
+S=\{A\in\mathcal M_2(\R):A^t=A\}.
+\]
+Si $A,B\in S$ y $\alpha,\beta\in\R$, entonces
+\[
+(\alpha A+\beta B)^t
+=\alpha A^t+\beta B^t
+=\alpha A+\beta B.
+\]
+Luego $S$ es un subespacio de $\mathcal M_2(\R)$. Sus elementos tienen la forma
+\[
+\begin{pmatrix}
+a&b\\
+b&c
+\end{pmatrix}
+=
+a\begin{pmatrix}1&0\\0&0\end{pmatrix}
++b\begin{pmatrix}0&1\\1&0\end{pmatrix}
++c\begin{pmatrix}0&0\\0&1\end{pmatrix}.
+\]
+Esta representación anticipa los conceptos de combinación lineal, sistema generador y base.
+\end{example}
+
+\subsection{Combinaciones lineales y sistemas generadores}
+
+\begin{definition}[Combinación lineal]
+Dados $v_1,\ldots,v_k\in V$, una \emph{combinación lineal} de estos vectores es cualquier vector de la forma
+\[
+\alpha_1v_1+\alpha_2v_2+\cdots+\alpha_kv_k,
+\qquad
+\alpha_1,\ldots,\alpha_k\in\R.
+\]
+\end{definition}
+
+El conjunto formado por todas sus combinaciones lineales se denomina subespacio generado por $v_1,\ldots,v_k$ y se escribe
+\[
+\langle v_1,\ldots,v_k\rangle
+=
+\left\{
+\alpha_1v_1+\cdots+\alpha_kv_k:
+\alpha_i\in\R
+\right\}.
+\]
+Es el menor subespacio vectorial que contiene a todos los vectores $v_1,\ldots,v_k$.
+
+\begin{example}
+Sean
+\[
+v_1=(1,2,-1),
+\qquad
+v_2=(0,1,1).
+\]
+Entonces
+\[
+\langle v_1,v_2\rangle
+=
+\{\alpha(1,2,-1)+\beta(0,1,1):\alpha,\beta\in\R\},
+\]
+es decir,
+\[
+\langle v_1,v_2\rangle
+=
+\{(\alpha,2\alpha+\beta,-\alpha+\beta):\alpha,\beta\in\R\}.
+\]
+Esta expresión constituye una descripción paramétrica del subespacio.
+\end{example}
+
+Un mismo subespacio puede describirse de maneras distintas. En $\R^n$ es frecuente disponer de:
+\begin{itemize}
+\item una descripción \emph{paramétrica}, mediante generadores;
+\item una descripción \emph{implícita}, mediante un sistema de ecuaciones lineales homogéneas.
+\end{itemize}
+Pasar de una forma a otra es una destreza básica del capítulo.
+
+\begin{solvedexercise}
+Sea
+\[
+W=\{(x,y,z,t)\in\R^4:x+y+z+t=0,\quad y-2z-t=0\}.
+\]
+Hallar una descripción paramétrica de $W$ y un sistema de generadores.
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Resolvemos las ecuaciones tomando $z=s$ y $t=r$ como parámetros libres. De
+\[
+y-2z-t=0
+\]
+obtenemos
+\[
+y=2s+r.
+\]
+La primera ecuación proporciona
+\[
+x=-(y+z+t)=-(2s+r+s+r)=-3s-2r.
+\]
+Por tanto,
+\[
+(x,y,z,t)
+=s(-3,2,1,0)+r(-2,1,0,1).
+\]
+Así,
+\[
+\boxed{W=\langle(-3,2,1,0),(-2,1,0,1)\rangle.}
+\]
+La descripción implícita pone de manifiesto las restricciones que deben satisfacer los vectores; la paramétrica muestra directamente cómo construir todos los elementos del subespacio.
+\end{solvedexercise}
+
+La conversión en sentido contrario puede hacerse eliminando los parámetros. Si
+\[
+W=\langle v_1,\ldots,v_k\rangle\subseteq\R^n,
+\]
+un vector $x\in\R^n$ pertenece a $W$ si y sólo si el sistema
+\[
+\alpha_1v_1+\cdots+\alpha_kv_k=x
+\]
+es compatible. Esta condición puede traducirse en ecuaciones lineales sobre las componentes de $x$ mediante eliminación de Gauss.
+
+\subsection{Dependencia e independencia lineal}
+
+No todos los generadores de un subespacio aportan información nueva. Si uno de ellos puede obtenerse a partir de los demás, es redundante.
+
+\begin{definition}[Dependencia e independencia lineal]
+Los vectores $v_1,\ldots,v_k\in V$ son \emph{linealmente independientes} si la igualdad
+\[
+\alpha_1v_1+\cdots+\alpha_kv_k=0
+\]
+implica necesariamente
+\[
+\alpha_1=\cdots=\alpha_k=0.
+\]
+Si existe una combinación lineal nula con algún coeficiente no nulo, los vectores son \emph{linealmente dependientes}.
+\end{definition}
+
+Equivalentemente, un conjunto finito de vectores es linealmente dependiente si alguno de ellos puede escribirse como combinación lineal de los restantes.
+
+Cuando los vectores pertenecen a $\R^n$, podemos colocarlos como columnas de una matriz
+\[
+A=\begin{pmatrix}|&&|\\v_1&\cdots&v_k\\|&&|\end{pmatrix}.
+\]
+Entonces
+\[
+\alpha_1v_1+\cdots+\alpha_kv_k=0
+\]
+equivale al sistema homogéneo
+\[
+A\alpha=0.
+\]
+Por tanto, los vectores son linealmente independientes si y sólo si este sistema tiene únicamente la solución trivial. En particular,
+\[
+\boxed{v_1,\ldots,v_k\text{ son LI}\iff \operatorname{rg}(A)=k.}
+\]
+Esta relación enlaza directamente el concepto abstracto de independencia con el rango estudiado en el capítulo anterior.
+
+\begin{example}
+Consideremos
+\[
+v_1=(1,0,-1),\qquad
+v_2=(0,-1,2),\qquad
+v_3=(1,-1,1).
+\]
+Como
+\[
+v_3=v_1+v_2,
+\]
+los tres vectores son linealmente dependientes y
+\[
+\langle v_1,v_2,v_3\rangle
+=
+\langle v_1,v_2\rangle.
+\]
+Además, $v_1$ y $v_2$ no son proporcionales, por lo que son linealmente independientes. Hemos eliminado así un generador redundante sin cambiar el subespacio generado.
+\end{example}
+
+En un modelo experimental esta idea tiene una lectura directa. Si cada columna de una matriz contiene la respuesta de un sistema ante una entrada elemental y una de esas columnas es combinación de las demás, esa respuesta no añade una nueva dirección de comportamiento. Del mismo modo, si varias ecuaciones de medida son linealmente dependientes, alguna medición es redundante.
+
+\section{Bases, coordenadas y estructura euclídea}
+\label{sec:bases-euclidea}
+
+\subsection{Bases y dimensión}
+
+Un sistema generador describe todo el espacio, pero puede contener vectores redundantes. Una base elimina precisamente esa redundancia.
+
+\begin{definition}[Base]
+Una familia ordenada
+\[
+\mathcal B=(v_1,\ldots,v_n)
+\]
+es una \emph{base} de un espacio vectorial $V$ si:
+\begin{enumerate}
+\item $v_1,\ldots,v_n$ generan $V$;
+\item $v_1,\ldots,v_n$ son linealmente independientes.
+\end{enumerate}
+\end{definition}
+
+Una vez fijada una base, cada vector admite una representación única.
+
+\begin{theorem}[Unicidad de las coordenadas]
+Si $\mathcal B=(v_1,\ldots,v_n)$ es una base de $V$, para todo $v\in V$ existen únicos escalares $x_1,\ldots,x_n$ tales que
+\[
+v=x_1v_1+\cdots+x_nv_n.
+\]
+\end{theorem}
+
+Los números $x_1,\ldots,x_n$ se denominan \emph{coordenadas de $v$ respecto de la base $\mathcal B$} y escribimos
+\[
+[v]_{\mathcal B}
+=
+\begin{pmatrix}
+x_1\\ \vdots\\ x_n
+\end{pmatrix}.
+\]
+
+\begin{definition}[Dimensión]
+Si un espacio vectorial $V$ admite una base formada por $n$ vectores, se dice que $V$ tiene \emph{dimensión} $n$ y se escribe
+\[
+\dim(V)=n.
+\]
+Todas las bases de un espacio vectorial de dimensión finita tienen el mismo número de elementos.
+\end{definition}
+
+La base canónica de $\R^n$ es
+\[
+\mathcal E=(e_1,\ldots,e_n),
+\]
+donde $e_i$ tiene un $1$ en la posición $i$ y ceros en las restantes. Por tanto,
+\[
+\dim(\R^n)=n.
+\]
+También
+\[
+\dim\mathcal P_n=n+1,
+\qquad
+\dim\mathcal M_{m\times n}(\R)=mn.
+\]
+
+\begin{example}
+Retomemos
+\[
+W=\{(x,y,z,t)\in\R^4:x+y+z+t=0,\ y-2z-t=0\}.
+\]
+Hemos obtenido
+\[
+W=\langle(-3,2,1,0),(-2,1,0,1)\rangle.
+\]
+Los dos generadores son linealmente independientes, pues no son proporcionales. Por tanto,
+\[
+\mathcal B_W=\bigl((-3,2,1,0),(-2,1,0,1)\bigr)
+\]
+es una base de $W$ y
+\[
+\boxed{\dim(W)=2.}
+\]
+La dimensión puede interpretarse como el número de parámetros independientes necesarios para describir un vector del subespacio.
+\end{example}
+
+Para un conjunto de vectores de $\R^n$ colocados como columnas de una matriz $A$, el rango proporciona la dimensión del subespacio generado:
+\[
+\boxed{
+\dim\langle v_1,\ldots,v_k\rangle
+=
+\operatorname{rg}(A).
+}
+\]
+Esto permite obtener una base seleccionando columnas linealmente independientes de la matriz original. Es importante escoger las columnas de la matriz original asociadas a las posiciones pivote, no las columnas de la matriz escalonada si lo que se desea es una base formada por los vectores dados.
+
+\begin{solvedexercise}
+Sea
+\[
+V=\{(4,-5,7),(3,-3,4),(1,1,-2),(2,-1,1)\}\subseteq\R^3.
+\]
+Determinar la dimensión del subespacio generado por $V$ y obtener una base formada por vectores de $V$.
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Colocamos los vectores como columnas:
+\[
+A=
+\begin{pmatrix}
+4&3&1&2\\
+-5&-3&1&-1\\
+7&4&-2&1
+\end{pmatrix}.
+\]
+Aplicando eliminación de Gauss se obtiene un rango igual a $2$. Por ejemplo, las dos primeras columnas son linealmente independientes porque no son proporcionales, y las restantes pueden expresarse como combinaciones de ellas. En efecto,
+\[
+(1,1,-2)=-2(4,-5,7)+3(3,-3,4),
+\]
+\[
+(2,-1,1)=-(4,-5,7)+2(3,-3,4).
+\]
+Por tanto,
+\[
+\boxed{\dim\langle V\rangle=2}
+\]
+y una posible base es
+\[
+\boxed{\mathcal B=\bigl((4,-5,7),(3,-3,4)\bigr).}
+\]
+Las coordenadas de los otros dos vectores respecto de esta base son, respectivamente,
+\[
+[(1,1,-2)]_{\mathcal B}=\begin{pmatrix}-2\\3\end{pmatrix},
+\qquad
+[(2,-1,1)]_{\mathcal B}=\begin{pmatrix}-1\\2\end{pmatrix}.
+\]
+\end{solvedexercise}
+
+\subsection{Cambio de base}
+
+Las coordenadas de un vector dependen de la base utilizada, aunque el vector sea el mismo. Este hecho es especialmente relevante en ingeniería: una fuerza física no cambia al girar el sistema de ejes, pero sí cambian sus componentes; del mismo modo, un estado puede describirse mediante variables originales o mediante combinaciones más convenientes de ellas.
+
+Sean
+\[
+\mathcal B=(v_1,\ldots,v_n),
+\qquad
+\mathcal B'=(v'_1,\ldots,v'_n)
+\]
+dos bases de $V$. Definimos la matriz de cambio de base de $\mathcal B'$ a $\mathcal B$ como
+\[
+P_{\mathcal B\leftarrow\mathcal B'}
+=
+\begin{pmatrix}
+|&&|\\
+[v'_1]_{\mathcal B}&\cdots&[v'_n]_{\mathcal B}\\
+|&&|
+\end{pmatrix}.
+\]
+Entonces
+\[
+\boxed{
+[v]_{\mathcal B}
+=P_{\mathcal B\leftarrow\mathcal B'}[v]_{\mathcal B'}.
+}
+\]
+Como ambas familias son bases, esta matriz es invertible y
+\[
+P_{\mathcal B'\leftarrow\mathcal B}
+=
+P_{\mathcal B\leftarrow\mathcal B'}^{-1}.
+\]
+
+\begin{example}
+En $\R^2$ consideremos
+\[
+\mathcal E=((1,0),(0,1)),
+\qquad
+\mathcal B=((1,1),(1,-1)).
+\]
+La matriz que transforma coordenadas en la base $\mathcal B$ en coordenadas canónicas es
+\[
+P_{\mathcal E\leftarrow\mathcal B}
+=
+\begin{pmatrix}
+1&1\\
+1&-1
+\end{pmatrix}.
+\]
+Para el vector $v=(4,2)$ buscamos $[v]_{\mathcal B}=(a,b)^t$. Debe cumplirse
+\[
+\begin{pmatrix}4\\2\end{pmatrix}
+=
+\begin{pmatrix}1&1\\1&-1\end{pmatrix}
+\begin{pmatrix}a\\b\end{pmatrix}.
+\]
+Resolviendo,
+\[
+a=3,\qquad b=1,
+\]
+por lo que
+\[
+\boxed{[v]_{\mathcal B}=\begin{pmatrix}3\\1\end{pmatrix}.}
+\]
+En efecto,
+\[
+(4,2)=3(1,1)+(1,-1).
+\]
+\end{example}
+
+Cuando la base es ortonormal, el cálculo de las coordenadas se simplifica considerablemente, como veremos a continuación.
+
+\subsection{Producto escalar, ortogonalidad y proyección}
+
+Además de sumar vectores y multiplicarlos por escalares, en $\R^n$ disponemos de una operación que permite medir longitudes y ángulos.
+
+\begin{definition}[Producto escalar]
+Dados $u=(u_1,\ldots,u_n)$ y $v=(v_1,\ldots,v_n)$ en $\R^n$, su \emph{producto escalar} es
+\[
+\langle u,v\rangle
+=u\cdot v
+=u_1v_1+\cdots+u_nv_n.
+\]
+\end{definition}
+
+La norma asociada es
+\[
+\|u\|=\sqrt{u\cdot u},
+\]
+y la distancia entre dos vectores es
+\[
+d(u,v)=\|u-v\|.
+\]
+Si $u,v\neq0$, el ángulo $\theta\in[0,\pi]$ que forman satisface
+\[
+\cos\theta
+=\frac{u\cdot v}{\|u\|\,\|v\|}.
+\]
+
+\begin{definition}[Ortogonalidad]
+Dos vectores $u,v\in\R^n$ son \emph{ortogonales} si
+\[
+u\cdot v=0.
+\]
+Una familia es \emph{ortogonal} si sus vectores son ortogonales dos a dos, y es \emph{ortonormal} si, además, todos tienen norma $1$.
+\end{definition}
+
+Toda familia ortogonal formada por vectores no nulos es linealmente independiente. Por esta razón, una base ortonormal proporciona una representación especialmente estable y cómoda.
+
+Si $u\neq0$, la proyección ortogonal de $v$ sobre la dirección generada por $u$ es
+\[
+\operatorname{proj}_{u}(v)
+=
+\frac{v\cdot u}{u\cdot u}\,u.
+\]
+Si $e$ es unitario,
+\[
+\operatorname{proj}_{e}(v)=(v\cdot e)e.
+\]
+
+\begin{example}[Componente de una fuerza en una dirección]
+Una fuerza está representada por
+\[
+F=(6,2,-3)\ \mathrm{N},
+\]
+y una barra tiene la dirección
+\[
+u=(2,1,2).
+\]
+El vector unitario en la dirección de la barra es
+\[
+e=\frac{u}{\|u\|}=\frac{1}{3}(2,1,2).
+\]
+La componente escalar de $F$ sobre la barra es
+\[
+F\cdot e
+=
+(6,2,-3)\cdot\frac13(2,1,2)
+=\frac{12+2-6}{3}
+=\frac83\ \mathrm{N}.
+\]
+La proyección vectorial es
+\[
+\operatorname{proj}_{u}(F)
+=(F\cdot e)e
+=\frac{8}{9}(2,1,2).
+\]
+La operación es puramente algebraica, pero expresa la parte de la fuerza que actúa en una dirección físicamente relevante.
+\end{example}
+
+Si $\mathcal B=(e_1,\ldots,e_n)$ es una base ortonormal de $\R^n$, las coordenadas de cualquier vector $v$ se obtienen directamente mediante productos escalares:
+\[
+\boxed{
+[v]_{\mathcal B}
+=
+\begin{pmatrix}
+v\cdot e_1\\
+\vdots\\
+v\cdot e_n
+\end{pmatrix}.
+}
+\]
+Más generalmente, si $W\subseteq\R^n$ tiene una base ortonormal $(e_1,\ldots,e_k)$, la proyección ortogonal de $v$ sobre $W$ es
+\[
+\boxed{
+\operatorname{proj}_{W}(v)
+=\sum_{i=1}^{k}(v\cdot e_i)e_i.
+}
+\]
+El vector
+\[
+v-\operatorname{proj}_{W}(v)
+\]
+es ortogonal a todos los vectores de $W$. De este modo se obtiene la descomposición
+\[
+v=v_W+v_W^{\perp},
+\qquad
+v_W\in W,
+\quad
+v_W^{\perp}\in W^{\perp}.
+\]
+
+\subsection{Método de ortogonalización de Gram--Schmidt}
+
+No siempre una base viene dada en forma ortogonal. El método de Gram--Schmidt permite sustituir una familia linealmente independiente por otra ortogonal que genera exactamente el mismo subespacio.
+
+\begin{theorem}[Proceso de Gram--Schmidt]
+Sean $v_1,\ldots,v_k$ vectores linealmente independientes de $\R^n$. Definimos
+\[
+u_1=v_1,
+\]
+y sucesivamente
+\[
+u_j
+=v_j-
+\sum_{i=1}^{j-1}
+\frac{v_j\cdot u_i}{u_i\cdot u_i}\,u_i,
+\qquad j=2,\ldots,k.
+\]
+Entonces $u_1,\ldots,u_k$ son ortogonales y
+\[
+\langle u_1,\ldots,u_k\rangle
+=
+\langle v_1,\ldots,v_k\rangle.
+\]
+Normalizando,
+\[
+e_i=\frac{u_i}{\|u_i\|},
+\]
+se obtiene una base ortonormal del mismo subespacio.
+\end{theorem}
+
+La fórmula tiene una interpretación sencilla: de cada nuevo vector eliminamos las componentes que apuntan en las direcciones ya construidas.
+
+\begin{solvedexercise}
+Obtener mediante Gram--Schmidt una base ortonormal del subespacio
+\[
+W=\langle(1,1,0),(1,0,1)\rangle\subseteq\R^3.
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Tomamos
+\[
+v_1=(1,1,0),
+\qquad
+v_2=(1,0,1).
+\]
+El primer vector ortogonal es
+\[
+u_1=v_1=(1,1,0).
+\]
+Para el segundo,
+\[
+u_2
+=v_2-\frac{v_2\cdot u_1}{u_1\cdot u_1}u_1.
+\]
+Como
+\[
+v_2\cdot u_1=1,
+\qquad
+u_1\cdot u_1=2,
+\]
+tenemos
+\[
+u_2
+=(1,0,1)-\frac12(1,1,0)
+=\left(\frac12,-\frac12,1\right).
+\]
+Multiplicar $u_2$ por $2$ no altera la dirección ni la ortogonalidad, por lo que podemos utilizar
+\[
+\widetilde u_2=(1,-1,2).
+\]
+En efecto,
+\[
+u_1\cdot\widetilde u_2=1-1=0.
+\]
+Normalizamos:
+\[
+e_1=\frac{1}{\sqrt2}(1,1,0),
+\qquad
+ e_2=\frac{1}{\sqrt6}(1,-1,2).
+\]
+Así,
+\[
+\boxed{
+\mathcal B_o=
+\left(
+\frac{1}{\sqrt2}(1,1,0),
+\frac{1}{\sqrt6}(1,-1,2)
+\right)
+}
+\]
+es una base ortonormal de $W$.
+\end{solvedexercise}
+
+En problemas numéricos, trabajar con direcciones ortonormales evita que unas coordenadas queden artificialmente amplificadas por la longitud o la proximidad entre los vectores de una base. Por ello la ortogonalización aparece de forma recurrente en cálculo numérico, procesamiento de señales, ajuste de modelos y descomposición de movimientos.
+
+\section{Aplicaciones lineales}
+\label{sec:aplicaciones-lineales}
+
+\subsection{Concepto de aplicación lineal}
+
+Una aplicación lineal es una transformación que respeta las combinaciones lineales. Esta propiedad hace que conocer la respuesta de la transformación sobre una base sea suficiente para conocer su respuesta sobre cualquier vector.
+
+\begin{definition}[Aplicación lineal]
+Sean $V$ y $W$ espacios vectoriales reales. Una aplicación
+\[
+T:V\longrightarrow W
+\]
+es \emph{lineal} si para cualesquiera $u,v\in V$ y $\alpha,\beta\in\R$ se verifica
+\[
+T(\alpha u+\beta v)
+=\alpha T(u)+\beta T(v).
+\]
+\end{definition}
+
+Equivalentemente, basta comprobar
+\[
+T(u+v)=T(u)+T(v),
+\qquad
+T(\alpha u)=\alpha T(u).
+\]
+Toda aplicación lineal satisface necesariamente
+\[
+T(0)=0.
+\]
+Por tanto, una transformación que envíe el vector nulo a un vector no nulo no puede ser lineal.
+
+\begin{example}
+La aplicación
+\[
+T:\R^3\longrightarrow\R^2,
+\qquad
+T(x,y,z)=(x+y,y+z)
+\]
+es lineal. En efecto,
+\[
+T(x,y,z)
+=
+\begin{pmatrix}
+1&1&0\\
+0&1&1
+\end{pmatrix}
+\begin{pmatrix}x\\y\\z\end{pmatrix}.
+\]
+Toda transformación definida mediante un producto matricial $T(x)=Ax$ es lineal.
+
+En cambio,
+\[
+S(x,y)=(x^2,y)
+\]
+no es lineal, pues el primer componente no respeta la multiplicación por escalares.
+\end{example}
+
+Los modelos matriciales del capítulo anterior son, por tanto, aplicaciones lineales. Si $x$ contiene cantidades de productos y $Ax$ los recursos consumidos, la propiedad
+\[
+A(\alpha x+\beta y)=\alpha Ax+\beta Ay
+\]
+expresa que, dentro de un modelo lineal, combinar dos planes de producción combina en la misma proporción sus consumos.
+
+\subsection{Núcleo e imagen}
+
+Dos subespacios asociados a una aplicación lineal describen gran parte de su comportamiento.
+
+\begin{definition}[Núcleo e imagen]
+Sea $T:V\to W$ una aplicación lineal.
+\begin{itemize}
+\item El \emph{núcleo} de $T$ es
+\[
+\ker(T)=\{v\in V:T(v)=0\}.
+\]
+\item La \emph{imagen} de $T$ es
+\[
+\operatorname{Im}(T)=\{T(v):v\in V\}.
+\]
+\end{itemize}
+\end{definition}
+
+Tanto $\ker(T)$ como $\operatorname{Im}(T)$ son subespacios vectoriales, respectivamente de $V$ y $W$.
+
+Si $T(x)=Ax$, entonces
+\[
+\ker(T)=\{x:Ax=0\},
+\]
+de modo que calcular el núcleo equivale a resolver un sistema homogéneo. Por otro lado, la imagen está generada por las columnas de $A$:
+\[
+\operatorname{Im}(T)
+=
+\langle c_1,\ldots,c_n\rangle,
+\]
+donde $c_1,\ldots,c_n$ son las columnas de $A$.
+
+\begin{solvedexercise}
+Para
+\[
+T:\R^3\longrightarrow\R^2,
+\qquad
+T(x,y,z)=(x+y,y+z),
+\]
+determinar una base del núcleo y una base de la imagen.
+\tcblower
+\textbf{Resolución.}\par\smallskip
+La matriz de $T$ en las bases canónicas es
+\[
+A=
+\begin{pmatrix}
+1&1&0\\
+0&1&1
+\end{pmatrix}.
+\]
+Para calcular el núcleo resolvemos
+\[
+\begin{cases}
+x+y=0,\\
+y+z=0.
+\end{cases}
+\]
+Tomando $y=t$,
+\[
+x=-t,
+\qquad
+z=-t,
+\]
+por lo que
+\[
+\ker(T)=\langle(-1,1,-1)\rangle.
+\]
+Así,
+\[
+\boxed{\dim\ker(T)=1.}
+\]
+
+La imagen está generada por las columnas
+\[
+(1,0),\quad(1,1),\quad(0,1).
+\]
+Las dos primeras son linealmente independientes, de modo que
+\[
+\operatorname{Im}(T)=\R^2,
+\qquad
+\boxed{\dim\operatorname{Im}(T)=2.}
+\]
+En este ejemplo hay una dirección no nula de entrada que la transformación convierte en cero, pero cualquier vector de salida de $\R^2$ puede obtenerse a partir de alguna entrada.
+\end{solvedexercise}
+
+Las dimensiones del núcleo y la imagen no son independientes.
+
+\begin{theorem}[Teorema de la dimensión]
+Sea $T:V\to W$ una aplicación lineal y supongamos que $V$ tiene dimensión finita. Entonces
+\[
+\boxed{
+\dim(V)=\dim\ker(T)+\dim\operatorname{Im}(T).
+}
+\]
+\end{theorem}
+
+Si $T(x)=Ax$ y $A$ tiene $n$ columnas,
+\[
+\dim\operatorname{Im}(T)=\operatorname{rg}(A),
+\]
+por lo que
+\[
+\boxed{
+\dim\ker(T)=n-\operatorname{rg}(A).
+}
+\]
+Esta igualdad es la formulación vectorial del número de parámetros libres de un sistema homogéneo.
+
+\begin{definition}[Aplicación inyectiva y suprayectiva]
+Una aplicación lineal $T:V\to W$ es
+\begin{itemize}
+\item \emph{inyectiva} si $T(u)=T(v)$ implica $u=v$;
+\item \emph{suprayectiva} si $\operatorname{Im}(T)=W$;
+\item \emph{biyectiva} si es simultáneamente inyectiva y suprayectiva.
+\end{itemize}
+\end{definition}
+
+Para una aplicación lineal,
+\[
+T\text{ es inyectiva}
+\iff
+\ker(T)=\{0\}.
+\]
+Si $V$ y $W$ tienen la misma dimensión finita, inyectividad, suprayectividad y biyectividad son equivalentes.
+
+En un modelo de medida $y=Ax$, un núcleo no trivial significa que existen variaciones de las variables de entrada que no producen ningún cambio en las medidas. En ese caso, a partir de esas medidas no puede recuperarse de forma única el estado original. Si, por el contrario, $\ker(T)=\{0\}$, entradas distintas producen salidas distintas.
+
+\subsection{Matriz de una aplicación lineal}
+
+Una aplicación lineal queda completamente determinada por la imagen de una base.
+
+\begin{theorem}
+Sea $\mathcal B=(v_1,\ldots,v_n)$ una base de $V$. Si $T:V\to W$ es lineal, conocer
+\[
+T(v_1),\ldots,T(v_n)
+\]
+determina $T$ sobre todo $V$.
+\end{theorem}
+
+En efecto, si
+\[
+v=x_1v_1+\cdots+x_nv_n,
+\]
+entonces
+\[
+T(v)=x_1T(v_1)+\cdots+x_nT(v_n).
+\]
+
+Sean ahora
+\[
+\mathcal B=(v_1,\ldots,v_n)
+\]
+una base de $V$ y
+\[
+\mathcal C=(w_1,\ldots,w_m)
+\]
+una base de $W$.
+
+\begin{definition}[Matriz de una aplicación lineal respecto de dos bases]
+La matriz de $T:V\to W$ respecto de la base $\mathcal B$ en el dominio y la base $\mathcal C$ en el codominio es la matriz
+\[
+[T]_{\mathcal C\leftarrow\mathcal B}
+\]
+cuyas columnas son las coordenadas de las imágenes de los vectores de $\mathcal B$ respecto de $\mathcal C$:
+\[
+[T]_{\mathcal C\leftarrow\mathcal B}
+=
+\begin{pmatrix}
+|&&|\\
+[T(v_1)]_{\mathcal C}&\cdots&[T(v_n)]_{\mathcal C}\\
+|&&|
+\end{pmatrix}.
+\]
+\end{definition}
+
+Con esta convención,
+\[
+\boxed{
+[T(v)]_{\mathcal C}
+=
+[T]_{\mathcal C\leftarrow\mathcal B}
+[v]_{\mathcal B}.
+}
+\]
+
+\begin{example}
+Consideremos
+\[
+T:\R^2\longrightarrow\R^2,
+\qquad
+T(x,y)=(2x-y,x+y),
+\]
+y las bases
+\[
+\mathcal B=((1,1),(1,-1)),
+\qquad
+\mathcal C=((1,0),(1,1)).
+\]
+Calculamos primero
+\[
+T(1,1)=(1,2),
+\qquad
+T(1,-1)=(3,0).
+\]
+Para expresar $(1,2)$ en la base $\mathcal C$ escribimos
+\[
+(1,2)=a(1,0)+b(1,1)=(a+b,b),
+\]
+de donde $b=2$ y $a=-1$. Así,
+\[
+[T(1,1)]_{\mathcal C}
+=\begin{pmatrix}-1\\2\end{pmatrix}.
+\]
+Análogamente,
+\[
+(3,0)=3(1,0)+0(1,1),
+\]
+por lo que
+\[
+[T(1,-1)]_{\mathcal C}
+=\begin{pmatrix}3\\0\end{pmatrix}.
+\]
+Por tanto,
+\[
+\boxed{
+[T]_{\mathcal C\leftarrow\mathcal B}
+=
+\begin{pmatrix}
+-1&3\\
+2&0
+\end{pmatrix}.
+}
+\]
+\end{example}
+
+Si $\mathcal E$ denota la base canónica, la matriz habitual de $T(x)=Ax$ es precisamente
+\[
+[T]_{\mathcal E\leftarrow\mathcal E}=A.
+\]
+
+\subsection{Relación entre las matrices en bases distintas}
+
+La expresión matricial de una aplicación cambia cuando cambian las coordenadas, pero la aplicación lineal es la misma. Sean $\mathcal B,\mathcal B'$ bases del dominio y $\mathcal C,\mathcal C'$ bases del codominio. Si
+\[
+A=[T]_{\mathcal C\leftarrow\mathcal B},
+\]
+entonces
+\[
+\boxed{
+[T]_{\mathcal C'\leftarrow\mathcal B'}
+=
+P_{\mathcal C\leftarrow\mathcal C'}^{-1}
+A
+P_{\mathcal B\leftarrow\mathcal B'}.
+}
+\]
+La fórmula simplemente encadena tres operaciones:
+\[
+\begin{array}{c}
+\text{coordenadas en }\mathcal B'\\[-1mm]
+\downarrow\\[-1mm]
+\text{coordenadas en }\mathcal B
+\end{array}
+\quad\xrightarrow{\ T\ }\quad
+\begin{array}{c}
+\text{coordenadas en }\mathcal C\\[-1mm]
+\downarrow\\[-1mm]
+\text{coordenadas en }\mathcal C'
+\end{array}.
+\]
+
+\begin{example}
+En el ejemplo anterior, la matriz de $T$ en bases canónicas es
+\[
+A=
+\begin{pmatrix}
+2&-1\\
+1&1
+\end{pmatrix}.
+\]
+Además,
+\[
+P_{\mathcal E\leftarrow\mathcal B}
+=
+\begin{pmatrix}
+1&1\\
+1&-1
+\end{pmatrix},
+\qquad
+P_{\mathcal E\leftarrow\mathcal C}
+=
+\begin{pmatrix}
+1&1\\
+0&1
+\end{pmatrix}.
+\]
+Por tanto,
+\[
+[T]_{\mathcal C\leftarrow\mathcal B}
+=
+P_{\mathcal E\leftarrow\mathcal C}^{-1}
+A
+P_{\mathcal E\leftarrow\mathcal B}
+=
+\begin{pmatrix}
+-1&3\\
+2&0
+\end{pmatrix},
+\]
+como habíamos obtenido calculando directamente las imágenes de los vectores de la base.
+\end{example}
+
+Cuando $T:V\to V$ es un endomorfismo y se utiliza la misma base para entrada y salida, si $A=[T]_{\mathcal B\leftarrow\mathcal B}$ y $A'=[T]_{\mathcal B'\leftarrow\mathcal B'}$, entonces
+\[
+\boxed{
+A'=P^{-1}AP,
+\qquad
+P=P_{\mathcal B\leftarrow\mathcal B'}.
+}
+\]
+Dos matrices relacionadas de esta forma se denominan \emph{semejantes}. Esta relación será el punto de partida del capítulo siguiente: diagonalizar una matriz consistirá en encontrar una base en la que la matriz de un endomorfismo adopte una forma diagonal.
+
+\begin{example}[Un cambio de variables en un modelo lineal]
+Supongamos que el estado de un sistema mecánico se describe mediante dos desplazamientos $x_1,x_2$. En lugar de ellos puede ser conveniente utilizar
+\[
+q_1=x_1+x_2,
+\qquad
+q_2=x_1-x_2,
+\]
+que representan un movimiento conjunto y un movimiento relativo. Los vectores
+\[
+(1,1),\qquad(1,-1)
+\]
+forman una base de $\R^2$. Cambiar de $(x_1,x_2)$ a $(q_1,q_2)$ no cambia el estado físico: cambia su representación. Si la evolución lineal del sistema está descrita por una matriz, esa matriz también cambia de acuerdo con la fórmula anterior. En el capítulo de diagonalización veremos cómo una elección adecuada de base puede desacoplar ciertos modelos.
+\end{example}
+
+\section*{Ejercicios propuestos}
+\addcontentsline{toc}{section}{Ejercicios propuestos}
+\label{sec:ejercicios-t6}
+
+Los ejercicios siguientes combinan cálculo, razonamiento y traducción entre las distintas formas de describir un espacio vectorial o una aplicación lineal. Los primeros recuperan el nivel de los ejercicios utilizados en cursos anteriores y la colección se amplía para cubrir cambio de base, producto escalar, Gram--Schmidt y aplicaciones lineales. Los marcados con \M son especialmente adecuados para ser resueltos o comprobados también con \textit{Wolfram Mathematica}.
+
+\begin{enumerate}[label=\textbf{\arabic*.},leftmargin=*]
+
+\item Determinar razonadamente cuáles de los siguientes conjuntos son subespacios vectoriales del espacio indicado:
+\begin{enumerate}[label=\alph*)]
+\item $\{(a+1,a+1):a\in\R\}\subseteq\R^2$;
+\item $\{(a+b,a+b+2):a,b\in\R\}\subseteq\R^2$;
+\item $\{(x,y)\in\R^2:x=y\}$;
+\item el conjunto de matrices simétricas de $\mathcal M_2(\R)$;
+\item $\{p\in\mathcal P_3:p(1)=0\}$;
+\item $\{p\in\mathcal P_3:p(1)=1\}$.
+\end{enumerate}
+
+\item Sea
+\[
+S=\{(x,y,z)\in\R^3:x+y-z=0\}.
+\]
+Demostrar que $S$ es un subespacio, obtener una base, calcular su dimensión y escribir sus ecuaciones paramétricas.
+
+\item Dado
+\[
+W=\{(x,y,z,t)\in\R^4:x+y+z+t=0,\ y-2z-t=0\},
+\]
+hallar una base y la dimensión de $W$. Escribir todos sus elementos en forma paramétrica.
+
+\item Obtener una base del subespacio
+\[
+H=\{(x,y,z,t)\in\R^4:2y+4z=0,\ x+2z=0\}.
+\]
+Determinar además unas ecuaciones implícitas equivalentes en las que aparezca el menor número posible de ecuaciones independientes.
+
+\item Sea
+\[
+V=\{(4,-5,7),(3,-3,4),(1,1,-2),(2,-1,1)\}\subseteq\R^3.
+\]
+\begin{enumerate}[label=\alph*)]
+\item Obtener una base de $\langle V\rangle$ formada por vectores de $V$.
+\item Calcular $\dim\langle V\rangle$.
+\item Decidir si $(1,-2,3)$ pertenece a $\langle V\rangle$.
+\item Si pertenece, obtener sus coordenadas respecto de la base elegida.
+\end{enumerate}
+
+\item En $\R^4$ se considera
+\[
+V=\{(1,0,-1,2),(-1,1,0,1),(2,2,-4,10)\}.
+\]
+\begin{enumerate}[label=\alph*)]
+\item Determinar una base y la dimensión de $\langle V\rangle$.
+\item Escribir unas ecuaciones paramétricas del subespacio.
+\item Estudiar si $w=(2,-1,-1,1)$ pertenece a él.
+\end{enumerate}
+
+\item Dado
+\[
+L=\langle(2,5,0,-2),(0,1,3,1)\rangle\subseteq\R^4,
+\]
+obtener unas ecuaciones implícitas de $L$, su dimensión y una base.
+
+\item Dados
+\[
+u_1=(2,3,-1),\qquad
+u_2=(0,5,2),\qquad
+u_3=(6,-1,-7),
+\]
+responder razonadamente:
+\begin{enumerate}[label=\alph*)]
+\item ¿son $u_1,u_2,u_3$ linealmente independientes?;
+\item determinar una base y la dimensión de $L=\langle u_1,u_2,u_3\rangle$;
+\item decidir si $w=(1,2,0)$ pertenece a $L$;
+\item obtener unas ecuaciones implícitas de $H=\langle u_1,u_2\rangle$;
+\item relacionar las respuestas anteriores con el rango de la matriz que tiene $u_1,u_2,u_3$ como columnas.
+\end{enumerate}
+
+\item Determinar para qué valores de $a\in\R$ los vectores
+\[
+(1,a,1),\qquad(1,1,a),\qquad(a,1,1)
+\]
+son linealmente independientes. Para los valores restantes, obtener una relación de dependencia no trivial.
+
+\item Sean
+\[
+\begin{aligned}
+v_1&=(1,1,0,1),&\qquad v_2&=(2,1,1,0),\\
+v_3&=(3,2,1,1),& v_4&=(0,1,-1,2).
+\end{aligned}
+\]
+Obtener un subconjunto maximal de vectores linealmente independientes y una base del subespacio generado. Expresar los vectores eliminados como combinación lineal de la base elegida.
+
+\item Determinar si
+\[
+\mathcal B=((1,1,0),(0,1,1),(1,0,1))
+\]
+es una base de $\R^3$. En caso afirmativo, calcular las coordenadas de $v=(3,2,1)$ respecto de $\mathcal B$.
+
+\item En $\R^2$ se consideran las bases
+\[
+\mathcal B=((1,1),(1,-1)),
+\qquad
+\mathcal C=((2,1),(1,1)).
+\]
+\begin{enumerate}[label=\alph*)]
+\item Obtener $P_{\mathcal E\leftarrow\mathcal B}$ y $P_{\mathcal E\leftarrow\mathcal C}$.
+\item Calcular $P_{\mathcal C\leftarrow\mathcal B}$.
+\item Si $[v]_{\mathcal B}=(2,-1)^t$, hallar $[v]_{\mathcal C}$ y las coordenadas canónicas de $v$.
+\item Comprobar el resultado reconstruyendo el vector a partir de ambas bases.
+\end{enumerate}
+
+\item Sea
+\[
+\mathcal B=((1,0,1),(1,1,0),(0,1,1))
+\]
+una base de $\R^3$. Hallar el vector cuyas coordenadas en $\mathcal B$ son $(2,-1,3)^t$ y obtener las coordenadas de $(1,2,3)$ respecto de $\mathcal B$.
+
+\item Determinar una base de $\R^4$ que contenga a los vectores
+\[
+(1,1,0,0),\qquad(0,1,1,0).
+\]
+Justificar que los vectores añadidos completan realmente una base. ¿Es única la respuesta?
+
+\item Dados
+\[
+u=(2,-1,3),
+\qquad
+v=(1,4,-2),
+\]
+calcular $u\cdot v$, $\|u\|$, $\|v\|$ y el ángulo que forman. Determinar también la proyección de $u$ sobre $v$.
+
+\item Una fuerza
+\[
+F=(8,-2,5)\ \mathrm{N}
+\]
+actúa sobre un elemento cuya dirección viene dada por $d=(1,2,2)$. Calcular la componente de $F$ en la dirección de $d$ y descomponer
+\[
+F=F_{\parallel}+F_{\perp},
+\]
+donde $F_{\parallel}$ es paralela a $d$ y $F_{\perp}$ es ortogonal a $d$.
+
+\item Aplicar Gram--Schmidt a
+\[
+v_1=(1,1,0),
+\qquad
+v_2=(1,0,1),
+\qquad
+v_3=(0,1,1),
+\]
+y obtener una base ortonormal de $\R^3$. Comprobar explícitamente los productos escalares entre los vectores obtenidos.
+
+\item Aplicar Gram--Schmidt a la base
+\[
+\mathcal B=((1,1,1),(1,1,0),(1,0,0))
+\]
+de $\R^3$. Comparar las coordenadas de $v=(2,1,3)$ en la base original y en la base ortonormal obtenida.
+
+\item Determinar cuáles de las siguientes aplicaciones son lineales. En los casos lineales, obtener su matriz en las bases canónicas:
+\begin{enumerate}[label=\alph*)]
+\item $T:\R^2\to\R^3$, $T(x,y)=(x-y,2x+y,3y)$;
+\item $S:\R^2\to\R^2$, $S(x,y)=(x+1,y)$;
+\item $F:\R^3\to\R$, $F(x,y,z)=2x-y+4z$;
+\item $G:\R^2\to\R^2$, $G(x,y)=(xy,y)$.
+\end{enumerate}
+
+\item Para
+\[
+T:\R^3\to\R^2,
+\qquad
+T(x,y,z)=(x+y,y+z),
+\]
+obtener bases de $\ker(T)$ y $\operatorname{Im}(T)$, calcular sus dimensiones y verificar el teorema de la dimensión. Decidir si $T$ es inyectiva y si es suprayectiva.
+
+\item Sea
+\[
+T:\R^4\to\R^3,
+\qquad
+T(x_1,x_2,x_3,x_4)
+=(x_1+x_2,\ x_2+x_3,\ x_3+x_4).
+\]
+\begin{enumerate}[label=\alph*)]
+\item Obtener la matriz de $T$ en las bases canónicas.
+\item Calcular una base del núcleo.
+\item Calcular una base de la imagen.
+\item Verificar el teorema de la dimensión.
+\item Decidir si la salida $(1,0,1)$ puede producirse y, en caso afirmativo, encontrar todas las entradas que la generan.
+\end{enumerate}
+
+\item Sea $T:\mathcal P_2\to\mathcal P_2$ la aplicación
+\[
+T(p(x))=p'(x)+p(0).
+\]
+\begin{enumerate}[label=\alph*)]
+\item Comprobar que $T$ es lineal.
+\item Obtener su matriz respecto de la base $(1,x,x^2)$.
+\item Determinar $\ker(T)$ y $\operatorname{Im}(T)$.
+\item Verificar el teorema de la dimensión.
+\end{enumerate}
+
+\item Una instalación dispone de tres actuadores cuyas intensidades se recogen en
+\[
+x=(x_1,x_2,x_3)^t.
+\]
+Dos sensores proporcionan las medidas
+\[
+y_1=x_1+x_2-2x_3,
+\qquad
+y_2=2x_1+2x_2-4x_3.
+\]
+Interpretar el sistema como una aplicación lineal $T:\R^3\to\R^2$ y:
+\begin{enumerate}[label=\alph*)]
+\item determinar una base de $\ker(T)$ y explicar qué representan esos vectores en términos de las medidas;
+\item obtener una base de $\operatorname{Im}(T)$;
+\item discutir si las dos señales de los sensores aportan información independiente;
+\item indicar cuántos grados de libertad del estado pueden reconstruirse a partir de estas medidas.
+\end{enumerate}
+
+\item Una planta química produce tres corrientes de proceso $P_1,P_2,P_3$. El consumo de dos recursos viene descrito por
+\[
+T(x)=Ax,
+\qquad
+A=
+\begin{pmatrix}
+2&1&3\\
+1&2&3
+\end{pmatrix},
+\]
+donde $x\in\R^3$ representa las cantidades producidas.
+\begin{enumerate}[label=\alph*)]
+\item determinar el núcleo y explicar qué significa matemáticamente que dos planes de producción difieran en un vector del núcleo;
+\item calcular la dimensión de la imagen;
+\item estudiar si cualquier vector de consumo de $\R^2$ puede obtenerse en el modelo lineal;
+\item comentar por qué las restricciones físicas $x_i\geq0$ no forman parte de la estructura de espacio vectorial utilizada en el análisis algebraico.
+\end{enumerate}
+
+\item Para
+\[
+T:\R^2\to\R^2,
+\qquad
+T(x,y)=(2x-y,x+y),
+\]
+y las bases
+\[
+\mathcal B=((1,1),(1,-1)),
+\qquad
+\mathcal C=((1,0),(1,1)),
+\]
+obtener $[T]_{\mathcal C\leftarrow\mathcal B}$ de dos formas distintas:
+\begin{enumerate}[label=\alph*)]
+\item calculando las imágenes de los vectores de $\mathcal B$ y expresándolas en $\mathcal C$;
+\item utilizando las matrices de cambio de base y la matriz canónica de $T$.
+\end{enumerate}
+
+\item Sea $T:\R^3\to\R^3$ la aplicación cuya matriz en la base canónica es
+\[
+A=
+\begin{pmatrix}
+1&1&0\\
+0&1&1\\
+1&0&1
+\end{pmatrix}.
+\]
+Consideremos la base
+\[
+\mathcal B=((1,1,0),(0,1,1),(1,0,1)).
+\]
+Obtener $[T]_{\mathcal B\leftarrow\mathcal B}$ y comprobar que las dos matrices representan la misma transformación utilizando un vector elegido por el estudiante.
+
+\item Sean $T:\R^2\to\R^3$ y $S:\R^3\to\R^2$ las aplicaciones
+\[
+T(x,y)=(x+y,x-y,2y),
+\]
+\[
+S(x,y,z)=(x+z,y-z).
+\]
+Obtener las matrices canónicas de $T$, $S$, $S\circ T$ y $T\circ S$. Comprobar que
+\[
+[S\circ T]=[S][T],
+\qquad
+[T\circ S]=[T][S],
+\]
+cuando los productos están definidos.
+
+\item \M Para los ejercicios 2--10, formar las matrices cuyas columnas sean los generadores y utilizar \texttt{MatrixRank} para comprobar las dimensiones obtenidas manualmente. En los ejercicios de pertenencia, comparar el rango de la matriz de generadores con el de la matriz ampliada.
+
+\item \M Para las aplicaciones de los ejercicios 20--24, utilizar \texttt{NullSpace} para comprobar una base del núcleo y \texttt{MatrixRank} para obtener la dimensión de la imagen. Verificar en cada caso la igualdad
+\[
+\dim\ker(T)+\dim\operatorname{Im}(T)=\dim(V).
+\]
+
+\item \M Aplicar \texttt{Orthogonalize} a las familias de los ejercicios 17 y 18. Comparar el resultado del programa con el proceso manual de Gram--Schmidt y comprobar mediante productos escalares que la familia obtenida es ortonormal.
+
+\item \M En los ejercicios 12, 13, 25 y 26, introducir las matrices de cambio de base y comprobar los cambios de coordenadas mediante productos matriciales. El objetivo es utilizar el ordenador para verificar el cálculo, no para sustituir la identificación de qué matriz transforma unas coordenadas en otras.
+
+\item (Examen) Sea
+\[
+W=\{(x,y,z,t)\in\R^4:x+y-z+t=0,\quad 2x+y+t=0\}.
+\]
+\begin{enumerate}[label=\alph*)]
+\item obtener una base y la dimensión de $W$;
+\item decidir si $v=(1,-1,2,2)$ pertenece a $W$;
+\item obtener unas ecuaciones paramétricas de $W$;
+\item construir una base de $\R^4$ que contenga una base de $W$.
+\end{enumerate}
+
+\item (Examen) Sea
+\[
+T:\R^3\to\R^3,
+\qquad
+T(x,y,z)=(x+y+z,\ 2x+y,\ x+z).
+\]
+\begin{enumerate}[label=\alph*)]
+\item obtener la matriz de $T$ en la base canónica;
+\item calcular bases de $\ker(T)$ y $\operatorname{Im}(T)$;
+\item decidir si $T$ es biyectiva;
+\item para
+\[
+\mathcal B=((1,1,0),(1,0,1),(0,1,1)),
+\]
+obtener $[T]_{\mathcal B\leftarrow\mathcal B}$.
+\end{enumerate}
+
+\item (Examen) En $\R^3$ se considera el subespacio
+\[
+H=\langle(1,1,0),(1,0,1)\rangle.
+\]
+\begin{enumerate}[label=\alph*)]
+\item obtener una base ortonormal de $H$ mediante Gram--Schmidt;
+\item calcular la proyección ortogonal de $v=(2,-1,3)$ sobre $H$;
+\item descomponer $v=v_H+v_H^{\perp}$ con $v_H\in H$ y $v_H^{\perp}$ ortogonal a $H$;
+\item comprobar la ortogonalidad de la descomposición.
+\end{enumerate}
+
+\end{enumerate}

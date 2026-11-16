@@ -55,7 +55,7 @@ def normalize(text):
     text = re.sub(r"\\label\{[^}]*\}", "", text)
     text = re.sub(r"\\renewcommand\{\\arraystretch\}\{[^}]*\}", "", text)
     text = re.sub(r"\\tcblower(?![A-Za-z])", "", text)
-    return text.strip()
+    return "\n".join(line.rstrip() for line in text.strip().splitlines())
 
 
 def atoms(text):

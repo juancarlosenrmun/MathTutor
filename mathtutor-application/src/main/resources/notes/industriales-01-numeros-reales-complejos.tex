@@ -1,0 +1,718 @@
+% Fuente: Industriales/Capitulos/Tema1_Numeros_Reales_Complejos.tex
+% SHA-256 original: 425795803981c72c689763f2e66f5eda5d842526d8207ef3a03059a923b6a191
+\bloque{funciones}
+\tema{numeros-reales-complejos}{Números reales y complejos}
+\dificultad{1}
+
+\section{Números reales y complejos - fragmento 1}
+\textbf{Números reales y complejos}
+
+Las magnitudes que aparecen en ingeniería se expresan habitualmente mediante números reales: longitudes, temperaturas, caudales, concentraciones, potencias o tiempos son algunos ejemplos. Sin embargo, existen situaciones en las que los números reales no son suficientes. En particular, el estudio de fenómenos oscilatorios y de corriente alterna conduce de forma natural a los números complejos. En este capítulo repasaremos las propiedades de los números reales que utilizaremos a lo largo del curso y presentaremos las distintas formas de representar y operar con números complejos.
+
+\textbf{Números reales}
+
+\textbf{Conjuntos numéricos, orden e intervalos}
+
+Recordemos los principales conjuntos numéricos:
+\[
+\mathbb{N}=\{1,2,3,\ldots\},\qquad
+\mathbb{Z}=\{0,\pm1,\pm2,\ldots\},
+\]
+\[
+\mathbb{Q}=\left\{\frac{p}{q}:p\in\mathbb{Z},\;q\in\mathbb{N}\right\},
+\qquad
+\mathbb{R}=\text{conjunto de los números reales}.
+\]
+Se verifican las inclusiones
+\[
+\mathbb{N}\subset\mathbb{Z}\subset\mathbb{Q}\subset\mathbb{R}.
+\]
+Los números de \(\mathbb{R}\setminus\mathbb{Q}\) reciben el nombre de \emph{irracionales}. Por ejemplo,
+\(\sqrt{2}\), \(\pi\) y \(e\) son irracionales.
+
+A lo largo de los apuntes utilizaremos, entre otros, los símbolos
+\[
+\begin{array}{ll}
+\forall\;	\text{(para todo)}, & \exists\;	\text{(existe)},\\[2mm]
+\in\;	\text{(pertenece)}, & \subseteq\;	\text{(está contenido en)}.
+\end{array}
+\]
+
+El conjunto \(\mathbb{R}\) está ordenado: dados \(x,y\in\mathbb{R}\), podemos comparar ambos números mediante las relaciones \(<\), \(\leq\), \(>\) y \(\geq\). Las reglas elementales para trabajar con desigualdades se utilizarán continuamente. En particular,
+\begin{align*}
+ x\leq y &\Longrightarrow x+z\leq y+z,\\
+ x\leq y,\ z>0 &\Longrightarrow xz\leq yz,\\
+ x\leq y,\ z<0 &\Longrightarrow xz\geq yz.
+\end{align*}
+La última propiedad es especialmente importante: al multiplicar o dividir una desigualdad por un número negativo, el sentido de la desigualdad cambia.
+
+
+\section{Números reales y complejos - fragmento 2}
+\begin{example}
+Resolver la desigualdad
+\[
+3-2x<7.
+\]
+
+\textbf{Resolución.}\par\smallskip
+Restando \(3\) en ambos miembros obtenemos \(-2x<4\). Al dividir entre \(-2\), la desigualdad cambia de sentido:
+\[
+x>-2.
+\]
+\end{example}
+
+Los intervalos permiten describir de forma compacta subconjuntos de la recta real. Dados \(a,b\in\mathbb{R}\), con \(a<b\), escribiremos
+\begin{align*}
+[a,b]&=\{x\in\mathbb{R}:a\leq x\leq b\},\\
+]a,b]&=\{x\in\mathbb{R}:a<x\leq b\},\\
+[a,b[&=\{x\in\mathbb{R}:a\leq x<b\},\\
+]a,b[&=\{x\in\mathbb{R}:a<x<b\}.
+\end{align*}
+También utilizaremos intervalos no acotados, como
+\[
+[a,+\infty[=\{x\in\mathbb{R}:x\geq a\},
+\qquad
+]-\infty,b[=\{x\in\mathbb{R}:x<b\}.
+\]
+El símbolo \(\infty\) no representa un número real y, por tanto, nunca se incluye como extremo de un intervalo.
+
+\begin{example}
+Una pieza cilíndrica debe fabricarse con diámetro nominal \(20\,\mathrm{mm}\) y una tolerancia de \(0.03\,\mathrm{mm}\). Si \(d\) es el diámetro real de la pieza, la condición de aceptación puede escribirse como
+\[
+19.97\leq d\leq20.03,
+\]
+es decir,
+\[
+d\in[19.97,20.03].
+\]
+La notación mediante intervalos traduce directamente una especificación de fabricación en una condición matemática.
+\end{example}
+
+Dados dos subconjuntos \(A,B\subseteq\mathbb{R}\), utilizaremos además
+\[
+A\cup B=\{x:x\in A\text{ o }x\in B\},
+\qquad
+A\cap B=\{x:x\in A\text{ y }x\in B\}.
+\]
+Estas operaciones aparecerán de forma natural al estudiar dominios de funciones y conjuntos de soluciones de desigualdades.
+
+\begin{solvedexercise}
+Determinar el conjunto
+\[
+A=[-2,4]\cap\bigl(]-\infty,1[\cup[3,+\infty[\bigr).
+\]
+
+\textbf{Resolución.}\par\smallskip
+Distribuyendo la intersección,
+\[
+A=\bigl([-2,4]\cap]-\infty,1[\bigr)\cup
+\bigl([-2,4]\cap[3,+\infty[\bigr),
+\]
+y, por tanto,
+\[
+A=[-2,1[\cup[3,4].
+\]
+\end{solvedexercise}
+
+\textbf{Valor absoluto y distancia}
+
+\begin{definition}[Valor absoluto]
+Para \(x\in\mathbb{R}\), se define el valor absoluto de \(x\) por
+\[
+|x|=
+\begin{cases}
+ x, & x\geq0,\\
+ -x, & x<0.
+\end{cases}
+\]
+\end{definition}
+
+
+\section{Números reales y complejos - fragmento 3}
+El valor absoluto de un número real es su distancia al origen. En particular,
+\[
+|x|\geq0,
+\qquad
+|x|=0\Longleftrightarrow x=0,
+\qquad
+|-x|=|x|.
+\]
+Además, para cualesquiera \(x,y\in\mathbb{R}\),
+\[
+|xy|=|x|\,|y|,
+\qquad
+|x+y|\leq |x|+|y|.
+\]
+La segunda desigualdad recibe el nombre de \emph{desigualdad triangular}.
+
+El valor absoluto permite expresar distancias en la recta real.
+
+\begin{definition}[Distancia en \(\mathbb{R}\)]
+Dados \(x,y\in\mathbb{R}\), la distancia entre \(x\) e \(y\) es
+\[
+d(x,y)=|x-y|.
+\]
+\end{definition}
+
+De esta interpretación se obtienen equivalencias muy útiles. Si \(a>0\), entonces
+\[
+|x|<a\Longleftrightarrow -a<x<a,
+\qquad
+|x|\leq a\Longleftrightarrow -a\leq x\leq a.
+\]
+Más generalmente,
+\[
+|x-c|<a\Longleftrightarrow c-a<x<c+a,
+\]
+es decir, \(|x-c|<a\) describe los puntos cuya distancia a \(c\) es menor que \(a\).
+
+\begin{example}
+La temperatura de operación de un reactor debe mantenerse a menos de \(2.5\,^{\circ}\mathrm{C}\) de su valor nominal \(T_0=350\,^{\circ}\mathrm{C}\). La condición puede escribirse como
+\[
+|T-350|<2.5.
+\]
+Equivalentemente,
+\[
+347.5<T<352.5.
+\]
+La formulación mediante valor absoluto expresa directamente una tolerancia alrededor de un valor de referencia.
+\end{example}
+
+\begin{solvedexercise}
+Resolver
+\[
+|2x-3|\leq5.
+\]
+
+\textbf{Resolución.}\par\smallskip
+Usando la equivalencia anterior,
+\[
+-5\leq2x-3\leq5.
+\]
+Sumando \(3\),
+\[
+-2\leq2x\leq8,
+\]
+y dividiendo entre \(2\),
+\[
+-1\leq x\leq4.
+\]
+Por tanto, el conjunto solución es \([-1,4]\).
+\end{solvedexercise}
+
+También será útil la desigualdad triangular en la forma
+\[
+\bigl||x|-|y|\bigr|\leq|x-y|.
+\]
+Esta expresión indica que la diferencia entre las distancias de dos puntos al origen nunca puede superar la distancia entre ambos puntos.
+
+\textbf{Potencias, raíces y notación científica}
+
+
+\section{Números reales y complejos - fragmento 4}
+Las reglas usuales de las potencias serán empleadas de forma constante. Para \(a\neq0\) y \(m,n\in\mathbb{Z}\),
+\[
+a^m a^n=a^{m+n},
+\qquad
+\frac{a^m}{a^n}=a^{m-n},
+\qquad
+(a^m)^n=a^{mn}.
+\]
+Si \(n\in\mathbb{N}\), la raíz \(n\)-ésima real de un número \(a\) es un número \(x\) que satisface \(x^n=a\). Cuando \(n\) es par, una raíz real sólo existe para \(a\geq0\). Además, el símbolo \(\sqrt[n]{a}\) representa la raíz real no negativa cuando \(n\) es par.
+
+Por ejemplo,
+\[
+\sqrt{9}=3,
+\qquad
+x^2=9\Longleftrightarrow x=\pm3.
+\]
+No debe confundirse el valor de la raíz cuadrada principal con el conjunto de soluciones de una ecuación cuadrática.
+
+En aplicaciones de ingeniería es frecuente trabajar con magnitudes muy grandes o muy pequeñas. La notación científica escribe un número no nulo en la forma
+\[
+a\,10^n,\qquad 1\leq |a|<10,\quad n\in\mathbb{Z}.
+\]
+Así,
+\[
+0.000047=4.7\,10^{-5},
+\qquad
+2\,350\,000=2.35\,10^6.
+\]
+
+\begin{example}
+Una corriente de \(35\,\mu\mathrm{A}\) equivale a
+\[
+35\,10^{-6}\,\mathrm{A}=3.5\,10^{-5}\,\mathrm{A}.
+\]
+Una potencia de \(2.4\,\mathrm{MW}\) equivale a
+\[
+2.4\,10^6\,\mathrm{W}.
+\]
+La notación científica permite operar con ambas magnitudes sin perder de vista su orden de magnitud.
+\end{example}
+
+\textbf{Números complejos}
+
+La ecuación
+\[
+x^2+1=0
+\]
+no tiene solución en \(\mathbb{R}\), pues \(x^2\geq0\) para todo \(x\in\mathbb{R}\). Para resolver este tipo de ecuaciones ampliamos el sistema numérico introduciendo la unidad imaginaria.
+
+\begin{definition}[Unidad imaginaria]
+La unidad imaginaria, denotada por \(i\), se caracteriza por
+\[
+i^2=-1.
+\]
+\end{definition}
+
+\begin{definition}[Número complejo]
+Un número complejo es una expresión de la forma
+\[
+z=a+bi,
+\]
+donde \(a,b\in\mathbb{R}\). El conjunto de los números complejos se denota por
+\[
+\mathbb{C}=\{a+bi:a,b\in\mathbb{R}\}.
+\]
+El número \(a\) es la \emph{parte real} de \(z\), denotada por \(\operatorname{Re}(z)\), y \(b\) es la \emph{parte imaginaria}, denotada por \(\operatorname{Im}(z)\).
+\end{definition}
+
+
+\section{Números reales y complejos - fragmento 5}
+Dos números complejos son iguales si y sólo si coinciden sus partes real e imaginaria:
+\[
+a+bi=c+di\Longleftrightarrow a=c\text{ y }b=d.
+\]
+Los números reales se identifican con los complejos cuya parte imaginaria es cero, de modo que
+\[
+\mathbb{R}\subset\mathbb{C}.
+\]
+
+\textbf{Forma binómica, conjugado y operaciones}
+
+La expresión \(z=a+bi\) recibe el nombre de \emph{forma binómica}. La suma y el producto se realizan aplicando las reglas algebraicas usuales y utilizando \(i^2=-1\):
+\begin{align*}
+(a+bi)+(c+di)&=(a+c)+(b+d)i,\\
+(a+bi)(c+di)&=(ac-bd)+(ad+bc)i.
+\end{align*}
+
+\begin{example}
+Sean \(z=3-2i\) y \(w=1+4i\). Entonces
+\[
+z+w=4+2i,
+\]
+y
+\[
+zw=(3-2i)(1+4i)=3+12i-2i-8i^2=11+10i.
+\]
+\end{example}
+
+Las potencias de \(i\) se repiten con período \(4\):
+\[
+i^0=1,\qquad i^1=i,\qquad i^2=-1,\qquad i^3=-i,\qquad i^4=1.
+\]
+Por tanto, para calcular \(i^n\) basta conocer el resto de dividir \(n\) entre \(4\).
+
+\begin{example}
+Como \(241=4\cdot60+1\),
+\[
+i^{241}=i.
+\]
+\end{example}
+
+\begin{definition}[Conjugado]
+Si \(z=a+bi\), el conjugado de \(z\) es
+\[
+\overline{z}=a-bi.
+\]
+\end{definition}
+
+El conjugado verifica
+\[
+\overline{z+w}=\overline z+\overline w,
+\qquad
+\overline{zw}=\overline z\,\overline w,
+\qquad
+z\overline z=a^2+b^2.
+\]
+Esta última identidad permite dividir números complejos.
+
+\begin{proposition}
+Sea \(z=a+bi\neq0\). Entonces
+\[
+\frac1z=\frac{\overline z}{z\overline z}
+=\frac{a-bi}{a^2+b^2}.
+\]
+\end{proposition}
+
+\begin{example}
+Calcular
+\[
+\frac{1+2i}{3-4i}.
+\]
+Multiplicamos numerador y denominador por el conjugado del denominador:
+\[
+\frac{1+2i}{3-4i}
+=\frac{(1+2i)(3+4i)}{(3-4i)(3+4i)}
+=\frac{-5+10i}{25}
+=-\frac15+\frac25i.
+\]
+\end{example}
+
+\begin{solvedexercise}
+Encontrar \(x,y\in\mathbb{R}\) tales que
+\[
+3x+2yi-xi+5y=7+5i.
+\]
+
+\textbf{Resolución.}\par\smallskip
+Agrupando parte real e imaginaria,
+\[
+(3x+5y)+(2y-x)i=7+5i.
+\]
+La igualdad de números complejos equivale al sistema
+\[
+\begin{cases}
+3x+5y=7,\\
+-x+2y=5.
+\end{cases}
+\]
+De la segunda ecuación, \(x=2y-5\). Sustituyendo en la primera,
+\[
+3(2y-5)+5y=7\Longrightarrow11y=22\Longrightarrow y=2,
+\]
+y, por tanto, \(x=-1\).
+\end{solvedexercise}
+
+\textbf{Representación geométrica, módulo y argumento}
+
+
+\section{Números reales y complejos - fragmento 6}
+A cada número complejo \(z=a+bi\) le asociamos el punto \((a,b)\) del plano. El eje horizontal se denomina \emph{eje real} y el vertical \emph{eje imaginario}. Esta identificación permite interpretar un número complejo como un punto o como un vector del plano.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \draw[-latex] (-3.2,0)--(4.2,0) node[right] {$\operatorname{Re}$};
+  \draw[-latex] (0,-3.0)--(0,3.4) node[above] {$\operatorname{Im}$};
+  \draw[-latex,thick] (0,0)--(3,2) node[midway,above left] {$z$};
+  \draw[dashed] (3,0)--(3,2)--(0,2);
+  \fill (3,2) circle (1.8pt) node[above right] {$a+bi$};
+  \node[below] at (3,0) {$a$};
+  \node[left] at (0,2) {$b$};
+  \draw (0.7,0) arc[start angle=0,end angle=33.69,radius=0.7];
+  \node at (0.95,0.25) {$\theta$};
+\end{tikzpicture}
+\end{center}
+
+\begin{definition}[Módulo]
+El módulo de \(z=a+bi\) es
+\[
+|z|=\sqrt{a^2+b^2}.
+\]
+\end{definition}
+
+Geométricamente, \(|z|\) es la distancia de \(z\) al origen. Más generalmente, la distancia entre \(z,w\in\mathbb{C}\) es
+\[
+|z-w|.
+\]
+El módulo conserva muchas de las propiedades del valor absoluto real:
+\[
+|z|\geq0,
+\qquad
+|z|=0\Longleftrightarrow z=0,
+\qquad
+|zw|=|z|\,|w|,
+\]
+y se verifica la desigualdad triangular
+\[
+|z+w|\leq|z|+|w|.
+\]
+Además,
+\[
+|z|^2=z\overline z.
+\]
+
+\begin{example}
+El conjunto
+\[
+\{z\in\mathbb{C}:|z-(2+3i)|\leq1\}
+\]
+está formado por los puntos cuya distancia al punto \(2+3i\) es menor o igual que \(1\). Por tanto, representa el disco cerrado de centro \((2,3)\) y radio \(1\).
+\end{example}
+
+\begin{definition}[Argumento]
+Sea \(z\in\mathbb{C}\), \(z\neq0\). Un argumento de \(z\) es cualquier ángulo \(\theta\in\mathbb{R}\) tal que
+\[
+z=|z|\bigl(\cos\theta+i\sin\theta\bigr).
+\]
+El argumento principal, denotado por \(\arg(z)\), es el único argumento perteneciente a \(]-\pi,\pi]\).
+\end{definition}
+
+Si \(\theta\) es un argumento de \(z\), entonces todos sus argumentos son
+\[
+\theta+2k\pi,\qquad k\in\mathbb{Z}.
+\]
+Para calcular correctamente el argumento no basta, en general, con usar \(\arctan(b/a)\): es necesario tener en cuenta el cuadrante en el que se encuentra el punto \((a,b)\).
+
+
+\section{Números reales y complejos - fragmento 7}
+\begin{example}
+Consideremos
+\[
+z=-2+2\sqrt3\,i.
+\]
+Su módulo es
+\[
+|z|=\sqrt{(-2)^2+(2\sqrt3)^2}=4.
+\]
+Como \(z\) está en el segundo cuadrante y
+\[
+\tan\theta=\frac{2\sqrt3}{-2}=-\sqrt3,
+\]
+el argumento principal es
+\[
+\arg(z)=\frac{2\pi}{3}.
+\]
+Por tanto,
+\[
+z=4\left(\cos\frac{2\pi}{3}+i\sin\frac{2\pi}{3}\right).
+\]
+\end{example}
+
+\textbf{Forma polar y exponencial. Producto, cociente y potencias}
+
+Si \(z\neq0\), podemos escribir
+\[
+z=\rho(\cos\theta+i\sin\theta),
+\qquad \rho=|z|>0,
+\]
+que es la \emph{forma trigonométrica} o \emph{polar} de \(z\). También utilizaremos la notación
+\[
+z=\rho e^{i\theta},
+\]
+basada en la fórmula de Euler
+\[
+e^{i\theta}=\cos\theta+i\sin\theta.
+\]
+En este capítulo la expresión exponencial se empleará como una forma cómoda de representar números complejos; el estudio de la función exponencial se realizará en el capítulo siguiente para variable real.
+
+La forma polar simplifica notablemente productos y cocientes. Si
+\[
+z=\rho e^{i\theta},
+\qquad
+w=\sigma e^{i\varphi},
+\]
+entonces
+\[
+zw=\rho\sigma e^{i(\theta+\varphi)},
+\qquad
+\frac zw=\frac{\rho}{\sigma}e^{i(\theta-\varphi)},\quad w\neq0.
+\]
+Así, al multiplicar números complejos se multiplican los módulos y se suman los argumentos; al dividir, se dividen los módulos y se restan los argumentos.
+
+Esta propiedad tiene una interpretación geométrica inmediata: multiplicar por un número complejo \(\rho e^{i\theta}\) combina una dilatación de factor \(\rho\) y una rotación de ángulo \(\theta\).
+
+\begin{example}
+Multiplicar por \(i=e^{i\pi/2}\) rota un vector \(90^\circ\) en sentido antihorario sin modificar su módulo. Por ejemplo,
+\[
+i(2+i)=-1+2i.
+\]
+El punto \((2,1)\) pasa al punto \((-1,2)\), que es precisamente su rotación de \(90^\circ\) alrededor del origen.
+\end{example}
+
+
+\section{Números reales y complejos - fragmento 8}
+\begin{proposition}[Fórmula de De Moivre]
+Sea
+\[
+z=\rho(\cos\theta+i\sin\theta)
+\]
+y sea \(n\in\mathbb{Z}\). Entonces
+\[
+z^n=\rho^n\bigl(\cos(n\theta)+i\sin(n\theta)\bigr),
+\]
+siempre que la expresión esté definida.
+\end{proposition}
+
+\begin{example}
+Calcular \((1+i)^8\).
+
+Como
+\[
+1+i=\sqrt2\,e^{i\pi/4},
+\]
+por De Moivre,
+\[
+(1+i)^8=(\sqrt2)^8e^{i2\pi}=16.
+\]
+El cálculo en forma polar evita desarrollar una potencia de orden elevado en forma binómica.
+\end{example}
+
+La representación compleja es especialmente útil para magnitudes sinusoidales. En Ingeniería Eléctrica suele emplearse la letra \(j\) en lugar de \(i\), para evitar confusión con la intensidad de corriente. Matemáticamente ambas notaciones representan la misma unidad imaginaria, \(j^2=-1\).
+
+\begin{example}[Impedancia en corriente alterna]
+Una impedancia
+\[
+Z=4+3i\;\Omega
+\]
+tiene módulo
+\[
+|Z|=5\;\Omega
+\]
+y argumento
+\[
+\arg(Z)=\arctan\frac34\approx0.644\;\mathrm{rad}\approx36.87^\circ.
+\]
+Por tanto,
+\[
+Z=5e^{i0.644}\;\Omega.
+\]
+La forma binómica separa las componentes resistiva y reactiva; la forma polar muestra directamente el módulo de la impedancia y el desfase que introduce.
+\end{example}
+
+\begin{solvedexercise}
+Una corriente sinusoidal se representa mediante el fasor
+\[
+I=2e^{-i\pi/6}\;\mathrm{A}
+\]
+y atraviesa una impedancia
+\[
+Z=5e^{i\pi/4}\;\Omega.
+\]
+Calcular el fasor de tensión \(V=ZI\) en forma polar y binómica.
+
+\textbf{Resolución.}\par\smallskip
+En forma polar,
+\[
+V=ZI=10e^{i(\pi/4-\pi/6)}=10e^{i\pi/12}\;\mathrm{V}.
+\]
+Pasando a forma binómica,
+\[
+V=10\left(\cos\frac{\pi}{12}+i\sin\frac{\pi}{12}\right).
+\]
+Como
+\[
+\cos\frac{\pi}{12}=\frac{\sqrt6+\sqrt2}{4},
+\qquad
+\sin\frac{\pi}{12}=\frac{\sqrt6-\sqrt2}{4},
+\]
+obtenemos
+\[
+V=\frac52(\sqrt6+\sqrt2)
++i\frac52(\sqrt6-\sqrt2)\;\mathrm{V}.
+\]
+Numéricamente,
+\[
+V\approx9.659+2.588i\;\mathrm{V}.
+\]
+\end{solvedexercise}
+
+\textbf{Raíces de números complejos}
+
+Sea \(w=\rho e^{i\theta}\neq0\). Resolver
+\[
+z^n=w
+\]
+consiste en buscar todos los números complejos \(z=re^{i\varphi}\) tales que
+\[
+r^ne^{in\varphi}=\rho e^{i\theta}.
+\]
+Debe cumplirse
+\[
+r=\sqrt[n]{\rho}
+\]
+y
+\[
+n\varphi=\theta+2k\pi,
+\qquad k\in\mathbb{Z}.
+\]
+Por tanto, existen exactamente \(n\) raíces distintas.
+
+
+\section{Números reales y complejos - fragmento 9}
+\begin{proposition}[Raíces \(n\)-ésimas]
+Sea \(w=\rho e^{i\theta}\neq0\), con \(\rho>0\), y \(n\in\mathbb{N}\). Las soluciones de
+\[
+z^n=w
+\]
+son
+\[
+z_k=\sqrt[n]{\rho}\,e^{i(\theta+2k\pi)/n},
+\qquad k=0,1,\ldots,n-1.
+\]
+\end{proposition}
+
+Todas las raíces tienen el mismo módulo y sus argumentos difieren en \(2\pi/n\). Geométricamente son los vértices de un polígono regular centrado en el origen.
+
+\begin{example}
+Resolver
+\[
+z^3=-8i.
+\]
+Escribimos
+\[
+-8i=8e^{-i\pi/2}.
+\]
+Las raíces cúbicas tienen módulo \(2\) y argumentos
+\[
+\frac{-\pi/2+2k\pi}{3},\qquad k=0,1,2.
+\]
+Por tanto,
+\[
+z_0=2e^{-i\pi/6},\qquad
+z_1=2e^{i\pi/2},\qquad
+z_2=2e^{i7\pi/6}.
+\]
+En forma binómica,
+\[
+z_0=\sqrt3-i,
+\qquad
+z_1=2i,
+\qquad
+z_2=-\sqrt3-i.
+\]
+\end{example}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+  \draw[-latex] (-2.7,0)--(2.7,0) node[right] {$\operatorname{Re}$};
+  \draw[-latex] (0,-2.7)--(0,2.7) node[above] {$\operatorname{Im}$};
+  \draw[dashed] (0,0) circle (2);
+  \foreach \x/\y/\lab in {1.732/-1/$z_0$,0/2/$z_1$,-1.732/-1/$z_2$}{
+    \fill (\x,\y) circle (2pt) node[above right] {\lab};
+    \draw[thin] (0,0)--(\x,\y);
+  }
+\end{tikzpicture}
+\end{center}
+
+\begin{example}[Raíces conjugadas]
+La ecuación
+\[
+x^2-6x+10=0
+\]
+tiene discriminante
+\[
+\Delta=36-40=-4.
+\]
+Por tanto,
+\[
+x=\frac{6\pm\sqrt{-4}}2=3\pm i.
+\]
+Como los coeficientes del polinomio son reales, las raíces complejas aparecen conjugadas. En efecto,
+\[
+(x-(3+i))(x-(3-i))=x^2-6x+10.
+\]
+\end{example}
+
+\paragraph{Comprobación con Mathematica.}
+En \textit{Wolfram Mathematica} la unidad imaginaria se escribe con la letra mayúscula \texttt{I}. Por ejemplo, las raíces de la ecuación anterior pueden obtenerse mediante
+\begin{mathematicacode}
+Solve[z^3 == -8 I, z]
+\end{mathematicacode}
+Para consultar módulo y argumento principal se utilizan, respectivamente,
+\begin{mathematicacode}
+Abs[-2 + 2 Sqrt[3] I]
+Arg[-2 + 2 Sqrt[3] I]
+\end{mathematicacode}
+No es necesario memorizar ahora la sintaxis: los comandos utilizados durante el curso se recopilan en el glosario final.

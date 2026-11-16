@@ -1,0 +1,340 @@
+\chapter*{Glosario de Wolfram Mathematica}
+\addcontentsline{toc}{chapter}{Glosario de Wolfram Mathematica}
+\chaptermark{Glosario de Wolfram Mathematica}
+
+
+%\newcommand{\MatCmd}[1]{\NoCaseChange{\MatCmd{#1}}}
+\DeclareRobustCommand{\MatCmd}[1]{\texttt{#1}}
+\AddToNoCaseChangeList{\MatCmd}
+
+Las prácticas de la asignatura se plantean como una extensión del trabajo realizado en las clases de teoría y problemas. El objetivo no es aprender un lenguaje de programación ni sustituir los razonamientos matemáticos por una salida de ordenador. Se utilizará \textit{Wolfram Mathematica} para \emph{comprobar cálculos}, \emph{explorar ejemplos}, \emph{representar gráficamente resultados} y abordar, una vez comprendido el procedimiento, casos cuyo cálculo manual resulte innecesariamente largo.
+
+Por este motivo, el número de herramientas que se empleará durante el curso es deliberadamente reducido. Este glosario contiene las órdenes y la sintaxis necesarias para realizar los ejercicios marcados con \M a lo largo de los apuntes. No pretende ser un manual de Mathematica.
+
+\section*{Sintaxis básica}
+
+Mathematica distingue entre mayúsculas y minúsculas. Los nombres de las funciones incorporadas comienzan por mayúscula y sus argumentos se escriben entre corchetes. Así, por ejemplo,
+\begin{mathematicacode}
+Sin[x]
+Sqrt[x]
+Exp[x]
+\end{mathematicacode}
+representan, respectivamente, $\sin x$, $\sqrt{x}$ y $e^x$.
+
+Las listas se escriben entre llaves. Esta misma notación permite introducir vectores y matrices:
+\begin{mathematicacode}
+u = {1, -2, 3}
+A = {{1, 2}, {3, 4}}
+\end{mathematicacode}
+Por tanto, una matriz se introduce como una lista cuyas componentes son sus filas.
+
+La multiplicación puede escribirse mediante un espacio o mediante \MatCmd{*}; las potencias se indican con \MatCmd{\string^}. Por ejemplo,
+\begin{mathematicacode}
+3 x^2
+3*x^2
+\end{mathematicacode}
+son expresiones equivalentes.
+
+Para plantear ecuaciones se utiliza \MatCmd{==}, no \MatCmd{=}. El signo \MatCmd{=} se reserva para asignar un valor a un símbolo:
+\begin{mathematicacode}
+a = 3
+Solve[x^2 == a, x]
+\end{mathematicacode}
+
+Cuando resulte cómodo definir una función utilizaremos el patrón \MatCmd{x\_} y la asignación diferida \MatCmd{:=}:
+\begin{mathematicacode}
+f[x_] := x^3 - 3 x
+f[2]
+\end{mathematicacode}
+No será necesario utilizar mecanismos de programación más avanzados en esta asignatura.
+
+Algunas constantes y símbolos incorporados que aparecerán con frecuencia son
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Mathematica} & \textbf{Significado}\\
+\midrule
+\MatCmd{Pi} & $\pi$\\
+\MatCmd{I} & unidad imaginaria $i$\\
+\MatCmd{Infinity} & $\infty$\\
+\MatCmd{Sqrt[x]} & $\sqrt{x}$\\
+\MatCmd{Exp[x]} & $e^x$\\
+\MatCmd{Log[x]} & $\ln x$\\
+\MatCmd{Sin[x]}, \MatCmd{Cos[x]}, \MatCmd{Tan[x]} & funciones trigonométricas\\
+\MatCmd{ArcCos[x]} & $\arccos x$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Los argumentos de las funciones trigonométricas se interpretan en \textbf{radianes}.
+
+\section*{Herramientas de uso general}
+
+\begin{description}
+
+\item[\MatCmd{N}] Obtiene una aproximación decimal de una expresión exacta.
+\begin{mathematicacode}
+N[Pi/7]
+N[Sqrt[2], 12]
+\end{mathematicacode}
+En el segundo ejemplo se solicita una aproximación con mayor precisión.
+
+\item[\MatCmd{Simplify}] Simplifica una expresión algebraica. Es especialmente útil para comprobar que dos resultados escritos de forma diferente son equivalentes.
+\begin{mathematicacode}
+Simplify[(x^2 - 1)/(x - 1)]
+Simplify[(x + 1)^2 - (x^2 + 2 x + 1)]
+\end{mathematicacode}
+La simplificación automática no sustituye el estudio del dominio: dos expresiones pueden coincidir donde ambas están definidas y, sin embargo, tener dominios diferentes.
+
+\item[\MatCmd{Solve}] Resuelve simbólicamente ecuaciones o sistemas de ecuaciones.
+\begin{mathematicacode}
+Solve[x^2 - 5 x + 6 == 0, x]
+Solve[{x + y == 3, 2 x - y == 0}, {x, y}]
+\end{mathematicacode}
+Las ecuaciones se escriben con \MatCmd{==} y un sistema se introduce como una lista de ecuaciones.
+
+\item[\MatCmd{Plot}] Representa una o varias funciones reales en un intervalo.
+\begin{mathematicacode}
+Plot[x Exp[-x], {x, 0, 8}]
+Plot[{Sin[x], Cos[x]}, {x, -2 Pi, 2 Pi}]
+\end{mathematicacode}
+Una gráfica debe utilizarse para explorar o comprobar el estudio analítico, no para sustituirlo. En particular, la apariencia de una función puede cambiar sustancialmente al modificar el intervalo de representación.
+
+\end{description}
+
+\section*{Números complejos}
+
+\begin{description}
+
+\item[\MatCmd{Re}, \MatCmd{Im}] Devuelven las partes real e imaginaria de un número complejo.
+\begin{mathematicacode}
+z = 3 - 4 I
+Re[z]
+Im[z]
+\end{mathematicacode}
+
+\item[\MatCmd{Abs}] Para un número complejo devuelve su módulo; para un número real coincide con el valor absoluto.
+\begin{mathematicacode}
+Abs[3 - 4 I]
+\end{mathematicacode}
+
+\item[\MatCmd{Arg}] Devuelve el argumento principal de un número complejo no nulo.
+\begin{mathematicacode}
+Arg[-1 + Sqrt[3] I]
+N[Arg[-1 + Sqrt[3] I]]
+\end{mathematicacode}
+
+\end{description}
+
+Para ecuaciones en números complejos se utilizará el mismo comando \MatCmd{Solve} estudiado anteriormente:
+\begin{mathematicacode}
+Solve[z^3 == -8 I, z]
+\end{mathematicacode}
+
+\section*{Funciones y cálculo}
+
+\begin{description}
+
+\item[\MatCmd{Limit}] Calcula simbólicamente un límite.
+\begin{mathematicacode}
+Limit[(x^2 - 1)/(x - 1), x -> 1]
+Limit[(5 x^2 + 3 x - 1)/(-2 x^2 + 7), x -> Infinity]
+\end{mathematicacode}
+Para los límites laterales puede añadirse la opción \MatCmd{Direction} cuando sea necesaria. En las prácticas ordinarias se priorizarán los límites para los que baste la sintaxis anterior.
+
+\item[\MatCmd{D}] Calcula derivadas simbólicas. El segundo argumento indica la variable respecto de la que se deriva.
+\begin{mathematicacode}
+D[x^2 Exp[-x], x]
+D[Sin[x^2], x]
+\end{mathematicacode}
+Las derivadas de orden superior pueden obtenerse indicando el orden:
+\begin{mathematicacode}
+D[Exp[x] Sin[x], {x, 3}]
+\end{mathematicacode}
+Si se ha definido previamente una función, Mathematica también entiende la notación con primas:
+\begin{mathematicacode}
+f[x_] := x^3 - 3 x
+f'[2]
+f''[2]
+\end{mathematicacode}
+
+\item[\MatCmd{Series}] Obtiene un desarrollo de Taylor alrededor de un punto hasta el orden indicado.
+\begin{mathematicacode}
+Series[Sin[x], {x, 0, 5}]
+Series[Exp[x], {x, 0, 4}]
+\end{mathematicacode}
+La salida incluye un término que representa el orden del resto.
+
+\item[\MatCmd{Normal}] Elimina de una serie el término que representa el resto y deja únicamente el polinomio de Taylor. Se utilizará solo cuando sea necesario manipular o representar dicho polinomio.
+\begin{mathematicacode}
+p = Normal[Series[Exp[x], {x, 0, 4}]]
+Plot[{Exp[x], p}, {x, -2, 2}]
+\end{mathematicacode}
+
+\item[\MatCmd{Integrate}] Calcula integrales simbólicas, tanto indefinidas como definidas.
+\begin{mathematicacode}
+Integrate[x Exp[-x], x]
+Integrate[x Exp[-x], {x, 0, 4}]
+\end{mathematicacode}
+En una integral indefinida Mathematica proporciona una primitiva y, por tanto, no añade una constante de integración. Al escribir la solución matemática debe recordarse la constante $C$.
+
+\item[\MatCmd{NIntegrate}] Aproxima numéricamente una integral definida. Se utilizará cuando interese un valor numérico o cuando la primitiva no pueda expresarse mediante funciones elementales sencillas.
+\begin{mathematicacode}
+NIntegrate[Exp[-x^2], {x, 0, 1}]
+\end{mathematicacode}
+
+\end{description}
+
+\section*{Matrices, espacios vectoriales y aplicaciones lineales}
+
+Los vectores y matrices se introducen mediante listas. El operador punto \MatCmd{.} representa el producto matricial y, para dos vectores, el producto escalar:
+\begin{mathematicacode}
+A = {{1, 2}, {3, 4}}
+x = {2, -1}
+A.x
+x.x
+\end{mathematicacode}
+
+\begin{description}
+
+\item[\MatCmd{Det}] Calcula el determinante de una matriz cuadrada.
+\begin{mathematicacode}
+Det[{{1, 2}, {3, 4}}]
+\end{mathematicacode}
+
+\item[\MatCmd{Inverse}] Calcula la inversa de una matriz regular.
+\begin{mathematicacode}
+Inverse[{{1, 2}, {3, 4}}]
+\end{mathematicacode}
+
+\item[\MatCmd{MatrixRank}] Calcula el rango de una matriz.
+\begin{mathematicacode}
+MatrixRank[{{1, 2, 3}, {2, 4, 6}, {0, 1, 1}}]
+\end{mathematicacode}
+
+\item[\MatCmd{RowReduce}] Obtiene la forma escalonada reducida por filas. Es especialmente útil para comprobar una eliminación de Gauss y para estudiar sistemas mediante su matriz ampliada.
+\begin{mathematicacode}
+RowReduce[{{1, 1, 3}, {2, -1, 0}}]
+\end{mathematicacode}
+En este ejemplo la última columna puede interpretarse como la columna de términos independientes de un sistema de dos ecuaciones.
+
+\item[\MatCmd{LinearSolve}] Resuelve directamente un sistema matricial $Ax=b$ cuando se proporcionan la matriz de coeficientes y el vector de términos independientes.
+\begin{mathematicacode}
+A = {{1, 1}, {2, -1}}
+b = {3, 0}
+LinearSolve[A, b]
+\end{mathematicacode}
+Para discutir sistemas con parámetros o para obtener una descripción simbólica más flexible se utilizará normalmente \MatCmd{Solve}.
+
+\item[\MatCmd{NullSpace}] Devuelve una base del núcleo de una matriz. Si $A$ representa una aplicación lineal, permite comprobar una base de $\ker A$.
+\begin{mathematicacode}
+A = {{1, 2, 3}, {2, 4, 6}}
+NullSpace[A]
+\end{mathematicacode}
+
+\item[\MatCmd{Orthogonalize}] Aplica un proceso de ortonormalización a una familia de vectores linealmente independientes. Se utilizará para comprobar el procedimiento manual de Gram--Schmidt.
+\begin{mathematicacode}
+Orthogonalize[{{1, 1, 0}, {1, 0, 1}}]
+\end{mathematicacode}
+
+\item[\MatCmd{Transpose}] Calcula la matriz traspuesta.
+\begin{mathematicacode}
+Transpose[{{1, 2, 3}, {4, 5, 6}}]
+\end{mathematicacode}
+Será útil, entre otros lugares, para comprobar cambios por congruencia del tipo $P^t A P$.
+
+\end{description}
+
+\section*{Diagonalización}
+
+\begin{description}
+
+\item[\MatCmd{Eigenvalues}] Calcula los valores propios de una matriz cuadrada, contando multiplicidades algebraicas.
+\begin{mathematicacode}
+A = {{2, 1}, {1, 2}}
+Eigenvalues[A]
+\end{mathematicacode}
+
+\item[\MatCmd{Eigenvectors}] Calcula vectores propios asociados a los valores propios de una matriz.
+\begin{mathematicacode}
+Eigenvectors[A]
+\end{mathematicacode}
+Estos comandos se utilizarán para \emph{comprobar} los valores y vectores propios calculados a mano. La decisión de si una matriz es diagonalizable debe justificarse mediante las multiplicidades y las dimensiones de los subespacios propios.
+
+\end{description}
+
+No se introducirá un comando específico que diagonalice automáticamente la matriz. Una vez construidas manualmente las matrices $P$ y $D$, la comprobación se realiza con las herramientas ya conocidas:
+\begin{mathematicacode}
+Inverse[P].A.P
+P.D.Inverse[P]
+\end{mathematicacode}
+Para formas cuadráticas y diagonalización por congruencia se procede de forma análoga:
+\begin{mathematicacode}
+Transpose[P].A.P
+\end{mathematicacode}
+
+\section*{Geometría vectorial}
+
+No utilizaremos comandos específicos de geometría analítica. Los problemas se resolverán con las mismas operaciones vectoriales estudiadas en el curso.
+
+\begin{description}
+
+\item[\MatCmd{.}] El punto entre dos vectores representa su producto escalar. Entre matrices, o entre una matriz y un vector, representa el producto matricial.
+\begin{mathematicacode}
+u = {1, 2, -1}
+v = {2, 0, 3}
+u.v
+\end{mathematicacode}
+
+\item[\MatCmd{Norm}] Calcula la norma euclídea de un vector.
+\begin{mathematicacode}
+Norm[{1, 2, -1}]
+\end{mathematicacode}
+De esta forma, el ángulo entre dos vectores no nulos puede obtenerse reutilizando el producto escalar:
+\begin{mathematicacode}
+ArcCos[(u.v)/(Norm[u] Norm[v])]
+\end{mathematicacode}
+
+\item[\MatCmd{Cross}] Calcula el producto vectorial de dos vectores de $\R^3$.
+\begin{mathematicacode}
+Cross[{1, 0, 2}, {0, 1, -1}]
+\end{mathematicacode}
+
+\end{description}
+
+Las pertenencias, intersecciones y posiciones relativas que conduzcan a sistemas de ecuaciones se comprobarán con \MatCmd{Solve}, sin introducir órdenes adicionales de geometría.
+
+\section*{Resumen de herramientas}
+
+La siguiente tabla recoge el conjunto de órdenes que se utilizará de forma habitual. Una misma herramienta aparece en varios temas porque precisamente se pretende reutilizar un vocabulario computacional pequeño.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{>{\ttfamily}l X}
+\toprule
+\textbf{Herramienta} & \textbf{Uso principal}\\
+\midrule
+N & aproximaciones numéricas\\
+Simplify & simplificación y comprobación de expresiones\\
+Solve & ecuaciones y sistemas simbólicos\\
+Plot & representación de funciones\\
+Re, Im, Abs, Arg & números complejos\\
+Limit & límites\\
+D & derivadas\\
+Series, Normal & polinomios de Taylor\\
+Integrate & integrales simbólicas\\
+NIntegrate & integrales numéricas\\
+Det, Inverse & determinante e inversa\\
+MatrixRank & rango\\
+RowReduce & eliminación de Gauss\\
+LinearSolve & sistemas lineales en forma matricial\\
+NullSpace & núcleo\\
+Orthogonalize & Gram--Schmidt\\
+Transpose & traspuesta y cambios por congruencia\\
+Eigenvalues, Eigenvectors & valores y vectores propios\\
+. & producto escalar y producto matricial\\
+Norm, Cross & norma y producto vectorial\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Esta lista es intencionadamente corta. Siempre que un ejercicio pueda resolverse combinando estas herramientas se evitará introducir un nuevo comando que automatice directamente el procedimiento matemático que se pretende aprender.

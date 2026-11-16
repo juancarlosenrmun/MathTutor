@@ -1,0 +1,1457 @@
+\chapter{Matrices}
+\label{ch:matrices}
+
+Los sistemas de ecuaciones lineales aparecen de forma natural cuando varias magnitudes están relacionadas simultáneamente. Un balance de materia puede imponer varias ecuaciones sobre caudales desconocidos; las leyes de Kirchhoff conducen a sistemas para corrientes y tensiones; las ecuaciones de equilibrio relacionan fuerzas y reacciones; y muchos modelos de producción, transporte o energía se expresan de manera compacta mediante tablas de coeficientes.
+
+Las matrices proporcionan el lenguaje adecuado para organizar esos datos y operar con ellos. En este capítulo estudiaremos las operaciones matriciales, los determinantes y el rango, y utilizaremos estas herramientas para analizar y resolver sistemas de ecuaciones lineales. El objetivo no es únicamente ejecutar algoritmos: interesa también reconocer qué información aporta cada objeto matemático y cuándo un problema tiene una solución única, infinitas soluciones o ninguna.
+
+\section{Matrices y operaciones}
+\label{sec:matrices-operaciones}
+
+\subsection{Concepto de matriz y tipos básicos}
+
+\begin{definition}[Matriz]
+Una \emph{matriz} de tamaño $m\times n$ es una disposición rectangular de $mn$ números reales organizada en $m$ filas y $n$ columnas. Se escribe
+\[
+A=(a_{ij})_{m\times n}
+=
+\begin{pmatrix}
+ a_{11}&a_{12}&\cdots&a_{1n}\\
+ a_{21}&a_{22}&\cdots&a_{2n}\\
+ \vdots&\vdots&\ddots&\vdots\\
+ a_{m1}&a_{m2}&\cdots&a_{mn}
+\end{pmatrix},
+\]
+donde $a_{ij}$ es el elemento situado en la fila $i$ y la columna $j$.
+\end{definition}
+
+El conjunto de matrices reales de tamaño $m\times n$ se denota por $\mathcal M_{m\times n}(\R)$. Cuando $m=n$ se habla de una \emph{matriz cuadrada de orden $n$} y escribiremos simplemente $\mathcal M_n(\R)$.
+
+Una matriz puede utilizarse para almacenar simultáneamente varias magnitudes. Por ejemplo, una planta fabrica dos productos $P_1$ y $P_2$ a partir de tres materias primas $M_1$, $M_2$ y $M_3$. Si las cantidades necesarias por unidad de producto son
+\[
+A=
+\begin{pmatrix}
+3&4\\
+2&1\\
+4&3
+\end{pmatrix},
+\]
+las columnas describen los productos y las filas las materias primas. El elemento $a_{32}=3$ significa que cada unidad de $P_2$ consume tres unidades de $M_3$. La matriz no es sólo una tabla: más adelante veremos que sus operaciones reproducen operaciones reales sobre el proceso.
+
+Entre los tipos de matrices que utilizaremos con frecuencia se encuentran los siguientes:
+
+\begin{itemize}
+\item una \emph{matriz fila} tiene una sola fila y una \emph{matriz columna} una sola columna;
+\item la \emph{matriz nula}, denotada por $0$, tiene todos sus elementos iguales a cero;
+\item una matriz cuadrada es \emph{diagonal} si todos los elementos fuera de la diagonal principal son nulos;
+\item la \emph{matriz identidad} de orden $n$ es
+\[
+I_n=\begin{pmatrix}
+1&0&\cdots&0\\
+0&1&\cdots&0\\
+\vdots&\vdots&\ddots&\vdots\\
+0&0&\cdots&1
+\end{pmatrix};
+\]
+\item una matriz es \emph{triangular superior} si $a_{ij}=0$ cuando $i>j$, y \emph{triangular inferior} si $a_{ij}=0$ cuando $i<j$;
+\item una matriz cuadrada es \emph{simétrica} si $A^t=A$ y \emph{antisimétrica} si $A^t=-A$.
+\end{itemize}
+
+La suma de los elementos de la diagonal principal de una matriz cuadrada se denomina \emph{traza}:
+\[
+\operatorname{tr}(A)=a_{11}+a_{22}+\cdots+a_{nn}.
+\]
+
+\begin{example}
+Para
+\[
+A=
+\begin{pmatrix}
+2&-1&0\\
+-1&3&4\\
+0&4&5
+\end{pmatrix},
+\]
+tenemos $A^t=A$, por lo que $A$ es simétrica, y
+\[
+\operatorname{tr}(A)=2+3+5=10.
+\]
+Las matrices simétricas aparecerán de nuevo en el estudio de formas cuadráticas y diagonalización.
+\end{example}
+
+\subsection{Suma, producto por escalares y producto de matrices}
+
+Dos matrices sólo pueden sumarse si tienen el mismo tamaño. Si $A=(a_{ij})$ y $B=(b_{ij})$ pertenecen a $\mathcal M_{m\times n}(\R)$, definimos
+\[
+A+B=(a_{ij}+b_{ij}).
+\]
+Si $\lambda\in\R$,
+\[
+\lambda A=(\lambda a_{ij}).
+\]
+Estas operaciones satisfacen las propiedades habituales de suma y producto por escalares: asociatividad, conmutatividad de la suma, existencia de matriz nula y opuesta, y distributividad.
+
+\begin{example}[Variación de una producción]
+Una fábrica registra la producción mensual de dos modelos con tres acabados mediante
+\[
+P=
+\begin{pmatrix}
+500&250&70\\
+600&150&100
+\end{pmatrix}.
+\]
+Si se planifica un aumento uniforme del $20\%$, la nueva producción prevista queda representada por
+\[
+1.2P=
+\begin{pmatrix}
+600&300&84\\
+720&180&120
+\end{pmatrix}.
+\]
+Si otra planta tiene una matriz de producción $Q$ con el mismo tamaño, la producción conjunta será $P+Q$.
+\end{example}
+
+El producto de matrices es diferente. Su definición está diseñada para encadenar relaciones lineales.
+
+\begin{definition}[Producto de matrices]
+Sean $A\in\mathcal M_{m\times n}(\R)$ y $B\in\mathcal M_{n\times p}(\R)$. El producto $AB$ es la matriz de tamaño $m\times p$ cuyo elemento $(i,j)$ es
+\[
+(AB)_{ij}=\sum_{k=1}^{n}a_{ik}b_{kj}.
+\]
+Por tanto, el elemento $(i,j)$ se obtiene multiplicando la fila $i$ de $A$ por la columna $j$ de $B$ y sumando los productos.
+\end{definition}
+
+La condición importante es que el número de columnas de la primera matriz coincida con el número de filas de la segunda:
+\[
+(m\times n)(n\times p)\longrightarrow(m\times p).
+\]
+
+\begin{example}[Consumo de materias primas]
+Retomemos la matriz
+\[
+A=
+\begin{pmatrix}
+3&4\\
+2&1\\
+4&3
+\end{pmatrix},
+\]
+que contiene el consumo de tres materias primas por unidad de dos productos. Si la producción semanal es
+\[
+x=\begin{pmatrix}20\\30\end{pmatrix},
+\]
+el consumo total de materias primas es
+\[
+Ax=
+\begin{pmatrix}
+3&4\\
+2&1\\
+4&3
+\end{pmatrix}
+\begin{pmatrix}20\\30\end{pmatrix}
+=
+\begin{pmatrix}
+180\\70\\170
+\end{pmatrix}.
+\]
+La primera componente, por ejemplo, significa que se consumen $180$ unidades de $M_1$ por semana.
+
+Si además el vector fila de costes unitarios es
+\[
+c=\begin{pmatrix}6&10&12\end{pmatrix},
+\]
+entonces
+\[
+cA
+=
+\begin{pmatrix}86&70\end{pmatrix}
+\]
+proporciona el coste de materias primas por unidad de $P_1$ y $P_2$. Finalmente,
+\[
+cAx
+\]
+representa el coste total semanal. La asociación de productos matriciales reproduce así la secuencia física
+\[
+\text{producción}\longrightarrow\text{consumos}\longrightarrow\text{coste}.
+\]
+\end{example}
+
+El producto matricial es asociativo y distributivo respecto de la suma:
+\[
+A(BC)=(AB)C,
+\]
+\[
+A(B+C)=AB+AC,
+\qquad
+(A+B)C=AC+BC.
+\]
+Sin embargo, en general no es conmutativo:
+\[
+AB\neq BA.
+\]
+Incluso puede ocurrir que uno de los dos productos exista y el otro no.
+
+\begin{example}
+Sean
+\[
+A=\begin{pmatrix}1&2\\0&1\end{pmatrix},
+\qquad
+B=\begin{pmatrix}0&1\\1&0\end{pmatrix}.
+\]
+Entonces
+\[
+AB=\begin{pmatrix}2&1\\1&0\end{pmatrix},
+\qquad
+BA=\begin{pmatrix}0&1\\1&2\end{pmatrix},
+\]
+y por tanto $AB\neq BA$.
+\end{example}
+
+Para una matriz cuadrada $A$ se definen las potencias
+\[
+A^2=AA,
+\qquad
+A^3=AAA,
+\qquad\ldots,
+\qquad
+A^0=I.
+\]
+Esta notación aparecerá de forma natural en modelos que evolucionan por etapas. Si un vector de estado $x_k$ cambia según
+\[
+x_{k+1}=Ax_k,
+\]
+entonces
+\[
+x_2=A^2x_0,
+\qquad
+x_k=A^kx_0.
+\]
+Más adelante, la diagonalización permitirá calcular potencias elevadas de matrices de manera eficiente.
+
+\subsection{Matriz transpuesta, inversa y ecuaciones matriciales}
+
+\begin{definition}[Matriz transpuesta]
+Si $A=(a_{ij})\in\mathcal M_{m\times n}(\R)$, su \emph{matriz transpuesta} $A^t\in\mathcal M_{n\times m}(\R)$ se obtiene intercambiando filas por columnas:
+\[
+(A^t)_{ij}=a_{ji}.
+\]
+\end{definition}
+
+Se cumplen
+\[
+(A^t)^t=A,
+\qquad
+(A+B)^t=A^t+B^t,
+\qquad
+(\lambda A)^t=\lambda A^t,
+\]
+y, de manera especialmente importante,
+\[
+(AB)^t=B^tA^t.
+\]
+Obsérvese que al transponer un producto se invierte el orden de los factores.
+
+\begin{definition}[Matriz inversa]
+Sea $A\in\mathcal M_n(\R)$. Se dice que $A$ es \emph{invertible} o \emph{regular} si existe una matriz $A^{-1}\in\mathcal M_n(\R)$ tal que
+\[
+AA^{-1}=A^{-1}A=I_n.
+\]
+Si no existe, $A$ se denomina \emph{singular}.
+\end{definition}
+
+La inversa, cuando existe, es única. Además,
+\[
+(A^{-1})^{-1}=A,
+\qquad
+(AB)^{-1}=B^{-1}A^{-1}
+\]
+si $A$ y $B$ son invertibles.
+
+\begin{example}
+Sea
+\[
+A=\begin{pmatrix}2&1\\1&1\end{pmatrix}.
+\]
+La matriz
+\[
+B=\begin{pmatrix}1&-1\\-1&2\end{pmatrix}
+\]
+satisface
+\[
+AB=BA=I_2.
+\]
+Por tanto,
+\[
+A^{-1}=B.
+\]
+En la siguiente sección obtendremos procedimientos sistemáticos para decidir si una matriz es invertible y calcular su inversa.
+\end{example}
+
+Las ecuaciones matriciales deben manipularse respetando el orden de los productos. Por ejemplo,
+\[
+AX=B
+\]
+con $A$ invertible implica
+\[
+A^{-1}AX=A^{-1}B
+\quad\Longrightarrow\quad
+X=A^{-1}B.
+\]
+En cambio,
+\[
+XA=B
+\]
+conduce a
+\[
+X=BA^{-1}.
+\]
+No podemos intercambiar estos resultados porque, en general, el producto matricial no es conmutativo.
+
+\begin{solvedexercise}
+Suponiendo que todas las matrices inversas que aparecen existen, despejar $X$ en
+\[
+A(X+C)=BX.
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Desarrollamos el primer miembro:
+\[
+AX+AC=BX.
+\]
+Reunimos los términos que contienen $X$:
+\[
+AX-BX=-AC.
+\]
+Como $X$ aparece a la derecha de ambos factores,
+\[
+(A-B)X=-AC.
+\]
+Si $A-B$ es invertible,
+\[
+\boxed{X=-(A-B)^{-1}AC.}
+\]
+No sería correcto escribir $X=-AC(A-B)^{-1}$ sin una justificación adicional.
+\end{solvedexercise}
+
+\section{Determinantes y rango}
+\label{sec:determinantes-rango}
+
+\subsection{Determinantes}
+
+A cada matriz cuadrada se le puede asociar un número, su determinante. Este número contiene información decisiva sobre la matriz: permite detectar si es invertible, interviene en el cálculo de la inversa y ayuda a estudiar el rango y los sistemas lineales.
+
+\begin{definition}[Determinante de orden $2$]
+Para
+\[
+A=\begin{pmatrix}a&b\\c&d\end{pmatrix},
+\]
+se define
+\[
+\det(A)=|A|=ad-bc.
+\]
+\end{definition}
+
+Para matrices de orden superior utilizaremos menores y adjuntos.
+
+\begin{definition}[Menor y adjunto]
+Sea $A=(a_{ij})\in\mathcal M_n(\R)$. El \emph{menor complementario} $M_{ij}$ del elemento $a_{ij}$ es el determinante de la matriz de orden $n-1$ que se obtiene eliminando la fila $i$ y la columna $j$ de $A$. El \emph{adjunto} o \emph{cofactor} del elemento $a_{ij}$ es
+\[
+C_{ij}=(-1)^{i+j}M_{ij}.
+\]
+\end{definition}
+
+El determinante puede desarrollarse por cualquier fila o columna. Por la fila $i$,
+\[
+\det(A)=\sum_{j=1}^n a_{ij}C_{ij},
+\]
+y por la columna $j$,
+\[
+\det(A)=\sum_{i=1}^n a_{ij}C_{ij}.
+\]
+
+Para una matriz de orden $3$,
+\[
+A=
+\begin{pmatrix}
+a&b&c\\
+d&e&f\\
+g&h&i
+\end{pmatrix},
+\]
+el desarrollo por la primera fila da
+\[
+\det(A)
+=a(ei-fh)-b(di-fg)+c(dh-eg).
+\]
+La regla de Sarrus es una forma mnemotécnica equivalente para matrices $3\times3$, pero no se generaliza a órdenes superiores.
+
+\begin{example}
+Calcular
+\[
+\det\begin{pmatrix}
+1&2&-1\\
+0&3&4\\
+2&1&1
+\end{pmatrix}.
+\]
+Desarrollando por la primera fila,
+\begin{align*}
+\det(A)
+&=1\begin{vmatrix}3&4\\1&1\end{vmatrix}
+-2\begin{vmatrix}0&4\\2&1\end{vmatrix}
+-\begin{vmatrix}0&3\\2&1\end{vmatrix}\\
+&=(3-4)-2(0-8)-(0-6)\\
+&=-1+16+6=21.
+\end{align*}
+\end{example}
+
+Las propiedades siguientes son fundamentales para simplificar cálculos.
+
+\begin{theorem}[Propiedades básicas del determinante]
+Sean $A,B\in\mathcal M_n(\R)$ y $\lambda\in\R$.
+\begin{enumerate}[label=\alph*)]
+\item $\det(I_n)=1$.
+\item $\det(A^t)=\det(A)$.
+\item $\det(AB)=\det(A)\det(B)$.
+\item $\det(\lambda A)=\lambda^n\det(A)$.
+\item Si $A$ es triangular, $\det(A)$ es el producto de los elementos de su diagonal.
+\item Intercambiar dos filas cambia el signo del determinante.
+\item Multiplicar una fila por $\lambda$ multiplica el determinante por $\lambda$.
+\item Sumar a una fila un múltiplo de otra no cambia el determinante.
+\item Si dos filas son iguales o proporcionales, el determinante es cero.
+\end{enumerate}
+\end{theorem}
+
+Las mismas propiedades son válidas trabajando por columnas.
+
+\begin{solvedexercise}
+Sea $A\in\mathcal M_n(\R)$ una matriz idempotente, es decir, $A^2=A$. Determinar los valores posibles de $\det(A)$.
+\tcblower
+\textbf{Resolución.}\par\smallskip
+Tomando determinantes,
+\[
+\det(A^2)=\det(A).
+\]
+Como
+\[
+\det(A^2)=\det(A)^2,
+\]
+obtenemos
+\[
+\det(A)^2=\det(A),
+\]
+y por tanto
+\[
+\det(A)\bigl(\det(A)-1\bigr)=0.
+\]
+Así,
+\[
+\boxed{\det(A)=0\quad\text{o}\quad\det(A)=1.}
+\]
+Este tipo de razonamiento utiliza las propiedades estructurales del determinante sin necesidad de conocer los elementos de $A$.
+\end{solvedexercise}
+
+\subsection{Determinante, inversa y regularidad}
+
+El determinante caracteriza completamente la invertibilidad de una matriz cuadrada.
+
+\begin{theorem}[Criterio de invertibilidad]
+Sea $A\in\mathcal M_n(\R)$. Son equivalentes:
+\begin{enumerate}[label=\roman*)]
+\item $A$ es invertible;
+\item $\det(A)\neq0$;
+\item $\operatorname{rg}(A)=n$.
+\end{enumerate}
+\end{theorem}
+
+La equivalencia con el rango se justificará después de introducirlo formalmente. Por ahora, el determinante proporciona ya un criterio operativo muy simple.
+
+\begin{definition}[Matriz adjunta]
+La \emph{matriz adjunta} de $A$ se define como la transpuesta de la matriz de sus cofactores:
+\[
+\operatorname{Adj}(A)=
+\begin{pmatrix}
+C_{11}&C_{21}&\cdots&C_{n1}\\
+C_{12}&C_{22}&\cdots&C_{n2}\\
+\vdots&\vdots&\ddots&\vdots\\
+C_{1n}&C_{2n}&\cdots&C_{nn}
+\end{pmatrix}.
+\]
+\end{definition}
+
+Si $\det(A)\neq0$, entonces
+\[
+\boxed{A^{-1}=\frac{1}{\det(A)}\operatorname{Adj}(A).}
+\]
+
+Para matrices $2\times2$ obtenemos la conocida expresión
+\[
+\begin{pmatrix}a&b\\c&d\end{pmatrix}^{-1}
+=
+\frac{1}{ad-bc}
+\begin{pmatrix}d&-b\\-c&a\end{pmatrix},
+\qquad ad-bc\neq0.
+\]
+
+\begin{example}
+Para
+\[
+A=\begin{pmatrix}2&1\\3&2\end{pmatrix},
+\]
+se tiene
+\[
+\det(A)=4-3=1,
+\]
+y por tanto
+\[
+A^{-1}=\begin{pmatrix}2&-1\\-3&2\end{pmatrix}.
+\]
+La comprobación $AA^{-1}=I_2$ permite detectar inmediatamente posibles errores de cálculo.
+\end{example}
+
+La fórmula mediante adjuntos es útil para matrices pequeñas y para razonamientos teóricos. Para matrices de mayor tamaño, la eliminación de Gauss--Jordan suele ser más eficiente: se aplican operaciones elementales por filas a la matriz ampliada
+\[
+(A\mid I_n)
+\]
+hasta obtener, si es posible,
+\[
+(I_n\mid A^{-1}).
+\]
+Si no puede reducirse el bloque izquierdo a la identidad, la matriz no es invertible.
+
+\subsection{Rango y eliminación de Gauss}
+
+El rango mide cuánta información lineal independiente contiene una matriz. Antes de estudiar formalmente la independencia lineal en el capítulo siguiente, podemos definirlo mediante determinantes de submatrices.
+
+\begin{definition}[Menor de una matriz]
+Un \emph{menor de orden $r$} de una matriz $A\in\mathcal M_{m\times n}(\R)$ es el determinante de cualquier submatriz cuadrada de orden $r$ obtenida seleccionando $r$ filas y $r$ columnas de $A$.
+\end{definition}
+
+\begin{definition}[Rango]
+El \emph{rango} de una matriz $A$, denotado por $\operatorname{rg}(A)$, es el mayor orden de un menor no nulo de $A$. Para la matriz nula se define $\operatorname{rg}(0)=0$.
+\end{definition}
+
+En particular,
+\[
+0\leq\operatorname{rg}(A)\leq\min\{m,n\}.
+\]
+Si $A$ es cuadrada de orden $n$,
+\[
+\operatorname{rg}(A)=n
+\quad\Longleftrightarrow\quad
+\det(A)\neq0.
+\]
+
+El cálculo mediante menores es apropiado para matrices pequeñas y para estudiar parámetros, pero la herramienta general es la eliminación de Gauss.
+
+\begin{definition}[Operaciones elementales por filas]
+Las siguientes transformaciones se denominan \emph{operaciones elementales por filas}:
+\begin{enumerate}[label=\roman*)]
+\item intercambiar dos filas;
+\item multiplicar una fila por un escalar no nulo;
+\item sumar a una fila un múltiplo de otra fila.
+\end{enumerate}
+\end{definition}
+
+Estas operaciones no modifican el rango de la matriz.
+
+\begin{definition}[Matriz escalonada]
+Una matriz está en \emph{forma escalonada} si:
+\begin{itemize}
+\item las filas nulas, si existen, están situadas al final;
+\item el primer elemento no nulo de cada fila no nula, llamado \emph{pivote}, aparece a la derecha del pivote de la fila anterior;
+\item debajo de cada pivote todos los elementos son cero.
+\end{itemize}
+\end{definition}
+
+El método de eliminación de Gauss consiste en transformar una matriz, mediante operaciones elementales, en una matriz escalonada. El rango es entonces el número de filas no nulas, equivalentes al número de pivotes.
+
+\begin{example}
+Calcular el rango de
+\[
+A=
+\begin{pmatrix}
+1&2&-1&0\\
+2&4&1&3\\
+-1&-2&2&1
+\end{pmatrix}.
+\]
+Aplicamos
+\[
+F_2\leftarrow F_2-2F_1,
+\qquad
+F_3\leftarrow F_3+F_1,
+\]
+y obtenemos
+\[
+\begin{pmatrix}
+1&2&-1&0\\
+0&0&3&3\\
+0&0&1&1
+\end{pmatrix}.
+\]
+Después,
+\[
+F_2\leftarrow F_2-3F_3,
+\]
+con lo que
+\[
+A\sim
+\begin{pmatrix}
+1&2&-1&0\\
+0&0&0&0\\
+0&0&1&1
+\end{pmatrix}.
+\]
+Hay dos filas no nulas y, por tanto,
+\[
+\boxed{\operatorname{rg}(A)=2.}
+\]
+\end{example}
+
+Cuando aparecen parámetros hay que evitar operaciones que dividan por una expresión cuyo valor podría ser cero sin estudiar antes ese caso.
+
+\begin{example}[Rango dependiente de un parámetro]
+Sea
+\[
+A_\lambda=
+\begin{pmatrix}
+1&-1&1\\
+2&1&3\\
+5&1&\lambda
+\end{pmatrix}.
+\]
+Calculamos primero el determinante:
+\[
+\det(A_\lambda)
+=
+\begin{vmatrix}
+1&-1&1\\
+2&1&3\\
+5&1&\lambda
+\end{vmatrix}
+=3\lambda-18=3(\lambda-6).
+\]
+Si $\lambda\neq6$, el determinante es no nulo y
+\[
+\operatorname{rg}(A_\lambda)=3.
+\]
+Para $\lambda=6$,
+\[
+A_6=
+\begin{pmatrix}
+1&-1&1\\
+2&1&3\\
+5&1&6
+\end{pmatrix}.
+\]
+El menor
+\[
+\begin{vmatrix}1&-1\\2&1\end{vmatrix}=3\neq0,
+\]
+de modo que el rango no puede ser inferior a $2$. Como el determinante de orden $3$ es nulo,
+\[
+\boxed{\operatorname{rg}(A_6)=2.}
+\]
+En resumen,
+\[
+\operatorname{rg}(A_\lambda)=
+\begin{cases}
+3,&\lambda\neq6,\\
+2,&\lambda=6.
+\end{cases}
+\]
+\end{example}
+
+El rango también tiene una interpretación útil en modelos de medida. Si tres sensores proporcionan tres combinaciones lineales de unas mismas magnitudes desconocidas, una matriz de coeficientes de rango $3$ indica que las tres ecuaciones contienen información suficiente e independiente para determinar, en principio, las tres magnitudes. Si el rango desciende a $2$, alguna medición es redundante respecto de las demás. Esta idea quedará formalizada en el capítulo de espacios vectoriales.
+
+\section{Sistemas de ecuaciones lineales}
+\label{sec:sistemas-lineales}
+
+\subsection{Representación matricial y clasificación}
+
+\begin{definition}[Sistema lineal]
+Un \emph{sistema lineal} de $m$ ecuaciones con $n$ incógnitas $x_1,\ldots,x_n$ es un conjunto de ecuaciones de la forma
+\[
+\begin{cases}
+a_{11}x_1+a_{12}x_2+\cdots+a_{1n}x_n=b_1,\\
+a_{21}x_1+a_{22}x_2+\cdots+a_{2n}x_n=b_2,\\
+\hspace{2cm}\vdots\\
+a_{m1}x_1+a_{m2}x_2+\cdots+a_{mn}x_n=b_m.
+\end{cases}
+\]
+\end{definition}
+
+Definiendo
+\[
+A=
+\begin{pmatrix}
+a_{11}&\cdots&a_{1n}\\
+\vdots&\ddots&\vdots\\
+a_{m1}&\cdots&a_{mn}
+\end{pmatrix},
+\qquad
+x=\begin{pmatrix}x_1\\\vdots\\x_n\end{pmatrix},
+\qquad
+b=\begin{pmatrix}b_1\\\vdots\\b_m\end{pmatrix},
+\]
+el sistema puede escribirse de forma compacta como
+\[
+\boxed{Ax=b.}
+\]
+La matriz
+\[
+(A\mid b)
+\]
+se denomina \emph{matriz ampliada} del sistema.
+
+Una solución es un vector $x$ que satisface todas las ecuaciones simultáneamente. Según el número de soluciones, el sistema se clasifica como:
+
+\begin{itemize}
+\item \emph{compatible determinado} si tiene una única solución;
+\item \emph{compatible indeterminado} si tiene infinitas soluciones;
+\item \emph{incompatible} si no tiene solución.
+\end{itemize}
+
+El rango permite decidir cuál de estos casos se produce sin necesidad de resolver previamente el sistema.
+
+\begin{theorem}[Teorema de Rouché--Frobenius]
+Sea un sistema lineal $Ax=b$ con $n$ incógnitas. Entonces:
+\begin{enumerate}[label=\roman*)]
+\item el sistema es compatible si y sólo si
+\[
+\operatorname{rg}(A)=\operatorname{rg}(A\mid b);
+\]
+\item si es compatible, es determinado si y sólo si
+\[
+\operatorname{rg}(A)=\operatorname{rg}(A\mid b)=n;
+\]
+\item si es compatible y
+\[
+\operatorname{rg}(A)=\operatorname{rg}(A\mid b)=r<n,
+\]
+entonces es indeterminado y su solución general depende de $n-r$ parámetros libres.
+\end{enumerate}
+\end{theorem}
+
+\begin{example}
+Consideremos
+\[
+\begin{cases}
+x+y+z=3,\\
+2x-y+z=0,\\
+3x+2z=3.
+\end{cases}
+\]
+Su matriz de coeficientes y su ampliada son
+\[
+A=\begin{pmatrix}
+1&1&1\\
+2&-1&1\\
+3&0&2
+\end{pmatrix},
+\qquad
+(A\mid b)=
+\left(
+\begin{array}{ccc|c}
+1&1&1&3\\
+2&-1&1&0\\
+3&0&2&3
+\end{array}
+\right).
+\]
+Como
+\[
+\det(A)=-3\neq0,
+\]
+tenemos $\operatorname{rg}(A)=3$. En consecuencia, también $\operatorname{rg}(A\mid b)=3$ y el sistema es compatible determinado.
+\end{example}
+
+\subsection{Eliminación de Gauss, Cramer y matriz inversa}
+
+El método de Gauss resuelve un sistema aplicando a su matriz ampliada operaciones elementales por filas. Estas operaciones corresponden a transformaciones de las ecuaciones que no modifican el conjunto de soluciones.
+
+\begin{example}[Resolución por Gauss]
+Resolver
+\[
+\begin{cases}
+2x+3y+2z+6t=10,\\
+y+2z+t=2,\\
+3x-3z+6t=9.
+\end{cases}
+\]
+La matriz ampliada es
+\[
+\left(
+\begin{array}{cccc|c}
+2&3&2&6&10\\
+0&1&2&1&2\\
+3&0&-3&6&9
+\end{array}
+\right).
+\]
+Para evitar fracciones, realizamos primero
+\[
+F_3\leftarrow2F_3-3F_1,
+\]
+y obtenemos
+\[
+\left(
+\begin{array}{cccc|c}
+2&3&2&6&10\\
+0&1&2&1&2\\
+0&-9&-12&-6&-12
+\end{array}
+\right).
+\]
+Después,
+\[
+F_3\leftarrow F_3+9F_2,
+\]
+con lo que
+\[
+\left(
+\begin{array}{cccc|c}
+2&3&2&6&10\\
+0&1&2&1&2\\
+0&0&6&3&6
+\end{array}
+\right).
+\]
+El sistema tiene cuatro incógnitas y tres pivotes, de modo que queda un parámetro libre. Tomando $t=s$, la tercera ecuación da
+\[
+6z+3s=6
+\quad\Longrightarrow\quad
+z=1-\frac{s}{2}.
+\]
+La segunda,
+\[
+y+2z+s=2,
+\]
+conduce a $y=0$. Finalmente,
+\[
+2x+2z+6s=10,
+\]
+y por tanto
+\[
+x=4-\frac52s.
+\]
+La solución general es
+\[
+\boxed{(x,y,z,t)=\left(4-\frac52s,\,0,\,1-\frac12s,\,s\right),\qquad s\in\R.}
+\]
+El sistema es compatible indeterminado.
+\end{example}
+
+Cuando el sistema tiene el mismo número de ecuaciones que de incógnitas y la matriz de coeficientes es invertible, existen otros dos métodos especialmente sencillos.
+
+Si
+\[
+Ax=b,
+\qquad \det(A)\neq0,
+\]
+entonces
+\[
+\boxed{x=A^{-1}b.}
+\]
+
+La regla de Cramer expresa directamente cada incógnita mediante determinantes.
+
+\begin{theorem}[Regla de Cramer]
+Sea $Ax=b$ un sistema de $n$ ecuaciones con $n$ incógnitas y $\det(A)\neq0$. Para cada $i=1,\ldots,n$, sea $A_i$ la matriz que se obtiene sustituyendo la columna $i$ de $A$ por el vector $b$. Entonces la solución única viene dada por
+\[
+\boxed{x_i=\frac{\det(A_i)}{\det(A)},\qquad i=1,\ldots,n.}
+\]
+\end{theorem}
+
+\begin{example}[Corrientes en dos mallas]
+Tras aplicar las leyes de Kirchhoff a un circuito lineal se obtiene el sistema
+\[
+\begin{cases}
+7I_1-2I_2=12,\\
+-2I_1+5I_2=6.
+\end{cases}
+\]
+La matriz de coeficientes es
+\[
+A=\begin{pmatrix}7&-2\\-2&5\end{pmatrix},
+\qquad
+\det(A)=35-4=31\neq0.
+\]
+El sistema tiene solución única. Por Cramer,
+\[
+I_1=
+\frac{\begin{vmatrix}12&-2\\6&5\end{vmatrix}}{31}
+=\frac{72}{31},
+\qquad
+I_2=
+\frac{\begin{vmatrix}7&12\\-2&6\end{vmatrix}}{31}
+=\frac{66}{31}.
+\]
+Por tanto,
+\[
+\boxed{I_1=\frac{72}{31}\ \mathrm A,\qquad I_2=\frac{66}{31}\ \mathrm A.}
+\]
+La resolución matemática comienza una vez formuladas las ecuaciones físicas; el álgebra lineal permite después decidir la unicidad y calcular las corrientes.
+\end{example}
+
+Cramer es útil para sistemas pequeños y para obtener fórmulas simbólicas, pero el método de Gauss es mucho más general: funciona también con matrices no cuadradas y con sistemas compatibles indeterminados o incompatibles.
+
+\subsection{Sistemas con parámetros y sistemas homogéneos}
+
+En muchos problemas los coeficientes dependen de un parámetro. En esos casos no basta con resolver para un valor concreto: hay que determinar para qué valores cambia el rango y, por tanto, la naturaleza del sistema.
+
+\begin{solvedexercise}
+Discutir según $\lambda\in\R$ el sistema
+\[
+\begin{cases}
+\lambda x+y+z=1,\\
+x+\lambda y+z=1,\\
+x+y+\lambda z=1.
+\end{cases}
+\]
+\tcblower
+\textbf{Resolución.}\par\smallskip
+La matriz de coeficientes es
+\[
+A_\lambda=
+\begin{pmatrix}
+\lambda&1&1\\
+1&\lambda&1\\
+1&1&\lambda
+\end{pmatrix}.
+\]
+Su determinante es
+\[
+\det(A_\lambda)
+=(\lambda-1)^2(\lambda+2).
+\]
+Por tanto, si
+\[
+\lambda\neq1,-2,
+\]
+el determinante es no nulo y el sistema tiene una única solución. Debido a la simetría de las ecuaciones, $x=y=z$, y al sustituir se obtiene
+\[
+\boxed{x=y=z=\frac{1}{\lambda+2}}.
+\]
+
+Para $\lambda=1$, las tres ecuaciones coinciden:
+\[
+x+y+z=1.
+\]
+Así,
+\[
+\operatorname{rg}(A_1)=\operatorname{rg}(A_1\mid b)=1<3,
+\]
+y el sistema es compatible indeterminado, con dos parámetros libres.
+
+Para $\lambda=-2$, sumando las tres ecuaciones del sistema se obtiene
+\[
+0=3,
+\]
+lo cual es imposible. Por tanto,
+\[
+\operatorname{rg}(A_{-2})<\operatorname{rg}(A_{-2}\mid b),
+\]
+y el sistema es incompatible.
+\end{solvedexercise}
+
+Un caso especialmente importante es el de los sistemas homogéneos.
+
+\begin{definition}[Sistema homogéneo]
+Un sistema lineal es \emph{homogéneo} si todos sus términos independientes son cero:
+\[
+Ax=0.
+\]
+\end{definition}
+
+Todo sistema homogéneo tiene al menos la solución
+\[
+x=0,
+\]
+llamada \emph{solución trivial}. Por tanto, nunca es incompatible.
+
+\begin{theorem}
+Sea $Ax=0$ un sistema homogéneo con $n$ incógnitas y $r=\operatorname{rg}(A)$. Entonces:
+\begin{itemize}
+\item si $r=n$, la única solución es la trivial;
+\item si $r<n$, existen infinitas soluciones y la solución general depende de $n-r$ parámetros libres.
+\end{itemize}
+\end{theorem}
+
+\begin{example}[Equilibrio con una familia de soluciones]
+Consideremos
+\[
+\begin{cases}
+2x+3y+z=0,\\
+x+2y+5z=0.
+\end{cases}
+\]
+La matriz de coeficientes tiene rango $2$ y hay $3$ incógnitas. Por tanto, el sistema homogéneo tiene infinitas soluciones con un parámetro libre. De la primera ecuación y la segunda puede obtenerse
+\[
+y=-9z,
+\qquad
+x=13z.
+\]
+Tomando $z=t$,
+\[
+\boxed{(x,y,z)=t(13,-9,1),\qquad t\in\R.}
+\]
+En el siguiente capítulo interpretaremos este conjunto de soluciones como un subespacio vectorial generado por el vector $(13,-9,1)$.
+\end{example}
+
+Los sistemas lineales aparecen también al formular balances. En una instalación química, por ejemplo, pueden desconocerse varios caudales y conocerse las cantidades totales de diferentes componentes. Cada balance de componente aporta una ecuación lineal. En mecánica, las ecuaciones de equilibrio de fuerzas y momentos generan sistemas para las reacciones desconocidas. En ingeniería eléctrica, las ecuaciones de nodos o mallas tienen la misma estructura algebraica. El procedimiento matemático es común: formular correctamente $A$, $x$ y $b$, analizar los rangos y sólo entonces resolver.
+
+\begin{example}[Balance de mezclas]
+Se desean mezclar dos corrientes $A$ y $B$. La corriente $A$ aporta $4$ unidades de un componente $C_1$ y $3$ de $C_2$ por unidad de caudal, mientras que $B$ aporta $2$ de $C_1$ y $5$ de $C_2$. Se necesitan en total $40$ unidades de $C_1$ y $60$ de $C_2$. Si $x$ e $y$ son los caudales de $A$ y $B$, respectivamente,
+\[
+\begin{cases}
+4x+2y=40,\\
+3x+5y=60.
+\end{cases}
+\]
+En forma matricial,
+\[
+\begin{pmatrix}4&2\\3&5\end{pmatrix}
+\begin{pmatrix}x\\y\end{pmatrix}
+=
+\begin{pmatrix}40\\60\end{pmatrix}.
+\]
+Como
+\[
+\det\begin{pmatrix}4&2\\3&5\end{pmatrix}=14\neq0,
+\]
+la mezcla es matemáticamente única. Resolviendo,
+\[
+\boxed{x=\frac{40}{7},\qquad y=\frac{60}{7}.}
+\]
+En un problema real habría que comprobar además que las soluciones sean físicamente admisibles, por ejemplo que los caudales no sean negativos.
+\end{example}
+
+\section*{Ejercicios propuestos}
+\addcontentsline{toc}{section}{Ejercicios propuestos}
+
+\begin{enumerate}[label=\textbf{\arabic*.},leftmargin=*]
+
+\item Dadas
+\[
+A=\begin{pmatrix}1&3&2\\-1&9&2\\0&3&-1\end{pmatrix},
+\qquad
+B=\begin{pmatrix}5&1&-2\\0&6&0\\-1&-3&1\end{pmatrix},
+\]
+\[
+F=\begin{pmatrix}1&5\\0&2\\4&-1\end{pmatrix},
+\qquad
+G=\begin{pmatrix}1&0&8\\2&-1&1\end{pmatrix},
+\]
+calcular, cuando sea posible,
+\begin{enumerate}[label=\alph*)]
+\item $2A-7B$;
+\item $(FG)^t-A$;
+\item $AB-BA$;
+\item $ABA$.
+\end{enumerate}
+Justificar los productos que no estén definidos por incompatibilidad de dimensiones.
+
+\item Sean
+\[
+A=\begin{pmatrix}2&3\\-1&1\end{pmatrix},
+\qquad
+B=\begin{pmatrix}1&9\\-3&k\end{pmatrix}.
+\]
+Determinar los valores de $k$ para los que $AB=BA$.
+
+\item Encontrar dos matrices $A$ y $B$, ambas no nulas, tales que $AB=0$. Explicar por qué este hecho no contradice la propiedad de los números reales según la cual $ab=0$ implica $a=0$ o $b=0$.
+
+\item Sean $A,B,C$ matrices de dimensiones compatibles. Decidir cuáles de las siguientes igualdades son siempre ciertas y justificar la respuesta:
+\begin{enumerate}[label=\alph*)]
+\item $A(B+C)=AB+AC$;
+\item $(A+B)^2=A^2+2AB+B^2$;
+\item $(AB)^t=A^tB^t$;
+\item $(AB)^{-1}=A^{-1}B^{-1}$, cuando las inversas existen;
+\item $A^2-B^2=(A-B)(A+B)$.
+\end{enumerate}
+Cuando una igualdad sea falsa, proporcionar un contraejemplo.
+
+\item Una empresa produce tres componentes eléctricos $E_1,E_2,E_3$ en dos líneas de fabricación. La matriz
+\[
+P=\begin{pmatrix}
+120&80&60\\
+100&90&75
+\end{pmatrix}
+\]
+recoge la producción diaria de cada línea. La primera fila corresponde a la línea 1 y la segunda a la línea 2.
+\begin{enumerate}[label=\alph*)]
+\item expresar matricialmente la producción total de cada componente;
+\item si la producción de la línea 1 aumenta un $15\%$ y la de la línea 2 un $10\%$, construir la nueva matriz de producción;
+\item si cada unidad de $E_1,E_2,E_3$ requiere respectivamente $2$, $3$ y $5$ minutos de inspección, expresar mediante un producto matricial el tiempo total de inspección de cada línea.
+\end{enumerate}
+
+\item Una planta química fabrica dos productos a partir de tres materias primas. El consumo por unidad de producto viene dado por
+\[
+A=\begin{pmatrix}3&4\\2&1\\4&3\end{pmatrix}.
+\]
+La producción semanal es $x=(20,30)^t$ y los costes unitarios de las materias primas son $c=(6,10,12)$.
+\begin{enumerate}[label=\alph*)]
+\item calcular $Ax$ e interpretar sus componentes;
+\item calcular $cA$ e interpretar sus componentes;
+\item calcular $cAx$ de dos formas distintas y explicar por qué los resultados coinciden.
+\end{enumerate}
+
+\item Una empresa de mantenimiento dispone de equipos en tres centros. El vector columna
+\[
+x_0=\begin{pmatrix}200\\300\\100\end{pmatrix}
+\]
+representa la distribución inicial. Cada semana, la distribución cambia según
+\[
+x_{k+1}=Px_k,
+\qquad
+P=\begin{pmatrix}
+0.50&0.40&0.20\\
+0.30&0.45&0.20\\
+0.20&0.15&0.60
+\end{pmatrix}.
+\]
+Calcular $x_1,x_2,x_3$ y escribir una expresión para $x_k$. Interpretar por qué las columnas de $P$ suman $1$.
+
+\item Resolver las ecuaciones matriciales, suponiendo invertibles las matrices que sea necesario invertir:
+\begin{enumerate}[label=\alph*)]
+\item $AX+B^tX=2C$;
+\item $AXA+AB=C$;
+\item $A(X+C)=BX$;
+\item $AX-B=3X$;
+\item $XAB=C$.
+\end{enumerate}
+Prestar especial atención al orden de los factores.
+
+\item Calcular los determinantes:
+\begin{enumerate}[label=\alph*)]
+\item $\begin{vmatrix}4&-2\\3&5\end{vmatrix}$;
+\item $\begin{vmatrix}1&2&3\\0&-1&4\\2&1&0\end{vmatrix}$;
+\item $\begin{vmatrix}2&1&0&0\\3&-1&4&0\\5&2&7&0\\1&3&2&6\end{vmatrix}$;
+\item $\begin{vmatrix}1&2&0&0\\0&3&1&0\\0&0&-2&4\\0&0&0&5\end{vmatrix}$.
+\end{enumerate}
+Elegir en cada caso el procedimiento más eficiente.
+
+\item Resolver
+\[
+\det\begin{pmatrix}
+4&x&6\\
+5&7&12\\
+3&-1&x
+\end{pmatrix}=0.
+\]
+
+\item Utilizando exclusivamente propiedades de determinantes, y sin desarrollar los determinantes elemento a elemento, resolver:
+\begin{enumerate}[label=\alph*)]
+\item si $A\in\mathcal M_n(\R)$ y $A^2=A$, determinar $\det(A)$;
+\item si $\det(A)=5$ y $\det(B)=3$, calcular $\det(BA^t)$ y $\det(BAB)$;
+\item si $A$ es invertible y $\det(A)=4$, calcular $\det(A^{-1})$;
+\item expresar $\det(\lambda A)$ en función de $\lambda$, $n$ y $\det(A)$.
+\end{enumerate}
+
+\item Sea $A\in\mathcal M_n(\R)$ invertible. Demostrar que
+\[
+\det\bigl(\operatorname{Adj}(A)\bigr)=\det(A)^{n-1}.
+\]
+Indicar con claridad dónde se utiliza que $A$ es invertible.
+
+\item Calcular la inversa, cuando exista, de:
+\begin{enumerate}[label=\alph*)]
+\item $\begin{pmatrix}2&1\\-1&1\end{pmatrix}$;
+\item $\begin{pmatrix}1&3&2\\-1&1&5\\1&2&3\end{pmatrix}$;
+\item $\begin{pmatrix}5&3&1\\0&2&-7\\3&4&-9\end{pmatrix}$;
+\item $\begin{pmatrix}0&1&0\\1&0&0\\0&0&1\end{pmatrix}$.
+\end{enumerate}
+Utilizar en algunos apartados la fórmula de la adjunta y en otros Gauss--Jordan.
+
+\item Determinar para qué valores de $\alpha$ y $\beta$ son invertibles
+\[
+A_\alpha=
+\begin{pmatrix}
+1&0&0\\
+0&\alpha-1&2\\
+0&-1&\alpha+1
+\end{pmatrix},
+\qquad
+B_\beta=
+\begin{pmatrix}
+1&2&1\\
+-1&\beta-1&2\\
+2&3&\beta+1
+\end{pmatrix}.
+\]
+
+\item Calcular la inversa de
+\[
+R(\theta)=
+\begin{pmatrix}
+\cos\theta&\sin\theta\\
+-\sin\theta&\cos\theta
+\end{pmatrix}
+\]
+y relacionarla con $R(-\theta)$ y con $R(\theta)^t$.
+
+\item Calcular el rango de las matrices
+\[
+A=\begin{pmatrix}
+0&-1&2&-1\\
+3&-2&1&2
+\end{pmatrix},
+\qquad
+B=\begin{pmatrix}
+1&2&3\\
+-1&1&1\\
+3&3&5\\
+0&3&4
+\end{pmatrix}.
+\]
+Realizar el cálculo por Gauss y comprobarlo mediante menores no nulos adecuados.
+
+\item Determinar, según $\lambda\in\R$, el rango de
+\[
+A_\lambda=
+\begin{pmatrix}
+1&-1&1\\
+2&1&3\\
+5&1&\lambda
+\end{pmatrix}.
+\]
+
+\item Determinar $a$ y $b$ para que
+\[
+A=\begin{pmatrix}1&2&4\\a&4&b\end{pmatrix}
+\]
+tenga rango $1$.
+
+\item Determinar para qué valores de $\alpha$ el rango de
+\[
+H_\alpha=
+\begin{pmatrix}
+\alpha&-1&0\\
+1&\alpha^2&1+\alpha^2\\
+2&2&2+\alpha
+\end{pmatrix}
+\]
+es igual a $2$.
+
+\item Sea
+\[
+A=\begin{pmatrix}
+1&a&a^2\\
+1&b&b^2\\
+1&c&c^2
+\end{pmatrix}.
+\]
+Calcular $\det(A)$ y deducir cuándo $A$ es invertible. Interpretar el resultado en función de la igualdad o diferencia entre $a,b,c$.
+
+\item Estudiar el rango de
+\[
+A_{a,b}=
+\begin{pmatrix}
+1&a&1\\
+2&2a&2\\
+1&b&3
+\end{pmatrix}
+\]
+según los valores de $a$ y $b$. Organizar el análisis por casos sin dividir nunca por una expresión paramétrica antes de saber si es nula.
+
+\item Expresar como sistema de ecuaciones y resolver
+\[
+x\begin{pmatrix}2\\1\end{pmatrix}
+-y\begin{pmatrix}-3\\5\end{pmatrix}
+=2\begin{pmatrix}8\\11\end{pmatrix}.
+\]
+
+\item Resolver por eliminación de Gauss
+\[
+\begin{cases}
+2x+3y+2z+6t=10,\\
+y+2z+t=2,\\
+3x-3z+6t=9.
+\end{cases}
+\]
+Escribir la solución en forma paramétrica.
+
+\item Discutir y resolver, cuando sea posible,
+\[
+\begin{cases}
+x+y+z+t=0,\\
+x-y+z-t=12,\\
+x+y-z+t=-6,\\
+x-y-z+t=-6.
+\end{cases}
+\]
+
+\item Discutir y resolver
+\[
+\begin{cases}
+2x-y-3z=2,\\
+-x+2y-3z=7,\\
+x+y+4z=-3.
+\end{cases}
+\]
+Resolver después el mismo sistema mediante Cramer y mediante $x=A^{-1}b$, y comparar los tres procedimientos.
+
+\item Discutir y resolver
+\[
+\begin{cases}
+4x+y+z+w=6,\\
+3x+7y-z+w=1,\\
+7x+3y-5z+8w=-3,\\
+x+y+z+2w=3.
+\end{cases}
+\]
+
+\item Discutir según $k\in\R$ y resolver cuando sea posible
+\[
+\begin{cases}
+x+y-z=1,\\
+2x+3y+kz=3,\\
+x+ky+3z=2.
+\end{cases}
+\]
+
+\item Discutir según $\lambda\in\R$
+\[
+\begin{cases}
+\lambda x+y+z=1,\\
+x+\lambda y+z=1,\\
+x+y+\lambda z=1.
+\end{cases}
+\]
+Resolver el sistema en cada caso compatible.
+
+\item Determinar los valores de $a$ para los que
+\[
+\begin{cases}
+x+ay+3z=2,\\
+x+y-z=1,\\
+2x+3y+az=-1
+\end{cases}
+\]
+\begin{enumerate}[label=\alph*)]
+\item tiene solución única;
+\item tiene más de una solución;
+\item no tiene solución.
+\end{enumerate}
+
+\item Resolver los sistemas homogéneos:
+\begin{enumerate}[label=\alph*)]
+\item $\begin{cases}3w+5x-4y+2z=0,\\7w-2x+9y+3z=0;\end{cases}$
+\item $\begin{cases}2x+3y-z=0,\\y+5z=0,\\3x-z=0;\end{cases}$
+\item $\begin{cases}2x+3y+z=0,\\x+2y+5z=0.\end{cases}$
+\end{enumerate}
+En cada caso, indicar el rango y el número de parámetros libres.
+
+\item Una mezcla industrial se prepara con dos corrientes $A$ y $B$. Cada unidad de $A$ contiene $4$ unidades de componente $C_1$ y $3$ de $C_2$, mientras que cada unidad de $B$ contiene $2$ de $C_1$ y $5$ de $C_2$.
+\begin{enumerate}[label=\alph*)]
+\item determinar si es posible obtener $40$ unidades de $C_1$ y $60$ de $C_2$;
+\item si la composición de $A$ cambia y pasa a contener $a$ unidades de $C_1$, discutir según $a$ cuándo la mezcla objetivo es única, imposible o admite infinitas soluciones;
+\item comentar qué restricciones físicas adicionales deberían imponerse a las soluciones matemáticas.
+\end{enumerate}
+
+\item En un nudo de una estructura actúan tres fuerzas de módulos desconocidos $T_1,T_2,T_3$. Tras proyectar las ecuaciones de equilibrio sobre tres direcciones independientes se obtiene
+\[
+\begin{cases}
+T_1+T_2=10,\\
+T_2+T_3=8,\\
+T_1-T_3=2.
+\end{cases}
+\]
+\begin{enumerate}[label=\alph*)]
+\item escribir el sistema en forma matricial;
+\item determinar su rango y discutir si las tres ecuaciones aportan información independiente;
+\item resolverlo;
+\item interpretar qué significaría físicamente obtener un valor negativo para uno de los módulos si el modelo hubiera definido $T_i$ como tracciones positivas.
+\end{enumerate}
+
+\item En una red eléctrica lineal, las corrientes de tres mallas satisfacen
+\[
+\begin{cases}
+6I_1-2I_2-I_3=10,\\
+-2I_1+5I_2-I_3=4,\\
+-I_1-I_2+4I_3=6.
+\end{cases}
+\]
+Determinar las corrientes mediante eliminación de Gauss. Comprobar la unicidad de la solución antes de resolver.
+
+\item Un sistema energético combina tres fuentes $E_1,E_2,E_3$. Por unidad de energía suministrada, sus emisiones relativas de dos contaminantes y su coste vienen dados por las columnas de
+\[
+A=
+\begin{pmatrix}
+1&2&4\\
+3&1&2\\
+5&4&3
+\end{pmatrix}.
+\]
+Se desea obtener un vector total
+\[
+b=\begin{pmatrix}18\\14\\31\end{pmatrix}.
+\]
+\begin{enumerate}[label=\alph*)]
+\item formular el problema como $Ax=b$;
+\item estudiar si existe una combinación única de las tres fuentes;
+\item resolver el sistema;
+\item discutir la admisibilidad del resultado si las componentes de $x$ representan cantidades que deben ser no negativas.
+\end{enumerate}
+
+\item Una planta produce dos aleaciones utilizando tres metales. Las columnas de
+\[
+A=\begin{pmatrix}
+0.50&0.20\\
+0.30&0.50\\
+0.20&0.30
+\end{pmatrix}
+\]
+indican las fracciones de cada metal en una tonelada de las aleaciones $L_1$ y $L_2$. Se dispone de un vector de metal utilizado
+\[
+b=\begin{pmatrix}40\\55\\35\end{pmatrix}.
+\]
+Determinar si puede existir una producción $(x_1,x_2)$ que consuma exactamente esas tres cantidades. Utilizar Rouché--Frobenius y explicar qué significa el resultado en términos de compatibilidad de los tres balances.
+
+\item \M Introducir dos matrices pequeñas en Mathematica y comprobar las operaciones de los ejercicios 1 y 2. Utilizar únicamente las operaciones algebraicas habituales y comprobar con \texttt{Simplify} cualquier igualdad simbólica que contenga parámetros. No utilizar el ordenador para decidir previamente si un producto está definido.
+
+\item \M Seleccionar tres matrices de los ejercicios 9--16. Calcular manualmente sus determinantes e inversas cuando existan y comprobar después con \texttt{Det} e \texttt{Inverse}. Explicar qué respuesta proporciona \texttt{Inverse} cuando la matriz es singular.
+
+\item \M Para las matrices de los ejercicios 17--21, calcular primero el rango analíticamente y después comprobarlo con \texttt{MatrixRank}. En los casos con parámetros, estudiar por separado los valores críticos antes de pedir al ordenador un resultado general.
+
+\item \M Resolver mediante \texttt{RowReduce} la matriz ampliada de los sistemas de los ejercicios 23--29. Identificar los pivotes y comprobar que la clasificación obtenida coincide con el Teorema de Rouché--Frobenius.
+
+\item \M Resolver uno de los sistemas compatibles determinados mediante \texttt{LinearSolve} y mediante \texttt{Solve}. Comparar la forma de la entrada y de la salida de ambos comandos. Repetir con un sistema compatible indeterminado y discutir qué representación de la solución resulta más informativa.
+
+\item (Examen) Para cada $\lambda\in\R$ se considera
+\[
+A_\lambda=
+\begin{pmatrix}
+\lambda&1&-2\\
+1&\lambda&2\\
+-2&2&\lambda-3
+\end{pmatrix}.
+\]
+Calcular $\det(A_\lambda)$ y determinar los valores de $\lambda$ para los que $A_\lambda$ es regular.
+
+\item (Examen) Sea
+\[
+A=
+\begin{pmatrix}
+1&0&1&0\\
+0&1&-2&0\\
+1&-2&5&0\\
+0&0&0&6
+\end{pmatrix}.
+\]
+Decidir razonadamente si $A$ es regular. Si lo es, indicar al menos dos procedimientos distintos que permitirían calcular $A^{-1}$ y elegir el más conveniente para esta matriz.
+
+\item (Examen) Determinar los valores de $\alpha$ para los que
+\[
+H_\alpha=
+\begin{pmatrix}
+\alpha&-1&0\\
+1&\alpha^2&1+\alpha^2\\
+2&2&2+\alpha
+\end{pmatrix}
+\]
+tiene rango exactamente $2$. La respuesta debe justificar tanto que el rango no sea $3$ como que no descienda por debajo de $2$.
+
+\end{enumerate}

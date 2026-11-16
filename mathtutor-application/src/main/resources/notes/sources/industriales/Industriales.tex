@@ -1,0 +1,200 @@
+% Matemáticas I para Ingeniería Industrial - Apuntes y Ejercicios
+% Basado en la plantilla Apuntes_Estad_Modelos (classicthesis).
+
+\RequirePackage{silence}
+\WarningFilter{scrreprt}{Usage of package `titlesec'}
+\WarningFilter{titlesec}{Non standard sectioning command detected}
+
+\documentclass[
+  twoside,openright,titlepage,numbers=noenddot,
+  headinclude,footinclude,cleardoublepage=empty,abstract=on,
+  BCOR=5mm,paper=a4,fontsize=11pt
+]{scrreprt}
+
+% Compatibilidad TeX Live 2025/2026: babel-spanish intenta usar el hook
+% genérico de \@startsection, mientras que KOMA-Script redefine internamente
+% el mecanismo de seccionado. Declarar el hook antes de cargar babel evita
+% el error "Generic hooks cannot be added to '\@startsection'".
+\NewHook{cmd/@startsection/before}
+
+\input{classicthesis-config}
+\addbibresource{Bibliography.bib}
+
+% Paquetes matemáticos y gráficos de uso general
+\usepackage{amsmath,amsthm,amsfonts,amssymb}
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta,calc,math}
+\usepackage[export]{adjustbox}
+\usepackage[shortlabels]{enumitem}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+
+% Código visual para los elementos destacados. La paleta parte de los tonos
+% sobrios de classicthesis y mantiene fondos muy claros para no sobrecargar
+% visualmente las páginas.
+\definecolor{BoxResult}{HTML}{596D36}      % verde oliva: resultados
+\definecolor{BoxDefinition}{HTML}{5D7180}  % azul pizarra: definiciones
+\definecolor{BoxExercise}{HTML}{8B624B}    % tierra: ejercicios resueltos
+\definecolor{BoxExample}{HTML}{9A7B43}     % ocre: ejemplos
+
+\tcbset{
+  mathboxbase/.style={
+    enhanced,
+    breakable,
+    sharp corners=south,
+    arc=1.2mm,
+    boxrule=0.35pt,
+    leftrule=2.2pt,
+    left=2.2mm,right=2.2mm,top=1.6mm,bottom=1.6mm,
+    before skip=8pt plus 2pt minus 2pt,
+    after skip=8pt plus 2pt minus 2pt,
+    fonttitle=\bfseries,
+  },
+  resultbox/.style={
+    mathboxbase,
+    colframe=BoxResult,
+    colback=BoxResult!4!white,
+  },
+  definitionbox/.style={
+    mathboxbase,
+    colframe=BoxDefinition,
+    colback=BoxDefinition!4!white,
+  },
+  solvedexercisebox/.style={
+    mathboxbase,
+    colframe=BoxExercise,
+    colback=BoxExercise!4!white,
+    colbacklower=BoxExercise!2!white,
+    coltitle=BoxExercise,
+    colbacktitle=BoxExercise!7!white,
+    boxed title style={boxrule=0pt,sharp corners,arc=0pt},
+    attach boxed title to top left={xshift=1.5mm,yshift*=-1mm},
+    segmentation style={draw=BoxExercise!45,line width=.35pt},
+  },
+  examplebox/.style={
+    mathboxbase,
+    colframe=BoxExample,
+    colback=BoxExample!4!white,
+    colbacklower=BoxExample!2!white,
+    coltitle=BoxExample,
+    colbacktitle=BoxExample!7!white,
+    boxed title style={boxrule=0pt,sharp corners,arc=0pt},
+    attach boxed title to top left={xshift=1.5mm,yshift*=-1mm},
+    segmentation style={draw=BoxExample!45,line width=.35pt},
+  },
+}
+
+% Los entornos de resultados y definiciones conservan su numeración y su
+% sintaxis; tcolorbox aporta únicamente el tratamiento visual.
+\tcolorboxenvironment{theorem}{resultbox}
+\tcolorboxenvironment{proposition}{resultbox}
+\tcolorboxenvironment{lemma}{resultbox}
+\tcolorboxenvironment{corollary}{resultbox}
+\tcolorboxenvironment{definition}{definitionbox}
+
+\NewDocumentEnvironment{solvedexercise}{o}
+  {%
+    \refstepcounter{exercise}%
+    \begin{tcolorbox}[
+      solvedexercisebox,
+      title={Ejercicio resuelto \theexercise\IfValueT{#1}{: #1}}
+    ]%
+  }
+  {\end{tcolorbox}}
+
+% Símbolos habituales
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\tq}{\text{ : }}
+\newcommand{\pt}{\;\forall\;}
+
+% Marca para ejercicios recomendados para Wolfram Mathematica
+\newcommand{\M}{\textbf{\textsf{[M]}}\xspace}
+
+% Entornos, manteniendo la filosofía de la plantilla
+\newtheorem{theorem}{Teorema}[chapter]
+\newtheorem{proposition}{Proposición}[chapter]
+\newtheorem{lemma}{Lema}[chapter]
+\newtheorem{corollary}{Corolario}[chapter]
+\newtheorem{definition}{Definición}[chapter]
+\newcounter{example}[chapter]
+\renewcommand{\theexample}{\thechapter.\arabic{example}}
+\NewDocumentEnvironment{example}{o}
+  {%
+    \refstepcounter{example}%
+    \begin{tcolorbox}[
+      examplebox,
+      title={Ejemplo \theexample\IfValueT{#1}{: #1}}
+    ]%
+  }
+  {\end{tcolorbox}}
+\newtheorem{exercise}{Ejercicio}[chapter]
+\renewcommand*{\proofname}{Demostración}
+\newenvironment{resolution}
+  {\begin{itemize}\item[]\textbf{Resolución:}}
+  {\end{itemize}}
+
+% Código de Wolfram Mathematica. Se usará solo cuando aporte valor didáctico.
+\lstdefinelanguage{Wolfram}{
+  sensitive=true,
+  morecomment=[s]{(*}{*)},
+  morestring=[b]"
+}
+\lstnewenvironment{mathematicacode}
+  {\lstset{language=Wolfram,basicstyle=\small\ttfamily,breaklines=true,showstringspaces=false}}
+  {}
+
+\begin{document}
+\frenchspacing
+\raggedbottom
+\selectlanguage{spanish}
+\pagenumbering{roman}
+\pagestyle{plain}
+
+\cfoot{\hrulefill\\ {D. García Zamora y N. Castillo González\hfill Curso \myYear}}
+
+% Frontmatter
+\include{FrontBackmatter/Titlepage}
+\include{FrontBackmatter/Titleback}
+\include{FrontBackmatter/Introduccion}
+\cleardoublepage
+\include{FrontBackmatter/Contents}
+
+% Mainmatter
+\cleardoublepage
+\pagestyle{scrheadings}
+\pagenumbering{arabic}
+
+\include{Capitulos/Tema1_Numeros_Reales_Complejos}
+\cleardoublepage
+\include{Capitulos/Tema2_Funciones_Continuidad}
+\cleardoublepage
+\include{Capitulos/Tema3_Calculo_Diferencial}
+\cleardoublepage
+\include{Capitulos/Tema4_Calculo_Integral}
+\cleardoublepage
+\include{Capitulos/Tema5_Matrices}
+\cleardoublepage
+\include{Capitulos/Tema6_Espacios_Vectoriales_Aplicaciones_Lineales}
+\cleardoublepage
+\include{Capitulos/Tema7_Diagonalizacion}
+\cleardoublepage
+\include{Capitulos/Tema8_Geometria}
+\cleardoublepage
+
+% Glosario computacional final
+\include{Capitulos/Glosario_Mathematica}
+\cleardoublepage
+
+% Bibliografía: se mostrará cuando existan referencias citadas.
+\include{FrontBackmatter/Bibliography}
+\cleardoublepage
+
+\end{document}
