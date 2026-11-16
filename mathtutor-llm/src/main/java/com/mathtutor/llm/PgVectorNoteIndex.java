@@ -40,8 +40,9 @@ public class PgVectorNoteIndex implements NoteIndex {
         var existing = jdbc.queryForList("SELECT id::text FROM vector_store WHERE metadata->>'managed_by' = 'UC-14'", String.class);
         if (new TreeSet<>(existing).equals(new TreeSet<>(ids.stream().map(UUID::toString).toList()))) return;
         // Ninguna transacción ni conexión sigue abierta mientras se llama al modelo.
-        var vectors = chunks.isEmpty() ? List.<float[]>of() : embedding.embed(chunks.stream().map(NoteChunk::content).toList());
-        if (vectors.size() != chunks.size()) throw new IllegalStateException("Número de embeddings incorrecto");
+        // El overload Document selecciona RETRIEVAL_DOCUMENT en proveedores asimétricos.
+        var vectors = chunks.stream().map(chunk -> embedding.embed(new org.springframework.ai.document.Document(
+                chunk.content(), Map.of("module_code", chunk.moduleCode(), "topic_code", chunk.topicCode())))).toList();
         var metadata = chunks.stream().map(this::metadata).toList();
         transaction.executeWithoutResult(status -> {
             jdbc.update("DELETE FROM vector_store WHERE metadata->>'managed_by' = 'UC-14'");

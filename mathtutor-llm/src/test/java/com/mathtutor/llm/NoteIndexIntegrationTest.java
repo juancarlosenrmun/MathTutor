@@ -38,18 +38,20 @@ class NoteIndexIntegrationTest {
         return new NoteChunk(null, "Contenido " + version, null, "OTRO", "tema.tex", "funciones", "dominio", version);
     }
     @Test void indexesMetadataAndSkipsAnUnchangedSnapshot() {
-        when(embedding.embed(anyList())).thenAnswer(call -> {
+        when(embedding.embed(any(org.springframework.ai.document.Document.class))).thenAnswer(call -> {
             assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
-            return List.of(new float[]{1, 0, 0});
+            assertThat(((org.springframework.ai.document.Document) call.getArgument(0)).getMetadata()).containsEntry("module_code", "funciones");
+            return new float[]{1, 0, 0};
         });
         index.synchronize(List.of(chunk("v1")));
         index.synchronize(List.of(chunk("v1")));
-        verify(embedding).embed(anyList());
+        verify(embedding).embed(any(org.springframework.ai.document.Document.class));
+        verify(embedding, never()).embed(anyList());
         assertThat(jdbc.queryForObject("SELECT count(*) FROM vector_store", Integer.class)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT metadata->>'module_code' FROM vector_store", String.class)).isEqualTo("funciones");
     }
     @Test void replacesChangedAndDeletedSourcesAndKeepsUnmanagedDocuments() {
-        when(embedding.embed(anyList())).thenReturn(List.of(new float[]{1, 0, 0}));
+        when(embedding.embed(any(org.springframework.ai.document.Document.class))).thenReturn(new float[]{1, 0, 0});
         index.synchronize(List.of(chunk("v1")));
         jdbc.update("INSERT INTO vector_store(id,content,metadata,embedding) VALUES (gen_random_uuid(),'ajeno','{}','[1,0,0]')");
         index.synchronize(List.of(chunk("v2")));
@@ -58,11 +60,11 @@ class NoteIndexIntegrationTest {
         assertThat(jdbc.queryForList("SELECT content FROM vector_store", String.class)).containsExactly("ajeno");
     }
     @Test void failedEmbeddingAndFailedWritesKeepThePreviousVersion() {
-        when(embedding.embed(anyList())).thenReturn(List.of(new float[]{1, 0, 0}));
+        when(embedding.embed(any(org.springframework.ai.document.Document.class))).thenReturn(new float[]{1, 0, 0});
         index.synchronize(List.of(chunk("v1")));
-        when(embedding.embed(anyList())).thenThrow(new IllegalStateException("sin proveedor"));
+        when(embedding.embed(any(org.springframework.ai.document.Document.class))).thenThrow(new IllegalStateException("sin proveedor"));
         assertThatThrownBy(() -> index.synchronize(List.of(chunk("v2")))).isInstanceOf(IllegalStateException.class);
-        doReturn(List.of(new float[]{1, 0})).when(embedding).embed(anyList());
+        doReturn(new float[]{1, 0}).when(embedding).embed(any(org.springframework.ai.document.Document.class));
         assertThatThrownBy(() -> index.synchronize(List.of(chunk("v2")))).isInstanceOf(RuntimeException.class);
         assertThat(jdbc.queryForList("SELECT content FROM vector_store", String.class)).containsExactly("Contenido v1");
     }
