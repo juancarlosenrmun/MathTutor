@@ -5,3 +5,5 @@ gradlew text eol=lf
 *.yml text eol=lf
 *.kts text eol=lf
 *.md text eol=lf
+# UC-14: preservar los bytes originales para verificar los SHA-256 del manifiesto.
+mathtutor-application/src/main/resources/notes/sources/industriales/** -text
