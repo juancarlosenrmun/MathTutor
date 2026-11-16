@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Contrato del frontend S1</title>
+<html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Contrato del frontend S1 y S2</title>
 <body><p id="result">Verificando interfaz…</p><iframe title="MathTutor bajo prueba" style="width:1200px;height:900px;border:0"></iframe>
 <script type="module">
 const frame = document.querySelector('iframe');
@@ -12,6 +12,11 @@ try {
     window.testState = { role: 'ALUMNO', status: 200, calls: [] };
     window.fetch = async (path, options) => {
       testState.calls.push([path, options]);
+      if (path.endsWith('/modules')) return {ok:true,json:async()=>[
+        {code:'funciones',name:'Funciones'},{code:'derivadas-integrales',name:'Derivadas e integrales'},{code:'metodos-3d',name:'Métodos 3D'}]};
+      if (path.endsWith('/sessions')) return {ok:true,json:async()=>({id:1,moduleCode:JSON.parse(options.body).moduleCode})};
+      if (path.endsWith('/messages')) return {ok:true,body:new ReadableStream({start(c){
+        c.enqueue(new TextEncoder().encode('data: {"type":"TOKEN","content":"Piensa en el dominio."}'+String.fromCharCode(10,10)+'data: {"type":"DONE","content":""}'+String.fromCharCode(10,10)));c.close();}})};
       const status = path.endsWith('csrf-token') ? 200 : path.endsWith('refresh') ? 401 : testState.status;
       return { ok: status < 400, status, json: async () => path.endsWith('csrf-token') ? { csrfToken: 'csrf' }
         : { data: { accessToken: 'jwt', role: testState.role, email: 'alumno@ejemplo.es' } } };
@@ -52,18 +57,29 @@ try {
   assert(JSON.parse(call[1].body).role === 'ALUMNO', 'Registro permite escalar rol');
   for (const width of [1200, 375]) {
     frame.style.width = width + 'px';
-    for (const view of ['espacio', 'cuenta', 'laboratorio']) {
+    for (const view of ['espacio', 'cuenta', 'laboratorio', 'tutor']) {
       await go(view);
       assert(visible()[0].dataset.view === view, 'Ruta autenticada incorrecta: ' + view);
       assert(doc.documentElement.scrollWidth <= doc.documentElement.clientWidth + 1, 'Desbordamiento autenticado: ' + view);
     }
   }
+  await go('tutor');
+  assert(doc.querySelector('#tutor-block').options.length === 3, 'Falta catálogo de módulos');
+  doc.querySelector('#tutor-select-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
+  assert(!doc.querySelector('#tutor-composer').hidden, 'No se inicia conversación');
+  doc.querySelector('#tutor-message').value = '¿Qué es una función?';
+  doc.querySelector('#tutor-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
+  assert(doc.querySelector('#tutor-history').textContent.includes('Piensa en el dominio.'), 'SSE no llega al historial');
+  assert(doc.querySelector('#tutor-status').textContent.includes('completada'), 'Falta fin de turno');
+  await go('laboratorio');
+  doc.querySelector('#curve-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
+  assert(doc.querySelector('#curve-result').textContent.includes('0,666'), 'Falta integral 2D');
   await go('espacio');
   for (const [role, label] of [['ALUMNO', 'Alumno'], ['PROFESOR', 'Profesor'], ['ADMIN', 'Administrador']]) {
     win.testState.role = role; await win.testApp.updateRole();
     assert(doc.querySelector('#workspace-role').textContent === label, 'Espacio con rol obsoleto');
   }
-  assert(!doc.querySelector('[data-view="espacio"] a[href="#/chat"]'), 'Se adelanta el chat de S2');
+  assert(doc.querySelector('[data-view="espacio"] a[href="#/tutor"]'), 'No se puede abrir el tutor');
   await go('cuenta');
   win.testState.role = 'PROFESOR'; await win.testApp.updateRole();
   assert(doc.querySelector('#role').textContent === 'PROFESOR', 'Rol obsoleto');
