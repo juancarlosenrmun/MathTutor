@@ -1,5 +1,25 @@
 # Diagrama de clases general
 
+## Cliente del sprint 1 · Ampliación frontend
+
+Vistas y decisiones: [[Sprint 01 - Diseño frontend]]. El módulo gráfico y sus clases de cámara/pipeline se conservan; la interfaz añade navegación y gestión completa de sesión.
+
+```mermaid
+flowchart LR
+  Main[main.mjs] --> App[app.mjs: mount]
+  App --> Interface[interface.mjs: mountInterface]
+  App --> Viewer[WebGLViewer]
+  Interface --> Session[SessionClient]
+  Session --> Locks[Web Locks: cookie compartida]
+  Session --> Auth[AuthController: APIs existentes]
+  Viewer --> Camera[Camera]
+  Viewer --> Pipeline[ShaderPipeline]
+```
+
+`SessionClient` incorpora `register`, `restore`, `logout`, `role` y `post` con CSRF. `mountInterface` coordina rutas, estados ocupados, validación de confirmación y descarte de consultas obsoletas. No se añaden controladores ni contratos backend.
+
+## Diseño general
+
 > [!note] Alcance del diagrama
 > El diagrama general incluye diseño futuro. La auditoría [[Auditoria Sprint 01 2026-11-16]] distingue las clases existentes de las previstas; no demuestra implementación de UC-03, UC-27 ni del orquestador.
 

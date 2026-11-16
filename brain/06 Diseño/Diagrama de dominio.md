@@ -1,5 +1,9 @@
 # Diagrama de dominio
 
+## Ampliación frontend S1 · 2026-11-16
+
+[[Sprint 01 - Diseño frontend]] incorpora seis vistas y amplía el cliente de sesión, sin modificar entidades, relaciones, roles, propiedad ni esquema persistente. El registro público sigue restringido a `ALUMNO`; `User` y la familia de `RefreshToken` conservan su modelo. Las mutaciones de la cookie se coordinan entre pestañas con Web Locks. Véase [[Diagrama de clases]].
+
 > Verificar: entidades, atributos, relaciones y multiplicidades antes de generar entidades JPA.
 
 ```mermaid
