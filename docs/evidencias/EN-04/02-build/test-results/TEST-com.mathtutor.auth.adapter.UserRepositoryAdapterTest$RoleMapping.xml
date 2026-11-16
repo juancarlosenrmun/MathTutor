@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="Mapeo de roles" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:32.545Z" hostname="DESKTOP-KREG294" time="0.008">
-  <properties/>
-  <testcase name="Debe mapear ALUMNO correctamente" classname="com.mathtutor.auth.adapter.UserRepositoryAdapterTest$RoleMapping" time="0.002"/>
-  <testcase name="Debe mapear PROFESOR correctamente" classname="com.mathtutor.auth.adapter.UserRepositoryAdapterTest$RoleMapping" time="0.002"/>
-  <testcase name="Debe mapear ADMIN correctamente" classname="com.mathtutor.auth.adapter.UserRepositoryAdapterTest$RoleMapping" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

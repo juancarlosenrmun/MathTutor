@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="Logout exitoso" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:50.075Z" hostname="DESKTOP-KREG294" time="0.011">
-  <properties/>
-  <testcase name="Debe normalizar email a minúsculas" classname="com.mathtutor.common.auth.domain.LogoutUseCaseTest$SuccessfulLogout" time="0.004"/>
-  <testcase name="Debe ignorar espacios en email" classname="com.mathtutor.common.auth.domain.LogoutUseCaseTest$SuccessfulLogout" time="0.002"/>
-  <testcase name="Debe publicar evento de logout" classname="com.mathtutor.common.auth.domain.LogoutUseCaseTest$SuccessfulLogout" time="0.003"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

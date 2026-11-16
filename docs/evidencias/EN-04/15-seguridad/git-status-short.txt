@@ -1,9 +1,0 @@
- M .gitignore
- M mathtutor-application/build.gradle.kts
- M mathtutor-llm/bin/test/com/mathtutor/llm/SpringAiGoogleAiStudioChatModelRealApiTest.class
- M mathtutor-llm/src/test/java/com/mathtutor/llm/SpringAiGoogleAiStudioChatModelRealApiTest.java
-?? mathtutor-application/bin/test/com/mathtutor/application/security/
-?? mathtutor-application/src/test/java/com/mathtutor/application/security/
-?? mathtutor-llm/bin/test/com/mathtutor/llm/SecurityNoApiKeyInLogsTest.class
-?? mathtutor-llm/bin/test/db/
-?? scripts/collect-evidence.sh

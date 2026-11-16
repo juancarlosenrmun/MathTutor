@@ -1,5 +1,0 @@
-mathtutor-cas/src/main/java/com/mathtutor/cas/LatexToSymjaConverter.java:32: *    - Mitigación: fallback a evaluación numérica en múltiples puntos
-mathtutor-cas/src/main/java/com/mathtutor/cas/LatexToSymjaConverter.java:144:            return evaluateNumericallyThreeState(expr1, expr2);
-mathtutor-cas/src/main/java/com/mathtutor/cas/LatexToSymjaConverter.java:149:            return evaluateNumericallyThreeState(expr1, expr2);
-mathtutor-cas/src/main/java/com/mathtutor/cas/LatexToSymjaConverter.java:157:    private EquivalenceResult evaluateNumericallyThreeState(IExpr expr1, IExpr expr2) {
-mathtutor-cas/src/main/java/com/mathtutor/cas/SymjaCasEngine.java:27: *    - Mitigación: fallback a evaluación numérica en múltiples puntos

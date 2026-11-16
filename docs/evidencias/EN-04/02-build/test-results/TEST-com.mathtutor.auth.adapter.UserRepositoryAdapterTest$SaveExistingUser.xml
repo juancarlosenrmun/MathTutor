@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="save() - Actualización de usuario existente" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-13T00:54:32.527Z" hostname="DESKTOP-KREG294" time="0.017">
-  <properties/>
-  <testcase name="Debe crear nuevo usuario cuando ID existe pero no está en BD" classname="com.mathtutor.auth.adapter.UserRepositoryAdapterTest$SaveExistingUser" time="0.005"/>
-  <testcase name="Debe actualizar usuario existente cuando ID existe en BD" classname="com.mathtutor.auth.adapter.UserRepositoryAdapterTest$SaveExistingUser" time="0.004"/>
-  <testcase name="Debe usar createdAt proporcionado cuando no es null" classname="com.mathtutor.auth.adapter.UserRepositoryAdapterTest$SaveExistingUser" time="0.006"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
