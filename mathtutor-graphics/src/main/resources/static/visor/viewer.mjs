@@ -43,7 +43,7 @@ export class WebGLViewer {
         else this.camera.orbit(...direction);
       } else if (event.key === '+') this.camera.zoom(-100);
       else if (event.key === '-') this.camera.zoom(100);
-      else if (event.key === 'Home') this.camera.reset();
+      else if (event.key === 'Home') { this.command('reset'); return; }
       else return;
       event.preventDefault();
       this.render();
@@ -57,6 +57,7 @@ export class WebGLViewer {
     on('webglcontextrestored', () => {
       try {
         this.pipeline = new ShaderPipeline(this.gl);
+        if (this.graph) this.pipeline.setGraph(this.graph);
         this.lost = false;
         this.render();
       } catch (error) { status.textContent = error.message; }
@@ -67,8 +68,24 @@ export class WebGLViewer {
   }
 
   command(action) {
-    if (action === 'reset') this.camera.reset();
+    if (action === 'reset') {
+      this.camera.reset();
+      if (this.graph) { this.setGraph(this.graph); return; }
+    }
     else this.camera.zoom(action === 'in' ? -150 : 150);
+    this.render();
+  }
+
+  /** @brief Orienta el visor hacia el plano XY y conserva la geometría al recuperar contexto. */
+  setGraph(graph) {
+    this.graph = graph;
+    if (!this.lost) this.pipeline.setGraph(graph);
+    this.camera.yaw = 0; this.camera.pitch = 0;
+    const values = [0, ...graph.points.flatMap(p => [p.y,p.derivative]).filter(v => v !== null)];
+    const minY = Math.min(...values), maxY = Math.max(...values);
+    this.camera.target = [(graph.points[0].x + graph.points.at(-1).x) / 2, (minY+maxY)/2, 0];
+    this.camera.orthographicSpan = [graph.points.at(-1).x - graph.points[0].x, Math.max(2,maxY-minY)];
+    this.camera.distance = 7;
     this.render();
   }
 

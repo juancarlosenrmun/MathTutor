@@ -35,12 +35,13 @@ export class ShaderPipeline {
       this.buffer = gl.createBuffer();
       gl.bindVertexArray(this.vao);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-      // Pares posición/color: X rojo, Y verde y Z azul; no anticipa gráficas de otros sprints.
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+      // Pares posición/color: X rojo, Y verde y Z azul.
+      this.axes = [
         -2, 0, 0, 0.9, 0.25, 0.3, 2, 0, 0, 0.9, 0.25, 0.3,
         0, -2, 0, 0.2, 0.75, 0.45, 0, 2, 0, 0.2, 0.75, 0.45,
         0, 0, -2, 0.3, 0.6, 1, 0, 0, 2, 0.3, 0.6, 1,
-      ]), gl.STATIC_DRAW);
+      ];
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.axes), gl.STATIC_DRAW);
       for (let index = 0; index < 2; index++) {
         gl.enableVertexAttribArray(index);
         gl.vertexAttribPointer(index, 3, gl.FLOAT, false, 24, index * 12);
@@ -54,6 +55,29 @@ export class ShaderPipeline {
     }
   }
 
+  /** @brief Añade segmentos 2D y trapecios triangulados; no conecta puntos inválidos. */
+  setGraph(graph) {
+    const lines = [], area = [];
+    const vertex = (out, x, y, color, z = 0) => out.push(x, y, z, ...color);
+    for (let i = 1; i < graph.points.length; i++) {
+      const a = graph.points[i - 1], b = graph.points[i];
+      if (!b.connected) continue;
+      for (const [field, color] of [['y', [0.95, 0.7, 0.25]], ['derivative', [0.4, 0.8, 1]]]) {
+        if (a[field] === null || b[field] === null || Math.abs(a[field] - b[field]) >= 50) continue;
+        vertex(lines, a.x, a[field], color); vertex(lines, b.x, b[field], color);
+      }
+      if (graph.area !== null) {
+        const color = [0.12, 0.28, 0.24];
+        for (const [x, y] of [[a.x, 0], [a.x, a.y], [b.x, b.y], [a.x, 0], [b.x, b.y], [b.x, 0]]) {
+          vertex(area, x, y, color, -0.005);
+        }
+      }
+    }
+    this.lineCount = lines.length / 6; this.areaCount = area.length / 6;
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([...this.axes, ...lines, ...area]), this.gl.STATIC_DRAW);
+  }
+
   draw(matrix, width, height) {
     const gl = this.gl;
     gl.viewport(0, 0, width, height);
@@ -64,6 +88,8 @@ export class ShaderPipeline {
     gl.bindVertexArray(this.vao);
     gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
     gl.drawArrays(gl.LINES, 0, 6);
+    if (this.lineCount) gl.drawArrays(gl.LINES, 6, this.lineCount);
+    if (this.areaCount) gl.drawArrays(gl.TRIANGLES, 6 + this.lineCount, this.areaCount);
     gl.bindVertexArray(null);
   }
 
