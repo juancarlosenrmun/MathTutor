@@ -69,6 +69,14 @@ class SprintFourIntegrationTest {
         mvc.perform(get("/api/tutor/sessions/"+session+"/history").with(actor("ALUMNO"))).andExpect(status().isNotFound());
         assertThat(store.sessions(owner,0,100)).hasSize(1);
     }
+    @Test void bankCatalogueIsOwnedPaginatedAndNeverExposesSolutions() throws Exception {
+        mvc.perform(get("/api/tutor/sessions/"+session+"/bank?size=1").with(actor("ALUMNO")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].statement").isString()).andExpect(jsonPath("$[0].reference").doesNotExist());
+        mvc.perform(get("/api/tutor/sessions/999999/bank").with(actor("ALUMNO"))).andExpect(status().isNotFound());
+        mvc.perform(get("/api/tutor/sessions/"+session+"/bank?size=101").with(actor("ALUMNO"))).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/tutor/sessions/"+session+"/bank").with(actor("PROFESOR"))).andExpect(status().isForbidden());
+    }
     @Test void writesContextAndReplaysWithExactlyOneLlmCall() {
         UUID id=UUID.randomUUID();
         assertThat(tracked.reply(user,session,id,"concepto").collectList().block()).containsExactly("Pista");

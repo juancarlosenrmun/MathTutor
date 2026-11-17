@@ -9,14 +9,31 @@ try {
   let html = await (await fetch('/visor/index.html')).text();
   html = html.replace('<head>', '<head><base href="/visor/">').replace('<script type="module" src="./main.mjs"></' + 'script>', `
     <script>
-    window.testState = { role: 'ALUMNO', status: 200, calls: [] };
+    window.testState = { role: 'ALUMNO', status: 200, calls: [], sessions: [], turns: [], runs: [] };
     window.fetch = async (path, options) => {
       testState.calls.push([path, options]);
       if (path.endsWith('/modules')) return {ok:true,json:async()=>[
         {code:'funciones',name:'Funciones'},{code:'derivadas-integrales',name:'Derivadas e integrales'},{code:'metodos-3d',name:'Métodos 3D'}]};
-      if (path.endsWith('/sessions')) return {ok:true,json:async()=>({id:1,moduleCode:JSON.parse(options.body).moduleCode})};
-      if (path.endsWith('/messages')) return {ok:true,body:new ReadableStream({start(c){
-        c.enqueue(new TextEncoder().encode('data: {"type":"TOKEN","content":"Piensa en el dominio."}'+String.fromCharCode(10,10)+'data: {"type":"DONE","content":""}'+String.fromCharCode(10,10)));c.close();}})};
+      const json = data => ({ok:true,json:async()=>data});
+      const stream = events => ({ok:true,body:new ReadableStream({start(c){
+        c.enqueue(new TextEncoder().encode(events.map(e=>'data:'+JSON.stringify(e)+String.fromCharCode(10,10)).join('')));c.close();}})});
+      if (path.includes('/progress')) return json(testState.sessions);
+      if (path.includes('/history')) return json(testState.turns);
+      if (path.includes('/bank')) return json([{id:7,statement:'Deriva x^2',difficulty:1}]);
+      if (path.includes('/exercises')) {
+        if (options.method === 'POST') testState.runs=[{id:1,statement:'Derivar x^2',state:'COMENZADO',progress:0}];
+        return json(options.method === 'POST' ? testState.runs[0] : testState.runs);
+      }
+      if (path.endsWith('/sessions')) {
+        const created={id:testState.sessions.length+1,moduleCode:JSON.parse(options.body).moduleCode,status:'ACTIVA'};
+        testState.sessions.unshift({...created,module:created.moduleCode});return json(created);
+      }
+      if (path.endsWith('/messages')) {
+        const body=JSON.parse(options.body);
+        testState.turns=[{id:1,...body,response:'Piensa en el dominio.',status:'COMPLETADO',verdict:'CORRECTO',diagnosis:'NINGUNO',topic:'derivadas'}];
+        return stream([{type:'TOKEN',content:'Piensa en el dominio.'},{type:'DONE'}]);
+      }
+      if (path.endsWith('/graphics')) return stream([{type:'GRAPHIC_SPEC',spec:JSON.parse(options.body)},{type:'DONE'}]);
       const status = path.endsWith('csrf-token') ? 200 : path.endsWith('refresh') ? 401 : testState.status;
       return { ok: status < 400, status, json: async () => path.endsWith('csrf-token') ? { csrfToken: 'csrf' }
         : { data: { accessToken: 'jwt', role: testState.role, email: 'alumno@ejemplo.es' } } };
@@ -84,6 +101,23 @@ try {
   doc.querySelector('#tutor-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
   assert(doc.querySelector('#tutor-history').textContent.includes('Piensa en el dominio.'), 'SSE no llega al historial');
   assert(doc.querySelector('#tutor-status').textContent.includes('completada'), 'Falta fin de turno');
+  assert(doc.querySelector('#tutor-diagnosis').textContent.includes('verificado'), 'Falta diagnóstico persistido');
+  const messageCall = win.testState.calls.find(([path]) => path.endsWith('/messages'));
+  assert(typeof JSON.parse(messageCall[1].body).requestId === 'string', 'El turno no incluye UUID');
+  doc.querySelector('#tutor-study').open = true;
+  doc.querySelector('#exercise-expression').value = 'x^2';
+  doc.querySelector('#exercise-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
+  assert(doc.querySelector('#exercise-runs').textContent.includes('Derivar'), 'Falta progreso del ejercicio');
+  const graphicDetails=doc.querySelector('#graphic-form').closest('details');graphicDetails.open=true;
+  doc.querySelector('#graphic-form').dispatchEvent(new Event('submit', {cancelable:true}));await settle();
+  assert(doc.querySelector('#graphic-result').textContent.includes('f(x)'), 'La gráfica no se interpreta');
+  for (const width of [1440,1024,768,375,320]) {
+    frame.style.width=width+'px';await settle();
+    assert(doc.documentElement.scrollWidth<=doc.documentElement.clientWidth+1,'Desbordamiento de herramientas S4 a '+width);
+  }
+  doc.querySelector('#tutor-new').click();
+  doc.querySelector('#tutor-sessions button').click();await settle();
+  assert(doc.querySelector('#tutor-history').textContent.includes('Piensa en el dominio.'),'La conversación guardada no se recupera');
   await go('laboratorio');
   assert(doc.querySelector('.lab-layout > .viewer-panel'), 'El visor no vuelve al laboratorio');
   doc.querySelector('#curve-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();

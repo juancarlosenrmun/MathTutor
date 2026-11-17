@@ -1,3 +1,22 @@
+## 2026-11-18 00:46 · Sprint 04 · Arranque local real y corrección del README
+
+- **Petición**: los comandos del README no arrancan con IA; lanzar la aplicación y corregirlos.
+- **Causa**: directorio de trabajo de bootRun en el módulo, donde no existe el `.env` de la raíz; perfil notes-indexing ausente del comando anterior.
+- **Realizado**: README corregido en DOC (e5729cc) y copia actualizada en el workspace, conservando sus cambios previos. Importación explícita `optional:file:../.env[.properties]`, perfiles dev/google-ai-studio/notes-indexing y espera de PostgreSQL. Aplicación ejecutándose en segundo plano en puerto 8080 (Java PID 22060); credenciales solo locales y JWT temporal en memoria.
+- **Pruebas**: 0 nuevas de caja blanca; 1 comprobación integral real de caja negra con cuenta temporal: registro, sesión, turno SSE TOKEN/DONE completado, 1852/343 tokens reales de entrada/salida. Cuenta temporal limpiada; frontend HTTP 200, salud UP y 121 fragmentos indexados. Sin código nuevo ni medición nueva de cobertura; evidencia anterior 990 Java/79 Node y JaCoCo/V8 en umbral conservada.
+- **Estado**: 34/35; base 30/30, frontend 4/5, pendiente fusión de PR #17. CI frontend verde comprobada: https://github.com/juancarlosenrmun/MathTutor/actions/runs/44200914184. No se fusiona en esta petición de arranque.
+
+## 2026-11-18 00:34 · Sprint 04 · Ampliación frontend
+
+- **Publicación**: [PR #17 hacia DEV](https://github.com/juancarlosenrmun/MathTutor/pull/17), rama `Sprint-4-Frontend`; CI remota e integración pendientes. La fusión solicitada de la base ya se realizó con PR #16.
+
+- **Petición**: fusionar backend con CI verde, crear Sprint-4-Frontend desde DEV y actualizar la interfaz.
+- **Implementado**: PR #16 fusionada con CI verde (1276674); base cerrada en DEV (713c89b), 5/5 UC y 33/33 puntos. Rama frontend creada después. Historial paginado recuperable, ejercicios y progreso, diagnóstico CAS, UUID/reintentos manuales y gráficas validadas. Catálogo de banco por módulo sin referencias. Identidad aislada y geometría privada eliminada al salir de cuenta. Skill frontend-design buscada e instalada individualmente; frontend-ui-engineering aplicada. Diseño/diagramas en DOC (a59f771).
+- **Pruebas**: check jacocoAggregateReport assemble correcto; 990 Java y 79 Node sin fallos/omisiones. 18 nuevas: 3 blancas y 15 negras. Contrato de navegador ampliado a herramientas S4, escritorio y móvil (320–1440 px), con capturas revisadas. 15 Python, apuntes reproducibles y puerta de integración correctos.
+- **Cobertura**: V8 1338/1349 líneas y 782/858 ramas (99,18/91,14 %). JaCoCo líneas/ramas: application 95,40/87,50; auth 96,91/87,65; cas 92,44/87,97; common 92,31/97,92; graphics 100/93,62; llm 95,18/86,24; persistence 89,34/79,63; tutor 98,09/95,18. Sin exclusiones nuevas.
+- **Revisión**: corregidos dos hallazgos con regresiones rojo/verde: mezcla de sesión al fallar abrir otro historial y paginación con controlador abortado. Sin hallazgos importantes pendientes. README previo del usuario intacto.
+- **Pendiente**: CI e integración de la ampliación frontend en DEV. Estado en curso: base 30/30, frontend 4/5, total **34/35**. Velocidad base 33/33 puntos integrados; no se vuelven a contar por la interfaz.
+
 ## 2026-11-18 00:12 · Sprint 04 · Fusión a DEV
 
 - **Petición**: fusionar con CI verde y crear la rama de frontend desde DEV para ampliar la interfaz.

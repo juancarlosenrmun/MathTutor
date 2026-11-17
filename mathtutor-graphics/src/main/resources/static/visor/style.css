@@ -1084,3 +1084,19 @@ canvas:focus-visible {
 .tutor-starters button { border: 1px solid var(--line); border-radius: .35rem; background: var(--paper); color: var(--green); padding: .55rem .8rem; font: inherit; cursor: pointer; }
 .tutor-starters button:hover, .tutor-starters button:focus-visible { border-color: var(--green); background: var(--green-light); }
 #surface-resolution { width: 100%; min-height: 2.7rem; border: 1px solid var(--line); border-radius: .35rem; background: white; color: var(--ink); font: inherit; }
+.study-panel { border-block: 1px solid var(--line); margin-block: .8rem; padding-block: .8rem; min-width: 0; }
+.study-panel summary { cursor: pointer; font-weight: 600; color: var(--green); padding-block: .4rem; }
+.study-panel fieldset { border: 0; padding: .7rem 0; margin: 0; min-width: 0; display: grid; gap: .65rem; }
+.study-panel legend { padding-block: .7rem; font-weight: 600; }
+.study-panel :is(input,select) { width: 100%; min-width: 0; max-width: 100%; padding: .65rem; border: 1px solid var(--line); border-radius: .35rem; color: var(--ink); background: var(--surface); font: inherit; }
+.study-panel .button { white-space: normal; }
+.study-domain { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .6rem; }
+.study-panel progress { width: 100%; accent-color: var(--green); }
+.exercise-runs { padding-left: 1.2rem; font-size: .85rem; line-height: 1.6; overflow-wrap: anywhere; }
+.exercise-runs li { padding-block: .35rem; }
+.turn-metadata { color: var(--muted); font-size: .8rem; line-height: 1.6; overflow-wrap: anywhere; }
+.study-panel :is(h3,p) { overflow-wrap: anywhere; }
+.study-panel [hidden] { display: none; }
+#tutor-retry, #history-more { margin-block: .5rem; }
+#sessions-refresh { border: 0; padding: .5rem 0; background: none; font: inherit; text-align: left; }
+@media (max-width: 700px) { .study-panel .button { width: 100%; } }
