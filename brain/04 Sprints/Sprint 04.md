@@ -2,7 +2,7 @@
 sprint: S4
 objetivo: Verificación con CAS, contexto, registro y especificación gráfica
 puntos: 33
-estado: pendiente
+estado: en curso
 ---
 # Sprint 04 · Verificación con CAS, contexto, registro y especificación gráfica
 
@@ -65,3 +65,12 @@ UC-17 necesita UC-16 y UC-22. UC-20 y UC-25 alimentan UC-11. UC-35 prepara la co
 - [ ] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+### 2026-11-17 23:11 · Preparación del sprint
+
+- Creada y seleccionada la rama sprint-4 desde DEV tras git pull --ff-only. README.md contiene cambios previos del usuario, excluidos del trabajo.
+- Leídos AGENTS.md, índice, sprint, requisitos, casos de uso, arquitectura, diagramas y seguimiento.
+- Búsquedas individuales con find-skills e instalación global individual para Codex de springboot-tdd y spring-ai-integration. La integración PromptScript no admite instalación global; Codex sí quedó instalado.
+- Diseño propuesto en DOC: brain/06 Diseño/Sprint 04 - Diseño de implementación.md. La skill brainstorming exige aprobación explícita del diseño antes de implementar; pendiente revisión del usuario.
+- Sin implementación ni nuevas pruebas de caja blanca/negra (0/0); cobertura no medida. Ningún UC se marca como completado. Pendientes implementación, pruebas, JaCoCo, revisión, PR a DEV y posterior fase Sprint-4-Frontend tras fusión.
+- Checklist: 0/30; elementos completos: 0/5.

@@ -1,3 +1,11 @@
+## 2026-11-17 23:11 · Sprint 04 · Preparación y diseño
+
+- **Petición**: crear rama del sprint 4, instalar skills individuales, implementar y abrir PR a DEV; después de la fusión, crear rama de frontend y ampliar la interfaz.
+- **Realizado**: creada y seleccionada sprint-4 desde DEV actualizada; leído AGENTS.md y contexto del sprint. Ejecutadas búsquedas individuales find-skills e instaladas springboot-tdd y spring-ai-integration globalmente para Codex. Diseño propuesto en DOC, commit 0914651, en [[Sprint 04 - Diseño de implementación]]. Sin cambios de código ni en el README previo del usuario.
+- **Pruebas**: 0 nuevas de caja blanca y 0 de caja negra; no se ejecutó build ni se midió cobertura. Revisión documental y git diff --check.
+- **Pendiente**: aprobación del diseño requerida expresamente por la skill brainstorming; implementación de cinco UC, pruebas, cobertura, revisión y PR a DEV. Frontend únicamente tras fusión, en Sprint-4-Frontend, pues Git no permite espacios en nombres de rama.
+- **Estado**: en curso; 0/5 UC, checklist 0/30. No se afirma implementación ni verificación funcional.
+
 ## 2026-11-17 22:51 · Sprint 02 · Formato de respuestas y nueva conversación
 
 - **Petición**: crear una rama fix, mostrar las respuestas del tutor con formato Markdown y eliminar la opción duplicada de cambiar de tema.
