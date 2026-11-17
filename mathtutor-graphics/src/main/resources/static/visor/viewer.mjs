@@ -58,6 +58,7 @@ export class WebGLViewer {
       try {
         this.pipeline = new ShaderPipeline(this.gl);
         if (this.graph) this.pipeline.setGraph(this.graph);
+        if (this.surface) this.pipeline.setSurface(this.surface);
         this.lost = false;
         this.render();
       } catch (error) { status.textContent = error.message; }
@@ -71,6 +72,7 @@ export class WebGLViewer {
     if (action === 'reset') {
       this.camera.reset();
       if (this.graph) { this.setGraph(this.graph); return; }
+      if (this.surface) { this.setSurface(this.surface); return; }
     }
     else this.camera.zoom(action === 'in' ? -150 : 150);
     this.render();
@@ -79,6 +81,7 @@ export class WebGLViewer {
   /** @brief Orienta el visor hacia el plano XY y conserva la geometría al recuperar contexto. */
   setGraph(graph) {
     this.graph = graph;
+    this.surface = null;
     if (!this.lost) this.pipeline.setGraph(graph);
     this.camera.yaw = 0; this.camera.pitch = 0;
     const values = [0, ...graph.points.flatMap(p => [p.y,p.derivative]).filter(v => v !== null)];
@@ -86,6 +89,21 @@ export class WebGLViewer {
     this.camera.target = [(graph.points[0].x + graph.points.at(-1).x) / 2, (minY+maxY)/2, 0];
     this.camera.orthographicSpan = [graph.points.at(-1).x - graph.points[0].x, Math.max(2,maxY-minY)];
     this.camera.distance = 7;
+    this.render();
+  }
+
+  /** @brief Centra una malla de superficie y permite recuperar el contexto WebGL. */
+  setSurface(mesh) {
+    this.graph = null;
+    this.surface = mesh;
+    if (!this.lost) this.pipeline.setSurface(mesh);
+    const [xMin,xMax,yMin,yMax] = mesh.bounds;
+    const heights = mesh.triangles.flatMap(t => t.vertices.map(v => v[2]));
+    const [minZ,maxZ] = heights.reduce(([min,max], z) => [Math.min(min,z),Math.max(max,z)], [0,0]);
+    this.camera.target = [(xMin+xMax)/2, (yMin+yMax)/2, (minZ+maxZ)/2];
+    this.camera.orthographicSpan = [xMax-xMin, Math.max(yMax-yMin,maxZ-minZ,2)];
+    this.camera.yaw = 0.6;
+    this.camera.pitch = 0.4;
     this.render();
   }
 

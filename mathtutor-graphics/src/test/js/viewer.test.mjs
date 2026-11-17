@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WebGLViewer } from '../../main/resources/static/visor/viewer.mjs';
 import { curve } from '../../main/resources/static/visor/curves.mjs';
+import { surface as meshSurface } from '../../main/resources/static/visor/surfaces.mjs';
 import { fakeGl } from './fake-gl.mjs';
 
 function surface(gl = fakeGl()) {
@@ -15,6 +16,17 @@ function surface(gl = fakeGl()) {
   const host = { devicePixelRatio: 2, addEventListener() {}, removeEventListener() {} };
   return { canvas, listeners, host, status: { textContent: '' } };
 }
+
+test('UC-29 conserva la superficie al perder y recuperar WebGL2', () => {
+  const state = surface();
+  const viewer = new WebGLViewer(state.canvas, state.status, state.host);
+  viewer.setSurface(meshSurface('x+y', -1, 1, -1, 1, 2));
+  assert.equal(viewer.pipeline.surfaceCount, 24);
+  state.listeners.get('webglcontextlost')({preventDefault(){}});
+  state.listeners.get('webglcontextrestored')();
+  assert.equal(viewer.pipeline.surfaceCount, 24);
+  viewer.dispose();
+});
 
 test('UC-28 encuadra alturas y dominios grandes en escritorio y móvil y recupera la gráfica', () => {
   const state = surface();

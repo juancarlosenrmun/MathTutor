@@ -1,7 +1,8 @@
 import { SessionClient } from './session.mjs';
 
 const titles = { inicio: 'Inicio', acceso: 'Iniciar sesión', registro: 'Crear cuenta', espacio: 'Tu espacio',
-  laboratorio: 'Laboratorio', tutor: 'Tutor de Matemáticas', cuenta: 'Tu cuenta', restringido: 'Acceso restringido' };
+  laboratorio: 'Laboratorio', tutor: 'Tutor de Matemáticas', cuenta: 'Tu cuenta', restringido: 'Acceso restringido',
+  privacidad: 'Privacidad y cookies' };
 
 export function viewFor(hash, signedIn) {
   const requested = hash.replace('#/', '');

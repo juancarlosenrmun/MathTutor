@@ -294,6 +294,15 @@
         </form>
         <p id="curve-help" class="field-help">Usa x, números, + − * / ^, sin, cos, tan, exp, log, sqrt o abs. Ejemplos: x^2, sin(x), 1/x. La integral usa los extremos indicados.</p>
         <p id="curve-result" role="status">Introduce una función para ver su gráfica 2D y sus aproximaciones numéricas.</p>
+        <form id="surface-form" class="curve-controls" aria-label="Superficies 3D">
+          <div><label for="surface-function">Superficie z=f(x,y)</label><input id="surface-function" value="x^2+y^2" required maxlength="150" /></div>
+          <div><label for="surface-x-min">x desde</label><input id="surface-x-min" type="number" value="-1" step="any" required /></div>
+          <div><label for="surface-x-max">x hasta</label><input id="surface-x-max" type="number" value="1" step="any" required /></div>
+          <div><label for="surface-y-min">y desde</label><input id="surface-y-min" type="number" value="-1" step="any" required /></div>
+          <div><label for="surface-y-max">y hasta</label><input id="surface-y-max" type="number" value="1" step="any" required /></div>
+          <button id="surface-draw" class="button" type="submit">Dibujar superficie</button>
+        </form>
+        <p id="surface-result" role="status">Introduce una expresión con x e y para explorar una superficie.</p>
         <div class="lab-layout">
           <section class="viewer-panel" aria-labelledby="viewer-title">
             <div class="viewer-toolbar">
@@ -304,7 +313,7 @@
               <canvas
                 tabindex="0"
                 aria-label="Visor de funciones y coordenadas. X rojo, Y verde, Z azul."
-                aria-describedby="instructions graphic-status curve-result"
+                aria-describedby="instructions graphic-status curve-result surface-result"
                 >Sistema cartesiano con tres ejes perpendiculares: X, Y y Z,
                 centrados en el origen.</canvas
               >
@@ -523,8 +532,27 @@
           </aside>
         </div>
       </section>
+      <section data-view="privacidad" class="account" hidden aria-labelledby="privacy-title">
+        <div class="page-heading"><div><p class="overline">Tus datos y tus decisiones</p>
+          <h1 id="privacy-title">Privacidad y cookies.</h1></div></div>
+        <div class="account-layout"><section class="account-details" aria-labelledby="privacy-data-title">
+          <h2 id="privacy-data-title">Aviso de privacidad</h2>
+          <p>MathTutor trata el correo de la cuenta, las preguntas y los datos de sesión para ofrecer el tutor de Matemáticas. La pregunta y los fragmentos de apuntes necesarios se envían al proveedor del modelo para redactar la respuesta; no se incluye el correo en ese mensaje.</p>
+          <p>La información institucional sobre responsable, contacto y plazos de conservación debe validarse con el DPD de la UJA antes de utilizar el servicio con usuarios reales.</p>
+        </section><section class="permission-panel" aria-labelledby="privacy-cookies-title">
+          <h2 id="privacy-cookies-title">Política de cookies</h2>
+          <p>Las cookies de autenticación y de protección CSRF son técnicas. La cookie <code>mathtutor_cookies</code> recuerda tu elección. Actualmente no se activan cookies de análisis ni publicidad.</p>
+          <p>Puedes aceptar o rechazar las cookies no esenciales y cambiar tu elección cuando quieras.</p>
+          <button id="privacy-manage" type="button" class="button secondary">Cambiar preferencias</button>
+        </section></div>
+      </section>
     </main>
+    <aside id="privacy-banner" class="privacy-banner" aria-label="Preferencias de cookies" hidden>
+      <div><strong>Privacidad y cookies</strong><p>Usamos cookies técnicas para la sesión y la seguridad. Puedes aceptar o rechazar las no esenciales. <a href="#/privacidad">Lee el aviso y la política de cookies</a>.</p></div>
+      <div class="privacy-actions"><button id="privacy-accept" type="button" class="button secondary">Aceptar</button><button id="privacy-reject" type="button" class="button secondary">Rechazar</button></div>
+    </aside>
     <footer class="site-footer">
+      <a href="#/privacidad">Privacidad y cookies</a>
       <span class="brand-footer">MathTutor</span
       ><span>Un espacio para entender las matemáticas.</span
       ><a href="#/laboratorio"

@@ -57,6 +57,7 @@ export class ShaderPipeline {
 
   /** @brief Añade segmentos 2D y trapecios triangulados; no conecta puntos inválidos. */
   setGraph(graph) {
+    this.surfaceCount = 0;
     const lines = [], area = [];
     const vertex = (out, x, y, color, z = 0) => out.push(x, y, z, ...color);
     for (let i = 1; i < graph.points.length; i++) {
@@ -78,6 +79,19 @@ export class ShaderPipeline {
     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([...this.axes, ...lines, ...area]), this.gl.STATIC_DRAW);
   }
 
+  /** @brief Dibuja la triangulación y conserva las normales calculadas por la malla. */
+  setSurface(mesh) {
+    const vertices = [];
+    for (const triangle of mesh.triangles) {
+      for (const vertex of triangle.vertices) vertices.push(...vertex, 0.25, 0.72, 0.62);
+    }
+    this.surfaceCount = vertices.length / 6;
+    this.lineCount = 0;
+    this.areaCount = 0;
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([...this.axes, ...vertices]), this.gl.STATIC_DRAW);
+  }
+
   draw(matrix, width, height) {
     const gl = this.gl;
     gl.viewport(0, 0, width, height);
@@ -90,6 +104,7 @@ export class ShaderPipeline {
     gl.drawArrays(gl.LINES, 0, 6);
     if (this.lineCount) gl.drawArrays(gl.LINES, 6, this.lineCount);
     if (this.areaCount) gl.drawArrays(gl.TRIANGLES, 6 + this.lineCount, this.areaCount);
+    if (this.surfaceCount) gl.drawArrays(gl.TRIANGLES, 6, this.surfaceCount);
     gl.bindVertexArray(null);
   }
 

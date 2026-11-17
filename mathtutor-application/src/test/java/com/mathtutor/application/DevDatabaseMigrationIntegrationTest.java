@@ -48,7 +48,7 @@ class DevDatabaseMigrationIntegrationTest {
 
     @Test
     void startsWithAllExistingMappingsValidatedAfterFlyway() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("7");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("8");
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM pg_extension WHERE extname = 'vector'", Integer.class))
                 .isEqualTo(1);
@@ -58,10 +58,34 @@ class DevDatabaseMigrationIntegrationTest {
                 + "'exercises','canonical_steps','typical_errors','key_concepts','note_chunks',"
                 + "'tutor_sessions','exercise_runs','turns','consent_records','usage_quotas')", Integer.class))
                 .isEqualTo(16);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM topics", Integer.class)).isEqualTo(8);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises", Integer.class)).isEqualTo(6);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isGreaterThanOrEqualTo(2);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors", Integer.class)).isGreaterThanOrEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(DISTINCT m.code) FROM exercises e JOIN modules m ON m.id=e.module_id", Integer.class)).isEqualTo(3);
     }
 
     @Test
     void wiresTheCasModuleInTheCompositionRoot() {
         assertThat(casEngine.equivalent("x+x", "2*x")).isTrue();
+    }
+
+    @Test
+    void exerciseBankHasStableIdsTopicsSolutionsAndSeedHints() {
+        assertThat(jdbc.queryForList("SELECT external_id FROM exercises ORDER BY external_id", String.class))
+                .containsExactly("3D-PROC-001", "3D-TEO-001", "CAL-PROC-001", "CAL-TEO-001", "FUN-INT-001", "FUN-TEO-001");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises WHERE topic_id IS NOT NULL "
+                + "AND module_id IS NOT NULL AND reference_solution_latex <> ''", Integer.class)).isEqualTo(6);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises WHERE type = 'TEORICO'", Integer.class)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(4);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors WHERE seed_hint <> ''", Integer.class)).isEqualTo(2);
+    }
+
+    @Test
+    void rerunningMigrationsDoesNotDuplicateExerciseBank() {
+        assertThat(flyway.migrate().migrationsExecuted).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises", Integer.class)).isEqualTo(6);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(4);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors", Integer.class)).isEqualTo(2);
     }
 }

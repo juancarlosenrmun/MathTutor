@@ -2,7 +2,11 @@ package com.mathtutor.tutor;
 
 import com.mathtutor.common.dto.Prompt;
 import com.mathtutor.common.dto.TutorSessionInfo;
+import com.mathtutor.common.dto.NoteChunk;
 import com.mathtutor.common.port.LlmGateway;
+import com.mathtutor.common.port.RagRetriever;
+import com.mathtutor.common.port.CasEngine;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -17,8 +21,100 @@ import static org.assertj.core.api.Assertions.*;
 class TutorConversationTest {
     final TutorSessions sessions = mock(TutorSessions.class);
     final LlmGateway llm = mock(LlmGateway.class);
-    final TutorConversation conversation = new TutorConversation(sessions, llm);
-    void active() { when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA")); }
+    final RagRetriever retriever = mock(RagRetriever.class);
+    final CasEngine cas = mock(CasEngine.class);
+    final TutorConversation conversation = new TutorConversation(sessions, llm, retriever, cas);
+    void active() {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
+        when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
+                new NoteChunk(1L, "Definición de función", null, "DEFINICION", "apunte.tex", "funciones", "intro", "1")));
+        when(retriever.retrieve(anyString(), eq("funciones"), eq("intro"))).thenReturn(List.of(
+                new NoteChunk(1L, "Definición de función", null, "DEFINICION", "apunte.tex", "funciones", "intro", "1")));
+    }
+    @Test void noRelevantFragmentReturnsOutOfSyllabusWithoutCallingLlm() {
+        active(); when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of());
+        StepVerifier.create(conversation.reply(7L, 1L, "tema ajeno"))
+                .expectNext("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.")
+                .verifyComplete();
+        verifyNoInteractions(llm);
+    }
+    @Test void selectsTheTopMatchingTopicAndDoesNotMixOtherTopicsInPrompt() {
+        active();
+        when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
+                new NoteChunk(2L, "Continuidad", null, "DEFINICION", "a.tex", "funciones", "continuidad", "1"),
+                new NoteChunk(3L, "Números complejos", null, "DEFINICION", "b.tex", "funciones", "complejos", "1")));
+        when(retriever.retrieve(anyString(), eq("funciones"), eq("continuidad"))).thenReturn(List.of(
+                new NoteChunk(2L, "Continuidad", null, "DEFINICION", "a.tex", "funciones", "continuidad", "1")));
+        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        StepVerifier.create(conversation.reply(7L, 1L, "¿Qué es continuidad?"))
+                .expectNext("Pista").verifyComplete();
+        var prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(llm).stream(prompt.capture());
+        assertThat(prompt.getValue().contextChunks()).containsExactly("Continuidad");
+        verify(retriever).retrieve(anyString(), eq("funciones"), eq("continuidad"));
+    }
+    @Test void missingTopicMetadataUsesOnlyTheModuleFilter() {
+        active(); when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
+                new NoteChunk(4L, "Apunte general", null, "OTRO", "a.tex", "funciones", null, "1")));
+        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        StepVerifier.create(conversation.reply(7L, 1L, "pregunta general"))
+                .expectNext("Pista").verifyComplete();
+        verify(retriever, times(1)).retrieve(anyString(), eq("funciones"), isNull());
+    }
+    @Test void emptyTopicFilteredResultNeverCallsLlm() {
+        active(); when(retriever.retrieve(anyString(), eq("funciones"), eq("intro"))).thenReturn(List.of());
+        StepVerifier.create(conversation.reply(7L, 1L, "tema sin coincidencia"))
+                .expectNext("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.")
+                .verifyComplete();
+        verifyNoInteractions(llm);
+    }
+    @Test void validStudentExpressionAddsDeterministicFormToPrompt() {
+        active(); when(cas.parse("x^2")).thenReturn(new CasEngine.Expr("x^2", "Power(x,2)", "Power(x,2)"));
+        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        StepVerifier.create(conversation.reply(7L, 1L, "x^2")).expectNext("Pista").verifyComplete();
+        var prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(llm).stream(prompt.capture());
+        assertThat(prompt.getValue().userPrompt()).contains("Power(x,2)");
+    }
+    @Test void invalidStudentExpressionRequestsReformulationWithoutLlm() {
+        active(); when(cas.parse("x^")).thenReturn(new CasEngine.Expr("x^", "", ""));
+        StepVerifier.create(conversation.reply(7L, 1L, "x^"))
+                .expectNext("No puedo interpretar la expresión. Reformúlala con una notación matemática válida.")
+                .verifyComplete();
+        verifyNoInteractions(llm);
+    }
+    @ParameterizedTest @ValueSource(strings = {"x+1", "x/2", "x-1", "x*2", "x=2", "sin(x)", "cos(x)"})
+    void mathematicalFormsAreParsedWithoutAnotherLlmCall(String message) {
+        active(); when(cas.parse(message)).thenReturn(new CasEngine.Expr(message, "AST", "AST"));
+        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        StepVerifier.create(conversation.reply(7L, 1L, message)).expectNext("Pista").verifyComplete();
+        verify(cas).parse(message); verify(llm).stream(any());
+    }
+    @Test void nullParserResultRequestsReformulation() {
+        active();
+        StepVerifier.create(conversation.reply(7L, 1L, "x+"))
+                .expectNext("No puedo interpretar la expresión. Reformúlala con una notación matemática válida.")
+                .verifyComplete();
+        verifyNoInteractions(llm);
+    }
+    @Test void nullNormalizedFormRequestsReformulation() {
+        active(); when(cas.parse("x+")).thenReturn(new CasEngine.Expr("x+", null, null));
+        StepVerifier.create(conversation.reply(7L, 1L, "x+"))
+                .expectNext("No puedo interpretar la expresión. Reformúlala con una notación matemática válida.")
+                .verifyComplete();
+        verifyNoInteractions(llm);
+    }
+    @Test void longQuestionRemainsNaturalLanguage() {
+        active(); when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        StepVerifier.create(conversation.reply(7L, 1L, "a".repeat(201)))
+                .expectNext("Pista").verifyComplete();
+        verifyNoInteractions(cas);
+    }
+    @Test void aProfileWithoutCasKeepsOrdinaryConversationAvailable() {
+        active(); when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        var withoutCas = new TutorConversation(sessions, llm, retriever, null);
+        StepVerifier.create(withoutCas.reply(7L, 1L, "x^2")).expectNext("Pista").verifyComplete();
+    }
     @Test void streamsDeltasInOrderWithOneSubscription() {
         active(); when(llm.stream(any())).thenReturn(Flux.just("Una ", "función."));
         var stream = conversation.reply(7L, 1L, "¿Qué es una función?");
@@ -26,6 +122,8 @@ class TutorConversationTest {
         StepVerifier.create(stream).expectNext("Una ", "función.").verifyComplete();
         var prompt = ArgumentCaptor.forClass(Prompt.class);
         verify(llm).stream(prompt.capture());
+        assertThat(prompt.getValue().contextChunks()).containsExactly("Definición de función");
+        verify(retriever).retrieve(anyString(), eq("funciones"), isNull());
         assertThat(prompt.getValue().systemPrompt()).contains("español", "funciones");
         assertThat(prompt.getValue().userPrompt()).isEqualTo("¿Qué es una función?");
     }

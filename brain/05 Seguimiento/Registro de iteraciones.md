@@ -102,6 +102,30 @@
 
 # Registro de iteraciones
 
+## 2026-11-17 15:47 · Sprint 03 · Implementación y verificación local de los cinco UC
+
+- **Petición**: continuar donde quedó la implementación y comprobar `git log` y `git status`. Se confirmó `Sprint-3` con commits separados por UC y árbol inicialmente con dos archivos del tutor sin confirmar; el ajuste quedó probado y registrado en `899f404`.
+- **Implementado**: UC-04 aviso, política y preferencia de cookies; UC-15 recuperación RAG por módulo y tema con respuesta fuera de temario sin LLM; UC-16 interpretación determinista de expresiones y petición de reformulación; UC-22 banco versionado de ocho temas y seis ejercicios; UC-29 superficie con malla, triángulos y normales.
+- **Pruebas**: 925 Java correctas, incluidas integraciones PostgreSQL/pgvector y la carga idempotente del banco; pruebas Node y smoke de navegador real de privacidad, superficie y WebGL2 correctos. Caja blanca y negra de los cinco UC ejercitadas. `check jacocoAggregateReport` correcto, sin fallos ni omisiones.
+- **Cobertura**: JaCoCo tutor 72/74 líneas (97,30 %) y 73/76 ramas (96,05 %); aplicación 65/66 líneas y 5/6 ramas. Cliente V8 1000/1005 líneas (99,50 %) y 524/568 ramas (92,25 %). Umbrales cumplidos.
+- **Pendiente**: CI remota del último conjunto de commits, revisión final e integración en DEV. La validación institucional del aviso por DPD queda en [[Sprint 05]]/EN-09 antes de usar datos reales. Checklist 0/5 elementos completos; 20/25 comprobaciones verificadas.
+
+## 2026-11-17 11:42 · Sprint 03 · UC-29 malla de superficies
+
+- **Petición**: completar Sprint 3 en la rama `Sprint-3`.
+- **Implementado**: `z=f(x,y)` en el laboratorio con malla acotada, dos triángulos por celda válida, normales unitarias y controles en español. No se conectan celdas con singularidad detectada. Recuperación del contexto WebGL incluida.
+- **Pruebas**: cinco pruebas de `surfaces.test.mjs` (cuatro de caja blanca y una de formulario), una del pipeline y una del visor; smoke de Chromium/Edge con comprobación de píxeles reales de la superficie. `:mathtutor-graphics:check` y `:mathtutor-graphics:clientTest` correctos.
+- **Cobertura**: V8 `surfaces.mjs` 62/62 líneas y 31/32 ramas; puerta de cobertura 80/70 del cliente y JaCoCo del módulo gráfico correctas.
+- **Pendiente**: CI remota de UC-29 e integración en DEV; UC-04, UC-16, UC-22 y cierre de UC-15. Checklist de elementos completos: 0/5; UC-29 tiene cuatro de cinco comprobaciones verificadas.
+
+## 2026-11-17 11:30 · Sprint 03 · Inicio y UC-15 parcial
+
+- **Petición**: instalar skills especializadas por separado e implementar Sprint 3 con pruebas, CI, commits pequeños y documentación Doxygen.
+- **Rama/skills**: `Sprint-3` creada desde DEV actualizada. Búsquedas separadas de Spring AI, Symja, JPA, WebGL, privacidad y testing; instaladas en `~/.agents/skills` las de Spring AI, privacidad, WebGL y pruebas Spring Boot. El instalador notificó un fallo adicional de PromptScript; los archivos SKILL.md están presentes. Para Symja se aplican las skills Java/CAS existentes.
+- **Implementado**: primer incremento de UC-15, recupera fragmentos por módulo para el prompt y responde fuera de temario sin llamar al LLM cuando no hay coincidencias. La inyección opcional conserva el arranque de perfiles sin recuperador.
+- **Pruebas/cobertura**: una nueva prueba de caja negra del caso sin fragmentos; prueba de caja blanca del prompt y filtrado por módulo ampliada. Suite `mathtutor-tutor:test` verde. Primer `check` completo falló por inyección del recuperador en perfiles sin RAG; tras corregirlo, `check` completo pasó (46 tareas) y la puerta JaCoCo del tutor quedó verde. JaCoCo tutor: 58/60 líneas (96,67 %) y 35/36 ramas (97,22 %). CI remota pendiente.
+- **Pendiente**: cerrar UC-15 (tema, integración y cobertura), implementar UC-04, UC-16, UC-22 y UC-29; verificar CI remota e integrar en DEV. Checklist 0/5.
+
 Una entrada por peticiÃ³n al agente (mÃ¡s reciente arriba). Formato:
 
 ## 2026-11-12 08:30 Â· Sprint 01 Â· **REPLANIFICACIÃ“N S1 â†’ S2** â€” UC-03 (5 pts) y UC-27 (13 pts) movidos a Sprint 02
