@@ -1,3 +1,10 @@
+## 2026-11-17 16:26 · Sprint 03 · Consulta de capacidades por rol
+
+- **Petición**: aclarar qué puede hacer hoy el alumno y el profesor, si ayuda la IA y quién genera las gráficas.
+- **Implementado**: sin cambios funcionales. Se contrastaron interfaz, controladores, `TutorConversation`, perfiles y visor. El alumno dispone de cuenta, selección de módulo, chat y laboratorio; el profesor dispone de cuenta y laboratorio, sin panel estadístico ni acceso al chat del alumno. Las gráficas son cálculos deterministas del cliente, introducidos manualmente. El perfil local `dev` usa `StubLlmGateway`, que responde con texto fijo; la IA real requiere el perfil `google-ai-studio` y su configuración. El banco UC-22 está cargado, pero no se expone en la interfaz ni se usa aún para reconocer ejercicios.
+- **Pruebas/cobertura**: sin código nuevo ni nuevas pruebas; se conserva la última evidencia: 925 Java, V8 1005/1010 líneas y 531/574 ramas, JaCoCo en umbral. Salud local HTTP 200.
+- **Pendiente**: CI e integración de la ampliación frontend en `DEV`; checklist S3 **34/35**, `estado: en curso`. Tutor pedagógico completo, generación de especificaciones gráficas y estadísticas docentes pertenecen a sprints posteriores.
+
 ## 2026-11-17 16:14 · Sprint 03 · Ampliación frontend y arranque local
 
 - **Petición**: crear y cambiar a «Sprint 3 Frontend», ejecutar find-skills sobre frontend, exponer las nuevas capacidades de S3 en la interfaz y arrancar la aplicación local.
