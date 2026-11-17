@@ -23,48 +23,61 @@ UC-17 necesita UC-16 y UC-22. UC-20 y UC-25 alimentan UC-11. UC-35 prepara la co
 ## Checklist de implementación
 
 ### UC-11 · Consultar mi progreso e historial
-- [ ] Implementación
-- [ ] Pruebas de caja blanca
-- [ ] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Implementación
+- [x] Pruebas de caja blanca
+- [x] Pruebas de caja negra
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-17 · Verificar pasos y resultado con el CAS y clasificar el error
-- [ ] Implementación
-- [ ] Pruebas de caja blanca
-- [ ] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Implementación
+- [x] Pruebas de caja blanca
+- [x] Pruebas de caja negra
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-20 · Mantener el contexto de la sesión
-- [ ] Implementación
-- [ ] Pruebas de caja blanca
-- [ ] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Implementación
+- [x] Pruebas de caja blanca
+- [x] Pruebas de caja negra
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-25 · Registrar cada interacción de forma estructurada
-- [ ] Implementación
-- [ ] Pruebas de caja blanca
-- [ ] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Implementación
+- [x] Pruebas de caja blanca
+- [x] Pruebas de caja negra
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-35 · Generar y validar la especificación gráfica
-- [ ] Implementación
-- [ ] Pruebas de caja blanca
-- [ ] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Implementación
+- [x] Pruebas de caja blanca
+- [x] Pruebas de caja negra
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
 - [ ] Build y CI en verde
-- [ ] Cobertura en umbral verificada
+- [x] Cobertura en umbral verificada
 - [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
-- [ ] [[Progreso global]] actualizado
+- [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+### 2026-11-18 00:03 · Implementación backend verificada
+
+- Aprobación del diseño mediante «Implementa sprint». Implementados UC-11, UC-17, UC-20, UC-25 y UC-35 en `sprint-4`; documentación y diagramas actualizados por separado en `DOC` (dddc671).
+- API de progreso/historial propios paginados; selección explícita de ejercicio del banco o derivada/simplificación libre, con referencias internas. CAS conserva CORRECTO, INCORRECTO, INDETERMINADO y NO_APLICA; pasos previos no incrementan progreso.
+- Contexto persistido limitado a diez turnos y 16000 caracteres. Nueva tabla `conversation_turns` (V9), reserva UUID bajo bloqueo corto, recuperación de respuestas completas y estados terminales, expiración de reservas, cancelación/error, métricas reales cuando existen y null cuando faltan. Sin transacción durante el LLM; límite total 30 s y una suscripción por petición.
+- Validación gráfica mediante contrato `graphic-spec-v1.schema.json`, comprobaciones de campos, gramática restringida y CAS; curvas y superficies, con evento GRAPHIC_SPEC. Tangentes y política pedagógica de S5 no se adelantan.
+- Evidencia: `gradlew check jacocoAggregateReport assemble` correcto; **989 Java**, cero fallos/omisiones. **64 pruebas nuevas**: 22 de caja blanca (verificación, selección, orquestación y métricas) y 42 de caja negra (gráficas, persistencia y API). Los caminos blancos de UC-35 incluyen también las tres pruebas existentes adaptadas al CAS.
+- JaCoCo líneas/ramas: application 95,35/87,50; auth 96,91/87,65; cas 92,44/87,97; common 92,26/97,92; graphics 100/93,62; llm 95,18/86,24; persistence 89,21/80,19; tutor 98,09/95,18. Sin exclusiones nuevas.
+- Cliente existente: 62 pruebas Node; V8 1099/1108 líneas y 569/613 ramas. Navegador real, 15 pruebas Python, reproducibilidad de apuntes y puerta de integraciones correctos.
+- Revisión independiente: corregida pérdida del veredicto CAS y recuperación de estados terminales. Regresiones adicionales verificadas: resuscripción, plazo total, puntos nulos y respuesta vacía. README previo del usuario fuera de los commits.
+- Compatibilidad: requestId opcional para el cliente anterior; la idempotencia entre peticiones exige reutilizar UUID. La ampliación frontend lo incorporará después de la fusión.
+- Pendiente CI remota, fusión a DEV y cierre de velocidad (provisional: 0/33 puntos integrados). Después se creará `Sprint-4-Frontend` desde DEV. Checklist **22/30**, cinco UC verificados localmente y cero integrados.
 
 ### 2026-11-17 23:11 · Preparación del sprint
 

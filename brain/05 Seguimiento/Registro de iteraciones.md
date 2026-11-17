@@ -1,3 +1,13 @@
+## 2026-11-18 00:03 · Sprint 04 · Implementación backend
+
+- **Petición**: «Implementa sprint»; aprobación del diseño y continuidad de la PR a DEV y frontend tras fusión.
+- **Implementado**: UC-11 progreso/historial propios; UC-17 verificación CAS de tres estados, selección explícita y progreso; UC-20 contexto persistente acotado; UC-25 reservas UUID, estados terminales, latencia y tokens reales/ausentes; UC-35 contrato JSON, gramática restringida, CAS y eventos gráficos. Una llamada LLM por turno, fuera de transacción. Código en sprint-4, diseño y diagramas en DOC (dddc671).
+- **Pruebas**: 989 Java correctas, cero fallos y omisiones. 64 nuevas: 22 de caja blanca y 42 de caja negra. Además, 62 Node, navegador real, 15 Python, reproducibilidad de apuntes y puerta de integración correctos. Build: check jacocoAggregateReport assemble en verde.
+- **Cobertura JaCoCo líneas/ramas**: application 95,35/87,50; auth 96,91/87,65; cas 92,44/87,97; common 92,26/97,92; graphics 100/93,62; llm 95,18/86,24; persistence 89,21/80,19; tutor 98,09/95,18. V8: 1099/1108 líneas, 569/613 ramas. Sin exclusiones nuevas.
+- **Revisión**: dos hallazgos importantes corregidos con pruebas: persistencia del veredicto CAS y recuperación de ERROR/CANCELADO. También verificadas resuscripción, plazo total, puntos nulos y respuesta vacía. Se mantiene intacto el README previo del usuario.
+- **Pendiente**: CI remota, PR/fusión a DEV, cierre de velocidad y posterior Sprint-4-Frontend. Velocidad provisional: 0/33 puntos integrados; no se marca cierre. Idempotencia del cliente anterior solo si envía UUID reutilizable; se mantiene compatibilidad al omitirlo.
+- **Estado**: en curso, cinco UC verificados localmente y cero integrados; checklist **22/30**. Evidencia detallada en [[Sprint 04]].
+
 ## 2026-11-17 23:11 · Sprint 04 · Preparación y diseño
 
 - **Petición**: crear rama del sprint 4, instalar skills individuales, implementar y abrir PR a DEV; después de la fusión, crear rama de frontend y ampliar la interfaz.
