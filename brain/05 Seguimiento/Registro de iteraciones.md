@@ -102,6 +102,14 @@
 
 # Registro de iteraciones
 
+## 2026-11-17 11:42 · Sprint 03 · UC-29 malla de superficies
+
+- **Petición**: completar Sprint 3 en la rama `Sprint-3`.
+- **Implementado**: `z=f(x,y)` en el laboratorio con malla acotada, dos triángulos por celda válida, normales unitarias y controles en español. No se conectan celdas con singularidad detectada. Recuperación del contexto WebGL incluida.
+- **Pruebas**: cinco pruebas de `surfaces.test.mjs` (cuatro de caja blanca y una de formulario), una del pipeline y una del visor; smoke de Chromium/Edge con comprobación de píxeles reales de la superficie. `:mathtutor-graphics:check` y `:mathtutor-graphics:clientTest` correctos.
+- **Cobertura**: V8 `surfaces.mjs` 62/62 líneas y 31/32 ramas; puerta de cobertura 80/70 del cliente y JaCoCo del módulo gráfico correctas.
+- **Pendiente**: CI remota de UC-29 e integración en DEV; UC-04, UC-16, UC-22 y cierre de UC-15. Checklist de elementos completos: 0/5; UC-29 tiene cuatro de cinco comprobaciones verificadas.
+
 ## 2026-11-17 11:30 · Sprint 03 · Inicio y UC-15 parcial
 
 - **Petición**: instalar skills especializadas por separado e implementar Sprint 3 con pruebas, CI, commits pequeños y documentación Doxygen.

@@ -51,10 +51,10 @@ UC-15 depende de UC-14. UC-16 y UC-22 son prerrequisitos de UC-17. UC-29 es el s
 - [ ] Integrado en la rama principal
 
 ### UC-29 · Ver superficies con malla, triangulación y normales
-- [ ] Implementación
-- [ ] Pruebas de caja blanca
-- [ ] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Implementación
+- [x] Pruebas de caja blanca
+- [x] Pruebas de caja negra
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ## Definición de hecho del sprint
@@ -65,5 +65,7 @@ UC-15 depende de UC-14. UC-16 y UC-22 son prerrequisitos de UC-17. UC-29 es el s
 - [ ] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+- 2026-11-17: UC-29 implementado en `Sprint-3`: malla de `z=f(x,y)`, triangulación con normales unitarias y rechazo de celdas que cruzan singularidades detectables. Pruebas Node y cobertura V8 en umbral; módulo gráfico `check` correcto; smoke de píxeles WebGL2 real correcto. Pendiente integración en DEV; el elemento sigue 0/5 a nivel de sprint.
 
 - 2026-11-17: iniciada la rama `Sprint-3` desde DEV actualizada. UC-15 incorpora recuperación de apuntes al turno y respuesta fuera de temario sin llamada al LLM cuando el índice no devuelve fragmentos. Pendientes: filtrado por tema en el flujo, verificación completa y cobertura, UC-04, UC-16, UC-22, UC-29, CI remota e integración en DEV. Ninguna casilla se marca hasta disponer de evidencia suficiente.
