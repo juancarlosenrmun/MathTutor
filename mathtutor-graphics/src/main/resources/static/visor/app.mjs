@@ -26,7 +26,7 @@ export function mount(document, host = globalThis) {
   const lab = panel?.parentElement;
   const next = panel?.nextSibling;
   return mountInterface(document, host, (view, client) => {
-    if (!tutor && document.querySelector('#tutor-form')) tutor = mountTutor(document, client);
+    if (!tutor && document.querySelector('#tutor-form')) tutor = mountTutor(document, client, {viewer});
     tutor?.sync(view);
     const slot = document.querySelector('#tutor-viewer-slot');
     if (panel && slot && lab) {

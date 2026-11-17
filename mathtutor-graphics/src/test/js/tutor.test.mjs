@@ -40,7 +40,13 @@ function fixture(moduleCode = 'funciones') {
     fetch: async (path, options) => {
       client.calls.push([path, options]);
       if (client.fail) return {ok:false};
-      if (path.endsWith('/messages')) return response(events);
+      if (path.includes('/progress')) return {ok:true,json:async()=>[]};
+      if (path.includes('/history')) return {ok:true,json:async()=>client.entries || []};
+      if (path.endsWith('/messages')) {
+        const body=JSON.parse(options.body);
+        client.entries=[{id:1,message:body.message,response:'Función ñ',status:'COMPLETADO',requestId:body.requestId,verdict:'NO_APLICA'}];
+        return response(events);
+      }
       return { ok:true, json:async () => path.endsWith('csrf-token') ? {csrfToken:'csrf'}
         : path.endsWith('/modules') ? [{code:'funciones',name:'Funciones'}]
           : {id:1,moduleCode:JSON.parse(options?.body || '{}').moduleCode || 'funciones'} };
@@ -164,7 +170,7 @@ test('las tarjetas usan el catálogo y los chats de la visita se pueden recupera
   f.nodes['tutor-new'].listeners.click();
   assert.equal(f.nodes['tutor-topic-picker'].hidden, false);
   assert.equal(f.nodes['tutor-sessions'].children.length, 1);
-  f.nodes['tutor-sessions'].children[0].listeners.click();
+  await f.nodes['tutor-sessions'].children[0].listeners.click();
   assert.equal(f.nodes['tutor-history'].children.length, 2);
   f.client.token = null; await f.ui.sync('tutor');
   assert.equal(f.nodes['tutor-sessions'].children.length, 0);

@@ -84,6 +84,32 @@ try {
     const shot = await command('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
     await writeFile(join(evidence, `${name}.png`), Buffer.from(shot.data, 'base64'));
   }
+  await evaluate(`(async () => {
+    const win=document.querySelector('iframe').contentWindow;
+    win.location.hash='#/tutor';win.testApp.render();
+  })()`);
+  for (let attempt=0;attempt<100;attempt++) {
+    if (await evaluate(`Boolean(document.querySelector('iframe').contentDocument.querySelector('#tutor-sessions button'))`)) break;
+    await delay(30);
+  }
+  await evaluate(`document.querySelector('iframe').contentDocument.querySelector('#tutor-sessions button').click()`);
+  for (let attempt=0;attempt<100;attempt++) {
+    if (await evaluate(`document.querySelector('iframe').contentDocument.querySelector('#exercise-runs').children.length>0`)) break;
+    await delay(30);
+  }
+  await evaluate(`(() => {
+    const doc=document.querySelector('iframe').contentDocument;
+    doc.querySelector('#tutor-study').open=true;
+    doc.querySelector('#graphic-form').closest('details').open=true;
+    doc.querySelector('#graphic-form').requestSubmit();
+  })()`);
+  await delay(50);
+  for (const [name,width,height] of [['tutor-s4',1440,1200],['tutor-s4-movil',390,1400]]) {
+    await command('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<700});
+    await delay(50);
+    const shot=await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
+    await writeFile(join(evidence,`${name}.png`),Buffer.from(shot.data,'base64'));
+  }
   for (const [name, view, width, height] of [['inicio', 'inicio', 1440, 1000],
     ['laboratorio', 'laboratorio', 1440, 1000], ['acceso', 'acceso', 1440, 1000],
     ['registro', 'registro', 1440, 1000], ['inicio-movil', 'inicio', 390, 1000],
