@@ -220,6 +220,10 @@ SpecInterpreter --> GraphicController : JSON
 ```
 
 ## Notas de verificación
+- Estado S3: `TutorConversation` invoca `CasEngine.parse` y `RagRetriever.retrieve` antes de `LlmGateway.stream`. La recuperación selecciona primero el tema más relevante del módulo y vuelve a consultar con ambos filtros; la llamada al LLM continúa siendo única.
+- UC-22 carga el banco con la migración Flyway `V8__exercise_bank.sql`, que crea temas, ejercicios, pasos canónicos y pistas de errores. `ExerciseBankLoader` permanece como diseño futuro; no es una clase ejecutable en S3.
+- UC-29 implementa `surface()` en el cliente como generador de malla y normales; `WebGLViewer.setSurface` y `ShaderPipeline.setSurface` dibujan los triángulos. `MeshBuilder` representa esa responsabilidad, no una clase JavaScript separada.
+- UC-04 implementa `mountPrivacy` y `cookieChoice` en el cliente. La preferencia anónima usa una cookie técnica; `PrivacyController` y `ConsentRepository` quedan como diseño previsto para futuros flujos de datos personales.
 - Corrección S1 en revisión: el filtro JWT valida exclusivamente tokens de acceso y consulta `UserRepositoryPort` en cada petición para obtener rol y estado actuales (RNF-04). El registro público asigna únicamente ALUMNO.
 - La renovación se concentra en una operación transaccional: `TokenServiceAdapter` delega en `RefreshTokenAdapter`, que bloquea primero al usuario con `UserRepository.findByIdForUpdate` y después relee el token con `RefreshTokenRepository.findByTokenHashForUpdate`. La generación del sustituto, la revocación y su almacenamiento son atómicos; el bloqueo por propietario serializa también los cambios de una misma familia.
 - `SpringAiGoogleAiStudioChatModel` y `GoogleAiStudioLlmGateway` preservan mensajes de sistema/usuario y consumen SSE; no reintentan ni cambian de proveedor al fallar. `GoogleAiStudioRateLimiter` limita solicitudes locales por configuración y no representa una garantía de cuota Google.

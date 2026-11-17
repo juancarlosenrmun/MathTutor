@@ -227,6 +227,9 @@ ExerciseRun --> HelpLevel
 ```
 
 ## Notas de verificación
+- En S3, los ocho temas y los seis ejercicios orientativos se cargan mediante la migración Flyway `V8__exercise_bank.sql`; cada ejercicio conserva `externalId`, solución, módulo y tema. Los procedimentales tienen pasos canónicos y errores típicos con pista semilla.
+- La elección anónima sobre cookies no esenciales se conserva en una cookie técnica versionada. `ConsentRecord` describe el registro de consentimientos asociados a usuarios, aún no empleado por el flujo anónimo de UC-04.
+- La malla de superficie, sus triángulos y normales son valores calculados en el cliente; no añaden entidades persistentes al dominio.
 - Auditoría S1: el diseño general incluye entidades de casos de uso futuros y no acredita que estén implementados; véase [[Auditoria Sprint 01 2026-11-16]].
 - La sesión implementada incorpora `RefreshToken`: hash SHA-256 del token de alta entropía, usuario, familia, expiración y revocación. El hash es consultable por índice y la rotación bloquea el token anterior antes de emitir el siguiente. Las contraseñas conservan Argon2id.
 - Migrar desde hashes Argon2id de refresh tokens obliga a iniciar sesión de nuevo; no cambia el hash de las contraseñas.
