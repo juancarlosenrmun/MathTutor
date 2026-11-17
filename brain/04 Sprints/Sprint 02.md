@@ -58,6 +58,13 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 
 ## Notas de iteración
 
+### 2026-11-17 22:51 · Formato Markdown y selección única de módulo
+
+- **Petición**: mostrar con formato las respuestas Markdown del tutor y quitar «Cambiar de módulo» de la pestaña.
+- **Implementado**: renderizado progresivo de encabezados, párrafos, énfasis, listas, citas, código y enlaces HTTP(S)/correo mediante nodos DOM; HTML remoto queda como texto. La selección de módulo permanece en «Nueva conversación» y se conservan los chats de la visita.
+- **Pruebas**: cuatro pruebas nuevas de cliente (caja blanca y contrato de interfaz), incluidas respuesta SSE fragmentada y enlace peligroso. 62/62 Node y puerta Gradle `:mathtutor-graphics:check jacocoAggregateReport` correctas; V8 1099/1108 líneas y 569/613 ramas; JaCoCo en umbral, sin exclusiones nuevas.
+- **Pendiente**: CI remota e integración de esta corrección en `DEV`; 4/5 comprobaciones, checklist del sprint 36/39. No cambia el diseño de dominio ni de clases.
+
 ### 2026-11-17 · README de arranque y PR hacia DEV
 
 - **Petición**: documentar el arranque local del frontend con comandos ordenados y abrir PR hacia DEV.
@@ -80,6 +87,14 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 - [x] Conversación y visor integrados, con diseño adaptable.
 - [x] Caja blanca, caja negra Chromium y V8 en umbral.
 - [ ] CI remota verde e integración de la adaptación en DEV (PR #10 abierta).
+
+## Corrección de presentación del tutor
+
+- [x] Implementación de Markdown y eliminación del control duplicado.
+- [x] Pruebas de caja blanca del cliente.
+- [x] Contrato de caja negra del flujo de nueva conversación.
+- [x] Cobertura cliente y JaCoCo en umbral.
+- [ ] CI remota e integración en `DEV`.
 
 ### 2026-11-17 00:06 · Ampliación frontend
 

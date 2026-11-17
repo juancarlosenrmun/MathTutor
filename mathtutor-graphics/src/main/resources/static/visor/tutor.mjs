@@ -1,3 +1,5 @@
+import { renderTutorMarkdown } from './tutor-markdown.mjs';
+
 /** @brief Lee SSE de un POST sin reconectar ni volver a enviar el turno automáticamente. */
 export async function readReply(response, onToken) {
   if (!response.ok || !response.body) throw new Error('No se pudo abrir la respuesta del tutor.');
@@ -151,13 +153,19 @@ export function mountTutor(document, client) {
     if (!session || busy || !allowed() || !message.trim() || message.length > 4000) return;
     const current = generation;
     busy = true; controller = new AbortController(); controls();
-    const question = document.createElement('p'), answer = document.createElement('p');
+    const question = document.createElement('p'), answer = document.createElement('div');
     question.className = 'tutor-question'; answer.className = 'tutor-answer';
-    question.textContent = 'Tú: ' + message; answer.textContent = 'Tutor: ';
+    question.textContent = 'Tú: ' + message;
+    const label = document.createElement('span'), body = document.createElement('div');
+    label.className = 'tutor-answer-label'; label.textContent = 'Tutor:';
+    body.className = 'tutor-answer-body'; answer.append(label, body);
     history.append(question); history.append(answer); status.textContent = 'El tutor está respondiendo…';
+    let markdown = '';
     try {
       const response = await request(`/api/tutor/sessions/${session.id}/messages`, {message}, controller.signal);
-      await readReply(response, token => { if (current === generation) answer.textContent += token; });
+      await readReply(response, token => {
+        if (current === generation) { markdown += token; renderTutorMarkdown(document, body, markdown); }
+      });
       if (current === generation) { one('tutor-message').value = ''; status.textContent = 'Respuesta completada.'; }
     } catch {
       if (current === generation) status.textContent = controller.signal.aborted ? 'Respuesta cancelada.' : 'No se pudo completar la respuesta. Puedes volver a intentarlo.';
