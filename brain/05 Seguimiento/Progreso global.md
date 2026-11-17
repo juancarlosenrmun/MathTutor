@@ -1,6 +1,6 @@
 ﻿# Progreso global
 
-Sprint 03 · ampliación frontend (2026-11-17 16:39): **completada**, 5/5 comprobaciones; base 5/5 UC y 34/34 puntos integrada. [PR #13](https://github.com/juancarlosenrmun/MathTutor/pull/13) fusionada en `DEV` tras CI verde. Chat con borradores guiados y superficie con detalle ajustable; 925 Java, V8 1005/1010 líneas y 531/574 ramas. Véase [[Sprint 03]].
+Sprint 03 · ampliación frontend (2026-11-17 16:39): **completada**, 5/5 comprobaciones; base 5/5 UC y 34/34 puntos integrada. [PR #13](https://github.com/juancarlosenrmun/MathTutor/pull/13) fusionada en `DEV` tras CI verde. Chat con borradores guiados y superficie con detalle ajustable; 925 Java, V8 1005/1010 líneas y 531/574 ramas. Configuración local de IA real probada en `Config-IA` (2026-11-17 16:56), todavía fuera de `DEV`. Véase [[Sprint 03]].
 
 Sprint 02 · ampliación frontend (2026-11-17 00:06): **en curso**, 4/5 verificaciones locales y checklist total **29/30**; pendiente CI remota e integración en DEV. Tutor y gráficas integrados en navegación; 47 Node, tres comprobaciones Chromium y 906 Java sin fallos/omisiones. V8 99,88/93,97 y JaCoCo en umbral. La base mantiene 4/4 UC y 32/32 puntos integrados. Véase [[Sprint 02]].
 

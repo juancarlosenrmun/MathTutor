@@ -1,3 +1,11 @@
+## 2026-11-17 16:56 · Sprint 03 · Configuración local de Google AI Studio
+
+- **Petición**: fusionar el frontend de S3 si CI verde; crear `Config-IA`, usar la clave existente de `.env` y activar Google AI Studio con indexación.
+- **Implementado**: PR #13 fusionada en `DEV` tras CI verde; checklist S3 cerrada en `DEV`. Creada `Config-IA` desde la versión integrada. Lanzador `scripts/start-google-ai.ps1` carga solo variables Google desde `.env` ignorado, genera JWT temporal y activa `dev`, `google-ai-studio`, `notes-indexing` y `spring-ai-pgvector` antes de Spring. Se corrigió el intento inicial de perfil en `.env` y la ruta relativa de `bootRun`. El modelo previo `gemini-2.5-flash` devolvió 404 para la clave nueva; se configuró localmente `gemini-3.5-flash-lite` y una consulta real devolvió texto no vacío.
+- **Pruebas**: [CI verde de la PR](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44115774524) y dos CI posteriores de `DEV` en verde. Parser PowerShell sin errores; perfiles activos confirmados; PostgreSQL contiene 121 fragmentos de 8 fuentes y 3 módulos a 768 dimensiones; salud y visor HTTP 200 en `127.0.0.1:8080`; sin errores de arranque ni clave en Git.
+- **Cobertura**: evidencia de CI previa, 925 Java; V8 1005/1010 líneas y 531/574 ramas; JaCoCo en umbral. No se añadió lógica de negocio ni pruebas de caja blanca/negra al lanzador local.
+- **Pendiente**: el lanzador queda en `Config-IA` sin integrar en `DEV`; validación institucional del uso con datos reales continúa en EN-09/S5. S3 mantiene **35/35**, `estado: completado`.
+
 ## 2026-11-17 16:39 · Sprint 03 · CI e integración del frontend
 
 - **Petición**: fusionar `Sprint-3-Frontend` en `DEV` únicamente con CI verde, crear `Config-IA` y activar Google AI Studio e indexación usando la clave local existente.
