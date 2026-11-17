@@ -58,6 +58,21 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 
 ## Notas de iteración
 
+### 2026-11-17 · Adaptación visual al boceto `Diseno.pdf`
+
+- **Petición**: reorganizar el frontend según las tres pantallas del boceto y conservar la plantilla MathTutor.
+- **Implementado**: selección del catálogo real mediante tarjetas; chats de la visita en barra lateral; conversación y visor WebGL en columnas. El visor vuelve al laboratorio al salir del tutor. Los chats se borran al perder la identidad.
+- **Alcance**: el PDF ilustra cuatro categorías y superficies 3D; S2 expone tres bloques y gráficas 2D. Las superficies pertenecen a [[Sprint 03]] (UC-29). No se muestran conversaciones históricas del servidor porque S2 no ofrece un listado de sesiones.
+- **Verificación**: 48 pruebas Node en verde, incluida una nueva de caja blanca sobre tarjetas y recuperación local; V8 99,43 % líneas y 91,85 % ramas. Comprobaciones reales Chromium de rutas, móvil, sesión, permisos, cámara y WebGL2 correctas. `:mathtutor-graphics:check` correcto, incluidas pruebas Java e integraciones exigidas por sus dependencias.
+- **Pendiente**: CI remota e integración de esta adaptación en DEV. El estado sigue `en curso`.
+
+## Checklist de adaptación al boceto
+
+- [x] Selección de módulos y chats de la visita según el boceto.
+- [x] Conversación y visor integrados, con diseño adaptable.
+- [x] Caja blanca, caja negra Chromium y V8 en umbral.
+- [ ] CI remota verde e integración de la adaptación en DEV.
+
 ### 2026-11-17 00:06 · Ampliación frontend
 
 - **Petición/rama**: crear «Sprint 2 Frontend», ejecutar find-skills para frontend e incorporar las funciones S2. DEV actualizada; creada y seleccionada `Sprint-2-Frontend` (Git no admite espacios). Búsqueda `npx skills find frontend` ejecutada; aplicadas las skills locales de frontend, TDD, revisión, verificación y Obsidian.

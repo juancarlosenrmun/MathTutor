@@ -462,3 +462,9 @@ Una entrada por peticiÃ³n al agente (mÃ¡s reciente arriba). Formato:
 - Pruebas: caja blanca 0 Â· caja negra 0 Â· cobertura 0 %
 - Checklist actualizada: [[Sprint 01]]
 - Pendiente: EN-01 (scaffolding Spring Boot modular, pgvector, CI), EN-04 (spike LaTeXâ†’Symja+Spring AI+pgvector), UC-01 (auth), UC-03 (access control), UC-27 (WebGL viewer pipeline+cÃ¡mara)
+## 2026-11-17 · Sprint 02 · Adaptación del tutor a `Diseno.pdf`
+
+- **Petición/rama**: adaptar chats, selección de módulo y visor al boceto; `Sprint-2-Frontend`.
+- **Implementado**: tarjetas del catálogo real, lista de chats de la visita, conversación y visor en columnas adaptables; estado local borrado al perder identidad.
+- **Pruebas**: 48 Node (una nueva de caja blanca), comprobaciones Chromium de caja negra de rutas, móvil, sesión, permisos, cámara y WebGL2 correctas. V8 99,43 % líneas y 91,85 % ramas.
+- **Cobertura y pendiente**: `:mathtutor-graphics:check` correcto. CI remota e integración en DEV pendientes. Las superficies 3D del boceto son UC-29/S3. Checklist S2 **32/34**, estado `en curso`.
