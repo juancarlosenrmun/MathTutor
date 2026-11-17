@@ -1,4 +1,12 @@
-﻿## 2026-11-17 00:06 · Sprint 02 · Integración frontend
+## 2026-11-17 15:59 · Sprint 03 · CI e integración en DEV
+
+- **Petición**: continuar la implementación, consultar `git log` y `git status` y completar Sprint 3. Se confirmó árbol limpio en `Sprint-3` y commits pequeños sin cofirma.
+- **Implementado**: UC-04 privacidad y cookies, UC-15 RAG por módulo y tema, UC-16 interpretación de expresiones, UC-22 banco versionado de ejercicios y UC-29 superficies trianguladas con normales. [PR #12](https://github.com/juancarlosenrmun/MathTutor/pull/12) fusionada en `DEV` mediante `a1a0ee2`; `main` intacta. Diagramas actualizados aparte en `DOC`; Doxyfile incluye Java y cliente WebGL.
+- **Pruebas**: 925 Java sin fallos ni omisiones, con caja blanca, caja negra y Testcontainers PostgreSQL/pgvector; Node y smoke Chromium/WebGL2 correctos. [CI de la PR](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44107554358) y [CI de DEV](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44108491687) en verde.
+- **Cobertura**: JaCoCo tutor 72/74 líneas (97,30 %) y 73/76 ramas (96,05 %); aplicación 65/66 líneas y 5/6 ramas. V8 1000/1005 líneas (99,50 %) y 524/568 ramas (92,25 %). Umbrales por módulo en verde; sin exclusiones nuevas.
+- **Estado/velocidad**: cinco UC integrados, **5/5 y 34/34 puntos**; checklist **30/30** (25/25 de UC), `estado: completado`. Pendiente externo a Sprint 3: validación institucional del aviso de privacidad por DPD en EN-09/Sprint 05 antes de usar datos reales. Doxygen no está instalado localmente, por lo que la generación HTML no se ejecutó en esta iteración.
+
+## 2026-11-17 00:06 · Sprint 02 · Integración frontend
 
 - **Petición/rama**: crear y seleccionar «Sprint 2 Frontend», buscar skills frontend e incorporar las funciones S2. DEV actualizada y rama `Sprint-2-Frontend` activa (Git no admite espacios). Ejecutado `npx skills find frontend`; aplicadas las skills locales de frontend, TDD, revisión, verificación y Obsidian.
 - **Implementado**: navegación al tutor por rol, selección y conversación en columnas adaptables, integración de función/derivada/integral en laboratorio y textos actualizados del espacio del alumno. Corregidos inicio sin catálogo, borrador al cambiar identidad y alta tardía al salir; tres regresiones observadas en rojo y después en verde. UC-14 conserva indexación al arrancar; sin funciones de S3.

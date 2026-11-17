@@ -2,7 +2,7 @@
 sprint: S3
 objetivo: RAG, interpretación de expresiones y superficies
 puntos: 34
-estado: en curso
+estado: completado
 ---
 # Sprint 03 · RAG, interpretación de expresiones y superficies
 
@@ -27,44 +27,46 @@ UC-15 depende de UC-14. UC-16 y UC-22 son prerrequisitos de UC-17. UC-29 es el s
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-15 · Recuperar fragmentos de apuntes por módulo y tema
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-16 · Interpretar la expresión del alumno
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-22 · Cargar el banco de ejercicios orientativo
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-29 · Ver superficies con malla, triangulación y normales
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos
-- [ ] Build y CI en verde
+- [x] Todos los elementos completos
+- [x] Build y CI en verde
 - [x] Cobertura en umbral verificada
-- [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
+- [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+- 2026-11-17: los cinco UC quedaron integrados en `DEV` por [PR #12](https://github.com/juancarlosenrmun/MathTutor/pull/12), commit `a1a0ee2`. [CI de la PR](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44107554358) y [CI de DEV](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44108491687) en verde. Checklist 30/30 (25/25 comprobaciones de UC); velocidad real 34/34 puntos. La validación institucional del aviso por DPD corresponde a EN-09 del Sprint 05 antes de usar datos reales.
 
 - 2026-11-17: los cinco UC tienen implementación y pruebas locales verificadas. `check jacocoAggregateReport` correcto: 925 pruebas Java, tutor 72/74 líneas y 73/76 ramas, aplicación 65/66 líneas y 5/6 ramas; V8 1000/1005 líneas y 524/568 ramas. UC-04 conserva pendiente de validación institucional del aviso por el DPD en EN-09 (Sprint 05). Restan CI remota del último commit e integración en DEV; por ello ningún elemento se considera completo todavía.
 
