@@ -24,6 +24,8 @@ function fixture() {
   const nodes = Object.fromEntries(['tutor-form','tutor-select-form','tutor-block','tutor-message',
     'tutor-send','tutor-start','tutor-cancel','tutor-status','tutor-history','tutor-composer',
     'tutor-new','tutor-sessions','tutor-topics','tutor-topic-picker','tutor-chat-title','tutor-viewer-slot'].map(k => [k, element()]));
+  const starters = ['¿Qué explica este tema en los apuntes?', 'x^2+2*x=0'].map(prompt =>
+    element({dataset:{prompt}}));
   nodes['tutor-block'].value = 'funciones'; nodes['tutor-message'].value = '¿Qué es una función?';
   nodes['tutor-history'].append = function(node) { (this.children ||= []).push(node); };
   nodes['tutor-history'].replaceChildren = function(...children) { this.children = children; };
@@ -41,11 +43,24 @@ function fixture() {
       return { ok:true, json:async () => path.endsWith('csrf-token') ? {csrfToken:'csrf'}
         : path.endsWith('/modules') ? [{code:'funciones',name:'Funciones'}] : {id:1,moduleCode:'funciones'} };
     } };
-  const doc = { querySelector:s => nodes[s.slice(1)], createElement:() => element() };
+  const doc = { querySelector:s => nodes[s.slice(1)], querySelectorAll:s => s === '[data-prompt]' ? starters : [],
+    createElement:() => element() };
   const ui = mountTutor(doc,client);
   const submit = id => nodes[id].listeners.submit({preventDefault(){}});
-  return {nodes,client,ui,submit};
+  return {nodes,client,ui,submit,starters};
 }
+test('las propuestas de apuntes y expresión preparan el borrador sin enviar un turno', async () => {
+  const f = fixture(); await f.ui.sync('tutor'); await f.submit('tutor-select-form');
+  f.starters[0].listeners.click();
+  assert.equal(f.nodes['tutor-message'].value, '¿Qué explica este tema en los apuntes?');
+  assert.equal(f.client.calls.filter(([path]) => path.endsWith('/messages')).length, 0);
+  f.starters[1].listeners.click();
+  assert.equal(f.nodes['tutor-message'].value, 'x^2+2*x=0');
+  assert.equal(f.nodes['tutor-message'].focused, true);
+  f.client.token = null; await f.ui.sync('tutor');
+  f.starters[0].listeners.click();
+  assert.equal(f.nodes['tutor-message'].value, '');
+});
 test('selección previa, POST protegido, respuesta progresiva y sesión nueva', async () => {
   const f = fixture();
   await f.ui.sync('tutor');

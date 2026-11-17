@@ -158,6 +158,11 @@ export function mountTutor(document, client) {
       if (current === generation) status.textContent = controller.signal.aborted ? 'Respuesta cancelada.' : 'No se pudo completar la respuesta. Puedes volver a intentarlo.';
     } finally { if (current === generation) { busy = false; controls(); } }
   });
+  for (const button of document.querySelectorAll('[data-prompt]')) button.addEventListener('click', () => {
+    if (!session || busy || !allowed()) return;
+    one('tutor-message').value = button.dataset.prompt;
+    one('tutor-message').focus();
+  });
   one('tutor-cancel').addEventListener('click', () => controller?.abort());
   one('tutor-new')?.addEventListener('click', () => {
     if (busy || !allowed()) return;

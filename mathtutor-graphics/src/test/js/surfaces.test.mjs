@@ -36,10 +36,14 @@ test('UC-29 el formulario dibuja la malla y anuncia el número de triángulos', 
     'surface-x-max':'1','surface-y-min':'-1','surface-y-max':'1'})) nodes.set(id,{value});
   nodes.set('surface-result',{textContent:''});
   nodes.set('surface-draw',{disabled:false});
+  nodes.set('surface-resolution',{value:'2'});
   nodes.set('surface-form',{addEventListener(_type,fn){this.submit=fn;}});
   let drawn;
   mountSurfaceControls({querySelector:selector=>nodes.get(selector.slice(1))},{setSurface:mesh=>{drawn=mesh;}});
   nodes.get('surface-form').submit({preventDefault(){}});
-  assert.ok(drawn.triangles.length > 0);
+  assert.equal(drawn.triangles.length, 8);
   assert.match(nodes.get('surface-result').textContent,/triángulos/);
+  nodes.get('surface-resolution').value = '0';
+  nodes.get('surface-form').submit({preventDefault(){}});
+  assert.match(nodes.get('surface-result').textContent,/inválidos/);
 });

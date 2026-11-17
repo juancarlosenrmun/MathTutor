@@ -1074,3 +1074,8 @@ canvas:focus-visible {
 .privacy-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 @media (max-width: 640px) { .privacy-banner { flex-direction: column; align-items: stretch; }
   .privacy-actions > button { flex: 1; } }
+.tutor-starters { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: 1rem; }
+.tutor-starters span { width: 100%; color: var(--muted); font-size: .85rem; }
+.tutor-starters button { border: 1px solid var(--line); border-radius: .35rem; background: var(--paper); color: var(--green); padding: .55rem .8rem; font: inherit; cursor: pointer; }
+.tutor-starters button:hover, .tutor-starters button:focus-visible { border-color: var(--green); background: var(--green-light); }
+#surface-resolution { width: 100%; min-height: 2.7rem; border: 1px solid var(--line); border-radius: .35rem; background: white; color: var(--ink); font: inherit; }
