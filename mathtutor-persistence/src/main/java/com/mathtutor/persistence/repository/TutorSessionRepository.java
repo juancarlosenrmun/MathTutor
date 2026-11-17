@@ -19,6 +19,12 @@ import java.util.Optional;
 @Repository
 public interface TutorSessionRepository extends JpaRepository<TutorSession, Long> {
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from TutorSession s where s.id = :id and s.user.id = :userId")
+    Optional<TutorSession> lockOwned(@Param("id") Long id, @Param("userId") Long userId);
+
+    Page<TutorSession> findByUserId(Long userId, Pageable pageable);
+
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = "module")
     Optional<TutorSession> findByIdAndUserId(Long id, Long userId);
 

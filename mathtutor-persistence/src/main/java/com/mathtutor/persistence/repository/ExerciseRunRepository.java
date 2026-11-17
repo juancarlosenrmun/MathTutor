@@ -18,6 +18,9 @@ import java.util.Optional;
 @Repository
 public interface ExerciseRunRepository extends JpaRepository<ExerciseRun, Long> {
 
+    List<ExerciseRun> findBySessionId(Long sessionId, org.springframework.data.domain.Pageable page);
+    Optional<ExerciseRun> findFirstBySessionIdAndStateOrderByStartedAtDescIdDesc(Long sessionId, ExerciseRun.RunState state);
+
     List<ExerciseRun> findBySession(TutorSession session);
 
     List<ExerciseRun> findBySessionAndState(TutorSession session, ExerciseRun.RunState state);
