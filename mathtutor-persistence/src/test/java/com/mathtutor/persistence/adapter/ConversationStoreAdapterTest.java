@@ -5,6 +5,7 @@ import com.mathtutor.common.port.ConversationStore;
 import com.mathtutor.persistence.PersistenceTestApplication;
 import com.mathtutor.persistence.PersistenceTestConfig;
 import com.mathtutor.persistence.entity.*;
+import com.mathtutor.persistence.entity.Exercise;
 import com.mathtutor.persistence.repository.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,8 @@ class ConversationStoreAdapterTest {
     @Autowired UserRepository users;
     @Autowired ModuleRepository modules;
     @Autowired TutorSessionRepository sessions;
+    @Autowired ExerciseRepository exercises;
+    @Autowired ConversationTurnRepository turns;
 
     TutorSession session() {
         var user = users.save(User.builder().email(UUID.randomUUID()+"@test.es").passwordHash("h").active(true).role(User.Role.ALUMNO).build());
@@ -60,5 +63,36 @@ class ConversationStoreAdapterTest {
         assertThat(store.runs(user,s.getId(),0,10).getFirst().progress()).isEqualTo(1);
         assertThat(store.current(user,s.getId())).isNull();
         assertThat(run.id()).isNotNull();
+    }
+    @Test void bankSelectionValidatesModuleAndDoesNotVerifyTheory() {
+        var s=session(); var other=session(); Long user=s.getUser().getId();
+        var exercise=exercises.save(Exercise.builder().externalId(UUID.randomUUID().toString()).module(s.getModule())
+                .statementLatex("Deriva").referenceSolutionLatex("2*x").type(Exercise.ExerciseType.PROCEDIMENTAL).difficulty(1).build());
+        var selected=store.select(user,s.getId(),exercise.getId(),null,null);
+        assertThat(selected.reference()).isEqualTo("2*x");
+        store.select(user,s.getId(),null,"libre","x");
+        assertThat(store.runs(user,s.getId(),0,10)).anyMatch(r -> r.state().equals("ABANDONADO"));
+        exercise.setModule(other.getModule()); exercises.flush();
+        assertThatThrownBy(() -> store.select(user,s.getId(),exercise.getId(),null,null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> store.select(user,s.getId(),-1L,null,null)).isInstanceOf(IllegalArgumentException.class);
+        exercise.setModule(s.getModule()); exercise.setType(Exercise.ExerciseType.TEORICO); exercises.flush();
+        assertThat(store.select(user,s.getId(),exercise.getId(),null,null).reference()).isNull();
+    }
+    @Test void expiredReservationCannotOverwriteANewerTurn() {
+        var s=session(); Long user=s.getUser().getId(); UUID old=UUID.randomUUID(),next=UUID.randomUUID();
+        store.reserve(user,s.getId(),old,"antiguo");
+        turns.findBySessionIdAndRequestId(s.getId(),old).orElseThrow().setCreatedAt(java.time.Instant.now().minusSeconds(121)); turns.flush();
+        store.reserve(user,s.getId(),next,"nuevo");
+        store.finish(user,s.getId(),old,new ConversationStore.Result("tardía",null,ErrorType.NINGUNO,"COMPLETADO",1,null,null,0,false));
+        assertThat(store.reserve(user,s.getId(),old,"antiguo").status()).isEqualTo("ERROR");
+        assertThatThrownBy(() -> store.select(user,s.getId(),null,"libre","x")).isInstanceOf(ConversationConflictException.class);
+    }
+    @Test void validatesPaginationAndClosedOrMissingSessions() {
+        var s=session(); Long user=s.getUser().getId();
+        for (int[] pair:new int[][]{{-1,1},{0,0},{0,101}})
+            assertThatThrownBy(() -> store.history(user,s.getId(),pair[0],pair[1])).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> store.reserve(user,-1L,UUID.randomUUID(),"x")).isInstanceOf(ConversationUnavailableException.class);
+        s.setStatus(TutorSession.SessionStatus.CERRADA); sessions.flush();
+        assertThatThrownBy(() -> store.reserve(user,s.getId(),UUID.randomUUID(),"x")).isInstanceOf(ConversationUnavailableException.class);
     }
 }

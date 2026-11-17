@@ -93,7 +93,7 @@ class TutorApiIntegrationTest {
 
     @Test void streamsDeltasAndCompletionWithNoTransactionAtTheGateway() throws Exception {
         long id = start("funciones");
-        org.mockito.Mockito.when(llm.stream(org.mockito.ArgumentMatchers.any())).thenAnswer(call -> {
+        org.mockito.Mockito.when(llm.stream(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any())).thenAnswer(call -> {
             org.assertj.core.api.Assertions.assertThat(
                     org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
             org.assertj.core.api.Assertions.assertThat(((com.zaxxer.hikari.HikariDataSource) datasource)
@@ -114,12 +114,12 @@ class TutorApiIntegrationTest {
                 .andExpect(content().contentTypeCompatibleWith("text/event-stream"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("\"type\":\"TOKEN\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("\"type\":\"DONE\"")));
-        org.mockito.Mockito.verify(llm).stream(org.mockito.ArgumentMatchers.any());
+        org.mockito.Mockito.verify(llm).stream(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
     }
 
     @Test void streamingErrorsAreSanitizedWithoutRetry() throws Exception {
         long id = start("funciones");
-        org.mockito.Mockito.when(llm.stream(org.mockito.ArgumentMatchers.any()))
+        org.mockito.Mockito.when(llm.stream(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(reactor.core.publisher.Flux.error(new IllegalStateException("secreto-del-proveedor")));
         var result = mvc.perform(post("/api/tutor/sessions/" + id + "/messages").with(csrf())
                         .header("Authorization", "Bearer " + token).contentType("application/json")
@@ -128,7 +128,7 @@ class TutorApiIntegrationTest {
         mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("\"type\":\"ERROR\"")))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("secreto-del-proveedor"))));
-        org.mockito.Mockito.verify(llm).stream(org.mockito.ArgumentMatchers.any());
+        org.mockito.Mockito.verify(llm).stream(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
     }
 
     @Test void invalidAndForeignMessagesNeverCallTheLlm() throws Exception {

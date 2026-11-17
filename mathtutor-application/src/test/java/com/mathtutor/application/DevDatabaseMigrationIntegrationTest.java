@@ -48,7 +48,7 @@ class DevDatabaseMigrationIntegrationTest {
 
     @Test
     void startsWithAllExistingMappingsValidatedAfterFlyway() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("8");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("9");
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM pg_extension WHERE extname = 'vector'", Integer.class))
                 .isEqualTo(1);
@@ -56,8 +56,8 @@ class DevDatabaseMigrationIntegrationTest {
                 + "WHERE table_schema = 'public' AND table_name IN "
                 + "('users','refresh_tokens','audit_logs','password_reset_tokens','modules','topics',"
                 + "'exercises','canonical_steps','typical_errors','key_concepts','note_chunks',"
-                + "'tutor_sessions','exercise_runs','turns','consent_records','usage_quotas')", Integer.class))
-                .isEqualTo(16);
+                + "'tutor_sessions','exercise_runs','turns','consent_records','usage_quotas','conversation_turns')", Integer.class))
+                .isEqualTo(17);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM topics", Integer.class)).isEqualTo(8);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises", Integer.class)).isEqualTo(6);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isGreaterThanOrEqualTo(2);
