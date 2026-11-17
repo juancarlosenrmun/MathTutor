@@ -76,6 +76,15 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 
 ## Notas de iteración
 
+### 2026-11-18 00:46 · Arranque local con IA y README
+
+- Petición expresa: reparar las instrucciones del README y dejar la aplicación ejecutándose con IA real. Es un ajuste operativo de arranque heredado; no cambia los UC ni el diseño del sprint.
+- Reproducido el fallo del comando anterior: `bootRun` ejecuta desde `mathtutor-application` y no encuentra el `.env` de la raíz. Además faltaba `notes-indexing`, necesario para cargar apuntes; activar solo `spring-ai-pgvector` no indexa.
+- Arranque comprobado: Docker `up -d --wait postgres`, JWT temporal generado en memoria, perfiles `dev,google-ai-studio,notes-indexing` e importación `optional:file:../.env[.properties]`. Aplicación dejada en segundo plano, puerto 8080, PID Java 22060. Frontend HTTP 200 y salud UP; índice de 121 fragmentos.
+- Verificación de caja negra real: registro temporal, conversación en Funciones y turno de continuidad completado con TOKEN/DONE; proveedor registra 1852 tokens de entrada y 343 de salida. Cuenta y datos temporales eliminados. Cero pruebas unitarias nuevas, sin cambios de código ni nueva medición de cobertura; se conserva la evidencia 990 Java/79 Node y JaCoCo/V8 de la iteración anterior.
+- README corregido y versionado por separado en DOC (e5729cc), conservando y actualizando la copia de trabajo que ya tenía cambios previos. Clave local intacta y sin publicar. La aplicación permanece accesible en `http://localhost:8080/visor/index.html`.
+- CI del frontend comprobada en verde en https://github.com/juancarlosenrmun/MathTutor/actions/runs/44200914184; PR #17 aún abierta, sin autorización de fusión en esta petición. Checklist **34/35**, pendiente integrar frontend en DEV.
+
 ### 2026-11-18 00:34 · Frontend verificado localmente
 
 - Publicación: [PR #17 hacia DEV](https://github.com/juancarlosenrmun/MathTutor/pull/17), desde `Sprint-4-Frontend`. CI remota e integración pendientes; no se fusiona la ampliación en esta iteración.

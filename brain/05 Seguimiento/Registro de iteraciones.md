@@ -1,3 +1,11 @@
+## 2026-11-18 00:46 · Sprint 04 · Arranque local real y corrección del README
+
+- **Petición**: los comandos del README no arrancan con IA; lanzar la aplicación y corregirlos.
+- **Causa**: directorio de trabajo de bootRun en el módulo, donde no existe el `.env` de la raíz; perfil notes-indexing ausente del comando anterior.
+- **Realizado**: README corregido en DOC (e5729cc) y copia actualizada en el workspace, conservando sus cambios previos. Importación explícita `optional:file:../.env[.properties]`, perfiles dev/google-ai-studio/notes-indexing y espera de PostgreSQL. Aplicación ejecutándose en segundo plano en puerto 8080 (Java PID 22060); credenciales solo locales y JWT temporal en memoria.
+- **Pruebas**: 0 nuevas de caja blanca; 1 comprobación integral real de caja negra con cuenta temporal: registro, sesión, turno SSE TOKEN/DONE completado, 1852/343 tokens reales de entrada/salida. Cuenta temporal limpiada; frontend HTTP 200, salud UP y 121 fragmentos indexados. Sin código nuevo ni medición nueva de cobertura; evidencia anterior 990 Java/79 Node y JaCoCo/V8 en umbral conservada.
+- **Estado**: 34/35; base 30/30, frontend 4/5, pendiente fusión de PR #17. CI frontend verde comprobada: https://github.com/juancarlosenrmun/MathTutor/actions/runs/44200914184. No se fusiona en esta petición de arranque.
+
 ## 2026-11-18 00:34 · Sprint 04 · Ampliación frontend
 
 - **Publicación**: [PR #17 hacia DEV](https://github.com/juancarlosenrmun/MathTutor/pull/17), rama `Sprint-4-Frontend`; CI remota e integración pendientes. La fusión solicitada de la base ya se realizó con PR #16.
