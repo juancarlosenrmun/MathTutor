@@ -2,7 +2,7 @@
 sprint: S3
 objetivo: RAG, interpretación de expresiones y superficies
 puntos: 34
-estado: completado
+estado: en curso
 ---
 # Sprint 03 · RAG, interpretación de expresiones y superficies
 
@@ -72,7 +72,17 @@ UC-15 depende de UC-14. UC-16 y UC-22 son prerrequisitos de UC-17. UC-29 es el s
 - [x] Cobertura cliente y JaCoCo en umbral
 - [x] Integrado en `DEV` tras CI remota
 
+## Corrección de la pregunta sugerida de apuntes
+
+- [x] Pregunta concreta y pertinente para cada módulo
+- [x] Prueba de caja blanca del cliente
+- [x] Contrato de caja negra con recuperación real y comprobación HTTP
+- [x] Cobertura cliente y JaCoCo en umbral
+- [ ] CI remota e integración en `DEV`
+
 ## Notas de iteración
+
+- 2026-11-17 17:09: la pregunta genérica «¿Qué explica este tema en los apuntes?» obtiene similitud máxima 0,6855/0,6945/0,6822 en los tres módulos, por debajo del umbral 0,70. Preguntas concretas sobre continuidad, derivadas y espacios vectoriales obtienen 0,7233/0,7389/0,7374 respectivamente. El botón ahora propone la pregunta correspondiente al módulo y explica que se requiere un concepto concreto. Prueba roja/verde; `check jacocoAggregateReport` correcto, 925 Java y 58 Node sin fallos. V8 1013/1018 líneas y 537/579 ramas; salud y recursos actualizados HTTP 200. Corrección 4/5, pendiente CI e integración; total 39/40. No se reduce el umbral RAG.
 
 - 2026-11-17 16:39: ampliación frontend fusionada a `DEV` por [PR #13](https://github.com/juancarlosenrmun/MathTutor/pull/13), commit `e5fd3dd`, tras [CI de la PR en verde](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44115774524). La ampliación pasa a 5/5; checklist total 35/35. La CI posterior de `DEV` está en ejecución y se comprobará al cerrar la configuración local.
 
