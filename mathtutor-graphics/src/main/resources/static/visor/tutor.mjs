@@ -29,13 +29,40 @@ export async function readReply(response, onToken) {
 export function mountTutor(document, client) {
   const one = id => document.querySelector('#' + id);
   const status = one('tutor-status'), history = one('tutor-history');
-  let session, identity, controller, generation = 0, busy = false, loaded = false;
+  let session, identity, controller, generation = 0, busy = false, loaded = false, loading = false;
+  let visits = [], modules = [];
   const allowed = () => Boolean(client.token) && client.profile?.role === 'ALUMNO';
+  function renderVisits() {
+    const list = one('tutor-sessions');
+    if (!list) return;
+    list.replaceChildren();
+    for (const visit of visits) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'tutor-session-link';
+      button.textContent = visit.title; button.setAttribute('aria-current', visit === session ? 'page' : 'false');
+      button.addEventListener('click', () => {
+        if (busy || !allowed()) return;
+        if (session) session.messages = [...history.children];
+        session = visit; history.replaceChildren(...visit.messages);
+        one('tutor-chat-title').textContent = visit.title;
+        status.textContent = 'Conversación recuperada. Puedes continuar preguntando.';
+        controls(); renderVisits();
+      });
+      list.append(button);
+    }
+  }
+  function showTopics() {
+    if (one('tutor-topic-picker')) one('tutor-topic-picker').hidden = Boolean(session);
+    if (one('tutor-chat-title')) one('tutor-chat-title').hidden = !session;
+    if (one('tutor-viewer-slot')) one('tutor-viewer-slot').hidden = !session;
+  }
   function controls() {
     one('tutor-composer').hidden = !session || !allowed();
     one('tutor-send').disabled = busy;
-    one('tutor-start').disabled = busy || !allowed();
+    one('tutor-start').disabled = busy || !allowed() || !loaded;
+    one('tutor-block').disabled = busy || !allowed() || !loaded;
     one('tutor-cancel').disabled = !busy;
+    showTopics();
   }
   async function request(path, body, signal) {
     const token = client.token;
@@ -53,27 +80,51 @@ export function mountTutor(document, client) {
   async function sync(view) {
     const next = allowed() ? client.profile.email : null;
     if (identity !== next) {
-      controller?.abort(); identity = next; generation++; session = null; busy = false; loaded = false;
-      history.replaceChildren(); controls();
+      controller?.abort(); identity = next; generation++; session = null; busy = false; loaded = false; loading = false;
+      one('tutor-message').value = '';
+      status.textContent = 'Inicia sesión como alumno para conversar con el tutor.';
+      history.replaceChildren(); visits = []; modules = []; renderVisits(); controls();
     }
-    if (view !== 'tutor') { controller?.abort(); return; }
-    if (!allowed() || loaded) return;
+    if (view !== 'tutor') {
+      if (busy) {
+        controller.abort(); generation++; busy = false; loading = false;
+        status.textContent = 'Operación cancelada al salir de la conversación.'; controls();
+      }
+      return;
+    }
+    if (!allowed() || loaded || loading) return;
+    loading = true; status.textContent = 'Cargando bloques temáticos…';
     const current = generation;
     try {
       const response = await request('/api/tutor/modules');
       if (!response.ok) throw new Error();
-      const modules = await response.json();
+      modules = await response.json();
       if (current !== generation) return;
       one('tutor-block').replaceChildren();
       for (const module of modules) {
         const option = document.createElement('option'); option.value = module.code; option.textContent = module.name;
         one('tutor-block').append(option);
       }
+      const topics = one('tutor-topics');
+      if (topics) {
+        topics.replaceChildren();
+        for (const module of modules) {
+          const button = document.createElement('button');
+          button.type = 'button'; button.className = 'tutor-topic';
+          button.textContent = module.name; button.disabled = !allowed();
+          button.addEventListener('click', () => {
+            one('tutor-block').value = module.code;
+            one('tutor-select-form').requestSubmit();
+          });
+          topics.append(button);
+        }
+      }
       loaded = true; status.textContent = 'Elige un bloque para empezar una conversación.';
     } catch { if (current === generation) status.textContent = 'No se pudieron cargar los módulos. Vuelve a entrar para reintentar.'; }
+    finally { if (current === generation) { loading = false; controls(); } }
   }
   one('tutor-select-form').addEventListener('submit', async event => {
-    event.preventDefault(); if (busy || !allowed()) return;
+    event.preventDefault(); if (busy || !allowed() || !loaded) return;
     const current = generation;
     busy = true; controller = new AbortController(); controls();
     try {
@@ -81,7 +132,10 @@ export function mountTutor(document, client) {
       if (!response.ok) throw new Error();
       const created = await response.json();
       if (current !== generation) return;
-      session = created; history.replaceChildren();
+      if (session) session.messages = [...history.children];
+      session = {...created, title: modules.find(module => module.code === created.moduleCode)?.name || one('tutor-block').selectedOptions?.[0]?.textContent || 'Nueva conversación', messages: []};
+      visits.unshift(session); history.replaceChildren(); renderVisits();
+      one('tutor-message').value = '';
       status.textContent = 'Conversación iniciada. Escribe tu pregunta.'; one('tutor-message').focus();
     } catch { if (current === generation) status.textContent = 'No se pudo iniciar la conversación.'; }
     finally { if (current === generation) { busy = false; controls(); } }
@@ -93,6 +147,7 @@ export function mountTutor(document, client) {
     const current = generation;
     busy = true; controller = new AbortController(); controls();
     const question = document.createElement('p'), answer = document.createElement('p');
+    question.className = 'tutor-question'; answer.className = 'tutor-answer';
     question.textContent = 'Tú: ' + message; answer.textContent = 'Tutor: ';
     history.append(question); history.append(answer); status.textContent = 'El tutor está respondiendo…';
     try {
@@ -104,6 +159,12 @@ export function mountTutor(document, client) {
     } finally { if (current === generation) { busy = false; controls(); } }
   });
   one('tutor-cancel').addEventListener('click', () => controller?.abort());
+  one('tutor-new')?.addEventListener('click', () => {
+    if (busy || !allowed()) return;
+    if (session) session.messages = [...history.children];
+    session = null; history.replaceChildren(); status.textContent = 'Elige un bloque para empezar una conversación.';
+    controls(); renderVisits();
+  });
   controls();
   return { sync };
 }

@@ -68,13 +68,15 @@ try {
     await win.testApp.client.role(); win.location.hash = '#/espacio'; win.testApp.render();
     win.document.querySelector('#notice').hidden = true;
   })()`);
-  for (const [role, name, width, height] of [['ALUMNO', 'espacio', 1440, 1000],
+  for (const [role, name, width, height, view = 'espacio'] of [['ALUMNO', 'espacio', 1440, 1000],
     ['PROFESOR', 'espacio-profesor', 1440, 1000], ['ADMIN', 'espacio-admin', 1440, 1000],
-    ['ALUMNO', 'espacio-movil', 390, 1000]]) {
+    ['ALUMNO', 'espacio-movil', 390, 1000],
+    ['ALUMNO', 'tutor', 1440, 1100, 'tutor'], ['ALUMNO', 'tutor-movil', 390, 1200, 'tutor']]) {
     await command('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 700 });
     await evaluate(`(async () => {
       const win = document.querySelector('iframe').contentWindow;
       win.testState.role = '${role}'; await win.testApp.updateRole();
+      win.location.hash = '#/${view}'; win.testApp.render();
       win.document.querySelector('#main').blur();
     })()`);
     await delay(50);

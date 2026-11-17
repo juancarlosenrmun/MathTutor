@@ -18,9 +18,17 @@ export function mount(document, host = globalThis) {
     if (!event.persisted) viewer?.dispose();
   });
   let tutor;
+  const panel = document.querySelector('.viewer-panel');
+  const lab = panel?.parentElement;
+  const next = panel?.nextSibling;
   return mountInterface(document, host, (view, client) => {
     if (!tutor && document.querySelector('#tutor-form')) tutor = mountTutor(document, client);
     tutor?.sync(view);
-    if (view === 'laboratorio') viewer?.render();
+    const slot = document.querySelector('#tutor-viewer-slot');
+    if (panel && slot && lab) {
+      if (view === 'tutor' && panel.parentElement !== slot) slot.append(panel);
+      if (view !== 'tutor' && panel.parentElement !== lab) lab.insertBefore(panel, next);
+    }
+    if (view === 'laboratorio' || view === 'tutor') viewer?.render();
   });
 }
