@@ -57,6 +57,12 @@ La elección técnica es una propuesta de Codex. Se implementará por UC, primer
 
 ## Verificación y entrega
 
+### Decisiones técnicas para la implementación
+
+- Banco: selección explícita mediante `POST /api/tutor/sessions/{id}/exercises` con `exerciseId`; comprobar que pertenece al módulo de la sesión. No reconocer enunciados automáticamente. Operaciones libres iniciales: derivada respecto a x y simplificación de una expresión explícita; el resto queda indeterminado.
+- Gráficas: `POST /api/tutor/sessions/{id}/graphics` recibe tipo, función y dominio; curva usa x y superficie usa x e y con el mismo intervalo para ambos ejes, acorde al DTO existente. Admitir números, paréntesis, x/y, suma, resta, multiplicación, división, potencia y sin/cos/tan/exp/log/sqrt/abs; rechazar asignaciones, comandos y variables adicionales. Función de 1–200 caracteres, dominio entre -10000 y 10000, mínimo menor que máximo, resolución de 2–200 pasos y hasta 100 puntos. Los puntos no admiten coordenadas no finitas.
+- Concurrencia: rechazo HTTP 409 si existe un turno activo en la sesión, con reserva persistida y expiración controlada. Cada envío lleva `requestId` UUID; unicidad por sesión y UUID. El reintento completado recupera el resultado sin nueva llamada; en curso devuelve 409; fallido o cancelado devuelve su estado terminal y exige un UUID nuevo para un nuevo intento.
+
 - Pruebas unitarias deterministas con CAS y LLM simulados; pruebas de API con roles, propiedad y CSRF; integración con Testcontainers PostgreSQL + pgvector y migraciones reales.
 - Caja blanca y negra por UC: condiciones, caminos, particiones, límites y tablas de decisión. Cubrir historial acotado, concurrencia, cancelación, fallo de escritura y falta de métricas de tokens.
 - Ejecutar build, JaCoCo y comprobaciones configuradas. Umbrales: al menos 80 % de líneas y 70 % de ramas por módulo; política pedagógica al menos 90 %. No ampliar exclusiones para ocultar lógica sin probar.
