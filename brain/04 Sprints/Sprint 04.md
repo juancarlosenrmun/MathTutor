@@ -2,7 +2,7 @@
 sprint: S4
 objetivo: Verificación con CAS, contexto, registro y especificación gráfica
 puntos: 33
-estado: en curso
+estado: completado
 ---
 # Sprint 04 · Verificación con CAS, contexto, registro y especificación gráfica
 
@@ -27,41 +27,41 @@ UC-17 necesita UC-16 y UC-22. UC-20 y UC-25 alimentan UC-11. UC-35 prepara la co
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-17 · Verificar pasos y resultado con el CAS y clasificar el error
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-20 · Mantener el contexto de la sesión
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-25 · Registrar cada interacción de forma estructurada
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-35 · Generar y validar la especificación gráfica
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos
-- [ ] Build y CI en verde
+- [x] Todos los elementos completos
+- [x] Build y CI en verde
 - [x] Cobertura en umbral verificada
-- [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
+- [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
@@ -89,3 +89,9 @@ UC-17 necesita UC-16 y UC-22. UC-20 y UC-25 alimentan UC-11. UC-35 prepara la co
 - Diseño propuesto en DOC: brain/06 Diseño/Sprint 04 - Diseño de implementación.md. La skill brainstorming exige aprobación explícita del diseño antes de implementar; pendiente revisión del usuario.
 - Sin implementación ni nuevas pruebas de caja blanca/negra (0/0); cobertura no medida. Ningún UC se marca como completado. Pendientes implementación, pruebas, JaCoCo, revisión, PR a DEV y posterior fase Sprint-4-Frontend tras fusión.
 - Checklist: 0/30; elementos completos: 0/5.
+
+### 2026-11-18 00:12 · Integración de la base
+
+- PR #16 fusionada en DEV por petición expresa del usuario, merge 127667481b2581b8249b749d463905d57c5844f9. CI verde: https://github.com/juancarlosenrmun/MathTutor/actions/runs/44196313691 (head 61e761d).
+- Base completada: cinco UC, 33/33 puntos integrados y checklist 30/30. Evidencia previa: 989 Java, 62 Node, JaCoCo/V8 en umbral, navegador y 15 Python correctos. Sin nuevas pruebas en la fusión.
+- Petición siguiente: crear Sprint-4-Frontend desde DEV actualizada y ampliar la interfaz para los casos de uso del sprint 4.

@@ -1,3 +1,10 @@
+## 2026-11-18 00:12 · Sprint 04 · Fusión a DEV
+
+- **Petición**: fusionar con CI verde y crear la rama de frontend desde DEV para ampliar la interfaz.
+- **Realizado**: comprobada CI verde del head 61e761d; [PR #16](https://github.com/juancarlosenrmun/MathTutor/pull/16) fusionada, merge 1276674. DEV actualizada y checklist base cerrada. README previo del usuario conservado.
+- **Pruebas/cobertura**: sin pruebas nuevas en la fusión; CI https://github.com/juancarlosenrmun/MathTutor/actions/runs/44196313691 y evidencia previa: 989 Java, 62 Node, 15 Python, navegador, JaCoCo y V8 en umbral, sin exclusiones nuevas.
+- **Velocidad**: 5/5 UC y 33/33 puntos integrados. Base 30/30, estado completado. Pendiente ampliación frontend en su rama independiente.
+
 ## 2026-11-18 00:03 · Sprint 04 · Implementación backend
 
 - **Publicación (00:05)**: [PR #16 hacia DEV](https://github.com/juancarlosenrmun/MathTutor/pull/16) abierta; [CI inicial](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44196131542) en curso. La rama permanece `sprint-4`; fusión y fase frontend pendientes.
