@@ -28,10 +28,42 @@ class TutorConversationTest {
         when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
         when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
                 new NoteChunk(1L, "Definición de función", null, "DEFINICION", "apunte.tex", "funciones", "intro", "1")));
+        when(retriever.retrieve(anyString(), eq("funciones"), eq("intro"))).thenReturn(List.of(
+                new NoteChunk(1L, "Definición de función", null, "DEFINICION", "apunte.tex", "funciones", "intro", "1")));
     }
     @Test void noRelevantFragmentReturnsOutOfSyllabusWithoutCallingLlm() {
         active(); when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of());
         StepVerifier.create(conversation.reply(7L, 1L, "tema ajeno"))
+                .expectNext("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.")
+                .verifyComplete();
+        verifyNoInteractions(llm);
+    }
+    @Test void selectsTheTopMatchingTopicAndDoesNotMixOtherTopicsInPrompt() {
+        active();
+        when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
+                new NoteChunk(2L, "Continuidad", null, "DEFINICION", "a.tex", "funciones", "continuidad", "1"),
+                new NoteChunk(3L, "Números complejos", null, "DEFINICION", "b.tex", "funciones", "complejos", "1")));
+        when(retriever.retrieve(anyString(), eq("funciones"), eq("continuidad"))).thenReturn(List.of(
+                new NoteChunk(2L, "Continuidad", null, "DEFINICION", "a.tex", "funciones", "continuidad", "1")));
+        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        StepVerifier.create(conversation.reply(7L, 1L, "¿Qué es continuidad?"))
+                .expectNext("Pista").verifyComplete();
+        var prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(llm).stream(prompt.capture());
+        assertThat(prompt.getValue().contextChunks()).containsExactly("Continuidad");
+        verify(retriever).retrieve(anyString(), eq("funciones"), eq("continuidad"));
+    }
+    @Test void missingTopicMetadataUsesOnlyTheModuleFilter() {
+        active(); when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
+                new NoteChunk(4L, "Apunte general", null, "OTRO", "a.tex", "funciones", null, "1")));
+        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        StepVerifier.create(conversation.reply(7L, 1L, "pregunta general"))
+                .expectNext("Pista").verifyComplete();
+        verify(retriever, times(1)).retrieve(anyString(), eq("funciones"), isNull());
+    }
+    @Test void emptyTopicFilteredResultNeverCallsLlm() {
+        active(); when(retriever.retrieve(anyString(), eq("funciones"), eq("intro"))).thenReturn(List.of());
+        StepVerifier.create(conversation.reply(7L, 1L, "tema sin coincidencia"))
                 .expectNext("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.")
                 .verifyComplete();
         verifyNoInteractions(llm);

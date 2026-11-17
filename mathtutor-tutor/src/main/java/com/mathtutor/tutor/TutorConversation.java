@@ -45,6 +45,12 @@ public class TutorConversation {
         }
         var chunks = retriever == null ? List.<com.mathtutor.common.dto.NoteChunk>of()
                 : retriever.retrieve(message, session.moduleCode(), null);
+        if (retriever != null && !chunks.isEmpty()) {
+            String topic = chunks.getFirst().topicCode();
+            if (topic != null && !topic.isBlank()) {
+                chunks = retriever.retrieve(message, session.moduleCode(), topic);
+            }
+        }
         if (retriever != null && chunks.isEmpty()) {
             return Flux.just("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.");
         }
