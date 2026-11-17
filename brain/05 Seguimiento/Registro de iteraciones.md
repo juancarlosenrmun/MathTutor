@@ -1,5 +1,7 @@
 ## 2026-11-18 00:03 · Sprint 04 · Implementación backend
 
+- **Publicación (00:05)**: [PR #16 hacia DEV](https://github.com/juancarlosenrmun/MathTutor/pull/16) abierta; [CI inicial](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44196131542) en curso. La rama permanece `sprint-4`; fusión y fase frontend pendientes.
+
 - **Petición**: «Implementa sprint»; aprobación del diseño y continuidad de la PR a DEV y frontend tras fusión.
 - **Implementado**: UC-11 progreso/historial propios; UC-17 verificación CAS de tres estados, selección explícita y progreso; UC-20 contexto persistente acotado; UC-25 reservas UUID, estados terminales, latencia y tokens reales/ausentes; UC-35 contrato JSON, gramática restringida, CAS y eventos gráficos. Una llamada LLM por turno, fuera de transacción. Código en sprint-4, diseño y diagramas en DOC (dddc671).
 - **Pruebas**: 989 Java correctas, cero fallos y omisiones. 64 nuevas: 22 de caja blanca y 42 de caja negra. Además, 62 Node, navegador real, 15 Python, reproducibilidad de apuntes y puerta de integración correctos. Build: check jacocoAggregateReport assemble en verde.

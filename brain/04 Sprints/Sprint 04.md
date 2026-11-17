@@ -68,6 +68,8 @@ UC-17 necesita UC-16 y UC-22. UC-20 y UC-25 alimentan UC-11. UC-35 prepara la co
 
 ### 2026-11-18 00:03 · Implementación backend verificada
 
+- Publicación (2026-11-18 00:05): [PR #16 a DEV](https://github.com/juancarlosenrmun/MathTutor/pull/16), abierta desde `sprint-4`; [CI inicial en curso](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44196131542). No fusionada; integración y cierre continúan sin marcar.
+
 - Aprobación del diseño mediante «Implementa sprint». Implementados UC-11, UC-17, UC-20, UC-25 y UC-35 en `sprint-4`; documentación y diagramas actualizados por separado en `DOC` (dddc671).
 - API de progreso/historial propios paginados; selección explícita de ejercicio del banco o derivada/simplificación libre, con referencias internas. CAS conserva CORRECTO, INCORRECTO, INDETERMINADO y NO_APLICA; pasos previos no incrementan progreso.
 - Contexto persistido limitado a diez turnos y 16000 caracteres. Nueva tabla `conversation_turns` (V9), reserva UUID bajo bloqueo corto, recuperación de respuestas completas y estados terminales, expiración de reservas, cancelación/error, métricas reales cuando existen y null cuando faltan. Sin transacción durante el LLM; límite total 30 s y una suscripción por petición.
