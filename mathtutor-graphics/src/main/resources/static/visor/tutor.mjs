@@ -27,6 +27,11 @@ export async function readReply(response, onToken) {
 
 /** @brief UC-12/13: selección de bloque, historial accesible y cancelación sin HTML remoto. */
 export function mountTutor(document, client) {
+  const noteQuestions = {
+    funciones: '¿Qué es la continuidad de una función?',
+    'derivadas-integrales': '¿Cómo se calcula la derivada de una función?',
+    'metodos-3d': '¿Qué es un espacio vectorial?',
+  };
   const one = id => document.querySelector('#' + id);
   const status = one('tutor-status'), history = one('tutor-history');
   let session, identity, controller, generation = 0, busy = false, loaded = false, loading = false;
@@ -160,7 +165,10 @@ export function mountTutor(document, client) {
   });
   for (const button of document.querySelectorAll('[data-prompt]')) button.addEventListener('click', () => {
     if (!session || busy || !allowed()) return;
-    one('tutor-message').value = button.dataset.prompt;
+    const prompt = button.dataset.prompt === 'notes'
+      ? noteQuestions[session.moduleCode] : button.dataset.prompt;
+    if (!prompt) return;
+    one('tutor-message').value = prompt;
     one('tutor-message').focus();
   });
   one('tutor-cancel').addEventListener('click', () => controller?.abort());
