@@ -79,6 +79,11 @@ class TrackedConversationTest {
         StepVerifier.create(tracked.reply(1L,2L,request,"hola")).verifyError(IllegalStateException.class);
         verify(store).finish(eq(1L),eq(2L),eq(request),argThat(r -> r.status().equals("ERROR")));
     }
+    @Test void anEmptyProviderResponseIsNotACompletedTurn() {
+        prepare(Flux.empty());
+        StepVerifier.create(tracked.reply(1L,2L,request,"hola")).verifyError(IllegalStateException.class);
+        verify(store).finish(eq(1L),eq(2L),eq(request),argThat(r -> r.status().equals("ERROR")));
+    }
     @Test void subscribingTwiceCannotCallTheProviderTwice() {
         prepare(Flux.just("respuesta"));
         var stream=tracked.reply(1L,2L,request,"hola");

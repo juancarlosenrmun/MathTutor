@@ -43,7 +43,10 @@ public class TrackedConversation {
                         if (response.length()+token.length()>64000) throw new IllegalStateException("Respuesta demasiado extensa");
                         response.append(token);
                     })
-                    .concatWith(Flux.defer(() -> { finish.accept(prepared.rejected() ? "RECHAZADO" : "COMPLETADO"); return Flux.empty(); }))
+                    .concatWith(Flux.defer(() -> {
+                        if (response.toString().isBlank()) throw new IllegalStateException("Respuesta textual vacía");
+                        finish.accept(prepared.rejected() ? "RECHAZADO" : "COMPLETADO"); return Flux.empty();
+                    }))
                     .doOnError(error -> finish.accept("ERROR"))
                     .doOnCancel(() -> finish.accept("CANCELADO"));
             return Flux.defer(() -> subscribed.compareAndSet(false,true) ? output

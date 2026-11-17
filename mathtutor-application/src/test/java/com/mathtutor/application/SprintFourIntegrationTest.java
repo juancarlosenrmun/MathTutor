@@ -105,4 +105,3 @@ class SprintFourIntegrationTest {
                 .andExpect(status().isConflict());
     }
 }
-
