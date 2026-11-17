@@ -102,6 +102,14 @@
 
 # Registro de iteraciones
 
+## 2026-11-17 15:47 · Sprint 03 · Implementación y verificación local de los cinco UC
+
+- **Petición**: continuar donde quedó la implementación y comprobar `git log` y `git status`. Se confirmó `Sprint-3` con commits separados por UC y árbol inicialmente con dos archivos del tutor sin confirmar; el ajuste quedó probado y registrado en `899f404`.
+- **Implementado**: UC-04 aviso, política y preferencia de cookies; UC-15 recuperación RAG por módulo y tema con respuesta fuera de temario sin LLM; UC-16 interpretación determinista de expresiones y petición de reformulación; UC-22 banco versionado de ocho temas y seis ejercicios; UC-29 superficie con malla, triángulos y normales.
+- **Pruebas**: 925 Java correctas, incluidas integraciones PostgreSQL/pgvector y la carga idempotente del banco; pruebas Node y smoke de navegador real de privacidad, superficie y WebGL2 correctos. Caja blanca y negra de los cinco UC ejercitadas. `check jacocoAggregateReport` correcto, sin fallos ni omisiones.
+- **Cobertura**: JaCoCo tutor 72/74 líneas (97,30 %) y 73/76 ramas (96,05 %); aplicación 65/66 líneas y 5/6 ramas. Cliente V8 1000/1005 líneas (99,50 %) y 524/568 ramas (92,25 %). Umbrales cumplidos.
+- **Pendiente**: CI remota del último conjunto de commits, revisión final e integración en DEV. La validación institucional del aviso por DPD queda en [[Sprint 05]]/EN-09 antes de usar datos reales. Checklist 0/5 elementos completos; 20/25 comprobaciones verificadas.
+
 ## 2026-11-17 11:42 · Sprint 03 · UC-29 malla de superficies
 
 - **Petición**: completar Sprint 3 en la rama `Sprint-3`.
