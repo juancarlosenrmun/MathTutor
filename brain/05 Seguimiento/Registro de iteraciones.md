@@ -1,3 +1,12 @@
+## 2026-11-17 16:14 · Sprint 03 · Ampliación frontend y arranque local
+
+- **Petición**: crear y cambiar a «Sprint 3 Frontend», ejecutar find-skills sobre frontend, exponer las nuevas capacidades de S3 en la interfaz y arrancar la aplicación local.
+- **Rama y skills**: `DEV` actualizada; creada `Sprint-3-Frontend` (Git no admite espacios). `npx.cmd skills find frontend` ejecutado; aplicadas las skills ya disponibles de frontend, TDD, Git y Obsidian.
+- **Implementado**: botones que preparan preguntas sobre apuntes y expresiones en el chat sin enviarlas automáticamente; orientación de notación; resolución seleccionable de la malla 3D. Privacidad/cookies y superficies ya estaban presentes desde la base de S3. UC-22 continúa como banco orientativo interno, sin selección pública hasta contar con contrato de API.
+- **Pruebas**: dos contratos Node nuevos observados en rojo y luego en verde. Regresión completa: 925 pruebas Java (caja blanca, negra e integración) sin fallos ni omitidas; cliente en verde. HTTP 200 para salud y visor local.
+- **Cobertura**: V8 1005/1010 líneas (99,50 %) y 531/574 ramas (92,51 %). JaCoCo en umbral de todos los módulos; tutor 97,30/96,05. Sin exclusiones nuevas.
+- **Pendiente**: ampliación frontend 4/5 por CI remota e integración en `DEV`. Base S3 sigue 30/30 integrada; total con ampliación 34/35, `estado: en curso`. No hay cambios del modelo de dominio ni de clases.
+
 ## 2026-11-17 15:59 · Sprint 03 · CI e integración en DEV
 
 - **Petición**: continuar la implementación, consultar `git log` y `git status` y completar Sprint 3. Se confirmó árbol limpio en `Sprint-3` y commits pequeños sin cofirma.
