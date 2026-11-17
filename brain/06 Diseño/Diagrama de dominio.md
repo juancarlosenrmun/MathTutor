@@ -1,5 +1,35 @@
 # Diagrama de dominio
 
+## Implementación Sprint 04
+
+`ConversationTurn` representa el turno completo y la reserva UUID; coexiste con `Turn` legado ligado a ejercicios. Referencias y pasos se mantienen internos. La migración V9 añade métricas y estado terminal a la nueva tabla, y pasos verificados/referencia calculada a `ExerciseRun`.
+
+```mermaid
+classDiagram
+  TutorSession "1" --> "0..*" ConversationTurn
+  ExerciseRun "0..1" <-- "0..*" ConversationTurn
+  class ConversationTurn {
+    Long id
+    UUID requestId
+    String message
+    String response
+    String topic
+    String diagnosis
+    String helpLevel
+    long latencyMs
+    Integer tokensIn
+    Integer tokensOut
+    String status
+    Instant createdAt
+  }
+  class ExerciseRun {
+    int verifiedSteps
+    String referenceSolution
+  }
+```
+
+El módulo se deriva de la sesión. Tokens nulos indican consumo no publicado por el proveedor. Solo un turno EN_CURSO por sesión, con unicidad por sesión y UUID; estados terminales COMPLETADO, RECHAZADO, ERROR y CANCELADO. Véase [[Sprint 04 - Diseño de implementación]].
+
 ## Presentación S2 · Integración frontend
 
 [[Sprint 02 - Frontend]] no modifica entidades ni multiplicidades. La selección de bloque prepara una nueva `TutorSession`; no modifica el módulo de la sesión activa. Historial visible y borrador son datos efímeros en memoria que se eliminan al cambiar de identidad. Las gráficas y aproximaciones numéricas siguen siendo recursos efímeros del cliente.

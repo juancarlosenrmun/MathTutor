@@ -1,5 +1,32 @@
 # Diagrama de clases general
 
+## Clases implementadas para Sprint 04
+
+El flujo S4 usa `ConversationStore` para reserva, contexto, registro y progreso propios. Los contratos previos `SessionContextService` e `InteractionLogger` permanecen como diseño futuro; no se atribuye implementación a esos contratos.
+
+```mermaid
+classDiagram
+  TutorChatController --> TrackedConversation
+  TrackedConversation --> TutorConversation
+  TrackedConversation --> ExerciseVerification
+  TrackedConversation --> ConversationStore
+  StudyProgressController --> ConversationStore
+  StudyProgressController --> StudyExercises
+  StudyProgressController --> GraphicSpecServiceImpl
+  StudyExercises --> ConversationStore
+  StudyExercises --> CasEngine
+  ExerciseVerification --> CasEngine
+  ConversationStore <|.. ConversationStoreAdapter
+  ConversationStoreAdapter --> ConversationTurnRepository
+  ConversationStoreAdapter --> TutorSessionRepository
+  ConversationStoreAdapter --> ExerciseRunRepository
+  ConversationStoreAdapter --> ExerciseRepository
+  GraphicSpecServiceImpl --> GraphicExpression
+  GraphicSpecServiceImpl --> CasEngine
+```
+
+`ConversationStoreAdapter` termina las transacciones antes del streaming. `CasEngine.compare` conserva equivalencia, diferencia e indeterminación. La clasificación específica exige evidencia; OTRO evita inventar causas. La interfaz pública de progreso no expone referencias.
+
 ## Cliente S2 · Integración frontend
 
 [[Sprint 02 - Frontend]] mantiene `mountInterface → mountTutor.sync` y `mountCurveControls → WebGLViewer`. El tutor controla por separado catálogo cargado, petición en curso e identidad. Una generación invalida resultados tardíos al salir durante una operación; el cambio de identidad limpia también el borrador. Las vistas usan los adaptadores existentes, sin nuevas clases persistentes.

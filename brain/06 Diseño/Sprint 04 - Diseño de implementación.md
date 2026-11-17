@@ -1,11 +1,11 @@
 ---
 sprint: S4
-estado: propuesta
+estado: aprobado
 fecha: 2026-11-17
 ---
 # Sprint 04 · Diseño de implementación
 
-Alcance: [[Sprint 04]], [[Requisitos funcionales]] RF-05, RF-10, RF-20, RF-23 y RF-26; [[Requisitos no funcionales]] RNF-13. Implementar UC-11, UC-17, UC-20, UC-25 y UC-35, respetando [[Restricciones y alcance]]. Este documento es una propuesta pendiente de aprobación; no acredita implementación.
+Alcance: [[Sprint 04]], [[Requisitos funcionales]] RF-05, RF-10, RF-20, RF-23 y RF-26; [[Requisitos no funcionales]] RNF-13. Implementar UC-11, UC-17, UC-20, UC-25 y UC-35, respetando [[Restricciones y alcance]]. Aprobado mediante la petición «Implementa sprint». El diseño no acredita implementación ni integración.
 
 ## Situación actual
 
@@ -74,3 +74,10 @@ La elección técnica es una propuesta de Codex. Se implementará por UC, primer
 Desde `DEV` actualizado y solo después de la fusión del backend, crear `Sprint-4-Frontend` (Git no permite espacios en nombres de ramas). Mostrar progreso e historial, recuperar conversación persistida, reflejar diagnóstico y estado, e interpretar especificaciones validadas con el visor existente. Buscar e instalar skills de frontend individualmente según necesidad. No implementar estadísticas docentes de S8.
 
 La fase tendrá sus pruebas JS, cobertura equivalente y comprobación de navegador; su entrega no puede considerarse completada con la PR del backend.
+
+## Decisiones durante la implementación
+
+- Se conserva la tabla legada `turns`, ligada a ejecuciones, y se añade `conversation_turns` mediante V9. El nuevo registro admite conversaciones sin ejercicio y reserva UUID sin reinterpretar eventos legados. `ConversationStore` reúne operaciones que deben ser atómicas; sustituye en este flujo a los puertos incompletos `SessionContextService` e `InteractionLogger`, cuyas firmas no identifican propietario/sesión al registrar.
+- El endpoint de mensajes admite UUID opcional para compatibilidad con el frontend anterior. La idempotencia entre peticiones se garantiza cuando el cliente reutiliza su UUID; al omitirlo el servidor genera uno nuevo. La fase frontend deberá enviarlo.
+- Las métricas de proveedor se transportan por una sobrecarga de `LlmGateway.stream`, manteniendo el contrato de texto anterior. Ausencia de métricas se persiste como null.
+- Progreso e historial se ofrecen paginados por sesión; temas acompañan los turnos y ejercicios. Los DTO públicos de ejercicio omiten referencia y pasos canónicos.
