@@ -78,6 +78,8 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 
 ### 2026-11-18 00:34 · Frontend verificado localmente
 
+- Publicación: [PR #17 hacia DEV](https://github.com/juancarlosenrmun/MathTutor/pull/17), desde `Sprint-4-Frontend`. CI remota e integración pendientes; no se fusiona la ampliación en esta iteración.
+
 - Creada `Sprint-4-Frontend` después de fusionar PR #16 y actualizar DEV. Ejecutado `find-skills frontend-design` e instalada individualmente `anthropics/skills@frontend-design` para Codex; aplicada también `frontend-ui-engineering`. Se conserva el diseño actual.
 - Historial de cuenta paginado y recuperación de conversaciones activas/cerradas. Selección de banco o derivada/simplificación libre, progreso y veredictos CAS. Catálogo seguro por módulo como soporte de la selección, sin reconocimiento automático ni exposición de soluciones. Envíos con UUID y recuperación manual sin reintentos automáticos.
 - Gráficas del backend interpretadas con los parsers existentes; límites del visor controlados y alternativa textual. Limpieza de geometría privada y datos al cambiar de cuenta. Sesiones cerradas sin escritura.

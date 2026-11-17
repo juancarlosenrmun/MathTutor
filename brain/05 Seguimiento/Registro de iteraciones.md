@@ -1,5 +1,7 @@
 ## 2026-11-18 00:34 · Sprint 04 · Ampliación frontend
 
+- **Publicación**: [PR #17 hacia DEV](https://github.com/juancarlosenrmun/MathTutor/pull/17), rama `Sprint-4-Frontend`; CI remota e integración pendientes. La fusión solicitada de la base ya se realizó con PR #16.
+
 - **Petición**: fusionar backend con CI verde, crear Sprint-4-Frontend desde DEV y actualizar la interfaz.
 - **Implementado**: PR #16 fusionada con CI verde (1276674); base cerrada en DEV (713c89b), 5/5 UC y 33/33 puntos. Rama frontend creada después. Historial paginado recuperable, ejercicios y progreso, diagnóstico CAS, UUID/reintentos manuales y gráficas validadas. Catálogo de banco por módulo sin referencias. Identidad aislada y geometría privada eliminada al salir de cuenta. Skill frontend-design buscada e instalada individualmente; frontend-ui-engineering aplicada. Diseño/diagramas en DOC (a59f771).
 - **Pruebas**: check jacocoAggregateReport assemble correcto; 990 Java y 79 Node sin fallos/omisiones. 18 nuevas: 3 blancas y 15 negras. Contrato de navegador ampliado a herramientas S4, escritorio y móvil (320–1440 px), con capturas revisadas. 15 Python, apuntes reproducibles y puerta de integración correctos.
