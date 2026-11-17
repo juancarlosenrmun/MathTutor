@@ -8,6 +8,10 @@ import reactor.core.publisher.Flux;
  * Permite cambiar de proveedor/modelo solo por configuración (RNF-14).
  */
 public interface LlmGateway {
+    record Usage(Integer inputTokens, Integer outputTokens) {}
+
+    /** Conserva ausencia de métrica cuando el proveedor no la publica. */
+    default Flux<String> stream(Prompt prompt, java.util.function.Consumer<Usage> usage) { return stream(prompt); }
     /**
      * Envía un prompt al LLM y recibe la respuesta en streaming.
      *

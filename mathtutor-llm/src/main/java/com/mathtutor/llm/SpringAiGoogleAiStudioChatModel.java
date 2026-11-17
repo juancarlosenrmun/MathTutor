@@ -102,7 +102,8 @@ public class SpringAiGoogleAiStudioChatModel implements ChatModel {
                 .bodyToFlux(String.class)
                 .filter(data -> !"[DONE]".equals(data.trim()))
                 .map(data -> parseResponse(data, true))
-                .filter(response -> !response.getResult().getOutput().getText().isEmpty())
+                .filter(response -> !response.getResult().getOutput().getText().isEmpty()
+                        || response.getMetadata().getUsage().getTotalTokens()>0)
                 .switchIfEmpty(Flux.error(new IllegalStateException("Respuesta textual vacía")))
                 .timeout(Duration.ofSeconds(30)));
         })
@@ -155,7 +156,13 @@ public class SpringAiGoogleAiStudioChatModel implements ChatModel {
                 if (!part.path("thought").asBoolean(false) && part.has("text")) text.append(part.get("text").asText());
             }
             if (!streaming && text.isEmpty()) throw new IllegalStateException("El proveedor no ha devuelto una respuesta textual");
-            return new ChatResponse(List.of(new Generation(new AssistantMessage(text.toString()))));
+            var metadata=org.springframework.ai.chat.metadata.ChatResponseMetadata.builder();
+            var usage=root.path("usageMetadata");
+            if (usage.path("promptTokenCount").canConvertToInt() && usage.path("candidatesTokenCount").canConvertToInt()) {
+                int input=usage.path("promptTokenCount").asInt(), output=usage.path("candidatesTokenCount").asInt();
+                metadata.usage(new org.springframework.ai.chat.metadata.DefaultUsage(input,output));
+            }
+            return new ChatResponse(List.of(new Generation(new AssistantMessage(text.toString()))),metadata.build());
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Respuesta JSON inválida de Google AI Studio", e);
         }

@@ -45,18 +45,18 @@ class TutorConversationTest {
                 new NoteChunk(3L, "Números complejos", null, "DEFINICION", "b.tex", "funciones", "complejos", "1")));
         when(retriever.retrieve(anyString(), eq("funciones"), eq("continuidad"))).thenReturn(List.of(
                 new NoteChunk(2L, "Continuidad", null, "DEFINICION", "a.tex", "funciones", "continuidad", "1")));
-        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        when(llm.stream(any(),any())).thenReturn(Flux.just("Pista"));
         StepVerifier.create(conversation.reply(7L, 1L, "¿Qué es continuidad?"))
                 .expectNext("Pista").verifyComplete();
         var prompt = ArgumentCaptor.forClass(Prompt.class);
-        verify(llm).stream(prompt.capture());
+        verify(llm).stream(prompt.capture(),any());
         assertThat(prompt.getValue().contextChunks()).containsExactly("Continuidad");
         verify(retriever).retrieve(anyString(), eq("funciones"), eq("continuidad"));
     }
     @Test void missingTopicMetadataUsesOnlyTheModuleFilter() {
         active(); when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
                 new NoteChunk(4L, "Apunte general", null, "OTRO", "a.tex", "funciones", null, "1")));
-        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        when(llm.stream(any(),any())).thenReturn(Flux.just("Pista"));
         StepVerifier.create(conversation.reply(7L, 1L, "pregunta general"))
                 .expectNext("Pista").verifyComplete();
         verify(retriever, times(1)).retrieve(anyString(), eq("funciones"), isNull());
@@ -70,10 +70,10 @@ class TutorConversationTest {
     }
     @Test void validStudentExpressionAddsDeterministicFormToPrompt() {
         active(); when(cas.parse("x^2")).thenReturn(new CasEngine.Expr("x^2", "Power(x,2)", "Power(x,2)"));
-        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        when(llm.stream(any(),any())).thenReturn(Flux.just("Pista"));
         StepVerifier.create(conversation.reply(7L, 1L, "x^2")).expectNext("Pista").verifyComplete();
         var prompt = ArgumentCaptor.forClass(Prompt.class);
-        verify(llm).stream(prompt.capture());
+        verify(llm).stream(prompt.capture(),any());
         assertThat(prompt.getValue().userPrompt()).contains("Power(x,2)");
     }
     @Test void invalidStudentExpressionRequestsReformulationWithoutLlm() {
@@ -86,9 +86,9 @@ class TutorConversationTest {
     @ParameterizedTest @ValueSource(strings = {"x+1", "x/2", "x-1", "x*2", "x=2", "sin(x)", "cos(x)"})
     void mathematicalFormsAreParsedWithoutAnotherLlmCall(String message) {
         active(); when(cas.parse(message)).thenReturn(new CasEngine.Expr(message, "AST", "AST"));
-        when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        when(llm.stream(any(),any())).thenReturn(Flux.just("Pista"));
         StepVerifier.create(conversation.reply(7L, 1L, message)).expectNext("Pista").verifyComplete();
-        verify(cas).parse(message); verify(llm).stream(any());
+        verify(cas).parse(message); verify(llm).stream(any(),any());
     }
     @Test void nullParserResultRequestsReformulation() {
         active();
@@ -105,23 +105,23 @@ class TutorConversationTest {
         verifyNoInteractions(llm);
     }
     @Test void longQuestionRemainsNaturalLanguage() {
-        active(); when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        active(); when(llm.stream(any(),any())).thenReturn(Flux.just("Pista"));
         StepVerifier.create(conversation.reply(7L, 1L, "a".repeat(201)))
                 .expectNext("Pista").verifyComplete();
         verifyNoInteractions(cas);
     }
     @Test void aProfileWithoutCasKeepsOrdinaryConversationAvailable() {
-        active(); when(llm.stream(any())).thenReturn(Flux.just("Pista"));
+        active(); when(llm.stream(any(),any())).thenReturn(Flux.just("Pista"));
         var withoutCas = new TutorConversation(sessions, llm, retriever, null);
         StepVerifier.create(withoutCas.reply(7L, 1L, "x^2")).expectNext("Pista").verifyComplete();
     }
     @Test void streamsDeltasInOrderWithOneSubscription() {
-        active(); when(llm.stream(any())).thenReturn(Flux.just("Una ", "función."));
+        active(); when(llm.stream(any(),any())).thenReturn(Flux.just("Una ", "función."));
         var stream = conversation.reply(7L, 1L, "¿Qué es una función?");
         verifyNoInteractions(llm);
         StepVerifier.create(stream).expectNext("Una ", "función.").verifyComplete();
         var prompt = ArgumentCaptor.forClass(Prompt.class);
-        verify(llm).stream(prompt.capture());
+        verify(llm).stream(prompt.capture(),any());
         assertThat(prompt.getValue().contextChunks()).containsExactly("Definición de función");
         verify(retriever).retrieve(anyString(), eq("funciones"), isNull());
         assertThat(prompt.getValue().systemPrompt()).contains("español", "funciones");
@@ -134,7 +134,7 @@ class TutorConversationTest {
     }
     @Test void enforcesThe4000CharacterBoundary() {
         assertThatThrownBy(() -> conversation.reply(7L, 1L, "a".repeat(4001))).isInstanceOf(IllegalArgumentException.class);
-        active(); when(llm.stream(any())).thenReturn(Flux.just("ok"));
+        active(); when(llm.stream(any(),any())).thenReturn(Flux.just("ok"));
         StepVerifier.create(conversation.reply(7L, 1L, "a".repeat(4000))).expectNext("ok").verifyComplete();
     }
     @Test void unauthorizedSessionsNeverCallTheModel() {
@@ -144,13 +144,13 @@ class TutorConversationTest {
     }
     @Test void propagatesCancellationWithoutRetrying() {
         active(); var cancelled = new java.util.concurrent.atomic.AtomicBoolean();
-        when(llm.stream(any())).thenReturn(Flux.<String>never().doOnCancel(() -> cancelled.set(true)));
+        when(llm.stream(any(),any())).thenReturn(Flux.<String>never().doOnCancel(() -> cancelled.set(true)));
         StepVerifier.create(conversation.reply(7L, 1L, "hola")).thenCancel().verify();
-        assertThat(cancelled).isTrue(); verify(llm).stream(any());
+        assertThat(cancelled).isTrue(); verify(llm).stream(any(),any());
     }
     @Test void errorsAreNotRetried() {
-        active(); when(llm.stream(any())).thenReturn(Flux.error(new IllegalStateException("proveedor")));
+        active(); when(llm.stream(any(),any())).thenReturn(Flux.error(new IllegalStateException("proveedor")));
         StepVerifier.create(conversation.reply(7L, 1L, "hola")).verifyError(IllegalStateException.class);
-        verify(llm).stream(any());
+        verify(llm).stream(any(),any());
     }
 }
