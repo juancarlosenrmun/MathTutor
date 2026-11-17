@@ -77,6 +77,9 @@ try {
   doc.querySelector('#tutor-select-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
   assert(!doc.querySelector('#tutor-composer').hidden, 'No se inicia conversación');
   assert(doc.querySelector('#tutor-viewer-slot .viewer-panel'), 'El visor no aparece junto al chat');
+  doc.querySelector('[data-prompt="notes"]').click();
+  assert(doc.querySelector('#tutor-message').value === '¿Qué es la continuidad de una función?',
+    'La pregunta sugerida no corresponde al módulo');
   doc.querySelector('#tutor-message').value = '¿Qué es una función?';
   doc.querySelector('#tutor-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
   assert(doc.querySelector('#tutor-history').textContent.includes('Piensa en el dominio.'), 'SSE no llega al historial');

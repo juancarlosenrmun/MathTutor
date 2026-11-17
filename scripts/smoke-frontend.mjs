@@ -50,10 +50,11 @@ try {
     if (result) break;
     await delay(50);
     const metrics = await evaluate(`(() => {
-      const doc = document.querySelector('iframe').contentDocument;
+      const doc = document.querySelector('iframe')?.contentDocument;
+      if (!doc?.documentElement) return null;
       return { viewport: doc.documentElement.clientWidth, content: doc.documentElement.scrollWidth };
     })()`);
-    if (metrics.content > metrics.viewport + 1) throw new Error(`Desbordamiento en captura ${name}: ${JSON.stringify(metrics)}`);
+    if (metrics && metrics.content > metrics.viewport + 1) throw new Error(`Desbordamiento en el contrato: ${JSON.stringify(metrics)}`);
   }
   await writeFile(join(evidence, 'frontend.html'), await evaluate('document.documentElement.outerHTML'));
   if (result !== 'passed') throw new Error(await evaluate('document.querySelector("#result")?.textContent') || 'Contrato frontend sin finalizar');
