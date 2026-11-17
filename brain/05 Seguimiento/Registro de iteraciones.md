@@ -1,3 +1,10 @@
+## 2026-11-17 16:39 · Sprint 03 · CI e integración del frontend
+
+- **Petición**: fusionar `Sprint-3-Frontend` en `DEV` únicamente con CI verde, crear `Config-IA` y activar Google AI Studio e indexación usando la clave local existente.
+- **Integración**: [PR #13](https://github.com/juancarlosenrmun/MathTutor/pull/13) creada; [CI de la PR](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44115774524) completada en verde con build, pruebas de integración, cobertura y navegador real. Fusión limpia a `DEV` (`e5fd3dd`). Creada `Config-IA` desde `DEV` actualizada. `.env` sigue ignorado por Git y no se publicó la clave.
+- **Pruebas/cobertura**: CI verde y evidencia local previa: 925 Java, V8 1005/1010 líneas y 531/574 ramas, JaCoCo en umbral. Sin nuevas pruebas en este cierre.
+- **Estado**: base S3 5/5 UC; ampliación frontend 5/5; checklist **35/35**, `estado: completado`. Pendiente en la petición actual: activar y verificar la configuración local de Google AI Studio e indexación en `Config-IA`.
+
 ## 2026-11-17 16:28 · Sprint 03 · Aclaración del inicio de la IA real
 
 - **Petición**: precisar desde qué sprint puede responder un modelo de IA real en lugar del stub local.
