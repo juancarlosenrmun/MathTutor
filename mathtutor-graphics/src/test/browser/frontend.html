@@ -65,13 +65,16 @@ try {
   }
   await go('tutor');
   assert(doc.querySelector('#tutor-block').options.length === 3, 'Falta catálogo de módulos');
+  assert(doc.querySelectorAll('#tutor-topics button').length === 3, 'Las tarjetas no siguen el catálogo');
   doc.querySelector('#tutor-select-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
   assert(!doc.querySelector('#tutor-composer').hidden, 'No se inicia conversación');
+  assert(doc.querySelector('#tutor-viewer-slot .viewer-panel'), 'El visor no aparece junto al chat');
   doc.querySelector('#tutor-message').value = '¿Qué es una función?';
   doc.querySelector('#tutor-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
   assert(doc.querySelector('#tutor-history').textContent.includes('Piensa en el dominio.'), 'SSE no llega al historial');
   assert(doc.querySelector('#tutor-status').textContent.includes('completada'), 'Falta fin de turno');
   await go('laboratorio');
+  assert(doc.querySelector('.lab-layout > .viewer-panel'), 'El visor no vuelve al laboratorio');
   doc.querySelector('#curve-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
   assert(doc.querySelector('#curve-result').textContent.includes('0,666'), 'Falta integral 2D');
   await go('espacio');

@@ -1019,3 +1019,50 @@ canvas:focus-visible {
   .tutor-conversation { padding: 1rem; }
   .curve-controls .button { width: 100%; white-space: normal; }
 }
+
+/* Boceto del tutor: historial, conversación y visor con el lenguaje visual de MathTutor. */
+[data-view="tutor"] .page-heading { padding-bottom: 1.5rem; }
+[data-view="tutor"] .page-heading h1 { font-size: clamp(2.4rem, 4vw, 3.5rem); }
+.tutor-layout { grid-template-columns: 13.5rem minmax(0, 1fr) minmax(17rem, .85fr); gap: 1rem; align-items: stretch; }
+.tutor-layout:has(.tutor-viewer-slot[hidden]) { grid-template-columns: 13.5rem minmax(0, 1fr); }
+.tutor-guide { display: flex; flex-direction: column; gap: 1rem; padding: 1.25rem; border: 1px solid var(--line); background: var(--green-light); }
+.tutor-guide h2 { font-size: .85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.tutor-guide .text-link { margin-top: auto; }
+.tutor-module-settings { border-top: 1px solid var(--line); padding-top: 1rem; }
+.tutor-module-settings summary { font-weight: 600; }
+.tutor-module-settings .tutor-controls { margin: .75rem 0; }
+.tutor-module-settings .button { white-space: normal; }
+#tutor-sessions { display: grid; align-content: start; gap: .3rem; min-height: 4rem; }
+.tutor-session-link { width: 100%; padding: .7rem; text-align: left; border: 0; border-radius: .35rem; background: transparent; color: var(--ink); overflow-wrap: anywhere; }
+.tutor-session-link:hover, .tutor-session-link[aria-current="page"] { background: var(--surface); color: var(--green); }
+.tutor-conversation { display: flex; flex-direction: column; min-height: 36rem; padding: 1.5rem; }
+.tutor-conversation #tutor-status { color: var(--muted); font-size: .85rem; }
+.tutor-history { flex: 1; min-height: 0; max-height: 34rem; margin: 1rem 0; border: 0; }
+.tutor-history:empty::before { content: 'Haz una pregunta para empezar.'; }
+.tutor-topic-picker { margin: auto; width: 100%; max-width: 38rem; text-align: center; }
+.tutor-topic-picker h2 { font-family: Georgia, serif; font-size: clamp(1.7rem, 3vw, 2.5rem); margin-bottom: .5rem; }
+.tutor-topic-picker p { color: var(--muted); }
+.tutor-topics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-top: 2rem; }
+.tutor-topic { min-height: 6.5rem; padding: 1rem; text-align: left; border: 1px solid var(--line); border-radius: .4rem; background: var(--paper); color: var(--ink); font-weight: 600; }
+.tutor-topic:hover { border-color: var(--green); background: var(--green-light); }
+.tutor-topic-picker:not([hidden]) ~ .tutor-history { display: none; }
+.tutor-viewer-slot { min-width: 0; border: 1px solid var(--line); background: var(--surface); }
+.tutor-viewer-slot .viewer-panel { border: 0; }
+.tutor-viewer-slot canvas { height: 23rem; }
+.tutor-viewer-intro { padding: 1rem 1rem 0; }
+.tutor-viewer-intro h2 { font-family: Georgia, serif; font-size: 1.4rem; }
+.tutor-viewer-intro p { color: var(--muted); font-size: .85rem; }
+@media (max-width: 1100px) {
+  .tutor-layout { grid-template-columns: 12rem minmax(0, 1fr); }
+  .tutor-viewer-slot { grid-column: 2; }
+}
+@media (max-width: 700px) {
+  .tutor-layout { grid-template-columns: minmax(0, 1fr); }
+  .tutor-layout:has(.tutor-viewer-slot[hidden]) { grid-template-columns: minmax(0, 1fr); }
+  .tutor-guide { padding: 1rem; }
+  #tutor-sessions { display: flex; overflow-x: auto; min-height: 0; }
+  .tutor-session-link { flex: 0 0 10rem; }
+  .tutor-conversation { min-height: 32rem; }
+  .tutor-viewer-slot { grid-column: 1; }
+  .tutor-topics { grid-template-columns: 1fr; }
+}

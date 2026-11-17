@@ -482,20 +482,30 @@
           <a class="text-link" href="#/laboratorio">Explorar una función</a>
         </div>
         <div class="tutor-layout">
-          <aside class="tutor-guide" aria-label="Preparar la conversación">
-            <h2>Empieza por un bloque.</h2>
-            <p>Funciones, derivadas e integrales o métodos 3D: elige qué quieres trabajar hoy.</p>
+          <aside class="tutor-guide" aria-label="Conversaciones">
+            <button id="tutor-new" class="button full" type="button">+ Nueva conversación</button>
+            <h2>Chats de esta visita</h2>
+            <nav id="tutor-sessions" aria-label="Chats de esta visita"></nav>
+            <p class="field-help">Los chats de esta visita desaparecen al cerrar sesión o recargar la página.</p>
+            <details class="tutor-module-settings">
+              <summary>Cambiar de módulo</summary>
             <form id="tutor-select-form" class="tutor-controls">
               <label for="tutor-block">Bloque temático</label>
               <select id="tutor-block" required aria-describedby="tutor-block-help" disabled></select>
               <button id="tutor-start" class="button" type="submit">Nueva conversación</button>
             </form>
-            <p id="tutor-block-help" class="field-help">El bloque queda fijo en cada conversación. Para cambiarlo, selecciona otro e inicia una nueva; se vaciará el chat de esta pantalla.</p>
-            <p class="field-help">Puedes detener una respuesta en cualquier momento. El chat se conserva solo mientras mantienes esta sesión abierta.</p>
+            <p id="tutor-block-help" class="field-help">El bloque queda fijo en cada conversación. Para cambiarlo, inicia una nueva; los chats de esta visita quedan en la lista lateral.</p>
+            </details>
             <a class="text-link" href="#/espacio">Volver a tu espacio</a>
           </aside>
           <div class="tutor-conversation">
-            <h2>Tu conversación</h2>
+            <div id="tutor-topic-picker" class="tutor-topic-picker">
+              <p class="overline">Elige un bloque</p>
+              <h2>¿Qué tema vamos a trabajar?</h2>
+              <p>Selecciona un módulo para empezar una conversación.</p>
+              <div id="tutor-topics" class="tutor-topics" aria-label="Módulos disponibles"></div>
+            </div>
+            <h2 id="tutor-chat-title" hidden>Tu conversación</h2>
             <p id="tutor-status" role="status">Inicia sesión como alumno para conversar con el tutor.</p>
             <div id="tutor-history" class="tutor-history" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Conversación"></div>
             <div id="tutor-composer" hidden>
@@ -508,6 +518,9 @@
             </div>
             <p class="field-help">Las respuestas se muestran a medida que llegan. Contrasta los resultados: el tutor puede cometer errores.</p>
           </div>
+          <aside id="tutor-viewer-slot" class="tutor-viewer-slot" aria-label="Visor interactivo">
+            <div class="tutor-viewer-intro"><p class="overline">Laboratorio</p><h2>Explora lo que conversas.</h2><p>El visor se abre junto al chat. Dibuja funciones y áreas desde el laboratorio.</p><a class="text-link" href="#/laboratorio">Abrir controles del visor ↗</a></div>
+          </aside>
         </div>
       </section>
     </main>

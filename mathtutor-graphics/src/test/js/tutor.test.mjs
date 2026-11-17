@@ -22,12 +22,17 @@ test('SSE incompleto, error de servidor y desbordamiento se anuncian como errore
 });
 function fixture() {
   const nodes = Object.fromEntries(['tutor-form','tutor-select-form','tutor-block','tutor-message',
-    'tutor-send','tutor-start','tutor-cancel','tutor-status','tutor-history','tutor-composer'].map(k => [k, element()]));
+    'tutor-send','tutor-start','tutor-cancel','tutor-status','tutor-history','tutor-composer',
+    'tutor-new','tutor-sessions','tutor-topics','tutor-topic-picker','tutor-chat-title','tutor-viewer-slot'].map(k => [k, element()]));
   nodes['tutor-block'].value = 'funciones'; nodes['tutor-message'].value = '¿Qué es una función?';
   nodes['tutor-history'].append = function(node) { (this.children ||= []).push(node); };
-  nodes['tutor-history'].replaceChildren = function() { this.children = []; };
+  nodes['tutor-history'].replaceChildren = function(...children) { this.children = children; };
   nodes['tutor-block'].append = function() {};
   nodes['tutor-block'].replaceChildren = function() {};
+  for (const id of ['tutor-sessions','tutor-topics']) {
+    nodes[id].replaceChildren = function() { this.children = []; };
+    nodes[id].append = function(node) { (this.children ||= []).push(node); };
+  }
   const client = { token:'jwt', profile:{email:'alumno@test.es',role:'ALUMNO'}, calls:[],
     fetch: async (path, options) => {
       client.calls.push([path, options]);
@@ -102,4 +107,18 @@ test('salir durante el alta descarta la sesión tardía y permite volver a empez
   await f.ui.sync('tutor');
   assert.equal(f.nodes['tutor-composer'].hidden, true);
   assert.equal(f.nodes['tutor-start'].disabled, false);
+});
+
+test('las tarjetas usan el catálogo y los chats de la visita se pueden recuperar', async () => {
+  const f = fixture(); await f.ui.sync('tutor');
+  assert.equal(f.nodes['tutor-topics'].children[0].textContent, 'Funciones');
+  await f.submit('tutor-select-form');
+  f.nodes['tutor-message'].value = 'Primera pregunta'; await f.submit('tutor-form');
+  f.nodes['tutor-new'].listeners.click();
+  assert.equal(f.nodes['tutor-topic-picker'].hidden, false);
+  assert.equal(f.nodes['tutor-sessions'].children.length, 1);
+  f.nodes['tutor-sessions'].children[0].listeners.click();
+  assert.equal(f.nodes['tutor-history'].children.length, 2);
+  f.client.token = null; await f.ui.sync('tutor');
+  assert.equal(f.nodes['tutor-sessions'].children.length, 0);
 });
