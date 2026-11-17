@@ -18,7 +18,7 @@ Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlos
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
 | [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 base (33/33 pts); frontend 4/5 | en curso (PR #8 a DEV) |
-| [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 4/4 base (32/32 pts); frontend 4/5; boceto 3/4 | en curso (frontend; checklist 32/34) |
+| [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 4/4 base (32/32 pts); frontend 4/5; boceto 3/4 | en curso (PR #10 y #11 a DEV; checklist 32/34) |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 0/5 | pendiente |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 0/5 | pendiente |
 | [[Sprint 05\|S5]] | Hito: tutor socrático completo con tangentes y RGPD | 34 | 0/4 | pendiente |

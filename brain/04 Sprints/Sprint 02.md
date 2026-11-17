@@ -58,6 +58,14 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 
 ## Notas de iteración
 
+### 2026-11-17 · README de arranque y PR hacia DEV
+
+- **Petición**: documentar el arranque local del frontend con comandos ordenados y abrir PR hacia DEV.
+- **Resultado**: README actualizado con PostgreSQL, secreto JWT temporal, `bootRun` y URL `/visor/index.html`. [PR #10 del frontend](https://github.com/juancarlosenrmun/MathTutor/pull/10) y [PR #11 del README](https://github.com/juancarlosenrmun/MathTutor/pull/11) abiertas hacia DEV y fusionables; CI en ejecución.
+- **Ramas**: README guardado en DOC (`7a690ff`). La simulación DOC→DEV reveló conflicto en README; la PR documental parte de DEV (`dbf8ea8`) y contiene solo README. Excepción por el conflicto entre DOC y DEV.
+- **Pruebas/cobertura**: cambio documental, sin pruebas nuevas ni nuevo informe; evidencia anterior: 48 Node, V8 99,43/91,85 y `:mathtutor-graphics:check` correcto.
+- **Pendiente**: CI remota y posterior integración; checklist **32/34**, `estado: en curso`.
+
 ### 2026-11-17 · Adaptación visual al boceto `Diseno.pdf`
 
 - **Petición**: reorganizar el frontend según las tres pantallas del boceto y conservar la plantilla MathTutor.
@@ -71,7 +79,7 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 - [x] Selección de módulos y chats de la visita según el boceto.
 - [x] Conversación y visor integrados, con diseño adaptable.
 - [x] Caja blanca, caja negra Chromium y V8 en umbral.
-- [ ] CI remota verde e integración de la adaptación en DEV.
+- [ ] CI remota verde e integración de la adaptación en DEV (PR #10 abierta).
 
 ### 2026-11-17 00:06 · Ampliación frontend
 
@@ -89,7 +97,7 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 - [x] Pruebas de caja blanca y regresiones de estados del tutor.
 - [x] Caja negra Chromium, responsive y revisión de capturas.
 - [x] Build local, V8 y JaCoCo en umbral.
-- [ ] CI remota verde e integración de la ampliación en DEV.
+- [ ] CI remota verde e integración de la ampliación en DEV (PR #10 y README #11 abiertos).
 
 ## Historial de la base S2
 

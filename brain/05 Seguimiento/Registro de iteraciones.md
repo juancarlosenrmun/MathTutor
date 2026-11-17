@@ -462,6 +462,13 @@ Una entrada por peticiÃ³n al agente (mÃ¡s reciente arriba). Formato:
 - Pruebas: caja blanca 0 Â· caja negra 0 Â· cobertura 0 %
 - Checklist actualizada: [[Sprint 01]]
 - Pendiente: EN-01 (scaffolding Spring Boot modular, pgvector, CI), EN-04 (spike LaTeXâ†’Symja+Spring AI+pgvector), UC-01 (auth), UC-03 (access control), UC-27 (WebGL viewer pipeline+cÃ¡mara)
+## 2026-11-17 · Sprint 02 · README y PR hacia DEV
+
+- **Petición**: añadir comandos ordenados para abrir el frontend en local y lanzar PR a DEV.
+- **Implementado**: README con Docker PostgreSQL, secreto JWT temporal, `bootRun` y URL. PR #10 (frontend) y #11 (README) abiertas y fusionables; CI en ejecución. README registrado en DOC y en rama documental derivada de DEV por conflicto de integración DOC→DEV.
+- **Pruebas**: cero nuevas (cambio de documentación). Se conserva la evidencia previa: 48 Node, navegador Chromium y `:mathtutor-graphics:check` en verde; V8 99,43 % líneas / 91,85 % ramas.
+- **Pendiente**: esperar CI remota y fusionar PR cuando corresponda. Checklist S2 **32/34**, estado `en curso`.
+
 ## 2026-11-17 · Sprint 02 · Adaptación del tutor a `Diseno.pdf`
 
 - **Petición/rama**: adaptar chats, selección de módulo y visor al boceto; `Sprint-2-Frontend`.
