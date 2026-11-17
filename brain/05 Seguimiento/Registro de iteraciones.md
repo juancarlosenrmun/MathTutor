@@ -1,3 +1,12 @@
+## 2026-11-18 00:34 · Sprint 04 · Ampliación frontend
+
+- **Petición**: fusionar backend con CI verde, crear Sprint-4-Frontend desde DEV y actualizar la interfaz.
+- **Implementado**: PR #16 fusionada con CI verde (1276674); base cerrada en DEV (713c89b), 5/5 UC y 33/33 puntos. Rama frontend creada después. Historial paginado recuperable, ejercicios y progreso, diagnóstico CAS, UUID/reintentos manuales y gráficas validadas. Catálogo de banco por módulo sin referencias. Identidad aislada y geometría privada eliminada al salir de cuenta. Skill frontend-design buscada e instalada individualmente; frontend-ui-engineering aplicada. Diseño/diagramas en DOC (a59f771).
+- **Pruebas**: check jacocoAggregateReport assemble correcto; 990 Java y 79 Node sin fallos/omisiones. 18 nuevas: 3 blancas y 15 negras. Contrato de navegador ampliado a herramientas S4, escritorio y móvil (320–1440 px), con capturas revisadas. 15 Python, apuntes reproducibles y puerta de integración correctos.
+- **Cobertura**: V8 1338/1349 líneas y 782/858 ramas (99,18/91,14 %). JaCoCo líneas/ramas: application 95,40/87,50; auth 96,91/87,65; cas 92,44/87,97; common 92,31/97,92; graphics 100/93,62; llm 95,18/86,24; persistence 89,34/79,63; tutor 98,09/95,18. Sin exclusiones nuevas.
+- **Revisión**: corregidos dos hallazgos con regresiones rojo/verde: mezcla de sesión al fallar abrir otro historial y paginación con controlador abortado. Sin hallazgos importantes pendientes. README previo del usuario intacto.
+- **Pendiente**: CI e integración de la ampliación frontend en DEV. Estado en curso: base 30/30, frontend 4/5, total **34/35**. Velocidad base 33/33 puntos integrados; no se vuelven a contar por la interfaz.
+
 ## 2026-11-18 00:12 · Sprint 04 · Fusión a DEV
 
 - **Petición**: fusionar con CI verde y crear la rama de frontend desde DEV para ampliar la interfaz.
