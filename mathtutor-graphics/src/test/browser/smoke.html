@@ -4,6 +4,7 @@
 <script type="module">
 import { WebGLViewer } from '/visor/viewer.mjs';
 import { curve } from '/visor/curves.mjs';
+import { surface } from '/visor/surfaces.mjs';
 try {
   const canvas = document.querySelector('canvas');
   const viewer = new WebGLViewer(canvas, document.querySelector('#status'));
@@ -31,6 +32,13 @@ try {
   }
   const graphicError = gl.getError();
   if (yellow < 10 || blue < 10 || area < 100 || graphicError !== gl.NO_ERROR) throw new Error(`Gráfica 2D incompleta: ${yellow}/${blue}/${area}, WebGL ${graphicError}`);
+  viewer.setSurface(surface('x^2+y^2', -1, 1, -1, 1, 16));
+  gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  let meshPixels = 0;
+  for (let i = 0; i < pixels.length; i += 4) {
+    if (pixels[i] > 40 && pixels[i] < 110 && pixels[i+1] > 120 && pixels[i+2] > 100) meshPixels++;
+  }
+  if (meshPixels < 100 || gl.getError() !== gl.NO_ERROR) throw new Error(`Superficie 3D incompleta: ${meshPixels}`);
   viewer.dispose();
   document.body.dataset.result = 'passed';
   document.body.dataset.drawn = drawn;
