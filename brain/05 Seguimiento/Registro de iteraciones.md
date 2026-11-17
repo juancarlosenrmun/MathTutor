@@ -1,3 +1,9 @@
+## 2026-11-17 16:28 · Sprint 03 · Aclaración del inicio de la IA real
+
+- **Petición**: precisar desde qué sprint puede responder un modelo de IA real en lugar del stub local.
+- **Aclaración**: UC-13 del Sprint 02 habilita el chat y UC-14 indexa apuntes; UC-15 del Sprint 03 incorpora recuperación por módulo y tema. Con `google-ai-studio` y la indexación configurados, la respuesta real no exige esperar a otro sprint. La instancia local lanzada solo con `dev` usa `StubLlmGateway`. El hito de tutor socrático completo está previsto para Sprint 05; UC-35 del Sprint 04 prepara la conexión tutor–visor.
+- **Cambios/pruebas/cobertura**: sin cambios funcionales ni nuevas pruebas. Se conserva la evidencia previa: 925 Java correctas, V8 1005/1010 líneas y 531/574 ramas, JaCoCo en umbral. Checklist S3 **34/35**, `estado: en curso`; pendiente CI e integración de la ampliación frontend en `DEV`.
+
 ## 2026-11-17 16:26 · Sprint 03 · Consulta de capacidades por rol
 
 - **Petición**: aclarar qué puede hacer hoy el alumno y el profesor, si ayuda la IA y quién genera las gráficas.
