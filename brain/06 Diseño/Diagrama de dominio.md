@@ -1,5 +1,9 @@
 # Diagrama de dominio
 
+## Proyección para la selección en frontend S4
+
+`BankExercise` es una proyección de lectura de `Exercise` (id, enunciado, tema, tipo y dificultad). No es una entidad nueva ni expone referencia o pasos canónicos. El catálogo se limita al módulo de una conversación propia. La ampliación frontend conserva las entidades y reservas de S4; no añade almacenamiento local de chats, credenciales ni expresiones privadas. Véase [[Sprint 04 - Frontend]].
+
 ## Implementación Sprint 04
 
 `ConversationTurn` representa el turno completo y la reserva UUID; coexiste con `Turn` legado ligado a ejercicios. Referencias y pasos se mantienen internos. La migración V9 añade métricas y estado terminal a la nueva tabla, y pasos verificados/referencia calculada a `ExerciseRun`.

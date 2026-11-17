@@ -1,5 +1,25 @@
 # Diagrama de clases general
 
+## Ampliación frontend Sprint 04
+
+```mermaid
+flowchart LR
+  TutorUI["mountTutor · tutor.mjs"] --> Sessions["mountSessions · historial paginado"]
+  TutorUI --> History["tutor-history · Markdown seguro y diagnóstico"]
+  TutorUI --> Study["mountStudy · ejercicios y progreso"]
+  Sessions --> API["tutor-api · autenticación, CSRF y SSE"]
+  Study --> API
+  TutorUI --> API
+  Study --> Spec["drawSpecification · JSON y límites"]
+  Spec --> Curve["curve · parser restringido"]
+  Spec --> Surface["surface · parser restringido"]
+  Spec --> Viewer["WebGLViewer"]
+  Study --> Clear["WebGLViewer.clear · cambio de identidad"]
+  API --> Backend["StudyProgressController / TutorChatController"]
+```
+
+El catálogo de ejercicios usa `ConversationStore.bank` y devuelve `BankExercise` sin soluciones ni pasos canónicos. Cancelar una respuesta no cancela futuras páginas; al fallar la apertura de otra conversación se invalida el panel anterior. La recuperación explícita de envíos reutiliza UUID y no reintenta automáticamente.
+
 ## Clases implementadas para Sprint 04
 
 El flujo S4 usa `ConversationStore` para reserva, contexto, registro y progreso propios. Los contratos previos `SessionContextService` e `InteractionLogger` permanecen como diseño futuro; no se atribuye implementación a esos contratos.
