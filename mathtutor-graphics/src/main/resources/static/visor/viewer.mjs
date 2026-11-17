@@ -79,6 +79,12 @@ export class WebGLViewer {
   }
 
   /** @brief Orienta el visor hacia el plano XY y conserva la geometría al recuperar contexto. */
+  clear() {
+    this.graph=null; this.surface=null;
+    if (!this.lost) this.pipeline.setGraph({points:[],area:null});
+    this.camera.reset(); this.render();
+  }
+
   setGraph(graph) {
     this.graph = graph;
     this.surface = null;

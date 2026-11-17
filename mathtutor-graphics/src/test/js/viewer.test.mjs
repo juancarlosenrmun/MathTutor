@@ -16,6 +16,12 @@ function surface(gl = fakeGl()) {
   const host = { devicePixelRatio: 2, addEventListener() {}, removeEventListener() {} };
   return { canvas, listeners, host, status: { textContent: '' } };
 }
+test('eliminar la geometría privada impide restaurarla después de perder WebGL',()=>{
+  const state=surface();const viewer=new WebGLViewer(state.canvas,state.status,state.host);
+  viewer.setGraph(curve('x',-1,1));viewer.clear();assert.equal(viewer.graph,null);assert.equal(viewer.pipeline.lineCount,0);
+  state.listeners.get('webglcontextlost')({preventDefault(){}});viewer.clear();state.listeners.get('webglcontextrestored')();
+  assert.equal(viewer.graph,null);assert.equal(viewer.surface,null);viewer.dispose();
+});
 
 test('UC-29 conserva la superficie al perder y recuperar WebGL2', () => {
   const state = surface();
