@@ -4,6 +4,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 REQUIRED = {
+    "com.mathtutor.application.SprintFourIntegrationTest",
     "com.mathtutor.application.MathTutorApplicationTest",
     "com.mathtutor.application.controller.AuthControllerIntegrationTest",
     "com.mathtutor.application.retriever.SpringAiPgVectorRetrieverIntegrationTest",

@@ -8,6 +8,11 @@ import com.mathtutor.common.dto.ErrorType;
  */
 public interface CasEngine {
 
+    enum Comparison { EQUIVALENT, DIFFERENT, UNKNOWN }
+
+    /** No convertir límites del CAS en errores matemáticos del alumno. */
+    default Comparison compare(String student, String reference) { return Comparison.UNKNOWN; }
+
     /**
      * Verifica si la expresión del estudiante es equivalente a la de referencia.
      *

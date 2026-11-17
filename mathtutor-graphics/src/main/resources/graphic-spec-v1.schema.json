@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mathtutor:graphic-spec:1",
+  "title": "Especificación gráfica S4",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "function", "domain", "points"],
+  "properties": {
+    "type": {"enum": ["CURVA_2D", "SUPERFICIE"]},
+    "function": {"type": "string", "minLength": 1, "maxLength": 200},
+    "domain": {
+      "type": "object", "additionalProperties": false,
+      "required": ["min", "max", "steps"],
+      "properties": {
+        "min": {"type": "number", "minimum": -10000, "maximum": 10000},
+        "max": {"type": "number", "minimum": -10000, "maximum": 10000},
+        "steps": {"type": "integer", "minimum": 2, "maximum": 200}
+      }
+    },
+    "points": {
+      "type": "array", "maxItems": 100,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["x", "y", "z"],
+        "properties": {"x": {"type": "number"}, "y": {"type": "number"}, "z": {"type": "number"}}
+      }
+    }
+  }
+}

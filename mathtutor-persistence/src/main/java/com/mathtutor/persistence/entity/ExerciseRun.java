@@ -42,6 +42,11 @@ public class ExerciseRun {
     @Column(nullable = false)
     private int attempts;
 
+    private int verifiedSteps;
+
+    @Column(columnDefinition = "TEXT")
+    private String referenceSolution;
+
     @CreationTimestamp
     @Column(name = "started_at", nullable = false, updatable = false)
     private Instant startedAt;

@@ -27,6 +27,11 @@ public class GoogleAiStudioLlmGateway implements LlmGateway {
 
     @Override
     public Flux<String> stream(Prompt prompt) {
+        return stream(prompt, ignored -> {});
+    }
+
+    @Override
+    public Flux<String> stream(Prompt prompt, java.util.function.Consumer<LlmGateway.Usage> usage) {
         StringBuilder user = new StringBuilder();
         if (prompt.contextChunks() != null && !prompt.contextChunks().isEmpty()) {
             user.append("CONTEXTO RELEVANTE:\n");
@@ -40,7 +45,13 @@ public class GoogleAiStudioLlmGateway implements LlmGateway {
         var springPrompt = new org.springframework.ai.chat.prompt.Prompt(
                 List.of(new SystemMessage(system), new UserMessage(user.toString())), options);
         return chatModel.stream(springPrompt)
-                .filter(response -> response.getResult() != null && response.getResult().getOutput().getText() != null)
+                .doOnNext(response -> {
+                    var measured=response.getMetadata().getUsage();
+                    if (measured!=null && measured.getTotalTokens()>0)
+                        usage.accept(new LlmGateway.Usage(measured.getPromptTokens(),measured.getCompletionTokens()));
+                })
+                .filter(response -> response.getResult() != null && response.getResult().getOutput().getText() != null
+                        && !response.getResult().getOutput().getText().isEmpty())
                 .map(response -> response.getResult().getOutput().getText());
     }
 

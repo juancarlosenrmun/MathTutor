@@ -1,7 +1,7 @@
 package com.mathtutor.application.controller;
 
 import com.mathtutor.auth.filter.JwtAuthenticationFilter.AuthenticatedUser;
-import com.mathtutor.tutor.TutorConversation;
+import com.mathtutor.tutor.TrackedConversation;
 import com.mathtutor.tutor.SessionUnavailableException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -17,22 +17,29 @@ import reactor.core.publisher.Flux;
 @RestController @RequestMapping("/api/tutor/sessions")
 @PreAuthorize("hasRole('ALUMNO')")
 public class TutorChatController {
-    private final TutorConversation conversation;
-    public TutorChatController(TutorConversation conversation) { this.conversation = conversation; }
+    private final TrackedConversation conversation;
+    public TutorChatController(TrackedConversation conversation) { this.conversation = conversation; }
 
     /** @return Eventos TOKEN, DONE o ERROR; nunca expone errores internos del proveedor. */
     @PostMapping(value = "/{id}/messages", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ChatEvent> reply(@AuthenticationPrincipal AuthenticatedUser user,
                                 @PathVariable Long id, @Valid @RequestBody Message body) {
-        return conversation.reply(user.id(), id, body.message())
+        return conversation.reply(user.id(), id, body.requestId()==null ? java.util.UUID.randomUUID() : body.requestId(), body.message())
                 .map(token -> new ChatEvent("TOKEN", token))
                 .concatWithValues(new ChatEvent("DONE", ""))
+                .onErrorResume(com.mathtutor.common.dto.ConversationTerminalException.class,
+                        error -> Flux.just(new ChatEvent("ERROR",error.getMessage())))
                 .onErrorReturn(new ChatEvent("ERROR", "No se pudo completar la respuesta. Inténtalo de nuevo."));
     }
 
     @ExceptionHandler(SessionUnavailableException.class) @ResponseStatus(HttpStatus.NOT_FOUND)
     public String unavailable() { return "Sesión no disponible"; }
 
-    public record Message(@NotBlank @Size(max = 4000) String message) {}
+    @ExceptionHandler(com.mathtutor.common.dto.ConversationUnavailableException.class) @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String missing() { return "Sesión no disponible"; }
+    @ExceptionHandler(com.mathtutor.common.dto.ConversationConflictException.class) @ResponseStatus(HttpStatus.CONFLICT)
+    public String conflict() { return "Hay un turno en curso o la petición ya terminó. Consulta el historial."; }
+
+    public record Message(@NotBlank @Size(max = 4000) String message, java.util.UUID requestId) {}
     public record ChatEvent(String type, String content) {}
 }

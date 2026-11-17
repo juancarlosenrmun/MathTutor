@@ -39,6 +39,15 @@ public class SymjaCasEngine implements CasEngine {
         this.converter = converter;
     }
 
+    @Override public Comparison compare(String student, String reference) {
+        if (student == null || reference == null) return Comparison.UNKNOWN;
+        return switch (converter.areEquivalentThreeState(student, reference)) {
+            case EQUIVALENTE -> Comparison.EQUIVALENT;
+            case NO_EQUIVALENTE -> Comparison.DIFFERENT;
+            case INDETERMINADO -> Comparison.UNKNOWN;
+        };
+    }
+
     @Override
     public CasEngine.Verification verify(String studentExpr, String reference) {
         if (studentExpr == null || reference == null) {

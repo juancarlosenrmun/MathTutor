@@ -15,7 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class GraphicSpecServiceImplTest {
 
-    private final GraphicSpecService service = new GraphicSpecServiceImpl();
+    private final com.mathtutor.common.port.CasEngine cas = org.mockito.Mockito.mock(com.mathtutor.common.port.CasEngine.class);
+    @org.junit.jupiter.api.BeforeEach void parsed() {
+        org.mockito.Mockito.when(cas.parse(org.mockito.ArgumentMatchers.anyString())).thenReturn(new com.mathtutor.common.port.CasEngine.Expr("x", "AST", "AST"));
+    }
+    private final GraphicSpecService service = new GraphicSpecServiceImpl(cas);
 
     @Test
     void buildReturnsBasicGraphicSpec() {
