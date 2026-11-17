@@ -65,7 +65,8 @@ public class TutorConversation {
     /** @brief Distingue entradas algebraicas breves de preguntas redactadas en lenguaje natural. */
     private boolean looksLikeExpression(String message) {
         return message.length() <= 200 && !message.contains("?") && !message.contains("¿")
-                && (message.contains("^") || message.contains("+") || message.contains("/")
+                && (message.contains("^") || message.contains("+") || message.contains("-")
+                    || message.contains("*") || message.contains("=") || message.contains("/")
                     || message.startsWith("sin(") || message.startsWith("cos("));
     }
 }

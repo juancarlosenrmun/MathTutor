@@ -83,7 +83,7 @@ class TutorConversationTest {
                 .verifyComplete();
         verifyNoInteractions(llm);
     }
-    @ParameterizedTest @ValueSource(strings = {"x+1", "x/2", "sin(x)", "cos(x)"})
+    @ParameterizedTest @ValueSource(strings = {"x+1", "x/2", "x-1", "x*2", "x=2", "sin(x)", "cos(x)"})
     void mathematicalFormsAreParsedWithoutAnotherLlmCall(String message) {
         active(); when(cas.parse(message)).thenReturn(new CasEngine.Expr(message, "AST", "AST"));
         when(llm.stream(any())).thenReturn(Flux.just("Pista"));
