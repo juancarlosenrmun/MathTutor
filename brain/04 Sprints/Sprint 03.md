@@ -2,7 +2,7 @@
 sprint: S3
 objetivo: RAG, interpretación de expresiones y superficies
 puntos: 34
-estado: pendiente
+estado: en curso
 ---
 # Sprint 03 · RAG, interpretación de expresiones y superficies
 
@@ -65,3 +65,5 @@ UC-15 depende de UC-14. UC-16 y UC-22 son prerrequisitos de UC-17. UC-29 es el s
 - [ ] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+- 2026-11-17: iniciada la rama `Sprint-3` desde DEV actualizada. UC-15 incorpora recuperación de apuntes al turno y respuesta fuera de temario sin llamada al LLM cuando el índice no devuelve fragmentos. Pendientes: filtrado por tema en el flujo, verificación completa y cobertura, UC-04, UC-16, UC-22, UC-29, CI remota e integración en DEV. Ninguna casilla se marca hasta disponer de evidencia suficiente.

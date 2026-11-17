@@ -102,6 +102,14 @@
 
 # Registro de iteraciones
 
+## 2026-11-17 11:30 · Sprint 03 · Inicio y UC-15 parcial
+
+- **Petición**: instalar skills especializadas por separado e implementar Sprint 3 con pruebas, CI, commits pequeños y documentación Doxygen.
+- **Rama/skills**: `Sprint-3` creada desde DEV actualizada. Búsquedas separadas de Spring AI, Symja, JPA, WebGL, privacidad y testing; instaladas en `~/.agents/skills` las de Spring AI, privacidad, WebGL y pruebas Spring Boot. El instalador notificó un fallo adicional de PromptScript; los archivos SKILL.md están presentes. Para Symja se aplican las skills Java/CAS existentes.
+- **Implementado**: primer incremento de UC-15, recupera fragmentos por módulo para el prompt y responde fuera de temario sin llamar al LLM cuando no hay coincidencias. La inyección opcional conserva el arranque de perfiles sin recuperador.
+- **Pruebas/cobertura**: una nueva prueba de caja negra del caso sin fragmentos; prueba de caja blanca del prompt y filtrado por módulo ampliada. Suite `mathtutor-tutor:test` verde. Primer `check` completo falló por inyección del recuperador en perfiles sin RAG; tras corregirlo, `check` completo pasó (46 tareas) y la puerta JaCoCo del tutor quedó verde. JaCoCo tutor: 58/60 líneas (96,67 %) y 35/36 ramas (97,22 %). CI remota pendiente.
+- **Pendiente**: cerrar UC-15 (tema, integración y cobertura), implementar UC-04, UC-16, UC-22 y UC-29; verificar CI remota e integrar en DEV. Checklist 0/5.
+
 Una entrada por peticiÃ³n al agente (mÃ¡s reciente arriba). Formato:
 
 ## 2026-11-12 08:30 Â· Sprint 01 Â· **REPLANIFICACIÃ“N S1 â†’ S2** â€” UC-03 (5 pts) y UC-27 (13 pts) movidos a Sprint 02
