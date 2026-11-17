@@ -1,14 +1,19 @@
-# Documentación de API Java. Ejecutar: doxygen Doxyfile
+# Documentación de API Java y cliente WebGL. Ejecutar: doxygen Doxyfile
 PROJECT_NAME           = "MathTutor"
 PROJECT_BRIEF          = "Tutor adaptativo de Matemáticas"
 OUTPUT_DIRECTORY      = build/doxygen
 OUTPUT_LANGUAGE       = Spanish
 INPUT                 = mathtutor-common/src/main/java \
+                        mathtutor-auth/src/main/java \
+                        mathtutor-cas/src/main/java \
                         mathtutor-tutor/src/main/java \
                         mathtutor-llm/src/main/java \
                         mathtutor-persistence/src/main/java \
-                        mathtutor-application/src/main/java
-FILE_PATTERNS         = *.java
+                        mathtutor-application/src/main/java \
+                        mathtutor-graphics/src/main/java \
+                        mathtutor-graphics/src/main/resources/static/visor
+FILE_PATTERNS         = *.java *.mjs
+EXTENSION_MAPPING     = mjs=JavaScript
 RECURSIVE             = YES
 INPUT_ENCODING        = UTF-8
 EXTRACT_ALL           = NO
