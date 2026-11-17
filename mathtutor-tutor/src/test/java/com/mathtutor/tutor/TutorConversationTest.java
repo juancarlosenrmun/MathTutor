@@ -2,7 +2,10 @@ package com.mathtutor.tutor;
 
 import com.mathtutor.common.dto.Prompt;
 import com.mathtutor.common.dto.TutorSessionInfo;
+import com.mathtutor.common.dto.NoteChunk;
 import com.mathtutor.common.port.LlmGateway;
+import com.mathtutor.common.port.RagRetriever;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -17,8 +20,20 @@ import static org.assertj.core.api.Assertions.*;
 class TutorConversationTest {
     final TutorSessions sessions = mock(TutorSessions.class);
     final LlmGateway llm = mock(LlmGateway.class);
-    final TutorConversation conversation = new TutorConversation(sessions, llm);
-    void active() { when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA")); }
+    final RagRetriever retriever = mock(RagRetriever.class);
+    final TutorConversation conversation = new TutorConversation(sessions, llm, retriever);
+    void active() {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
+        when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
+                new NoteChunk(1L, "Definición de función", null, "DEFINICION", "apunte.tex", "funciones", "intro", "1")));
+    }
+    @Test void noRelevantFragmentReturnsOutOfSyllabusWithoutCallingLlm() {
+        active(); when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of());
+        StepVerifier.create(conversation.reply(7L, 1L, "tema ajeno"))
+                .expectNext("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.")
+                .verifyComplete();
+        verifyNoInteractions(llm);
+    }
     @Test void streamsDeltasInOrderWithOneSubscription() {
         active(); when(llm.stream(any())).thenReturn(Flux.just("Una ", "función."));
         var stream = conversation.reply(7L, 1L, "¿Qué es una función?");
@@ -26,6 +41,8 @@ class TutorConversationTest {
         StepVerifier.create(stream).expectNext("Una ", "función.").verifyComplete();
         var prompt = ArgumentCaptor.forClass(Prompt.class);
         verify(llm).stream(prompt.capture());
+        assertThat(prompt.getValue().contextChunks()).containsExactly("Definición de función");
+        verify(retriever).retrieve(anyString(), eq("funciones"), isNull());
         assertThat(prompt.getValue().systemPrompt()).contains("español", "funciones");
         assertThat(prompt.getValue().userPrompt()).isEqualTo("¿Qué es una función?");
     }
