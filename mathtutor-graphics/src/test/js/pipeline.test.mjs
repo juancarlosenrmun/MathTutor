@@ -3,6 +3,15 @@ import assert from 'node:assert/strict';
 import { ShaderPipeline } from '../../main/resources/static/visor/pipeline.mjs';
 import { fakeGl } from './fake-gl.mjs';
 import { curve } from '../../main/resources/static/visor/curves.mjs';
+import { surface } from '../../main/resources/static/visor/surfaces.mjs';
+
+test('UC-29 envía triángulos de superficie al pipeline WebGL2', () => {
+  const gl = fakeGl({ TRIANGLES: 10 });
+  const pipeline = new ShaderPipeline(gl);
+  pipeline.setSurface(surface('x*y', -1, 1, -1, 1, 2));
+  pipeline.draw(new Float32Array(16), 800, 600);
+  assert.ok(gl.calls.some(c => c[0] === 'drawArrays' && c[1] === 10 && c[3] === 24));
+});
 
 test('UC-28 dibuja función, derivada y triángulos de área sin puentear discontinuidades', () => {
   const gl = fakeGl({ TRIANGLES: 10 });

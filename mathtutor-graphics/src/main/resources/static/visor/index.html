@@ -294,6 +294,15 @@
         </form>
         <p id="curve-help" class="field-help">Usa x, números, + − * / ^, sin, cos, tan, exp, log, sqrt o abs. Ejemplos: x^2, sin(x), 1/x. La integral usa los extremos indicados.</p>
         <p id="curve-result" role="status">Introduce una función para ver su gráfica 2D y sus aproximaciones numéricas.</p>
+        <form id="surface-form" class="curve-controls" aria-label="Superficies 3D">
+          <div><label for="surface-function">Superficie z=f(x,y)</label><input id="surface-function" value="x^2+y^2" required maxlength="150" /></div>
+          <div><label for="surface-x-min">x desde</label><input id="surface-x-min" type="number" value="-1" step="any" required /></div>
+          <div><label for="surface-x-max">x hasta</label><input id="surface-x-max" type="number" value="1" step="any" required /></div>
+          <div><label for="surface-y-min">y desde</label><input id="surface-y-min" type="number" value="-1" step="any" required /></div>
+          <div><label for="surface-y-max">y hasta</label><input id="surface-y-max" type="number" value="1" step="any" required /></div>
+          <button id="surface-draw" class="button" type="submit">Dibujar superficie</button>
+        </form>
+        <p id="surface-result" role="status">Introduce una expresión con x e y para explorar una superficie.</p>
         <div class="lab-layout">
           <section class="viewer-panel" aria-labelledby="viewer-title">
             <div class="viewer-toolbar">
@@ -304,7 +313,7 @@
               <canvas
                 tabindex="0"
                 aria-label="Visor de funciones y coordenadas. X rojo, Y verde, Z azul."
-                aria-describedby="instructions graphic-status curve-result"
+                aria-describedby="instructions graphic-status curve-result surface-result"
                 >Sistema cartesiano con tres ejes perpendiculares: X, Y y Z,
                 centrados en el origen.</canvas
               >

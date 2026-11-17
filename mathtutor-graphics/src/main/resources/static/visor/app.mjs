@@ -2,6 +2,7 @@
 import { mountInterface } from './interface.mjs';
 import { mountTutor } from './tutor.mjs';
 import { mountCurveControls } from './curves.mjs';
+import { mountSurfaceControls } from './surfaces.mjs';
 
 /** Conecta el visor al laboratorio y conserva sus recursos entre vistas. */
 export function mount(document, host = globalThis) {
@@ -10,6 +11,7 @@ export function mount(document, host = globalThis) {
   try { viewer = new WebGLViewer(document.querySelector('canvas'), status, host); }
   catch (error) { status.textContent = error.message; }
   if (document.querySelector('#curve-form')) mountCurveControls(document, viewer);
+  if (document.querySelector('#surface-form')) mountSurfaceControls(document, viewer);
   for (const button of document.querySelectorAll('[data-camera]')) {
     button.disabled = !viewer;
     button.addEventListener('click', () => viewer.command(button.dataset.camera));
