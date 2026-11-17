@@ -1,3 +1,25 @@
+## 2026-11-17 16:28 · Sprint 03 · Aclaración del inicio de la IA real
+
+- **Petición**: precisar desde qué sprint puede responder un modelo de IA real en lugar del stub local.
+- **Aclaración**: UC-13 del Sprint 02 habilita el chat y UC-14 indexa apuntes; UC-15 del Sprint 03 incorpora recuperación por módulo y tema. Con `google-ai-studio` y la indexación configurados, la respuesta real no exige esperar a otro sprint. La instancia local lanzada solo con `dev` usa `StubLlmGateway`. El hito de tutor socrático completo está previsto para Sprint 05; UC-35 del Sprint 04 prepara la conexión tutor–visor.
+- **Cambios/pruebas/cobertura**: sin cambios funcionales ni nuevas pruebas. Se conserva la evidencia previa: 925 Java correctas, V8 1005/1010 líneas y 531/574 ramas, JaCoCo en umbral. Checklist S3 **34/35**, `estado: en curso`; pendiente CI e integración de la ampliación frontend en `DEV`.
+
+## 2026-11-17 16:26 · Sprint 03 · Consulta de capacidades por rol
+
+- **Petición**: aclarar qué puede hacer hoy el alumno y el profesor, si ayuda la IA y quién genera las gráficas.
+- **Implementado**: sin cambios funcionales. Se contrastaron interfaz, controladores, `TutorConversation`, perfiles y visor. El alumno dispone de cuenta, selección de módulo, chat y laboratorio; el profesor dispone de cuenta y laboratorio, sin panel estadístico ni acceso al chat del alumno. Las gráficas son cálculos deterministas del cliente, introducidos manualmente. El perfil local `dev` usa `StubLlmGateway`, que responde con texto fijo; la IA real requiere el perfil `google-ai-studio` y su configuración. El banco UC-22 está cargado, pero no se expone en la interfaz ni se usa aún para reconocer ejercicios.
+- **Pruebas/cobertura**: sin código nuevo ni nuevas pruebas; se conserva la última evidencia: 925 Java, V8 1005/1010 líneas y 531/574 ramas, JaCoCo en umbral. Salud local HTTP 200.
+- **Pendiente**: CI e integración de la ampliación frontend en `DEV`; checklist S3 **34/35**, `estado: en curso`. Tutor pedagógico completo, generación de especificaciones gráficas y estadísticas docentes pertenecen a sprints posteriores.
+
+## 2026-11-17 16:14 · Sprint 03 · Ampliación frontend y arranque local
+
+- **Petición**: crear y cambiar a «Sprint 3 Frontend», ejecutar find-skills sobre frontend, exponer las nuevas capacidades de S3 en la interfaz y arrancar la aplicación local.
+- **Rama y skills**: `DEV` actualizada; creada `Sprint-3-Frontend` (Git no admite espacios). `npx.cmd skills find frontend` ejecutado; aplicadas las skills ya disponibles de frontend, TDD, Git y Obsidian.
+- **Implementado**: botones que preparan preguntas sobre apuntes y expresiones en el chat sin enviarlas automáticamente; orientación de notación; resolución seleccionable de la malla 3D. Privacidad/cookies y superficies ya estaban presentes desde la base de S3. UC-22 continúa como banco orientativo interno, sin selección pública hasta contar con contrato de API.
+- **Pruebas**: dos contratos Node nuevos observados en rojo y luego en verde. Regresión completa: 925 pruebas Java (caja blanca, negra e integración) sin fallos ni omitidas; cliente en verde. HTTP 200 para salud y visor local.
+- **Cobertura**: V8 1005/1010 líneas (99,50 %) y 531/574 ramas (92,51 %). JaCoCo en umbral de todos los módulos; tutor 97,30/96,05. Sin exclusiones nuevas.
+- **Pendiente**: ampliación frontend 4/5 por CI remota e integración en `DEV`. Base S3 sigue 30/30 integrada; total con ampliación 34/35, `estado: en curso`. No hay cambios del modelo de dominio ni de clases.
+
 ## 2026-11-17 15:59 · Sprint 03 · CI e integración en DEV
 
 - **Petición**: continuar la implementación, consultar `git log` y `git status` y completar Sprint 3. Se confirmó árbol limpio en `Sprint-3` y commits pequeños sin cofirma.

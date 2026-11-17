@@ -54,7 +54,7 @@ export function mountSurfaceControls(document, viewer) {
     try {
       const mesh = surface(one('surface-function').value, Number(one('surface-x-min').value),
         Number(one('surface-x-max').value), Number(one('surface-y-min').value),
-        Number(one('surface-y-max').value));
+        Number(one('surface-y-max').value), Number(one('surface-resolution').value));
       viewer.setSurface(mesh);
       one('surface-result').textContent = `Superficie dibujada con ${mesh.triangles.length} triángulos y normales unitarias.`;
     } catch (error) { one('surface-result').textContent = error.message; }

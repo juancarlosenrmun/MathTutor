@@ -2,7 +2,7 @@
 sprint: S3
 objetivo: RAG, interpretación de expresiones y superficies
 puntos: 34
-estado: completado
+estado: en curso
 ---
 # Sprint 03 · RAG, interpretación de expresiones y superficies
 
@@ -64,7 +64,17 @@ UC-15 depende de UC-14. UC-16 y UC-22 son prerrequisitos de UC-17. UC-29 es el s
 - [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
+## Ampliación frontend del Sprint 03
+
+- [x] Interfaz para consultar apuntes y preparar expresiones, y detalle ajustable de superficies
+- [x] Pruebas de caja blanca del cliente
+- [x] Contratos de caja negra y comprobación HTTP local
+- [x] Cobertura cliente y JaCoCo en umbral
+- [ ] Integrado en `DEV` tras CI remota
+
 ## Notas de iteración
+
+- 2026-11-17 16:14: ampliación frontend en `Sprint-3-Frontend`, creada desde `DEV` actualizada. Las sugerencias del tutor solo rellenan el borrador para UC-15/16; el control 16/32/64 ajusta la malla de UC-29. UC-04 ya tenía vista y preferencias de cookies. El banco UC-22 sigue siendo orientativo e interno; su selección por el alumno no dispone de contrato público en este sprint. `check jacocoAggregateReport` correcto: 925 pruebas Java sin fallos/omisiones; V8 1005/1010 líneas y 531/574 ramas. Salud y visor HTTP 200 en `127.0.0.1:8080`. Ampliación 4/5, pendiente CI e integración en `DEV`; base del sprint 30/30 integrada.
 
 - 2026-11-17: los cinco UC quedaron integrados en `DEV` por [PR #12](https://github.com/juancarlosenrmun/MathTutor/pull/12), commit `a1a0ee2`. [CI de la PR](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44107554358) y [CI de DEV](https://github.com/juancarlosenrmun/MathTutor/actions/runs/44108491687) en verde. Checklist 30/30 (25/25 comprobaciones de UC); velocidad real 34/34 puntos. La validación institucional del aviso por DPD corresponde a EN-09 del Sprint 05 antes de usar datos reales.
 
