@@ -15,6 +15,9 @@ public interface ConversationStore {
     List<Run> runs(Long userId, Long sessionId, int page, int size);
     Run select(Long userId, Long sessionId, Long exerciseId, String statement, String reference);
     Run current(Long userId, Long sessionId);
+    List<BankExercise> bank(Long userId, Long sessionId, int page, int size);
+
+    record BankExercise(Long id, String statement, String topic, String type, int difficulty) {}
 
     record Entry(Long id, UUID requestId, String message, String response, String module, String topic,
                  ErrorType diagnosis, String helpLevel, long latencyMs, Integer tokensIn, Integer tokensOut,

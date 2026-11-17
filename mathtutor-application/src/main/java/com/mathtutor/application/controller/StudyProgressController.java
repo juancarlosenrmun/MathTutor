@@ -33,6 +33,10 @@ public class StudyProgressController {
             @PathVariable Long id,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
         return store.runs(user.id(),id,page,size).stream().map(RunView::from).toList();
     }
+    @GetMapping("/sessions/{id}/bank") public List<ConversationStore.BankExercise> bank(@AuthenticationPrincipal AuthenticatedUser user,
+            @PathVariable Long id,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
+        return store.bank(user.id(),id,page,size);
+    }
     @PostMapping("/sessions/{id}/exercises") @ResponseStatus(HttpStatus.CREATED)
     public RunView select(@AuthenticationPrincipal AuthenticatedUser user,@PathVariable Long id,@RequestBody Selection selection) {
         return RunView.from(exercises.select(user.id(),id,selection.exerciseId(),selection.operation(),selection.expression()));

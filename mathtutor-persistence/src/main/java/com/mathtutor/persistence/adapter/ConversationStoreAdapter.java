@@ -90,6 +90,11 @@ public class ConversationStoreAdapter implements ConversationStore {
     @Override public Run current(Long user,Long session) {
         owned(user,session); return activeRun(session).map(this::run).orElse(null);
     }
+    @Override public List<BankExercise> bank(Long user,Long session,int page,int size) {
+        var s=owned(user,session);
+        return exercises.findByModule(s.getModule(),page(page,size,"id")).stream()
+                .map(e -> new BankExercise(e.getId(),e.getStatementLatex(),e.getTopic()==null ? null : e.getTopic().getCode(),e.getType().name(),e.getDifficulty())).toList();
+    }
     @Override @Transactional public Run select(Long user,Long session,Long exerciseId,String statement,String reference) {
         var s=locked(user,session); available(session);
         var e=exerciseId==null ? null : exercises.findById(exerciseId).orElseThrow(() -> new IllegalArgumentException("Ejercicio no disponible"));
