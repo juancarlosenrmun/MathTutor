@@ -80,4 +80,12 @@ class DevDatabaseMigrationIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(4);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors WHERE seed_hint <> ''", Integer.class)).isEqualTo(2);
     }
+
+    @Test
+    void rerunningMigrationsDoesNotDuplicateExerciseBank() {
+        assertThat(flyway.migrate().migrationsExecuted).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises", Integer.class)).isEqualTo(6);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(4);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors", Integer.class)).isEqualTo(2);
+    }
 }
