@@ -3,9 +3,11 @@ import { mountInterface } from './interface.mjs';
 import { mountTutor } from './tutor.mjs';
 import { mountCurveControls } from './curves.mjs';
 import { mountSurfaceControls } from './surfaces.mjs';
+import { mountPrivacy } from './privacy.mjs';
 
 /** Conecta el visor al laboratorio y conserva sus recursos entre vistas. */
 export function mount(document, host = globalThis) {
+  if (document.querySelector('#privacy-banner')) mountPrivacy(document, host);
   const status = document.querySelector('#graphic-status');
   let viewer;
   try { viewer = new WebGLViewer(document.querySelector('canvas'), status, host); }

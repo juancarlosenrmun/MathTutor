@@ -25,6 +25,14 @@ try {
   frame.srcdoc = html;
   await new Promise(resolve => frame.addEventListener('load', resolve, { once: true }));
   const win = frame.contentWindow, doc = frame.contentDocument;
+  assert(!doc.querySelector('#privacy-banner').hidden, 'Falta aviso de cookies');
+  doc.querySelector('#privacy-reject').click();
+  assert(doc.querySelector('#privacy-banner').hidden, 'Rechazar no cierra el aviso');
+  assert(doc.cookie.includes('mathtutor_cookies=reject.v1'), 'No se recuerda el rechazo');
+  doc.querySelector('#privacy-manage').click();
+  assert(!doc.querySelector('#privacy-banner').hidden, 'No se pueden cambiar preferencias');
+  doc.querySelector('#privacy-accept').click();
+  assert(doc.cookie.includes('mathtutor_cookies=accept.v1'), 'No se recuerda la aceptación');
   await win.testApp.ready;
   // Esperar la cola nativa de locks, sin asumir que 30 ms equivalen a una respuesta.
   const idle = async () => { await win.navigator.locks.request('mathtutor-auth-cookie', () => {}); await settle(); };
