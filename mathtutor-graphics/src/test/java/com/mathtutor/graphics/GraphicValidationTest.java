@@ -56,5 +56,11 @@ class GraphicValidationTest {
             assertThatThrownBy(() -> service.build(GraphicSpec.GraphicType.CURVA_2D, "x", domain, java.util.List.of(p))).isInstanceOf(IllegalArgumentException.class);
         }
         assertThatThrownBy(() -> service.build(GraphicSpec.GraphicType.CURVA_2D, "x", domain, java.util.Collections.nCopies(101, new GraphicSpec.Point(0, 0, 0)))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.build(GraphicSpec.GraphicType.CURVA_2D, "x", domain, java.util.Arrays.asList((GraphicSpec.Point)null))).isInstanceOf(IllegalArgumentException.class);
+    }
+    @Test void acceptsExactDomainResolutionAndPointLimits() {
+        when(cas.parse("x")).thenReturn(new CasEngine.Expr("x","x",null));
+        for (int steps:new int[]{2,200})
+            assertThat(service.build(GraphicSpec.GraphicType.CURVA_2D,"x",new GraphicSpec.Domain(-10000,10000,steps),java.util.Collections.nCopies(100,new GraphicSpec.Point(0,0,0))).points()).hasSize(100);
     }
 }
