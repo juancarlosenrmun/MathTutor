@@ -1,5 +1,7 @@
 ﻿# Progreso global
 
+Sprint 02 · corrección visual del tutor (2026-11-17 22:51): **en curso**, 4/5 comprobaciones locales; pendiente CI e integración en `DEV`. Respuestas Markdown con formato seguro y cambio de módulo solo al iniciar una conversación. 62/62 Node, Gradle y JaCoCo en verde; V8 1099/1108 líneas y 569/613 ramas. Checklist total **36/39**. Véase [[Sprint 02]].
+
 Sprint 03 · corrección de pregunta sugerida (2026-11-17 17:09): **en curso**, 4/5 comprobaciones locales; pendiente CI e integración en `DEV`. La base y la ampliación anterior conservan 5/5 UC, 34/34 puntos y 35/35 casillas integradas. La pregunta genérica quedaba bajo 0,70 de similitud; las sugerencias específicas superan el umbral. 925 Java, 58 Node; V8 1013/1018 líneas y 537/579 ramas. Véase [[Sprint 03]].
 
 Sprint 02 · ampliación frontend (2026-11-17 00:06): **en curso**, 4/5 verificaciones locales y checklist total **29/30**; pendiente CI remota e integración en DEV. Tutor y gráficas integrados en navegación; 47 Node, tres comprobaciones Chromium y 906 Java sin fallos/omisiones. V8 99,88/93,97 y JaCoCo en umbral. La base mantiene 4/4 UC y 32/32 puntos integrados. Véase [[Sprint 02]].
@@ -20,7 +22,7 @@ Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlos
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
 | [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 base (33/33 pts); frontend 4/5 | en curso (PR #8 a DEV) |
-| [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 4/4 base (32/32 pts); frontend 4/5; boceto 3/4 | en curso (PR #10 y #11 a DEV; checklist 32/34) |
+| [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 4/4 base (32/32 pts); corrección Markdown 4/5 | en curso (corrección pendiente de CI e integración; checklist 36/39) |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 5/5 base (34/34 pts); frontend 5/5; corrección 4/5; checklist 39/40 | en curso (corrección pendiente de CI e integración) |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 0/5 | pendiente |
 | [[Sprint 05\|S5]] | Hito: tutor socrático completo con tangentes y RGPD | 34 | 0/4 | pendiente |

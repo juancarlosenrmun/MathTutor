@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { readReply, mountTutor } from '../../main/resources/static/visor/tutor.mjs';
 import { element } from './ui-fixture.mjs';
 
@@ -45,7 +46,7 @@ function fixture(moduleCode = 'funciones') {
           : {id:1,moduleCode:JSON.parse(options?.body || '{}').moduleCode || 'funciones'} };
     } };
   const doc = { querySelector:s => nodes[s.slice(1)], querySelectorAll:s => s === '[data-prompt]' ? starters : [],
-    createElement:() => element() };
+    createElement:tagName => element({tagName}) };
   const ui = mountTutor(doc,client);
   const submit = id => nodes[id].listeners.submit({preventDefault(){}});
   return {nodes,client,ui,submit,starters};
@@ -77,12 +78,35 @@ test('selección previa, POST protegido, respuesta progresiva y sesión nueva', 
   await f.submit('tutor-select-form');
   f.nodes['tutor-message'].value = '¿Qué es una función?';
   await f.submit('tutor-form');
-  assert.equal(f.nodes['tutor-history'].children[1].textContent,'Tutor: Función ñ');
+  const answer = f.nodes['tutor-history'].children[1];
+  assert.equal(answer.children[0].textContent, 'Tutor:');
+  assert.equal(answer.children[1].children[0].children[0].textContent, 'Función ñ');
   const [, options] = f.client.calls.find(([p]) => p.endsWith('/messages'));
   assert.equal(options.headers.Authorization,'Bearer jwt');
   assert.equal(options.headers['X-XSRF-TOKEN'],'csrf');
   await f.submit('tutor-select-form');
   assert.equal(f.nodes['tutor-history'].children.length,0);
+});
+test('la pestaña del tutor deja el cambio de módulo en Nueva conversación', async () => {
+  const html = readFileSync(new URL('../../main/resources/static/visor/index.html', import.meta.url), 'utf8');
+  assert.doesNotMatch(html, /Cambiar de módulo|Cambiar tema/);
+  const f = fixture(); await f.ui.sync('tutor'); await f.submit('tutor-select-form');
+  f.nodes['tutor-new'].listeners.click();
+  assert.equal(f.nodes['tutor-topic-picker'].hidden, false);
+  assert.equal(f.nodes['tutor-topics'].children.length, 1);
+});
+test('los tokens Markdown se convierten en formato en la conversación', async () => {
+  const f = fixture(); await f.ui.sync('tutor'); await f.submit('tutor-select-form');
+  f.nodes['tutor-message'].value = '¿Cómo derivo?';
+  const original = f.client.fetch;
+  f.client.fetch = (path, options) => path.endsWith('/messages')
+    ? response('data:{"type":"TOKEN","content":"## Deri"}\n\ndata:{"type":"TOKEN","content":"vadas\\n\\n**Regla**"}\n\ndata:{"type":"DONE","content":""}\n\n')
+    : original(path, options);
+  await f.submit('tutor-form');
+  const body = f.nodes['tutor-history'].children[1].children[1];
+  assert.deepEqual(body.children.map(node => node.tagName), ['h2', 'p']);
+  assert.equal(body.children[0].children[0].textContent, 'Derivadas');
+  assert.equal(body.children[1].children[0].tagName, 'strong');
 });
 test('errores, mensajes vacíos, cancelación y pérdida de acceso no reutilizan sesiones', async () => {
   const f = fixture(); await f.ui.sync('inicio');

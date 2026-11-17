@@ -498,15 +498,12 @@
             <h2>Chats de esta visita</h2>
             <nav id="tutor-sessions" aria-label="Chats de esta visita"></nav>
             <p class="field-help">Los chats de esta visita desaparecen al cerrar sesión o recargar la página.</p>
-            <details class="tutor-module-settings">
-              <summary>Cambiar de módulo</summary>
-            <form id="tutor-select-form" class="tutor-controls">
+            <form id="tutor-select-form" class="tutor-controls" hidden>
               <label for="tutor-block">Bloque temático</label>
               <select id="tutor-block" required aria-describedby="tutor-block-help" disabled></select>
               <button id="tutor-start" class="button" type="submit">Nueva conversación</button>
             </form>
             <p id="tutor-block-help" class="field-help">El bloque queda fijo en cada conversación. Para cambiarlo, inicia una nueva; los chats de esta visita quedan en la lista lateral.</p>
-            </details>
             <a class="text-link" href="#/espacio">Volver a tu espacio</a>
           </aside>
           <div class="tutor-conversation">

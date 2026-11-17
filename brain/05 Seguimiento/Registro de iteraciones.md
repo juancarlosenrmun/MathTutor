@@ -1,3 +1,10 @@
+## 2026-11-17 22:51 · Sprint 02 · Formato de respuestas y nueva conversación
+
+- **Petición**: crear una rama fix, mostrar las respuestas del tutor con formato Markdown y eliminar la opción duplicada de cambiar de tema.
+- **Implementado**: rama `fix/tutor-markdown-y-nueva-conversacion` desde `DEV` actualizada; renderizado Markdown progresivo con nodos DOM y enlaces seguros; «Nueva conversación» conserva la selección de módulo y los chats de la visita.
+- **Pruebas**: cuatro pruebas de cliente nuevas (caja blanca y contrato de caja negra); 62/62 Node correctas, puerta Gradle `:mathtutor-graphics:check jacocoAggregateReport` en verde. V8 1099/1108 líneas y 569/613 ramas (99,19 % y 92,82 %); JaCoCo en umbral. Sin exclusiones nuevas.
+- **Pendiente**: CI remota e integración en `DEV`; la corrección queda 4/5 y el Sprint 02 36/39, `estado: en curso`.
+
 ## 2026-11-17 17:09 · Sprint 03 · Corrección de sugerencia de apuntes
 
 - **Petición**: corregir que «Preguntar por los apuntes» responde fuera de temario en los tres módulos.

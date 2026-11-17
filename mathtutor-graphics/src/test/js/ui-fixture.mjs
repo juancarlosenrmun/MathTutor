@@ -3,7 +3,9 @@
     addEventListener(name, fn) { this.listeners[name] = fn; }, removeEventListener() {},
     setAttribute(k, v) { this.attributes[k] = v; }, removeAttribute(k) { delete this.attributes[k]; },
     toggleAttribute(k, value) { if (value) this.attributes[k] = ''; else delete this.attributes[k]; },
-    focus() { this.focused = true; }, scrollIntoView() {}, ...extra };
+    focus() { this.focused = true; }, scrollIntoView() {},
+    append(...nodes) { (this.children ||= []).push(...nodes); },
+    replaceChildren(...nodes) { this.children = nodes; }, ...extra };
 }
 export function fixture() {
   const nodes = Object.fromEntries(['notice', 'retry-logout', 'role', 'account-email', 'permission-description', 'main', 'logout', 'graphic-status'].map(id => ['#' + id, element()]));
