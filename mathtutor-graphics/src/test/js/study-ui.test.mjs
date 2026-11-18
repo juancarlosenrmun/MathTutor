@@ -7,14 +7,12 @@ const frames=events=>({ok:true,body:new ReadableStream({start(c){c.enqueue(new T
 function fixture() {
   const ids=['tutor-form','tutor-select-form','tutor-block','tutor-message','tutor-send','tutor-start','tutor-cancel',
     'tutor-status','tutor-history','tutor-composer','tutor-new','tutor-sessions','tutor-topics','tutor-topic-picker',
-    'tutor-chat-title','tutor-viewer-slot','tutor-study','exercise-status','exercise-fields','graphic-fields',
-    'bank-more','runs-more','exercise-kind','exercise-bank-group','exercise-expression-group','exercise-expression',
-    'exercise-bank','exercise-runs','exercise-progress','exercise-summary','bank-empty','tutor-diagnosis','graphic-result',
-    'graphic-function','exercise-form','graphic-form','graphic-type','graphic-min','graphic-max','graphic-steps',
+    'tutor-chat-title','tutor-viewer-slot','graphic-fields','graphic-result',
+    'graphic-function','graphic-form','graphic-type','graphic-min','graphic-max','graphic-steps',
     'sessions-more','sessions-refresh','sessions-status','history-more','tutor-retry'];
   const nodes=Object.fromEntries(ids.map(id=>[id,element({children:[]})]));
   const doc={querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:tagName=>element({tagName,children:[]})};
-  Object.assign(nodes['tutor-block'],{value:'funciones'}); nodes['exercise-kind'].value='DERIVADA';
+  Object.assign(nodes['tutor-block'],{value:'funciones'});
   nodes['graphic-type'].value='CURVA_2D'; nodes['graphic-min'].value='-1'; nodes['graphic-max'].value='1'; nodes['graphic-steps'].value='32';
   const state={sessions:[{id:1,module:'funciones',status:'ACTIVA'}],turns:[],runs:[],bank:[{id:7,statement:'Deriva x^2',difficulty:1}],calls:[]};
   const client={token:'jwt',profile:{email:'a@test.es',role:'ALUMNO'},fetch:async(path,options)=>{
@@ -47,14 +45,14 @@ function fixture() {
   return {nodes,doc,client,state,viewer,ui,click,submit,open};
 }
 
-test('recupera conversaciones y mensajes guardados con diagnóstico, y permite continuar',async()=>{
+test('recupera mensajes guardados sin mostrar metadatos internos y permite continuar',async()=>{
   const f=fixture(); f.state.turns=[{id:1,message:'x',response:'**Pista**',status:'ERROR',verdict:'INDETERMINADO',topic:'álgebra'}];
   await f.open();
   assert.equal(f.nodes['tutor-history'].children.length,2);
-  assert.match(f.nodes['tutor-diagnosis'].textContent,/No se ha podido comprobar/);
+  assert.equal(f.nodes['tutor-history'].children[1].children.length,2);
   assert.equal(f.nodes['tutor-composer'].hidden,false);
   f.nodes['tutor-message'].value='2*x'; await f.submit('tutor-form');
-  assert.match(f.nodes['tutor-diagnosis'].textContent,/verificado/);
+  assert.equal(f.nodes['tutor-history'].children[1].children.length,2);
   const post=f.state.calls.find(([p])=>p.endsWith('/messages'));
   assert.match(JSON.parse(post[1].body).requestId,/00000000-0000-4000/);
 });
@@ -69,18 +67,13 @@ test('recuperar un envío incierto reutiliza UUID sin reintento automático',asy
   assert.equal(bodies.length,2); assert.equal(bodies[0].requestId,bodies[1].requestId);
   assert.equal(f.nodes['tutor-retry'].hidden,true);
 });
-test('selecciona banco u operación libre y muestra progreso de cada ejercicio',async()=>{
+test('el ejercicio del banco se selecciona desde el chat sin publicar progreso',async()=>{
   const f=fixture();await f.open();
-  f.nodes['exercise-kind'].value='BANCO';f.nodes['exercise-kind'].listeners.change();f.nodes['exercise-bank'].value='7';
-  await f.submit('exercise-form');
-  assert.match(f.nodes['exercise-status'].textContent,/Ejercicio iniciado/);
+  f.nodes['tutor-message'].value='Deriva x^2';await f.submit('tutor-form');
   assert.deepEqual(JSON.parse(f.state.calls.find(([p,o])=>p.endsWith('/exercises')&&o.method==='POST')[1].body),{exerciseId:7});
-  f.nodes['exercise-kind'].value='DERIVADA'; f.nodes['exercise-expression'].value='x^2'; await f.submit('exercise-form');
-  assert.equal(f.nodes['exercise-runs'].children.length,1);
-  f.state.runs=[{id:3,statement:'Derivar x^2',state:'COMPLETADO',progress:1}];
-  f.nodes['tutor-message'].value='2*x'; await f.submit('tutor-form');
-  assert.equal(f.nodes['exercise-progress'].value,1);
+  assert.equal(f.state.calls.filter(([p,o])=>p.includes('/exercises')&&o.method!=='POST').length,0);
 });
+
 test('gráficas validadas se dibujan y se borran al perder la identidad',async()=>{
   const f=fixture();await f.open();f.nodes['graphic-function'].value='x^2';await f.submit('graphic-form');
   assert.ok(f.viewer.graph); assert.match(f.nodes['graphic-result'].textContent,/f\(x\)/);
@@ -89,23 +82,21 @@ test('gráficas validadas se dibujan y se borran al perder la identidad',async()
   f.nodes['graphic-function'].value='alert(1)';await f.submit('graphic-form');
   assert.match(f.nodes['graphic-result'].textContent,/inválida/);
   f.client.token=null;await f.ui.sync('tutor');
-  assert.equal(f.viewer.cleared,true);assert.equal(f.nodes['tutor-history'].children.length,0);assert.equal(f.nodes['exercise-runs'].children.length,0);
+  assert.equal(f.viewer.cleared,true);assert.equal(f.nodes['tutor-history'].children.length,0);assert.equal(f.nodes['tutor-history'].children.length,0);
 });
 test('una sesión cerrada admite consulta pero nunca mensajes, ejercicios ni gráficas',async()=>{
   const f=fixture();f.state.sessions[0].status='CERRADA';await f.open();
-  assert.equal(f.nodes['tutor-composer'].hidden,true);assert.equal(f.nodes['exercise-fields'].disabled,true);
-  await f.submit('exercise-form');await f.submit('graphic-form');f.nodes['tutor-message'].value='hola';await f.submit('tutor-form');
+  assert.equal(f.nodes['tutor-composer'].hidden,true);assert.equal(f.nodes['graphic-fields'].disabled,true);
+  await f.submit('graphic-form');f.nodes['tutor-message'].value='hola';await f.submit('tutor-form');
   assert.equal(f.state.calls.filter(([,o])=>o.method==='POST').length,0);
 });
-test('paginación de sesiones, turnos, banco y ejercicios se mantiene disponible',async()=>{
+test('paginación de sesiones y turnos se mantiene disponible',async()=>{
   const f=fixture();f.state.sessions=Array.from({length:21},(_,i)=>({id:i+1,module:'funciones',status:'ACTIVA'}));
   f.state.turns=Array.from({length:21},(_,i)=>({id:21-i,message:'paso '+i,response:'pista',status:'COMPLETADO'}));
   f.state.bank=Array.from({length:21},(_,i)=>({id:i+1,statement:'Ejercicio '+i,difficulty:1}));
   f.state.runs=Array.from({length:21},(_,i)=>({id:i+1,statement:'Ejercicio '+i,state:'COMPLETADO',progress:1}));
   await f.open();await f.click('sessions-more');assert.equal(f.nodes['tutor-sessions'].children.length,21);
   await f.click('history-more');assert.equal(f.nodes['tutor-history'].children.length,42);
-  await f.click('bank-more');assert.equal(f.nodes['exercise-bank'].children.length,21);
-  await f.click('runs-more');assert.equal(f.nodes['exercise-runs'].children.length,21);
   await f.click('sessions-refresh');assert.equal(f.nodes['tutor-sessions'].children.length,20);
 });
 test('descarta un historial tardío al salir de la cuenta',async()=>{
@@ -134,8 +125,8 @@ test('fallar al abrir otra conversación desactiva el panel anterior y evita mez
   f.client.fetch=(path,options)=>path.includes('/sessions/2/history') ? Promise.resolve({ok:false,status:503}) : original(path,options);
   await f.nodes['tutor-sessions'].children[1].listeners.click();
   const before=f.state.calls.filter(([p,o])=>p.endsWith('/exercises')&&o.method==='POST').length;
-  f.nodes['exercise-expression'].value='x^2';await f.submit('exercise-form');
-  assert.equal(f.nodes['exercise-fields'].disabled,true);
+  f.nodes['tutor-message'].value='Deriva x^2';await f.submit('tutor-form');
+  assert.equal(f.nodes['graphic-fields'].disabled,true);
   assert.equal(f.state.calls.filter(([p,o])=>p.endsWith('/exercises')&&o.method==='POST').length,before);
   assert.equal(f.nodes['tutor-composer'].hidden,true);
 });

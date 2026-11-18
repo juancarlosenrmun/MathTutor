@@ -24,7 +24,7 @@ test('SSE incompleto, error de servidor y desbordamiento se anuncian como errore
 function fixture(moduleCode = 'funciones') {
   const nodes = Object.fromEntries(['tutor-form','tutor-select-form','tutor-block','tutor-message',
     'tutor-send','tutor-start','tutor-cancel','tutor-status','tutor-history','tutor-composer',
-    'tutor-new','tutor-sessions','tutor-topics','tutor-topic-picker','tutor-chat-title','tutor-viewer-slot'].map(k => [k, element()]));
+    'tutor-new','tutor-sessions','tutor-topics','tutor-topic-picker','tutor-chat-title','tutor-viewer-slot','tutor-viewer-toggle'].map(k => [k, element()]));
   const starters = ['notes', 'x^2+2*x=0'].map(prompt =>
     element({dataset:{prompt}}));
   nodes['tutor-block'].value = moduleCode; nodes['tutor-message'].value = '¿Qué es una función?';
@@ -185,6 +185,18 @@ test('el docente inicia y usa conversaciones propias', async () => {
 });
 test('el visor se pliega y el ejercicio no tiene selecci?n manual', () => {
   const html=readFileSync(new URL('../../main/resources/static/visor/index.html',import.meta.url),'utf8');
-  assert.match(html, /<details id="tutor-viewer-slot"[^>]*open/);
+  assert.match(html, /id="tutor-viewer-toggle"[^>]*aria-controls="tutor-viewer-slot"/);
+  assert.doesNotMatch(html, /id="tutor-study"|id="exercise-progress"|id="exercise-runs"|id="tutor-diagnosis"/);
   assert.doesNotMatch(html, /Empezar ejercicio|id="exercise-kind"|id="exercise-form"/);
+});
+
+test('el visor se oculta lateralmente y se puede recuperar sin perder la conversacion',async()=>{
+  const f=fixture();await f.ui.sync('tutor');await f.submit('tutor-select-form');
+  f.nodes['tutor-viewer-toggle'].listeners.click();
+  assert.equal(f.nodes['tutor-viewer-slot'].hidden,true);
+  assert.equal(f.nodes['tutor-viewer-toggle'].attributes['aria-expanded'],'false');
+  f.nodes['tutor-viewer-toggle'].listeners.click();
+  assert.equal(f.nodes['tutor-viewer-slot'].hidden,false);
+  assert.equal(f.nodes['tutor-viewer-toggle'].attributes['aria-expanded'],'true');
+  assert.equal(f.nodes['tutor-composer'].hidden,false);
 });

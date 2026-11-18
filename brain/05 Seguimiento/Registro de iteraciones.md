@@ -1,3 +1,11 @@
+## 2026-11-18 10:16 · Sprint 04 · Visor lateral, chat adaptable y barra lateral
+
+- **Petición**: ocultar el visor horizontalmente y ampliar el chat; retirar progreso y ejercicios trabajados; aplicar las skills frontend-design y frontend-ui-engineering al historial.
+- **Implementado**: botón Ocultar/Mostrar visor accesible que elimina su columna al cerrar, con conservación de geometría al abrir. Barra verde profunda con acción nueva conversación contrastada, historial activo destacado, actualización junto al título y pie de navegación. Progreso, listado y diagnóstico eliminados del DOM y del render de mensajes; selección automática y persistencia internas conservadas. Sin cambios de dominio ni API Java.
+- **Pruebas**: 991 Java y 91 Node correctas. Una nueva prueba de caja blanca del estado del visor; contratos existentes adaptados y ampliados en caja negra con ancho cero, crecimiento/recuperación del chat y ausencia de metadatos. Chromium 320–1440 px y WebGL2 correctos. Capturas abiertas/cerradas y móvil revisadas.
+- **Cobertura**: V8 98,97 % líneas / 91,82 % ramas; JaCoCo y gates en ocho módulos correctos. `check jacocoAggregateReport` con salida 0. Diff revisado sin hallazgos pendientes.
+- **Pendiente**: CI remota e integración en DEV de `fix/tutor-visor-sidebar`. Corrección 4/5; checklist S4 **38/40**, estado `en curso`.
+
 ## 2026-11-18 10:00 · Sprint 04 · Corrección del tutor
 
 - **Petición**: rama fix, visor plegable, inicio de ejercicio desde el chat, barra lateral cohesionada y acceso del docente. Rama `fix/tutor-visor-sidebar`, base DEV actualizada.

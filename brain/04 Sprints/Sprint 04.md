@@ -76,7 +76,7 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 
 ## Corrección del tutor: visor, ejercicios y acceso docente
 
-- [x] Visor plegable con ancho estable, historial cohesionado y formulario manual de ejercicios retirado
+- [x] Visor ocultable lateralmente con chat adaptable, barra lateral con contraste y progreso interno
 - [x] Pruebas de caja blanca del inicio de ejercicio desde el mensaje
 - [x] Pruebas de caja negra del cliente y Chromium responsive
 - [x] Verificación Java y cobertura JaCoCo/V8 en umbral
@@ -143,3 +143,11 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 - Sin botón ni desplegable de inicio manual. El cliente inicia el ejercicio antes del turno para comandos `Deriva x^2` / `Simplifica x+x` o coincidencia textual exacta con un enunciado del banco cargado (primera página). Las preguntas teóricas y los pasos siguientes continúan sin crear otro ejercicio. No se implementa reconocimiento semántico ni equivalencia CAS de UC-23/S6.
 - Profesor habilitado en navegación, conversación, historial y API del tutor; la propiedad de cada sesión sigue siendo obligatoria. Sin cambios de entidades, relaciones ni interfaces públicas Java.
 - 90 pruebas Node correctas y Chromium/WebGL2 entre 320 y 1440 px; 991 pruebas Java sin fallos; build y JaCoCo en umbral. V8 99,22 % líneas / 91,06 % ramas. Pendiente CI e integración.
+
+### 2026-11-18 10:16 · Visor lateral y conversación sin indicadores internos
+
+- **Petición**: ocultar el visor a lo ancho y ampliar el chat, retirar progreso/ejercicios trabajados y mejorar la barra lateral con las skills frontend-design y frontend-ui-engineering.
+- **Diseño aplicado**: verde profundo `#173e30`, selección `#315e47`, acento claro `#e4f0d9`, texto `#f3f8f4` y ayuda `#c2d6c9`. Tipografía existente, cabecera de cuaderno, acción nueva conversación, historial con actualización junto al título y navegación al pie. En móvil se compacta la barra y se apila el visor.
+- **Implementado**: botón nativo Ocultar/Mostrar visor con aria-expanded y aria-controls; al cerrar desaparece la columna del visor y el chat ocupa todo su ancho. Al abrir se conserva la geometría. Progreso, ejercicios trabajados y diagnóstico retirados del DOM y de las burbujas; estado matemático y selección automática permanecen internos. Eliminados controles y consultas de progreso innecesarios en el cliente. Sin cambios en entidades ni API Java.
+- **Evidencia cliente**: 91 Node, V8 98,97 % líneas / 91,82 % ramas. Contrato Chromium comprueba ancho cero del visor, crecimiento del chat superior a 200 px en escritorio, recuperación, ausencia de indicadores y responsive 320–1440 px. WebGL2 correcto; capturas de escritorio abierto/cerrado y móvil revisadas.
+- **Verificación final**: 991 Java correctas, `check jacocoAggregateReport` con salida 0, JaCoCo en umbral en ocho módulos. Pendiente CI remota e integración en DEV; corrección 4/5, total 38/40, estado en curso.

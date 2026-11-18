@@ -494,19 +494,18 @@
         </div>
         <div class="tutor-layout">
           <aside class="tutor-guide" aria-label="Conversaciones">
-            <button id="tutor-new" class="button full" type="button">+ Nueva conversación</button>
-              <h2>Tu historial</h2>
-              <nav id="tutor-sessions" aria-label="Conversaciones guardadas"></nav>
-              <button id="sessions-more" class="button secondary small" type="button" hidden>Cargar más conversaciones</button>
-              <button id="sessions-refresh" class="text-link" type="button">Actualizar historial</button>
-              <p id="sessions-status" class="field-help" role="status">Tus conversaciones se guardan en tu cuenta.</p>
+            <div class="tutor-sidebar-header"><span class="tutor-sidebar-brand">Tu cuaderno</span><p>Un lugar para cada pregunta.</p></div>
+            <button id="tutor-new" class="button full" type="button"><span aria-hidden="true">+</span> Nueva conversación</button>
+            <div class="tutor-history-heading"><h2>Conversaciones</h2><button id="sessions-refresh" type="button" aria-label="Actualizar historial" title="Actualizar historial">↻</button></div>
+            <nav id="tutor-sessions" aria-label="Conversaciones guardadas"></nav>
+            <button id="sessions-more" class="button secondary small" type="button" hidden>Cargar más conversaciones</button>
+            <p id="sessions-status" class="field-help" role="status">Tus conversaciones se guardan en tu cuenta.</p>
             <form id="tutor-select-form" class="tutor-controls" hidden>
               <label for="tutor-block">Bloque temático</label>
               <select id="tutor-block" required aria-describedby="tutor-block-help" disabled></select>
               <button id="tutor-start" class="button" type="submit">Nueva conversación</button>
             </form>
-              <p id="tutor-block-help" class="field-help">El bloque queda fijo en cada conversación. Para cambiarlo, inicia una nueva. Puedes volver a las anteriores desde tu historial.</p>
-            <a class="text-link" href="#/espacio">Volver a tu espacio</a>
+            <div class="tutor-sidebar-footer"><p id="tutor-block-help" class="field-help">Cada conversación conserva su tema.</p><a class="text-link" href="#/espacio">← Volver a tu espacio</a></div>
           </aside>
           <div class="tutor-conversation">
             <div id="tutor-topic-picker" class="tutor-topic-picker">
@@ -515,20 +514,10 @@
               <p>Selecciona un módulo para empezar una conversación.</p>
               <div id="tutor-topics" class="tutor-topics" aria-label="Módulos disponibles"></div>
             </div>
-            <h2 id="tutor-chat-title" hidden>Tu conversación</h2>
+            <div class="tutor-chat-heading"><h2 id="tutor-chat-title" hidden>Tu conversación</h2><button id="tutor-viewer-toggle" type="button" aria-controls="tutor-viewer-slot" aria-expanded="true" class="viewer-toggle" hidden>Ocultar visor <span aria-hidden="true">→</span></button></div>
             <p id="tutor-status" role="status">Inicia sesión como alumno para conversar con el tutor.</p>
              <button id="history-more" class="button secondary small" type="button" hidden>Cargar mensajes anteriores</button>
             <div id="tutor-history" class="tutor-history" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Conversación"></div>
-             <p id="tutor-diagnosis" class="turn-metadata" role="status"></p>
-             <section id="tutor-study" class="study-panel" hidden>
-               <h3>Progreso de la conversación</h3>
-               <label for="exercise-progress">Progreso del ejercicio</label>
-               <progress id="exercise-progress" max="1" value="0"></progress>
-               <p id="exercise-summary" class="field-help"></p>
-               <p id="exercise-status" role="status"></p>
-               <h3>Ejercicios trabajados</h3><ul id="exercise-runs" class="exercise-runs"></ul>
-               <button id="runs-more" class="text-link" type="button" hidden>Cargar ejercicios anteriores</button>
-             </section>
             <div id="tutor-composer" hidden>
               <div class="tutor-starters" aria-label="Ideas para empezar">
                 <span>Ideas para empezar</span>
@@ -546,8 +535,7 @@
             </div>
             <p class="field-help">Las respuestas se muestran a medida que llegan. Contrasta los resultados: el tutor puede cometer errores.</p>
           </div>
-          <details id="tutor-viewer-slot" class="tutor-viewer-slot" open aria-label="Visor interactivo">
-            <summary>Visor 3D <span class="field-help">Abrir / cerrar</span></summary>
+          <aside id="tutor-viewer-slot" class="tutor-viewer-slot" aria-label="Visor interactivo">
             <div class="tutor-viewer-intro"><p class="overline">Laboratorio</p><h2>Explora lo que conversas.</h2><p>Escribe una función para que se compruebe antes de dibujarla.</p>
               <details class="study-panel"><summary>Dibujar una gráfica</summary>
                 <form id="graphic-form"><fieldset id="graphic-fields"><legend>Función y dominio</legend>
@@ -561,7 +549,7 @@
                 </fieldset></form>
               </details><p id="graphic-result" role="status" class="field-help">Solicita una gráfica para explorarla en el visor.</p>
               <a class="text-link" href="#/laboratorio">Abrir controles del laboratorio ↗</a></div>
-          </details>
+          </aside>
         </div>
       </section>
       <section data-view="privacidad" class="account" hidden aria-labelledby="privacy-title">
