@@ -121,19 +121,39 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   };
   mathRendered();
   assert(doc.querySelector('#tutor-status').textContent.includes('completada'), 'Falta fin de turno');
-  assert(doc.querySelector('#tutor-diagnosis').textContent.includes('verificado'), 'Falta diagnóstico persistido');
+  assert(!doc.querySelector('#tutor-study, #exercise-progress, #exercise-runs, #tutor-diagnosis, .turn-metadata'), 'Se exponen indicadores internos');
   const messageCall = win.testState.calls.find(([path]) => path.endsWith('/messages'));
   assert(typeof JSON.parse(messageCall[1].body).requestId === 'string', 'El turno no incluye UUID');
-  doc.querySelector('#tutor-study').open = true;
-  doc.querySelector('#exercise-expression').value = 'x^2';
-  doc.querySelector('#exercise-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
-  assert(doc.querySelector('#exercise-runs').textContent.includes('Derivar'), 'Falta progreso del ejercicio');
+  const slot=doc.querySelector('#tutor-viewer-slot');
+  frame.style.width='1440px'; await settle();
+  const chat=doc.querySelector('.tutor-conversation');
+  const widthBefore=chat.getBoundingClientRect().width;
+  const toggle=doc.querySelector('#tutor-viewer-toggle');
+  toggle.click(); await settle();
+  assert(slot.hidden && slot.getBoundingClientRect().width===0,'El visor no se oculta lateralmente');
+  assert(chat.getBoundingClientRect().width>widthBefore+200,'El chat no aprovecha el espacio del visor');
+  assert(toggle.getAttribute('aria-expanded')==='false','Estado accesible del visor incorrecto');
+  toggle.click(); await settle();
+  assert(!slot.hidden && Math.abs(chat.getBoundingClientRect().width-widthBefore)<1,'No se recupera el visor');
+  assert(!doc.querySelector('#exercise-form'),'Queda selecci?n manual del ejercicio');
+  doc.querySelector('#tutor-message').value='Deriva x^2';
+  doc.querySelector('#tutor-form').dispatchEvent(new Event('submit',{cancelable:true})); await settle();
+  assert(win.testState.calls.some(([path,options])=>path.endsWith('/exercises') && options.method==='POST'), 'El ejercicio no se inicia internamente');
   const graphicDetails=doc.querySelector('#graphic-form').closest('details');graphicDetails.open=true;
   doc.querySelector('#graphic-form').dispatchEvent(new Event('submit', {cancelable:true}));await settle();
   assert(doc.querySelector('#graphic-result').textContent.includes('f(x)'), 'La gráfica no se interpreta');
   for (const width of [1440,1024,768,375,320]) {
     frame.style.width=width+'px';await settle();
     assert(doc.documentElement.scrollWidth<=doc.documentElement.clientWidth+1,'Desbordamiento de herramientas S4 a '+width);
+    if (width>900) {
+      const height=chat.getBoundingClientRect().height;
+      for (const panel of [slot,doc.querySelector('.tutor-guide')]) {
+        assert(Math.abs(panel.getBoundingClientRect().height-height)<1,'Alturas del tutor desalineadas a '+width);
+      }
+      toggle.click();await settle();
+      assert(Math.abs(doc.querySelector('.tutor-guide').getBoundingClientRect().height-chat.getBoundingClientRect().height)<1,'Historial desalineado con visor oculto');
+      toggle.click();await settle();
+    }
   }
   doc.querySelector('#tutor-new').click();
   doc.querySelector('#tutor-sessions button').click();await settle();

@@ -494,19 +494,18 @@
         </div>
         <div class="tutor-layout">
           <aside class="tutor-guide" aria-label="Conversaciones">
-            <button id="tutor-new" class="button full" type="button">+ Nueva conversación</button>
-              <h2>Tu historial</h2>
-              <nav id="tutor-sessions" aria-label="Conversaciones guardadas"></nav>
-              <button id="sessions-more" class="button secondary small" type="button" hidden>Cargar más conversaciones</button>
-              <button id="sessions-refresh" class="text-link" type="button">Actualizar historial</button>
-              <p id="sessions-status" class="field-help" role="status">Tus conversaciones se guardan en tu cuenta.</p>
+            <div class="tutor-sidebar-header"><span class="tutor-sidebar-brand">Tu cuaderno</span><p>Un lugar para cada pregunta.</p></div>
+            <button id="tutor-new" class="button full" type="button"><span aria-hidden="true">+</span> Nueva conversación</button>
+            <div class="tutor-history-heading"><h2>Conversaciones</h2><button id="sessions-refresh" type="button" aria-label="Actualizar historial" title="Actualizar historial">↻</button></div>
+            <nav id="tutor-sessions" aria-label="Conversaciones guardadas"></nav>
+            <button id="sessions-more" class="button secondary small" type="button" hidden>Cargar más conversaciones</button>
+            <p id="sessions-status" class="field-help" role="status">Tus conversaciones se guardan en tu cuenta.</p>
             <form id="tutor-select-form" class="tutor-controls" hidden>
               <label for="tutor-block">Bloque temático</label>
               <select id="tutor-block" required aria-describedby="tutor-block-help" disabled></select>
               <button id="tutor-start" class="button" type="submit">Nueva conversación</button>
             </form>
-              <p id="tutor-block-help" class="field-help">El bloque queda fijo en cada conversación. Para cambiarlo, inicia una nueva. Puedes volver a las anteriores desde tu historial.</p>
-            <a class="text-link" href="#/espacio">Volver a tu espacio</a>
+            <div class="tutor-sidebar-footer"><p id="tutor-block-help" class="field-help">Cada conversación conserva su tema.</p><a class="text-link" href="#/espacio">← Volver a tu espacio</a></div>
           </aside>
           <div class="tutor-conversation">
             <div id="tutor-topic-picker" class="tutor-topic-picker">
@@ -515,30 +514,10 @@
               <p>Selecciona un módulo para empezar una conversación.</p>
               <div id="tutor-topics" class="tutor-topics" aria-label="Módulos disponibles"></div>
             </div>
-            <h2 id="tutor-chat-title" hidden>Tu conversación</h2>
+            <div class="tutor-chat-heading"><h2 id="tutor-chat-title" hidden>Tu conversación</h2><button id="tutor-viewer-toggle" type="button" aria-controls="tutor-viewer-slot" aria-expanded="true" class="viewer-toggle" hidden>Ocultar visor <span aria-hidden="true">→</span></button></div>
             <p id="tutor-status" role="status">Inicia sesión como alumno para conversar con el tutor.</p>
              <button id="history-more" class="button secondary small" type="button" hidden>Cargar mensajes anteriores</button>
             <div id="tutor-history" class="tutor-history" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Conversación"></div>
-             <p id="tutor-diagnosis" class="turn-metadata" role="status"></p>
-             <details id="tutor-study" class="study-panel" hidden>
-               <summary>Ejercicios y progreso</summary>
-               <label for="exercise-progress">Progreso del ejercicio</label>
-               <progress id="exercise-progress" max="1" value="0"></progress>
-               <p id="exercise-summary" class="field-help"></p>
-               <form id="exercise-form">
-                 <fieldset id="exercise-fields"><legend>Empezar un ejercicio</legend>
-                   <label for="exercise-kind">Qué quieres practicar</label>
-                   <select id="exercise-kind"><option value="DERIVADA">Derivar respecto a x</option><option value="SIMPLIFICAR">Simplificar una expresión</option><option value="BANCO">Elegir del banco de ejercicios</option></select>
-                   <div id="exercise-expression-group"><label for="exercise-expression">Expresión del ejercicio</label><input id="exercise-expression" maxlength="200" placeholder="Por ejemplo: x^2" required /></div>
-                   <div id="exercise-bank-group" hidden><label for="exercise-bank">Ejercicio disponible</label><select id="exercise-bank"></select>
-                     <p id="bank-empty" class="field-help">No hay ejercicios del banco en este bloque.</p><button id="bank-more" class="text-link" type="button" hidden>Cargar más ejercicios del banco</button></div>
-                   <button class="button secondary" type="submit">Empezar ejercicio</button>
-                 </fieldset>
-               </form>
-               <p id="exercise-status" role="status"></p>
-               <h3>Ejercicios trabajados</h3><ul id="exercise-runs" class="exercise-runs"></ul>
-               <button id="runs-more" class="text-link" type="button" hidden>Cargar ejercicios anteriores</button>
-             </details>
             <div id="tutor-composer" hidden>
               <div class="tutor-starters" aria-label="Ideas para empezar">
                 <span>Ideas para empezar</span>
@@ -548,7 +527,7 @@
               <form id="tutor-form">
                 <label for="tutor-message">Tu pregunta</label>
                 <textarea id="tutor-message" required maxlength="4000" rows="3" aria-describedby="tutor-message-help" placeholder="Escribe tu pregunta de Matemáticas…"></textarea>
-                <p id="tutor-message-help" class="field-help">Pregunta por un concepto concreto de los apuntes del módulo o escribe una expresión como x^2+2*x=0. Revisa el borrador antes de enviarlo.</p>
+                <p id="tutor-message-help" class="field-help">Pregunta por un concepto o escribe «Deriva x^2» o «Simplifica x+x» para empezar un ejercicio automáticamente. Revisa el borrador antes de enviarlo.</p>
                 <button id="tutor-send" class="button" type="submit">Enviar pregunta</button>
               </form>
               <button id="tutor-cancel" class="button secondary" type="button" disabled>Cancelar respuesta</button>

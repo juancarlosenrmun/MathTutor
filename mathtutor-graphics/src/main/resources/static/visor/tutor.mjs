@@ -17,8 +17,8 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
   const noteQuestions={funciones:'¿Qué es la continuidad de una función?',
     'derivadas-integrales':'¿Cómo se calcula la derivada de una función?', 'metodos-3d':'¿Qué es un espacio vectorial?'};
   let session,identity,controller,generation=0,busy=false,loaded=false,loading=false,pending;
-  let modules=[],entries=[],historyPage=0;
-  const allowed=()=>Boolean(client.token) && client.profile?.role==='ALUMNO';
+  let modules=[],entries=[],historyPage=0,viewerOpen=true;
+  const allowed=()=>Boolean(client.token) && ['ALUMNO','PROFESOR'].includes(client.profile?.role);
   const writable=()=>allowed() && session && session.status!=='CERRADA';
   const titleFor=visit=>visit.title || modules.find(m=>m.code===(visit.moduleCode || visit.module))?.name || 'Conversación de Matemáticas';
   const study=mountStudy(document,client,viewer);
@@ -30,7 +30,12 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     if (one('tutor-retry')) { one('tutor-retry').hidden=!pending; one('tutor-retry').disabled=busy; }
     if (one('tutor-topic-picker')) one('tutor-topic-picker').hidden=Boolean(session);
     if (one('tutor-chat-title')) one('tutor-chat-title').hidden=!session;
-    if (one('tutor-viewer-slot')) one('tutor-viewer-slot').hidden=!session;
+    if (one('tutor-viewer-slot')) one('tutor-viewer-slot').hidden=!session || !viewerOpen;
+    if (one('tutor-viewer-toggle')) {
+      one('tutor-viewer-toggle').hidden=!session;
+      one('tutor-viewer-toggle').textContent=viewerOpen ? 'Ocultar visor \u2192' : '\u2190 Mostrar visor';
+      one('tutor-viewer-toggle').setAttribute('aria-expanded',String(viewerOpen));
+    }
     study.setBusy(busy);
   }
   async function loadHistory(more=false) {
@@ -115,6 +120,8 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     const requestId=pending.requestId; let markdown='';
     renderTutorMarkdown(document,pending.body,''); status.textContent=retry ? 'Recuperando el envío sin iniciar otro turno…' : 'El tutor está respondiendo…';
     try {
+      if (!retry) await study.fromMessage?.(message);
+      if (current!==generation) return;
       const response=await request(client,`/api/tutor/sessions/${session.id}/messages`,{message,requestId},controller.signal);
       await readReply(response,token=>{if (current===generation) {markdown+=token;renderTutorMarkdown(document,bubbles.body,markdown);}});
       if (current===generation) {pending=undefined;one('tutor-message').value='';status.textContent='Respuesta completada.';}
@@ -136,7 +143,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
               status.textContent=['ERROR','CANCELADO'].includes(terminal.status)
                 ? 'El envío anterior ha terminado. Puedes enviar una pregunta nueva.' : 'Respuesta recuperada del historial.';
             }
-            busy=false; await study.refresh(latest);
+            busy=false;
           }
         } catch { /* La respuesta visible se conserva; el alumno puede actualizar el historial. */ }
         if (current===generation) {busy=false;controls();}
@@ -162,6 +169,10 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     session=null;pending=undefined;entries=[];history.replaceChildren();study.enter(null);visits.select(undefined);
     if (one('history-more')) one('history-more').hidden=true;
     status.textContent='Elige un bloque para empezar una conversación.';controls();
+  });
+  one('tutor-viewer-toggle')?.addEventListener('click',()=>{
+    viewerOpen=!viewerOpen; controls();
+    if (viewerOpen) viewer?.render?.();
   });
   controls(); return {sync};
 }

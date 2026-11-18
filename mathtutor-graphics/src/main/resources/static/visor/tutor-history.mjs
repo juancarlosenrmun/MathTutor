@@ -13,9 +13,6 @@ export function appendTurn(document,history,message,response='',entry) {
   const label=document.createElement('span'),body=document.createElement('div');
   label.className='tutor-answer-label'; label.textContent='Tutor:'; body.className='tutor-answer-body';
   answer.append(label,body); renderTutorMarkdown(document,body,response);
-  if (entry) {
-    const meta=document.createElement('p'); meta.className='turn-metadata'; meta.textContent=turnDescription(entry); answer.append(meta);
-  }
   history.append(question); history.append(answer); return {body,answer};
 }
 export function renderTurns(document,history,entries) {

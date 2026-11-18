@@ -74,6 +74,14 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 - [x] Build y cobertura V8/JaCoCo en umbral
 - [ ] CI verde e integración de la ampliación en DEV
 
+## Corrección del tutor: visor, ejercicios y acceso docente
+
+- [x] Visor ocultable lateralmente con chat adaptable, paneles de igual altura, barra lateral con contraste y progreso interno
+- [x] Pruebas de caja blanca del inicio de ejercicio desde el mensaje
+- [x] Pruebas de caja negra del cliente y Chromium responsive
+- [x] Verificación Java y cobertura JaCoCo/V8 en umbral
+- [ ] CI verde e integración de `fix/tutor-visor-sidebar` en DEV
+
 ## Notas de iteración
 
 ### 2026-11-18 00:46 · Arranque local con IA y README
@@ -127,3 +135,26 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 - PR #16 fusionada en DEV por petición expresa del usuario, merge 127667481b2581b8249b749d463905d57c5844f9. CI verde: https://github.com/juancarlosenrmun/MathTutor/actions/runs/44196313691 (head 61e761d).
 - Base completada: cinco UC, 33/33 puntos integrados y checklist 30/30. Evidencia previa: 989 Java, 62 Node, JaCoCo/V8 en umbral, navegador y 15 Python correctos. Sin nuevas pruebas en la fusión.
 - Petición siguiente: crear Sprint-4-Frontend desde DEV actualizada y ampliar la interfaz para los casos de uso del sprint 4.
+
+### 2026-11-18 · Corrección del tutor solicitada por el usuario
+
+- Rama `fix/tutor-visor-sidebar`, creada desde DEV actualizado. Se adscribe a S4 por UC-17/20 y la ampliación del frontend; la petición puntual autoriza también el acceso docente.
+- Visor con `details/summary`, ancho estable al cerrar y altura abierta acotada. Barra lateral con separación entre nueva conversación, chats y ayuda; selección activa visible.
+- Sin botón ni desplegable de inicio manual. El cliente inicia el ejercicio antes del turno para comandos `Deriva x^2` / `Simplifica x+x` o coincidencia textual exacta con un enunciado del banco cargado (primera página). Las preguntas teóricas y los pasos siguientes continúan sin crear otro ejercicio. No se implementa reconocimiento semántico ni equivalencia CAS de UC-23/S6.
+- Profesor habilitado en navegación, conversación, historial y API del tutor; la propiedad de cada sesión sigue siendo obligatoria. Sin cambios de entidades, relaciones ni interfaces públicas Java.
+- 90 pruebas Node correctas y Chromium/WebGL2 entre 320 y 1440 px; 991 pruebas Java sin fallos; build y JaCoCo en umbral. V8 99,22 % líneas / 91,06 % ramas. Pendiente CI e integración.
+
+### 2026-11-18 10:16 · Visor lateral y conversación sin indicadores internos
+
+- **Petición**: ocultar el visor a lo ancho y ampliar el chat, retirar progreso/ejercicios trabajados y mejorar la barra lateral con las skills frontend-design y frontend-ui-engineering.
+- **Diseño aplicado**: verde profundo `#173e30`, selección `#315e47`, acento claro `#e4f0d9`, texto `#f3f8f4` y ayuda `#c2d6c9`. Tipografía existente, cabecera de cuaderno, acción nueva conversación, historial con actualización junto al título y navegación al pie. En móvil se compacta la barra y se apila el visor.
+- **Implementado**: botón nativo Ocultar/Mostrar visor con aria-expanded y aria-controls; al cerrar desaparece la columna del visor y el chat ocupa todo su ancho. Al abrir se conserva la geometría. Progreso, ejercicios trabajados y diagnóstico retirados del DOM y de las burbujas; estado matemático y selección automática permanecen internos. Eliminados controles y consultas de progreso innecesarios en el cliente. Sin cambios en entidades ni API Java.
+- **Evidencia cliente**: 91 Node, V8 98,97 % líneas / 91,82 % ramas. Contrato Chromium comprueba ancho cero del visor, crecimiento del chat superior a 200 px en escritorio, recuperación, ausencia de indicadores y responsive 320–1440 px. WebGL2 correcto; capturas de escritorio abierto/cerrado y móvil revisadas.
+- **Verificación final**: 991 Java correctas, `check jacocoAggregateReport` con salida 0, JaCoCo en umbral en ocho módulos. Pendiente CI remota e integración en DEV; corrección 4/5, total 38/40, estado en curso.
+
+### 2026-11-18 10:18 · Altura común del tutor
+
+- **Petición**: barra lateral y visor con el mismo alto que el chat.
+- **Implementado**: las tres columnas se estiran a la altura de su fila en escritorio (>900 px); retirados el alineado superior y el tope de 48 rem del visor en esa vista. El historial mantiene la altura del chat con el visor oculto. En móvil se conserva la disposición apilada. Sin cambios de dominio, clases ni API.
+- **Pruebas**: contrato Chromium ampliado con 6 comprobaciones de caja negra a 1024/1440 px: igualdad de barra/chat, visor/chat y barra/chat con visor oculto. Responsive 320–1440 px y WebGL2 correctos; captura revisada. Sin nuevas pruebas unitarias para este ajuste CSS.
+- **Verificación**: 991 Java y 91 Node correctas; `check jacocoAggregateReport` con salida 0 y cobertura JaCoCo/V8 en umbral (V8 98,97 % líneas / 91,82 % ramas). Pendiente CI remota e integración en DEV. Checklist 38/40; corrección 4/5.

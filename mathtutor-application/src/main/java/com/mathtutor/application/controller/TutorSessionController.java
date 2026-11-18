@@ -17,7 +17,7 @@ import java.util.List;
 /** @brief UC-12: catálogo y sesiones del alumno; el módulo no admite actualización. */
 @RestController
 @RequestMapping("/api/tutor")
-@PreAuthorize("hasRole('ALUMNO')")
+@PreAuthorize("hasAnyRole('ALUMNO', 'PROFESOR')")
 public class TutorSessionController {
     private final TutorSessions sessions;
     public TutorSessionController(TutorSessions sessions) { this.sessions = sessions; }

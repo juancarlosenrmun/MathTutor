@@ -16,7 +16,7 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 
 /** UC-11/17/35: consultas propias y selección explícita; nunca expone soluciones. */
-@RestController @RequestMapping("/api/tutor") @PreAuthorize("hasRole('ALUMNO')")
+@RestController @RequestMapping("/api/tutor") @PreAuthorize("hasAnyRole('ALUMNO', 'PROFESOR')")
 public class StudyProgressController {
     private final ConversationStore store;
     private final StudyExercises exercises;

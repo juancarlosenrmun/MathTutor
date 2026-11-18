@@ -23,7 +23,7 @@ export function workspaceFor(role) {
     ALUMNO: { label: 'Alumno', title: 'Tu espacio de aprendizaje.',
       description: 'Elige un bloque para conversar con el tutor o explora funciones, derivadas e integrales en el laboratorio.' },
     PROFESOR: { label: 'Profesor', title: 'Tu espacio docente.',
-      description: 'Explora el laboratorio y consulta los permisos vigentes de tu cuenta de profesor.' },
+      description: 'Conversa con el tutor, explora el laboratorio y consulta los permisos de tu cuenta de profesor.' },
     ADMIN: { label: 'Administrador', title: 'Tu espacio de administración.',
       description: 'Consulta tu cuenta y tus permisos actuales. También puedes explorar el laboratorio.' },
   }[role] || { label: 'Sin rol asignado', title: 'Tu espacio.',
@@ -51,7 +51,7 @@ export function mountInterface(document, host, onView) {
     }
     for (const link of all('[data-guest]')) link.hidden = signedIn;
     for (const link of all('[data-member]')) link.hidden = !signedIn;
-    for (const link of all('[data-student]')) link.hidden = !signedIn || client.profile?.role !== 'ALUMNO';
+    for (const link of all('[data-student]')) link.hidden = !signedIn || !['ALUMNO', 'PROFESOR'].includes(client.profile?.role);
     one('#role').textContent = client.profile?.role || 'Sin sesión';
     one('#account-email').textContent = client.profile?.email || '—';
     one('#permission-description').textContent = permissionDescription(client.profile?.role);

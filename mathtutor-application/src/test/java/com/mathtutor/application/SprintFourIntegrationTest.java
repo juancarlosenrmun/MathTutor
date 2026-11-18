@@ -63,7 +63,7 @@ class SprintFourIntegrationTest {
         mvc.perform(get("/api/tutor/progress?size=101").with(actor("ALUMNO"))).andExpect(status().isBadRequest());
         mvc.perform(get("/api/tutor/sessions/"+session+"/history").with(actor("ALUMNO"))).andExpect(status().isOk()).andExpect(content().json("[]"));
         mvc.perform(get("/api/tutor/sessions/999999/history").with(actor("ALUMNO"))).andExpect(status().isNotFound());
-        mvc.perform(get("/api/tutor/progress").with(actor("PROFESOR"))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/tutor/progress").with(actor("PROFESOR"))).andExpect(status().isOk());
         mvc.perform(get("/api/tutor/progress")).andExpect(status().isUnauthorized());
         Long owner=user; user=users.save(User.builder().email(UUID.randomUUID()+"@test.es").passwordHash("h").active(true).role(User.Role.ALUMNO).build()).getId();
         mvc.perform(get("/api/tutor/sessions/"+session+"/history").with(actor("ALUMNO"))).andExpect(status().isNotFound());
@@ -75,7 +75,7 @@ class SprintFourIntegrationTest {
                 .andExpect(jsonPath("$[0].statement").isString()).andExpect(jsonPath("$[0].reference").doesNotExist());
         mvc.perform(get("/api/tutor/sessions/999999/bank").with(actor("ALUMNO"))).andExpect(status().isNotFound());
         mvc.perform(get("/api/tutor/sessions/"+session+"/bank?size=101").with(actor("ALUMNO"))).andExpect(status().isBadRequest());
-        mvc.perform(get("/api/tutor/sessions/"+session+"/bank").with(actor("PROFESOR"))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/tutor/sessions/"+session+"/bank").with(actor("PROFESOR"))).andExpect(status().isOk());
     }
     @Test void writesContextAndReplaysWithExactlyOneLlmCall() {
         UUID id=UUID.randomUUID();
