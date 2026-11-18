@@ -1,3 +1,10 @@
+## 2026-11-18 12:13 · Sprint 01 · README del arranque local con IA
+
+- **Petición**: actualizar README con la nueva forma de iniciar el tutor con IA.
+- **Documentado**: preparación inicial con `initLocalEnv`, edición de `.env`, arranque diario con `localAi`, comandos Windows/Linux/macOS y PostgreSQL existente con `-PskipLocalPostgres`. Commit `29dce2b` en `config-docs`; documentación separada del código según AGENTS.md.
+- **Verificación**: comandos cotejados con las tareas Gradle reales de `config`, variables del entorno y ausencia del bloque antiguo de arranque. Diff correcto. 0 pruebas nuevas de caja blanca/negra; cobertura no recalculada al ser documentación. Se conserva la evidencia previa de 994 Java y 91 Node con JaCoCo/V8 en umbral.
+- **Pendiente**: integración de README en DOC; CI e integración de configuración en DEV. Checklist S1 **22/25**, configuración **4/5**, estado `en curso`.
+
 ## 2026-11-18 11:18 · Sprint 01 · Configuración portable de PostgreSQL y arranque con IA
 
 - **Petición**: rama `config`, contraseña PostgreSQL en `.env` de cada dispositivo y comandos de arranque con IA portables. Mantenimiento de EN-01, autorizado expresamente; reutiliza los perfiles existentes de S2.

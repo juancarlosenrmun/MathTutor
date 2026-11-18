@@ -164,3 +164,9 @@ Mantenimiento solicitado expresamente por el usuario en `config`, desde DEV actu
 - Pruebas nuevas: 3 contratos Java de configuración, con archivo en ruta con espacios y entorno aislado, observados en rojo/verde. CLI: secretos generados, no sobrescritura, clave ausente rechazada, validación y plan de arranque. Compose real temporal: usuario/base/puerto propios, contraseña con `$`, autenticación TCP y limpieza de recursos creados. Sin llamadas al proveedor.
 - README actualizado por separado en `config-docs`, worktree `.worktrees/doc-config-local`, desde DOC actualizado, conforme a AGENTS.md. Sin cambios de dominio ni clases.
 - Verificación final: `check jacocoAggregateReport` correcto, salida 0; 994 Java y 91 Node sin fallos. JaCoCo en umbral en ocho módulos; V8 98,97 % líneas / 91,82 % ramas. Configuración local 4/5, checklist total 22/25. Pendiente CI remota e integración en DEV y documentación en DOC.
+
+### 2026-11-18 12:13 · README del arranque local con IA
+
+- README actualizado en `config-docs`, commit `29dce2b`, separando preparación inicial (`initLocalEnv` y edición de `.env`) del arranque diario (`localAi`). Comandos Windows/Linux/macOS y alternativa con PostgreSQL existente (`-PskipLocalPostgres`).
+- Comprobación documental: tareas cotejadas con los scripts Gradle de `config`, variables locales y retirada del bloque antiguo de JWT/perfiles manuales. Diff sin errores. Sin cambios de código, dominio o clases; 0 pruebas nuevas de caja blanca/negra y cobertura no recalculada. Evidencia anterior: 994 Java, 91 Node y cobertura JaCoCo/V8 en umbral.
+- Checklist conservada: 22/25; configuración 4/5, estado en curso. Pendiente CI e integración del código en DEV y del README en DOC.
