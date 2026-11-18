@@ -1,5 +1,7 @@
 # Progreso global
 
+Sprint 02 · fórmulas del tutor (2026-11-18 01:22): **en curso**, corrección 4/5 y checklist total **40/44**. LaTeX en línea y bloque con KaTeX local/MathML, comprobado durante streaming y al recuperar el historial. 990 Java y 87 Node correctas, Chromium y cobertura en umbral; V8 99,22/91,57 %. Pendiente CI e integración de `fix/login-registro`. Véase [[Sprint 02]].
+
 Sprint 01 · corrección de acceso (2026-11-18 01:10): **en curso**, fix 4/5 y checklist total **18/20**. Rama `fix/login-registro`; cuentas locales de administrador/alumno creadas y login verificado. El registro muestra los requisitos de contraseña rechazados. 990 Java, 81 Node y ocho comprobaciones Chrome correctas; JaCoCo/V8 en umbral. Pendiente CI e integración del fix. Véase [[Sprint 01]].
 
 Sprint 02 · corrección visual del tutor (2026-11-17 22:51): **en curso**, 4/5 comprobaciones locales; pendiente CI e integración en `DEV`. Respuestas Markdown con formato seguro y cambio de módulo solo al iniciar una conversación. 62/62 Node, Gradle y JaCoCo en verde; V8 1099/1108 líneas y 569/613 ramas. Checklist total **36/39**. Véase [[Sprint 02]].
@@ -24,7 +26,7 @@ Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlos
 | Sprint | Objetivo | Pts | Hechos | Estado |
 |---|---|---|---|---|
 | [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 base (33/33 pts); frontend 4/5; fix acceso 4/5; checklist 18/20 | en curso (fix/login-registro pendiente de CI e integración; histórico frontend conservado) |
-| [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 4/4 base (32/32 pts); corrección Markdown 4/5 | en curso (corrección pendiente de CI e integración; checklist 36/39) |
+| [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 4/4 base (32/32 pts); corrección Markdown 4/5; fórmulas 4/5 | en curso (corrección pendiente de CI e integración; checklist 40/44) |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 5/5 base (34/34 pts); frontend 5/5; corrección 4/5; checklist 39/40 | en curso (corrección pendiente de CI e integración) |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 5/5 UC y 33/33 puntos integrados; base 30/30; frontend 4/5; total 34/35 | en curso ([PR #17](https://github.com/juancarlosenrmun/MathTutor/pull/17) frontend con CI verde, pendiente de integración; base PR #16 integrada) |
 | [[Sprint 05\|S5]] | Hito: tutor socrático completo con tangentes y RGPD | 34 | 0/4 | pendiente |

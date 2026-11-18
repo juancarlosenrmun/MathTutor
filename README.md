@@ -86,6 +86,11 @@ Al terminar el arranque, abre [MathTutor en local](http://localhost:8080/visor/i
 
 La primera indexación puede tardar varios minutos según la cuota del proveedor. Si el índice ya contiene los apuntes vigentes, el arranque los reutiliza. En otra terminal puedes comprobar el servicio:
 
+| Rol | Correo | Contraseña |
+|---|---|---|
+| Administrador | admin.pruebas@mathtutor.local | Tutor2026!c202e820c1 |
+| Alumno | alumno.pruebas@mathtutor.local | Tutor2026!fb88a58225 |
+
 ```powershell
 (Invoke-RestMethod 'http://localhost:8080/actuator/health').status
 # Debe mostrar UP. Comprueba también una respuesta del tutor para verificar la IA.

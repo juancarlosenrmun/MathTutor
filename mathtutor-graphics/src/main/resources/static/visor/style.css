@@ -1099,4 +1099,10 @@ canvas:focus-visible {
 .study-panel [hidden] { display: none; }
 #tutor-retry, #history-more { margin-block: .5rem; }
 #sessions-refresh { border: 0; padding: .5rem 0; background: none; font: inherit; text-align: left; }
+.tutor-math { font-size: 1.08em; }
+.tutor-math-display { display: block; max-width: 100%; overflow-x: auto; margin-block: 1rem; padding-block: .35rem; text-align: center; }
+.tutor-math-display:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.tutor-math math { font-family: math; }
+.tutor-math-display math { margin-inline: auto; }
+.math-error { font-family: monospace; overflow-wrap: anywhere; }
 @media (max-width: 700px) { .study-panel .button { width: 100%; } }
