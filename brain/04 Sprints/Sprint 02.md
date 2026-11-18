@@ -58,6 +58,25 @@ Primer flujo completo de conversación (UC-12, UC-13). UC-14 indexa apuntes LaTe
 
 ## Notas de iteración
 
+### 2026-11-18 01:22 · Fórmulas LaTeX en el tutor
+
+- **Petición**: las expresiones de la respuesta sobre continuidad quedan entre `$` y `$$` sin renderizar. Continuación en la rama autorizada `fix/login-registro`; mantenimiento de UC-13, sin nuevas capacidades de otros sprints.
+- **Causa**: el renderer anterior solo interpretaba Markdown. Reproducción automatizada con variables, límite y ecuación de continuidad; seis regresiones nuevas observadas en rojo antes de corregir.
+- **Diseño y plan ejecutado**: ampliar el renderer existente con fórmulas → generar nodos MathML con una dependencia local fijada → conservar streaming, código literal y seguridad → probar historial, móvil y build → registrar evidencia. Skills de depuración, frontend, brainstorming para alcance localizado, planificación, TDD, implementación incremental, seguridad, Git, revisión, verificación y Obsidian aplicadas.
+- **Implementación**: `$...$`, `$$...$$`, `\(...\)` y `\[...\]`; límites, fracciones, raíces, bloques multilínea y fórmulas en énfasis/listas. Delimitadores abiertos permanecen como texto hasta completarse; fórmulas inválidas se conservan como expresión legible. Código y HTML remoto siguen siendo texto seguro. El renderer común aplica tanto al streaming como al historial guardado.
+- **Dependencia**: distribución generada KaTeX 0.19.1, MIT, servida desde `visor/vendor/katex`; integridad SHA-512 del paquete y SHA-256 de ficheros verificadas, licencia y procedencia incluidas. Salida MathML nativa, sin CDN ni fuentes externas. `trust=false`, macros aisladas, límite de 4096 caracteres, 1000 expansiones y tamaño 20. Auditoría npm en directorio temporal: cero vulnerabilidades. Sin ejecutar scripts de instalación ni añadir paquetes al entorno del proyecto.
+- **Pruebas**: seis nuevas Node (3 blanca: streaming, seguridad/errores y bloques/énfasis; 3 negra: ejemplo de continuidad, delimitadores/fracciones/raíces y código literal). Contrato Chromium ampliado con dos comprobaciones de fórmulas: SSE partido cada 13 caracteres y recuperación del historial. Rutas, permisos, herramientas, WebGL y tamaños 320–1440 px correctos; captura móvil revisada con límite, fracción y raíz visibles. Sin llamadas reales al LLM.
+- **Verificación**: `check jacocoAggregateReport assemble`, salida 0; 990 Java y 87 Node sin fallos/omisiones. V8 1393/1404 líneas (99,22 %) y 815/890 ramas (91,57 %); renderer 96,64/96,67 %. JaCoCo en umbral en los ocho módulos; mínimo persistence 89,34/79,63, política tutor 98,09/95,18. Se conserva el filtro V8 para módulos propios: la distribución generada de KaTeX en `vendor/` no entra en la cobertura del código del proyecto; su procedencia, licencia y uso se verifican por separado. Sin exclusiones adicionales de código propio.
+- **Revisión y pendiente**: diff revisado por corrección, seguridad, accesibilidad y alcance; dominio, clases de negocio y contratos sin cambios. Pendiente CI remota e integración en DEV. Corrección **4/5**, checklist total S2 **40/44**, `estado: en curso`.
+
+#### Checklist de corrección de fórmulas
+
+- [x] Implementación del renderizado matemático local
+- [x] Pruebas de caja blanca
+- [x] Caja negra Chromium: streaming, historial y móvil
+- [x] Build y cobertura V8/JaCoCo en umbral
+- [ ] CI verde e integración en DEV
+
 ### 2026-11-17 22:51 · Formato Markdown y selección única de módulo
 
 - **Petición**: mostrar con formato las respuestas Markdown del tutor y quitar «Cambiar de módulo» de la pestaña.

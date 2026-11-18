@@ -40,6 +40,35 @@ test('registro inválido, límite y servidor no muestran mensajes internos', asy
   }
 });
 
+test('registro explica los requisitos de contraseña rechazados por el servidor', async () => {
+  for (const reason of ['La contraseña debe tener al menos 12 caracteres',
+    'La contraseña debe contener al menos una mayúscula',
+    'La contraseña debe contener al menos una minúscula',
+    'La contraseña debe contener al menos un dígito',
+    'La contraseña debe contener al menos un carácter especial']) {
+    const client = new SessionClient(async path => path.endsWith('csrf-token')
+      ? { ok: true, json: async () => ({ csrfToken: 'csrf' }) }
+      : { ok: false, status: 400, json: async () => ({ error: reason }) });
+    await assert.rejects(client.register('alumno@test.es', 'ClaveSinSimbolo12'),
+      error => error.message === reason && error.status === 400);
+    assert.equal(client.token, null);
+  }
+});
+
+test('errores de cuenta, respuestas inesperadas y fallos internos conservan el mensaje seguro', async () => {
+  for (const body of [{ error: 'Email ya registrado' }, { error: 'SQLException: detalle interno' },
+    { error: { message: 'Error interno' } }, null, 'invalid-json']) {
+    const client = new SessionClient(async path => path.endsWith('csrf-token')
+      ? { ok: true, json: async () => ({ csrfToken: 'csrf' }) }
+      : { ok: false, status: 400, json: async () => {
+        if (body === 'invalid-json') throw new SyntaxError('JSON inválido');
+        return body;
+      } });
+    await assert.rejects(client.register('alumno@test.es', 'UnaClaveSegura12!'),
+      error => error.status === 400 && error.message.startsWith('No se pudo completar el registro.'));
+  }
+});
+
 test('refresh sin cookie es anónimo; error de red no se confunde con sesión caducada', async () => {
   const { client } = fixture(401);
   assert.equal(await client.restore(), null);

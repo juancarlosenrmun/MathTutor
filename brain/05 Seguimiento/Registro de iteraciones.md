@@ -1,3 +1,21 @@
+## 2026-11-18 01:22 · Sprint 02 · Fórmulas en las respuestas del tutor
+
+- **Petición**: expresiones de continuidad entre `$`/`$$` sin representar. Mantenimiento de UC-13 en la rama fix ya autorizada `fix/login-registro`.
+- **Causa y cambio**: el renderer solo admitía Markdown; ahora reconoce LaTeX en línea/bloque y delimitadores alternativos, con KaTeX 0.19.1 local y salida MathML nativa. Streaming incompleto y LaTeX inválido conservan texto legible; código literal intacto. Un mismo renderer para respuestas en directo e historial. Sin cambios de dominio, clases de negocio ni API.
+- **Seguridad/dependencia**: versión fijada, licencia MIT y procedencia/hash verificados; cero vulnerabilidades en auditoría npm temporal. Sin CDN ni fuentes externas. Comandos de confianza desactivados, macros por fórmula y límites de longitud, expansión y tamaño; HTML remoto nunca se interpreta.
+- **Pruebas**: 6 nuevas Node (3 blanca/3 negra), observadas en rojo/verde; 990 Java y 87 Node sin fallos/omisiones. Contrato Chromium ampliado con 2 comprobaciones de caja negra: fórmulas por SSE fragmentado y al recuperar historial. Navegación, móvil 320–1440 px y WebGL correctos; captura móvil revisada. Cero llamadas nuevas al LLM.
+- **Cobertura**: V8 1393/1404 líneas y 815/890 ramas (99,22/91,57 %), renderer 96,64/96,67 %. JaCoCo en umbral en ocho módulos, mínimo persistence 89,34/79,63 y tutor 98,09/95,18. Distribución generada de terceros en `vendor/` fuera del filtro V8 de módulos propios, con licencia/integridad verificadas; ninguna exclusión adicional de código propio. Build `check jacocoAggregateReport assemble` correcto, salida 0.
+- **Pendiente/estado**: CI remota e integración en DEV; corrección 4/5 y checklist S2 **40/44**, estado `en curso`. Revisión del diff sin hallazgos importantes pendientes.
+
+## 2026-11-18 01:10 · Sprint 01 · Login, registro y cuentas de prueba
+
+- **Petición**: login/registro no funcionan; crear administrador y alumno para probar la web. Usuario solicita rama fix; creada `fix/login-registro` desde DEV actualizada. Mantenimiento de UC-01/UC-03, sin adelantar capacidades administrativas de otros sprints.
+- **Diagnóstico e implementación**: login y registro reproducidos correctamente en Chrome. El error genérico comunicado se reproduce cuando una contraseña incumple requisitos; el cliente ocultaba el mensaje específico del servidor. Se muestran únicamente cinco validaciones conocidas de contraseña; errores de cuentas e internos permanecen genéricos. No se conoce el motivo exacto del intento original del usuario.
+- **Cuentas**: administrador y alumno locales creados con contraseñas hasheadas por el backend. Promoción local limitada al administrador recién registrado, expresamente solicitada; el registro público mantiene ALUMNO. Login y rol de ambas cuentas comprobados. Credenciales entregadas fuera del repositorio; cuentas temporales de diagnóstico eliminadas.
+- **Pruebas**: 2 nuevas (1 blanca, 1 negra con cinco requisitos), regresión observada roja/verde; 990 Java y 81 Node sin fallos/omisiones. Ocho comprobaciones Chrome reales: validación, registro, cierre, login alumno, apertura del tutor, recarga/restauración, login administrador y protección sin sesión. Cero llamadas nuevas al LLM.
+- **Cobertura**: V8 1356/1367 líneas y 788/864 ramas (99,20/91,20 %); JaCoCo en umbral en los ocho módulos, mínimo persistence 89,34/79,63; tutor 98,09/95,18. `check jacocoAggregateReport assemble` correcto (salida 0); revisión completa del diff sin hallazgos pendientes. Sin nuevas exclusiones.
+- **Pendiente/estado**: CI remota e integración del fix en DEV. Corrección 4/5; checklist S1 **18/20**, estado `en curso`. Aplicación real reiniciada y salud UP; acceso al tutor verificado como alumno. Dominio y clases sin cambios.
+
 ## 2026-11-18 00:46 · Sprint 04 · Arranque local real y corrección del README
 
 - **Petición**: los comandos del README no arrancan con IA; lanzar la aplicación y corregirlos.

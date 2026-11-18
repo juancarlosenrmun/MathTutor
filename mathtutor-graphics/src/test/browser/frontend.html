@@ -30,8 +30,9 @@ try {
       }
       if (path.endsWith('/messages')) {
         const body=JSON.parse(options.body);
-        testState.turns=[{id:1,...body,response:'Piensa en el dominio.',status:'COMPLETADO',verdict:'CORRECTO',diagnosis:'NINGUNO',topic:'derivadas'}];
-        return stream([{type:'TOKEN',content:'Piensa en el dominio.'},{type:'DONE'}]);
+        const response=testState.reply || 'Piensa en el dominio.';
+        testState.turns=[{id:1,...body,response,status:'COMPLETADO',verdict:'CORRECTO',diagnosis:'NINGUNO',topic:'derivadas'}];
+        return stream([...response.match(/.{1,13}/gs).map(content=>({type:'TOKEN',content})),{type:'DONE'}]);
       }
       if (path.endsWith('/graphics')) return stream([{type:'GRAPHIC_SPEC',spec:JSON.parse(options.body)},{type:'DONE'}]);
       const status = path.endsWith('csrf-token') ? 200 : path.endsWith('refresh') ? 401 : testState.status;
@@ -98,8 +99,27 @@ try {
   assert(doc.querySelector('#tutor-message').value === '¿Qué es la continuidad de una función?',
     'La pregunta sugerida no corresponde al módulo');
   doc.querySelector('#tutor-message').value = '¿Qué es una función?';
+  win.testState.reply = String.raw`Piensa en el dominio. Una función $f$ es continua en un punto $a$ si:
+
+1. El valor $f(a)$ está definido.
+2. Existe el límite $\lim_{x\to a}f(x)$.
+3. Ambos coinciden:
+
+$$\lim_{x\to a}f(x) = f(a)$$
+
+Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces.`;
   doc.querySelector('#tutor-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
   assert(doc.querySelector('#tutor-history').textContent.includes('Piensa en el dominio.'), 'SSE no llega al historial');
+  const mathRendered = () => {
+    const answer=doc.querySelector('.tutor-answer-body');
+    assert(answer.querySelectorAll('math').length===7, 'Faltan fórmulas del ejemplo de continuidad');
+    assert(answer.querySelector('math[display="block"] munder'), 'El límite no se representa en bloque');
+    assert(answer.querySelector('mfrac') && answer.querySelector('msqrt'), 'Faltan fracción o raíz');
+    assert(!answer.querySelector('.math-error'), 'Hay fórmulas sin representar');
+    assert(![...answer.querySelectorAll('span')].some(node=>node.childNodes.length===1
+      && node.firstChild.nodeType===3 && node.textContent.includes('$')), 'Quedan delimitadores visibles');
+  };
+  mathRendered();
   assert(doc.querySelector('#tutor-status').textContent.includes('completada'), 'Falta fin de turno');
   assert(doc.querySelector('#tutor-diagnosis').textContent.includes('verificado'), 'Falta diagnóstico persistido');
   const messageCall = win.testState.calls.find(([path]) => path.endsWith('/messages'));
@@ -118,6 +138,7 @@ try {
   doc.querySelector('#tutor-new').click();
   doc.querySelector('#tutor-sessions button').click();await settle();
   assert(doc.querySelector('#tutor-history').textContent.includes('Piensa en el dominio.'),'La conversación guardada no se recupera');
+  mathRendered();
   await go('laboratorio');
   assert(doc.querySelector('.lab-layout > .viewer-panel'), 'El visor no vuelve al laboratorio');
   doc.querySelector('#curve-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();

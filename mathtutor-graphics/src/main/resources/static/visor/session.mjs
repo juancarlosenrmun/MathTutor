@@ -1,3 +1,12 @@
+// Solo se muestran validaciones conocidas; los errores de cuenta e internos siguen siendo genéricos.
+const registrationMessages = new Set([
+  'La contraseña debe tener al menos 12 caracteres',
+  'La contraseña debe contener al menos una mayúscula',
+  'La contraseña debe contener al menos una minúscula',
+  'La contraseña debe contener al menos un dígito',
+  'La contraseña debe contener al menos un carácter especial',
+]);
+
 /** Token solo en memoria: nunca se persiste en localStorage ni sessionStorage. */
 export class SessionClient {
   constructor(fetcher = globalThis.fetch, locks = globalThis.navigator?.locks) {
@@ -32,9 +41,18 @@ export class SessionClient {
     this.clear();
     const generation = this.query;
     const response = await this.post(action, body);
-    if (!response.ok) throw this.failure(response, action === 'register'
-      ? 'No se pudo completar el registro. Revisa los datos o inicia sesión si ya tienes cuenta.'
-      : 'Credenciales inválidas o acceso temporalmente limitado. Revisa el correo y la contraseña.');
+    if (!response.ok) {
+      const failure = this.failure(response, action === 'register'
+        ? 'No se pudo completar el registro. Revisa los datos o inicia sesión si ya tienes cuenta.'
+        : 'Credenciales inválidas o acceso temporalmente limitado. Revisa el correo y la contraseña.');
+      if (action === 'register' && response.status === 400) {
+        try {
+          const reason = (await response.json())?.error;
+          if (registrationMessages.has(reason)) failure.message = reason;
+        } catch { /* Una respuesta ilegible conserva el mensaje seguro. */ }
+      }
+      throw failure;
+    }
     const profile = (await response.json()).data;
     if (generation === this.query) { this.token = profile.accessToken; this.profile = profile; }
   }

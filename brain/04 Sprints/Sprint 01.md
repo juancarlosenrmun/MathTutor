@@ -10,6 +10,8 @@ Anterior: — · Siguiente: [[Sprint 02]] · Plan: [[Sprint 01 - Plan de cierre]
 
 ## Estado vigente
 
+Corrección de acceso del 2026-11-18 en `fix/login-registro`: 4/5 comprobaciones verificadas; pendiente CI e integración. Checklist total vigente **18/20**. Se mantiene el estado `en curso` y la evidencia histórica de la ampliación anterior.
+
 Los cinco elementos del sprint base están implementados, verificados por CI e integrados en DEV. La ampliación frontend solicitada después del cierre está verificada localmente en `Sprint-1-Frontend`, pendiente de CI remota e integración; véase su checklist al final. El histórico se conserva en [[Registro de iteraciones]].
 
 | ID | Elemento | Requisitos | Puntos | Estado |
@@ -56,6 +58,25 @@ Los cinco elementos del sprint base están implementados, verificados por CI e i
 Todos cumplen 80/70; tutor cumple 90/90. JaCoCo excluye únicamente el arranque `MathTutorApplication` y DTO de common sin lógica (excepto `PedagogicalAction`). Interfaces sin código ejecutable no aportan contadores. V8 excluye únicamente `main.mjs` (importar y arrancar); `app.mjs` y toda la lógica del cliente se miden. No se excluyen adaptadores, seguridad ni persistencia.
 
 ## Notas de iteración
+
+### 2026-11-18 01:10 · Corrección de acceso y cuentas locales
+
+- Petición: revisar login/registro, crear administrador y alumno para probar la web. El usuario indica trabajar en una rama fix; se crea `fix/login-registro` desde DEV tras `git pull --ff-only`. Se encuadra como mantenimiento de UC-01/UC-03 de S1, aunque el último arranque correspondía a S4.
+- Diagnóstico: registro e inicio de sesión correctos en la aplicación real; el mensaje comunicado por el usuario es genérico. Reproducido con contraseña sin símbolo: HTTP 400 contiene el requisito incumplido, pero el cliente lo ocultaba. No se atribuye el intento original a una contraseña concreta ni se afirma un fallo general del backend.
+- Cambio localizado: mostrar únicamente cinco mensajes conocidos de requisitos de contraseña; conservar respuestas genéricas para cuentas existentes, errores internos y respuestas inesperadas. Sin cambios de API, permisos, política de contraseñas ni diseño de dominio/clases.
+- Cuentas locales creadas mediante registro con hash del backend: `admin.pruebas@mathtutor.local` y `alumno.pruebas@mathtutor.local`. Promoción administrativa local explícita solicitada por el usuario, limitada al ID recién creado; el alta pública sigue restringida a ALUMNO. Contraseñas y tokens fuera de Git. Datos temporales de diagnóstico eliminados.
+- Plan ejecutado: reproducción HTTP/navegador → prueba roja → corrección mínima → regresiones/seguridad → build/cobertura → navegador real y registro de evidencia. Skills de depuración, brainstorming para alcance localizado, planificación, TDD, implementación incremental, Git, seguridad, revisión, verificación y Obsidian aplicadas.
+- Pruebas nuevas: 1 de caja blanca (respuesta inesperada/JSON inválido/errores de cuenta e internos) y 1 de caja negra (cinco requisitos de contraseña). Observada prueba roja antes de corregir y verde después. Ocho comprobaciones adicionales de caja negra en Chrome real: validación visible, registro, cierre, login alumno, acceso/apertura de conversación del tutor, restauración al recargar, login administrador y protección anónima. No se realiza una nueva llamada al LLM.
+- Verificación: `check jacocoAggregateReport assemble`, salida Gradle 0; 990 Java y 81 Node, sin fallos ni omisiones. V8: 1356/1367 líneas (99,20 %) y 788/864 ramas (91,20 %). JaCoCo líneas/ramas: application 95,40/87,50; auth 96,91/87,65; cas 92,44/87,97; common 92,31/97,92; graphics 100/93,62; llm 95,18/86,24; persistence 89,34/79,63; tutor 98,09/95,18. Sin nuevas exclusiones. Diff completo revisado, sin hallazgos pendientes.
+- Aplicación reiniciada en `http://localhost:8080/visor/index.html`, salud UP. El tutor requiere sesión de alumno conforme a UC-03; administrador validado en su espacio. Pendiente CI remota e integración del fix en DEV; no se da por integrado.
+
+#### Checklist de la corrección de acceso
+
+- [x] Implementación y creación de las dos cuentas locales verificadas
+- [x] Pruebas de caja blanca
+- [x] Pruebas de caja negra y navegador real
+- [x] Build y cobertura en umbral
+- [ ] CI verde e integración en DEV
 
 - UC-03 aplica denegación por defecto. Alumno: contenido y sesiones propias; profesor: contenido y estadísticas agregadas; administrador: gestión. `/api/access/sessions/{id}` no revela datos: 204 para propietario con permiso, 403 para ajena/inexistente/sin permiso, 401 sin identidad activa. El acceso individual administrativo ajeno requiere la auditoría de UC-09 y queda pendiente de su sprint.
 - El registro público solo permite ALUMNO; elegir PROFESOR o ADMIN se rechaza. El filtro consulta el usuario activo en cada petición; la interfaz refresca el rol cada 3 s con timeout de 2 s y descarta respuestas obsoletas.

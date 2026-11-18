@@ -1,6 +1,28 @@
+import katex from './vendor/katex/katex.mjs';
+
+function math(document, token) {
+  const display = token.startsWith('$$') || token.startsWith('\\[');
+  const delimiterSize = token.startsWith('$') && !display ? 1 : 2;
+  const source = token.slice(delimiterSize, -delimiterSize);
+  const node = document.createElement('span');
+  node.className = display ? 'tutor-math tutor-math-display' : 'tutor-math';
+  if (display) node.setAttribute('tabindex', '0');
+  try {
+    if (source.length > 4096) throw new Error('Fórmula demasiado larga');
+    // MathML nativo: accesible y sin fuentes, CDN ni interpretación de HTML remoto.
+    katex.render(source, node, { output: 'mathml', displayMode: display, throwOnError: true,
+      trust: false, strict: 'ignore', maxExpand: 1000, maxSize: 20, macros: {} });
+  } catch {
+    node.textContent = source;
+    node.className += ' math-error';
+    node.setAttribute('title', 'No se pudo representar esta fórmula; se muestra su expresión original.');
+  }
+  return node;
+}
+
 // Construye nodos DOM sin interpretar HTML procedente del tutor.
 function inline(document, parent, source) {
-  const tokens = /(`[^`\n]+`|\*\*[^*\n]+\*\*|\*[^*\n]+\*|\[[^\]\n]+\]\([^\s)]+\))/g;
+  const tokens = /(`[^`\n]+`|(?<![\\$])\$\$[\s\S]+?(?<!\\)\$\$|(?<![\\$])\$(?!\$)(?:\\[^\n]|[^$\\\n])+?(?<!\\)\$(?!\$)|\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\]|\*\*[^*\n]+\*\*|\*[^*\n]+\*|\[[^\]\n]+\]\([^\s)]+\))/g;
   let cursor = 0;
   for (const match of source.matchAll(tokens)) {
     if (match.index > cursor) {
@@ -12,10 +34,12 @@ function inline(document, parent, source) {
     let node;
     if (token.startsWith('`')) {
       node = document.createElement('code'); node.textContent = token.slice(1, -1);
+    } else if (token.startsWith('$') || token.startsWith('\\(') || token.startsWith('\\[')) {
+      node = math(document, token);
     } else if (token.startsWith('**')) {
-      node = document.createElement('strong'); node.textContent = token.slice(2, -2);
+      node = document.createElement('strong'); inline(document, node, token.slice(2, -2));
     } else if (token.startsWith('*')) {
-      node = document.createElement('em'); node.textContent = token.slice(1, -1);
+      node = document.createElement('em'); inline(document, node, token.slice(1, -1));
     } else {
       const [, label, href] = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(token);
       if (/^(https?:\/\/|mailto:)/i.test(href)) {
@@ -53,6 +77,17 @@ export function renderTutorMarkdown(document, target, markdown) {
       code.textContent = body.join('\n'); pre.append(code); nodes.push(pre);
       continue;
     }
+    const opener = line.trim();
+    if (opener === '$$' || opener === '\\[') {
+      const closer = opener === '$$' ? '$$' : '\\]';
+      let end = index + 1;
+      while (end < lines.length && lines[end].trim() !== closer) end++;
+      if (end < lines.length) {
+        const node = document.createElement('div');
+        node.append(math(document, lines.slice(index, end + 1).join('\n').trim()));
+        nodes.push(node); index = end + 1; continue;
+      }
+    }
     const heading = /^(#{1,6})\s+(.+)$/.exec(line);
     if (heading) {
       const node = document.createElement(`h${heading[1].length}`);
@@ -74,7 +109,9 @@ export function renderTutorMarkdown(document, target, markdown) {
       inline(document, node, body.join(' ')); nodes.push(node); continue;
     }
     const paragraph = [];
-    while (index < lines.length && lines[index].trim() && !/^(#{1,6}\s|\s*```|\s*[-*+]\s|\s*\d+\.\s|>\s?)/.test(lines[index])) paragraph.push(lines[index++]);
+    while (index < lines.length && lines[index].trim()
+      && !(paragraph.length && ['$$', '\\['].includes(lines[index].trim()))
+      && !/^(#{1,6}\s|\s*```|\s*[-*+]\s|\s*\d+\.\s|>\s?)/.test(lines[index])) paragraph.push(lines[index++]);
     if (!paragraph.length) { paragraph.push(lines[index++]); }
     const node = document.createElement('p'); inline(document, node, paragraph.join('\n')); nodes.push(node);
   }
