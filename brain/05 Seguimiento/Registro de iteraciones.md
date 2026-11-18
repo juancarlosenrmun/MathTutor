@@ -1,3 +1,13 @@
+## 2026-11-18 11:18 · Sprint 01 · Configuración portable de PostgreSQL y arranque con IA
+
+- **Petición**: rama `config`, contraseña PostgreSQL en `.env` de cada dispositivo y comandos de arranque con IA portables. Mantenimiento de EN-01, autorizado expresamente; reutiliza los perfiles existentes de S2.
+- **Implementado**: host/puerto/base/usuario/contraseña parametrizados en Spring y Compose, sin contraseña de respaldo en dev. JWT configurable desde `.env`. `initLocalEnv` genera secretos con soporte LF/CRLF y no sobrescribe archivos; `localAi` valida, espera PostgreSQL y activa Google y apuntes. `bootRun` parte de la raíz. Compose recibe credenciales por entorno para preservar `$` sin exponer partes del secreto en advertencias. Sin dependencias nuevas ni rutas de usuario.
+- **Estado local**: `.env` preparado conservando la contraseña anterior del volumen de este equipo; permanece ignorado. Solo se versiona el ejemplo vacío. No se alteraron datos de la base existente.
+- **Pruebas**: 994 Java y 91 Node correctas. Nuevas: 3 contratos Java de caja negra (archivo en ruta con espacios, prioridad del entorno y ausencia de contraseña pública), observados en rojo/verde; 5 comprobaciones CLI de caminos del generador/validador (crear, conservar, rechazar clave ausente, aceptar y planificar arranque), y 1 contrato real Compose con credenciales/puerto propios, `$`, autenticación TCP y limpieza. Entornos Java aislados de secretos del equipo. Sin llamadas al proveedor de IA; la clave y cuota reales se necesitan para usarlo.
+- **Cobertura**: `check jacocoAggregateReport` correcto, salida 0; JaCoCo en umbral en ocho módulos y V8 98,97/91,82 %. Los scripts Gradle de arranque se comprueban mediante CLI/Compose; no se añaden exclusiones de código.
+- **Documentación**: README en `config-docs`, desde DOC actualizado, commit 0b08191; Windows/Linux/macOS, JAR, variables, puertos y preservación de credenciales en volúmenes existentes. Código y documentación separados conforme a AGENTS.md. No cambian dominio, clases ni contratos Java.
+- **Pendiente**: CI remota e integración de `config` en DEV y `config-docs` en DOC. Configuración 4/5; checklist S1 **22/25**, estado `en curso`.
+
 ## 2026-11-18 10:18 · Sprint 04 · Altura de los paneles del tutor
 
 - **Petición**: barra lateral y visor del mismo alto que el chat.
