@@ -1,5 +1,7 @@
 # Progreso global
 
+Sprint 04 · altura de paneles (2026-11-18 10:18): **en curso**, corrección **4/5**, checklist **38/40**. Barra lateral, chat y visor alineados en altura. 991 Java, 91 Node y Chromium correctos; JaCoCo/V8 en umbral. Pendiente CI e integración. Véase [[Sprint 04]].
+
 Sprint 04 · visor lateral y chat (2026-11-18 10:16): **en curso**, corrección **4/5**, checklist **38/40**. Chat ampliable al ocultar el visor, indicadores de ejercicio internos y barra lateral con contraste. 991 Java, 91 Node y Chromium correctos; V8 98,97/91,82 %, JaCoCo en umbral. Pendiente CI e integración. Véase [[Sprint 04]].
 
 Sprint 04 · corrección del tutor (2026-11-18 10:00): **en curso**, fix **4/5**, checklist **38/40**. 991 Java, 90 Node y Chromium correctos; JaCoCo/V8 en umbral. Pendiente CI e integración de `fix/tutor-visor-sidebar`. Véase [[Sprint 04]].
@@ -32,7 +34,7 @@ Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlos
 | [[Sprint 01\|S1]] | Base técnica, acceso y visor inicial | 33 | 5/5 base (33/33 pts); frontend 4/5; fix acceso 4/5; checklist 18/20 | en curso (fix/login-registro pendiente de CI e integración; histórico frontend conservado) |
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 4/4 base (32/32 pts); corrección Markdown 4/5; fórmulas 4/5 | en curso (corrección pendiente de CI e integración; checklist 40/44) |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 5/5 base (34/34 pts); frontend 5/5; corrección 4/5; checklist 39/40 | en curso (corrección pendiente de CI e integración) |
-| [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 5/5 UC y 33/33 puntos integrados; base 30/30; frontend 4/5; corrección de visor y chat 4/5; total 38/40 | en curso ([PR #17](https://github.com/juancarlosenrmun/MathTutor/pull/17) frontend con CI verde, pendiente de integración; base PR #16 integrada) |
+| [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 5/5 UC y 33/33 puntos integrados; base 30/30; frontend 4/5; corrección de visor y chat (altura alineada) 4/5; total 38/40 | en curso ([PR #17](https://github.com/juancarlosenrmun/MathTutor/pull/17) frontend con CI verde, pendiente de integración; base PR #16 integrada) |
 | [[Sprint 05\|S5]] | Hito: tutor socrático completo con tangentes y RGPD | 34 | 0/4 | pendiente |
 | [[Sprint 06\|S6]] | Seguridad transversal, filtrado, banco de ejercicios y superficies iluminadas | 32 | 0/4 | pendiente |
 | [[Sprint 07\|S7]] | Hito: todos los Must completados; evaluación y selección por intersección | 31 | 0/3 | pendiente |

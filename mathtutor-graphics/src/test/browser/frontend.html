@@ -145,6 +145,15 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   for (const width of [1440,1024,768,375,320]) {
     frame.style.width=width+'px';await settle();
     assert(doc.documentElement.scrollWidth<=doc.documentElement.clientWidth+1,'Desbordamiento de herramientas S4 a '+width);
+    if (width>900) {
+      const height=chat.getBoundingClientRect().height;
+      for (const panel of [slot,doc.querySelector('.tutor-guide')]) {
+        assert(Math.abs(panel.getBoundingClientRect().height-height)<1,'Alturas del tutor desalineadas a '+width);
+      }
+      toggle.click();await settle();
+      assert(Math.abs(doc.querySelector('.tutor-guide').getBoundingClientRect().height-chat.getBoundingClientRect().height)<1,'Historial desalineado con visor oculto');
+      toggle.click();await settle();
+    }
   }
   doc.querySelector('#tutor-new').click();
   doc.querySelector('#tutor-sessions button').click();await settle();

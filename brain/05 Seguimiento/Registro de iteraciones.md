@@ -1,3 +1,11 @@
+## 2026-11-18 10:18 · Sprint 04 · Altura de los paneles del tutor
+
+- **Petición**: barra lateral y visor del mismo alto que el chat.
+- **Implementado**: columnas estiradas a la altura común de la fila en escritorio; sin límite de altura del visor en esa vista. Historial alineado también al ocultar el visor; móvil apilado conservado. Sin cambios de dominio ni API.
+- **Pruebas**: 991 Java y 91 Node sin fallos; 0 nuevas unitarias y 6 comprobaciones de caja negra añadidas al contrato Chromium (1024/1440 px, paneles abiertos y visor oculto). Responsive 320–1440 px, WebGL2 y captura correctos.
+- **Cobertura**: JaCoCo y V8 en umbral; V8 98,97 % líneas / 91,82 % ramas. `check jacocoAggregateReport` correcto, salida 0; diff revisado.
+- **Pendiente**: CI remota e integración en DEV de `fix/tutor-visor-sidebar`. Checklist S4 **38/40**, corrección **4/5**, estado `en curso`.
+
 ## 2026-11-18 10:16 · Sprint 04 · Visor lateral, chat adaptable y barra lateral
 
 - **Petición**: ocultar el visor horizontalmente y ampliar el chat; retirar progreso y ejercicios trabajados; aplicar las skills frontend-design y frontend-ui-engineering al historial.

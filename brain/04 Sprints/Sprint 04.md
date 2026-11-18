@@ -76,7 +76,7 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 
 ## Corrección del tutor: visor, ejercicios y acceso docente
 
-- [x] Visor ocultable lateralmente con chat adaptable, barra lateral con contraste y progreso interno
+- [x] Visor ocultable lateralmente con chat adaptable, paneles de igual altura, barra lateral con contraste y progreso interno
 - [x] Pruebas de caja blanca del inicio de ejercicio desde el mensaje
 - [x] Pruebas de caja negra del cliente y Chromium responsive
 - [x] Verificación Java y cobertura JaCoCo/V8 en umbral
@@ -151,3 +151,10 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 - **Implementado**: botón nativo Ocultar/Mostrar visor con aria-expanded y aria-controls; al cerrar desaparece la columna del visor y el chat ocupa todo su ancho. Al abrir se conserva la geometría. Progreso, ejercicios trabajados y diagnóstico retirados del DOM y de las burbujas; estado matemático y selección automática permanecen internos. Eliminados controles y consultas de progreso innecesarios en el cliente. Sin cambios en entidades ni API Java.
 - **Evidencia cliente**: 91 Node, V8 98,97 % líneas / 91,82 % ramas. Contrato Chromium comprueba ancho cero del visor, crecimiento del chat superior a 200 px en escritorio, recuperación, ausencia de indicadores y responsive 320–1440 px. WebGL2 correcto; capturas de escritorio abierto/cerrado y móvil revisadas.
 - **Verificación final**: 991 Java correctas, `check jacocoAggregateReport` con salida 0, JaCoCo en umbral en ocho módulos. Pendiente CI remota e integración en DEV; corrección 4/5, total 38/40, estado en curso.
+
+### 2026-11-18 10:18 · Altura común del tutor
+
+- **Petición**: barra lateral y visor con el mismo alto que el chat.
+- **Implementado**: las tres columnas se estiran a la altura de su fila en escritorio (>900 px); retirados el alineado superior y el tope de 48 rem del visor en esa vista. El historial mantiene la altura del chat con el visor oculto. En móvil se conserva la disposición apilada. Sin cambios de dominio, clases ni API.
+- **Pruebas**: contrato Chromium ampliado con 6 comprobaciones de caja negra a 1024/1440 px: igualdad de barra/chat, visor/chat y barra/chat con visor oculto. Responsive 320–1440 px y WebGL2 correctos; captura revisada. Sin nuevas pruebas unitarias para este ajuste CSS.
+- **Verificación**: 991 Java y 91 Node correctas; `check jacocoAggregateReport` con salida 0 y cobertura JaCoCo/V8 en umbral (V8 98,97 % líneas / 91,82 % ramas). Pendiente CI remota e integración en DEV. Checklist 38/40; corrección 4/5.
