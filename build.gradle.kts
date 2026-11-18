@@ -15,6 +15,18 @@ plugins {
 group = "com.mathtutor"
 version = "0.0.1-SNAPSHOT"
 
+tasks.register("initLocalEnv") {
+    group = "application"
+    description = "Prepara el archivo privado .env de este dispositivo"
+    dependsOn(":mathtutor-application:initLocalEnv")
+}
+
+tasks.register("localAi") {
+    group = "application"
+    description = "Arranca PostgreSQL y el tutor local con IA"
+    dependsOn(":mathtutor-application:localAi")
+}
+
 repositories {
     mavenCentral()
     maven { url = uri("https://repo.spring.io/snapshot") }

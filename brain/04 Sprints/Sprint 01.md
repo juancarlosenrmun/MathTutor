@@ -10,7 +10,7 @@ Anterior: — · Siguiente: [[Sprint 02]] · Plan: [[Sprint 01 - Plan de cierre]
 
 ## Estado vigente
 
-Corrección de acceso del 2026-11-18 en `fix/login-registro`: 4/5 comprobaciones verificadas; pendiente CI e integración. Checklist total vigente **18/20**. Se mantiene el estado `en curso` y la evidencia histórica de la ampliación anterior.
+Configuración local portable en `config`: 4/5 comprobaciones verificadas, pendiente CI e integración. Checklist total vigente **22/25**, estado `en curso`. Se conserva la evidencia histórica de acceso y frontend.
 
 Los cinco elementos del sprint base están implementados, verificados por CI e integrados en DEV. La ampliación frontend solicitada después del cierre está verificada localmente en `Sprint-1-Frontend`, pendiente de CI remota e integración; véase su checklist al final. El histórico se conserva en [[Registro de iteraciones]].
 
@@ -145,3 +145,28 @@ Verificación local de esta iteración: 31 pruebas Node, V8 **99,80 % líneas / 
 Vista previa reiniciada con los recursos actuales en `http://127.0.0.1:8081/visor/index.html`: salud HTTP 200, siete vistas y módulo `workspaceFor` comprobados. Secreto JWT nuevo únicamente en entorno del proceso; no se crean cuentas de prueba ni se realizan llamadas al LLM.
 
 Estado de la iteración: **3/3 comprobaciones locales**. La ampliación frontend conserva **4/5**, pendiente únicamente de CI remota e integración en DEV. El sprint base conserva 5/5 UC/EN; frontmatter `en curso` mientras siga pendiente la integración de la ampliación.
+
+## Configuración local portable (EN-01)
+
+Mantenimiento solicitado expresamente por el usuario en `config`, desde DEV actualizado; utiliza los perfiles de IA existentes sin adelantar casos de uso.
+
+- [x] PostgreSQL configurable por dispositivo desde `.env`, sin contraseña de respaldo en dev
+- [x] Generación de secretos e inicio local comunes a Windows/Linux/macOS
+- [x] Pruebas de configuración y contrato CLI/Compose verificadas
+- [x] Build completo y cobertura JaCoCo/V8 en umbral
+- [ ] CI verde e integración en DEV
+
+### 2026-11-18 11:18 · Configuración de PostgreSQL y arranque con IA
+
+- `POSTGRES_HOST/PORT/DB/USER/PASSWORD` compartidos entre Spring y Compose; contraseña obligatoria y puerto local configurable. El secreto JWT también puede proceder del `.env` local.
+- `initLocalEnv` crea secretos aleatorios con normalización LF/CRLF y conserva archivos existentes. `localAi` valida las variables, arranca y espera PostgreSQL, y ejecuta el tutor con Google y apuntes indexados. Directorio de trabajo en la raíz; rutas derivadas del proyecto. Variables de terminal prioritarias; Compose recibe los valores privados por entorno para evitar reinterpretar `$`.
+- `.env` de este equipo preparado conservando la contraseña anterior; excluido de Git. `.env.example` versionado sin secretos. Las credenciales de volúmenes existentes deben coincidir: no se cambian contraseñas ni se borran datos al editar `.env`.
+- Pruebas nuevas: 3 contratos Java de configuración, con archivo en ruta con espacios y entorno aislado, observados en rojo/verde. CLI: secretos generados, no sobrescritura, clave ausente rechazada, validación y plan de arranque. Compose real temporal: usuario/base/puerto propios, contraseña con `$`, autenticación TCP y limpieza de recursos creados. Sin llamadas al proveedor.
+- README actualizado por separado en `config-docs`, worktree `.worktrees/doc-config-local`, desde DOC actualizado, conforme a AGENTS.md. Sin cambios de dominio ni clases.
+- Verificación final: `check jacocoAggregateReport` correcto, salida 0; 994 Java y 91 Node sin fallos. JaCoCo en umbral en ocho módulos; V8 98,97 % líneas / 91,82 % ramas. Configuración local 4/5, checklist total 22/25. Pendiente CI remota e integración en DEV y documentación en DOC.
+
+### 2026-11-18 12:13 · README del arranque local con IA
+
+- README actualizado en `config-docs`, commit `29dce2b`, separando preparación inicial (`initLocalEnv` y edición de `.env`) del arranque diario (`localAi`). Comandos Windows/Linux/macOS y alternativa con PostgreSQL existente (`-PskipLocalPostgres`).
+- Comprobación documental: tareas cotejadas con los scripts Gradle de `config`, variables locales y retirada del bloque antiguo de JWT/perfiles manuales. Diff sin errores. Sin cambios de código, dominio o clases; 0 pruebas nuevas de caja blanca/negra y cobertura no recalculada. Evidencia anterior: 994 Java, 91 Node y cobertura JaCoCo/V8 en umbral.
+- Checklist conservada: 22/25; configuración 4/5, estado en curso. Pendiente CI e integración del código en DEV y del README en DOC.

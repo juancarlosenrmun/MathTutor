@@ -1,3 +1,7 @@
+import java.security.SecureRandom
+import java.util.Base64
+import java.util.Properties
+
 plugins {
     id("java")
     id("application")
@@ -10,6 +14,87 @@ plugins {
 group = "com.mathtutor"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_21
+
+// Ambos lanzadores resuelven .env desde la raíz, también en Windows.
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    workingDir(rootProject.projectDir)
+}
+
+val localEnvFile = rootProject.layout.projectDirectory.file(
+    providers.gradleProperty("localEnvFile").orElse(".env").get()).asFile
+
+tasks.register("initLocalEnv") {
+    group = "application"
+    description = "Crea .env con secretos locales aleatorios; nunca sobrescribe uno existente"
+    doLast {
+        if (localEnvFile.exists()) {
+            logger.lifecycle("El archivo local ya existe; se conserva sin cambios.")
+        } else {
+            fun secret(): String {
+                val bytes = ByteArray(48)
+                SecureRandom().nextBytes(bytes)
+                return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+            }
+            val template = rootProject.file(".env.example").readText(Charsets.UTF_8)
+                .replace("\r\n", "\n")
+                .replace("POSTGRES_PASSWORD=\n", "POSTGRES_PASSWORD=${secret()}\n")
+                .replace("JWT_SECRET=\n", "JWT_SECRET=${secret()}\n")
+            localEnvFile.parentFile.mkdirs()
+            localEnvFile.writeText(template, Charsets.UTF_8)
+            logger.lifecycle("Archivo local creado. Configura GOOGLE_AI_API_KEY antes de iniciar la IA.")
+        }
+    }
+}
+
+val checkLocalAi = tasks.register("checkLocalAi") {
+    group = "verification"
+    description = "Comprueba las variables necesarias para iniciar con IA sin mostrar secretos"
+    doLast {
+        if (!localEnvFile.isFile) throw GradleException("Falta .env. Ejecuta initLocalEnv y configura la clave de IA.")
+        val values = Properties().apply {
+            localEnvFile.reader(Charsets.UTF_8).use { load(it) }
+        }
+        for (name in listOf("POSTGRES_PASSWORD", "JWT_SECRET", "GOOGLE_AI_API_KEY")) {
+            val value = System.getenv(name) ?: values.getProperty(name)
+            if (value.isNullOrBlank()) throw GradleException("Falta $name en el entorno o en .env.")
+            if (name == "JWT_SECRET" && value.length < 32) throw GradleException("JWT_SECRET debe tener al menos 32 caracteres.")
+        }
+        logger.lifecycle("Configuración local de PostgreSQL, JWT e IA disponible.")
+    }
+}
+
+val localPostgres = tasks.register<Exec>("localPostgres") {
+    group = "application"
+    description = "Inicia PostgreSQL+pgvector con las credenciales de este dispositivo"
+    dependsOn(checkLocalAi)
+    workingDir(rootProject.projectDir)
+    // Compose recibe los valores mediante el entorno, sin volver a interpretar secretos.
+    commandLine("docker", "compose", "--env-file", rootProject.file(".env.example").absolutePath,
+        "-f", rootProject.file("docker-compose.yml").absolutePath, "up", "-d", "--wait", "postgres")
+    doFirst {
+        // La misma lectura que Spring: un $ en la contraseña no se interpola en Compose.
+        val values = Properties().apply {
+            localEnvFile.reader(Charsets.UTF_8).use { load(it) }
+        }
+        for (name in listOf("POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_PORT", "COMPOSE_PROJECT_NAME")) {
+            if (System.getenv(name) == null && values.getProperty(name) != null) {
+                environment(name, values.getProperty(name))
+            }
+        }
+    }
+    onlyIf { !providers.gradleProperty("skipLocalPostgres").isPresent }
+}
+
+tasks.register<org.springframework.boot.gradle.tasks.run.BootRun>("localAi") {
+    group = "application"
+    description = "Inicia PostgreSQL y el tutor con Google AI Studio y los apuntes indexados"
+    dependsOn(localPostgres, tasks.named("classes"))
+    mainClass.set("com.mathtutor.application.MathTutorApplication")
+    classpath = sourceSets["main"].runtimeClasspath
+    workingDir(rootProject.projectDir)
+    args("--spring.profiles.active=dev,google-ai-studio,notes-indexing",
+        "--spring.config.import=${localEnvFile.toURI()}[.properties]")
+}
 
 repositories {
     mavenCentral()
