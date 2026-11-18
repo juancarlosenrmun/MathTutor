@@ -7,14 +7,15 @@ export function mountStudy(document,client,viewer) {
   const one=id=>document.querySelector('#'+id);
   if (!one('tutor-study')) return {enter:async()=>{},refresh:async()=>{},setBusy(){}};
   let session, generation=0, controller, busy=false, chatBusy=false, bank=[], bankPage=0, runPage=0, runs=[], ownsGraph=false;
-  const active=()=>Boolean(client.token) && client.profile?.role==='ALUMNO' && session?.status!=='CERRADA';
+  const active=()=>Boolean(client.token) && ['ALUMNO','PROFESOR'].includes(client.profile?.role) && session?.status!=='CERRADA';
   const status=one('exercise-status');
   function controls() {
     one('tutor-study').hidden=!session;
-    one('exercise-fields').disabled=!session || !active() || busy || chatBusy;
+    if (one('exercise-fields')) one('exercise-fields').disabled=!session || !active() || busy || chatBusy;
     one('graphic-fields').disabled=!session || !active() || busy || chatBusy || !viewer;
-    one('bank-more').disabled=busy || chatBusy;
+    if (one('bank-more')) one('bank-more').disabled=busy || chatBusy;
     one('runs-more').disabled=busy || chatBusy;
+    if (!one('exercise-kind')) return;
     one('exercise-bank-group').hidden=one('exercise-kind').value!=='BANCO';
     one('exercise-expression-group').hidden=one('exercise-kind').value==='BANCO';
     one('exercise-expression').required=one('exercise-kind').value!=='BANCO';
@@ -44,6 +45,7 @@ export function mountStudy(document,client,viewer) {
     const result=await collection(client,`/api/tutor/sessions/${session.id}/bank?page=${append ? bankPage+1 : 0}&size=20`,controller.signal);
     if (current!==generation) return;
     bankPage=append ? bankPage+1 : 0; bank=append ? [...bank,...result] : result;
+    if (!one('exercise-bank')) return;
     const selected=one('exercise-bank').value; one('exercise-bank').replaceChildren();
     for (const entry of bank) {
       const option=document.createElement('option'); option.value=String(entry.id);
@@ -67,22 +69,24 @@ export function mountStudy(document,client,viewer) {
   async function enter(next,entries=[]) {
     generation++; controller?.abort(); controller=new AbortController(); session=next; busy=false;
     bank=[]; runs=[]; bankPage=runPage=0;
-    one('exercise-runs').replaceChildren(); one('exercise-bank').replaceChildren();
-    one('exercise-expression').value=''; one('graphic-function').value='x^2';
+    one('exercise-runs').replaceChildren(); one('exercise-bank')?.replaceChildren();
+    if (one('exercise-expression')) one('exercise-expression').value='';
+    one('graphic-function').value='x^2';
     one('tutor-diagnosis').textContent=entries.length ? turnDescription(entries[0]) : 'Aún no hay respuestas guardadas.';
     one('graphic-result').textContent=viewer ? 'Solicita una gráfica para explorarla en el visor.' : 'WebGL 2 no está disponible. Puedes continuar con el tutor.';
     if (ownsGraph) { viewer.clear(); ownsGraph=false; }
-    one('bank-more').hidden=true; one('runs-more').hidden=true; renderRuns(); controls();
+    if (one('bank-more')) one('bank-more').hidden=true;
+    one('runs-more').hidden=true; renderRuns(); controls();
     if (!session) { status.textContent=''; return; }
     await perform(async current=>{
       await Promise.all([loadBank(),loadRuns()]);
-      if (current===generation) status.textContent='Selecciona un ejercicio o plantea una operación libre.';
+      if (current===generation) status.textContent='Plantea el ejercicio en el chat para empezar.';
     },true);
   }
-  one('exercise-kind').addEventListener('change',controls);
-  one('bank-more').addEventListener('click',()=>perform(()=>loadBank(true)));
+  one('exercise-kind')?.addEventListener('change',controls);
+  one('bank-more')?.addEventListener('click',()=>perform(()=>loadBank(true)));
   one('runs-more').addEventListener('click',()=>perform(()=>loadRuns(true)));
-  one('exercise-form').addEventListener('submit',event=>{
+  one('exercise-form')?.addEventListener('submit',event=>{
     event.preventDefault(); if (!active()) return;
     return perform(async current=>{
       const kind=one('exercise-kind').value;
@@ -116,7 +120,15 @@ export function mountStudy(document,client,viewer) {
     one('graphic-steps').max=surface ? '128' : '200';
     for (const id of ['graphic-min','graphic-max']) { one(id).min=surface ? '-100' : '-10000'; one(id).max=surface ? '100' : '10000'; }
   });
-  return {enter,refresh,setBusy(value){chatBusy=value;controls();},
+  async function fromMessage(message) {
+    if (!active() || !session) return;
+    const match=message.trim().match(/^(?:deriva(?:r)?|simplifica(?:r)?)\s*:?\s+([x0-9+*^(). /-]{1,200})$/i);
+    const exercise=bank.find(e=>e.statement.trim().toLocaleLowerCase('es')===message.trim().toLocaleLowerCase('es'));
+    if (!match && !exercise) return;
+    const body=exercise ? {exerciseId:exercise.id} : {operation:/^deriv/i.test(message.trim()) ? 'DERIVADA' : 'SIMPLIFICAR',expression:match[1]};
+    await request(client,`/api/tutor/sessions/${session.id}/exercises`,body,controller.signal);
+  }
+  return {enter,refresh,fromMessage,setBusy(value){chatBusy=value;controls();},
     suspend(){generation++;controller?.abort();busy=false;controls();},
     resume(){if (controller?.signal.aborted) controller=new AbortController();}};
 }

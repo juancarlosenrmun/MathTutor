@@ -18,7 +18,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     'derivadas-integrales':'¿Cómo se calcula la derivada de una función?', 'metodos-3d':'¿Qué es un espacio vectorial?'};
   let session,identity,controller,generation=0,busy=false,loaded=false,loading=false,pending;
   let modules=[],entries=[],historyPage=0;
-  const allowed=()=>Boolean(client.token) && client.profile?.role==='ALUMNO';
+  const allowed=()=>Boolean(client.token) && ['ALUMNO','PROFESOR'].includes(client.profile?.role);
   const writable=()=>allowed() && session && session.status!=='CERRADA';
   const titleFor=visit=>visit.title || modules.find(m=>m.code===(visit.moduleCode || visit.module))?.name || 'Conversación de Matemáticas';
   const study=mountStudy(document,client,viewer);
@@ -115,6 +115,8 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     const requestId=pending.requestId; let markdown='';
     renderTutorMarkdown(document,pending.body,''); status.textContent=retry ? 'Recuperando el envío sin iniciar otro turno…' : 'El tutor está respondiendo…';
     try {
+      if (!retry) await study.fromMessage?.(message);
+      if (current!==generation) return;
       const response=await request(client,`/api/tutor/sessions/${session.id}/messages`,{message,requestId},controller.signal);
       await readReply(response,token=>{if (current===generation) {markdown+=token;renderTutorMarkdown(document,bubbles.body,markdown);}});
       if (current===generation) {pending=undefined;one('tutor-message').value='';status.textContent='Respuesta completada.';}

@@ -46,6 +46,18 @@ class TutorApiIntegrationTest {
         var user = users.save(User.create(UUID.randomUUID() + "@test.es", "hash", User.Role.ALUMNO));
         token = tokens.generateAccessToken(user.id(), user.email(), "ALUMNO");
     }
+    @Test void teacherUsesOwnTutorAndCannotReadAnotherSession() throws Exception {
+        long studentSession = start("funciones");
+        var teacher = users.save(User.create(UUID.randomUUID() + "@test.es", "hash", User.Role.PROFESOR));
+        token = tokens.generateAccessToken(teacher.id(), teacher.email(), "PROFESOR");
+        long own = start("funciones");
+        mvc.perform(get("/api/tutor/progress").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/tutor/sessions/" + own + "/history").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/tutor/sessions/" + studentSession + "/history").header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound());
+    }
     long start(String block) throws Exception {
         var response = mvc.perform(post("/api/tutor/sessions").with(csrf())
                         .header("Authorization", "Bearer " + token).contentType("application/json")
@@ -83,7 +95,7 @@ class TutorApiIntegrationTest {
         }
     }
     @Test void teachingRolesCannotOpenStudentSessions() throws Exception {
-        for (User.Role role : new User.Role[]{User.Role.PROFESOR, User.Role.ADMIN}) {
+        for (User.Role role : new User.Role[]{User.Role.ADMIN}) {
             var u = users.save(User.create(UUID.randomUUID() + "@test.es", "hash", role));
             mvc.perform(get("/api/tutor/modules").header("Authorization", "Bearer " +
                     tokens.generateAccessToken(u.id(), u.email(), role.name())))

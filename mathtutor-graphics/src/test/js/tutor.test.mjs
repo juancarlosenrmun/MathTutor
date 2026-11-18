@@ -175,3 +175,16 @@ test('las tarjetas usan el catálogo y los chats de la visita se pueden recupera
   f.client.token = null; await f.ui.sync('tutor');
   assert.equal(f.nodes['tutor-sessions'].children.length, 0);
 });
+
+test('el docente inicia y usa conversaciones propias', async () => {
+  const f=fixture(); f.client.profile.role='PROFESOR';
+  await f.ui.sync('tutor'); await f.submit('tutor-select-form');
+  assert.equal(f.nodes['tutor-composer'].hidden,false);
+  f.nodes['tutor-message'].value='?Qu? es una funci?n?'; await f.submit('tutor-form');
+  assert.ok(f.client.calls.some(([p])=>p.endsWith('/messages')));
+});
+test('el visor se pliega y el ejercicio no tiene selecci?n manual', () => {
+  const html=readFileSync(new URL('../../main/resources/static/visor/index.html',import.meta.url),'utf8');
+  assert.match(html, /<details id="tutor-viewer-slot"[^>]*open/);
+  assert.doesNotMatch(html, /Empezar ejercicio|id="exercise-kind"|id="exercise-form"/);
+});

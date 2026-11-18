@@ -151,3 +151,12 @@ test('cancelar un envío no deja abortado el controlador de paginación',async()
   f.click('tutor-cancel');await sending;await f.click('history-more');
   assert.equal(f.nodes['tutor-history'].children.length,42);
 });
+
+test('la petici?n de derivar en el chat inicia el ejercicio antes de enviar el turno',async()=>{
+  const f=fixture(); f.state.bank=[]; await f.open();
+  f.nodes['tutor-message'].value='Deriva x^2'; await f.submit('tutor-form');
+  const selection=f.state.calls.findIndex(([p,o])=>p.endsWith('/exercises') && o.method==='POST');
+  const message=f.state.calls.findIndex(([p])=>p.endsWith('/messages'));
+  assert.ok(selection>=0 && selection<message);
+  assert.deepEqual(JSON.parse(f.state.calls[selection][1].body),{operation:'DERIVADA',expression:'x^2'});
+});

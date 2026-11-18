@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
 
 /** @brief POST SSE: conserva Authorization/CSRF y no coloca mensajes ni tokens en URL. */
 @RestController @RequestMapping("/api/tutor/sessions")
-@PreAuthorize("hasRole('ALUMNO')")
+@PreAuthorize("hasAnyRole('ALUMNO', 'PROFESOR')")
 public class TutorChatController {
     private final TrackedConversation conversation;
     public TutorChatController(TrackedConversation conversation) { this.conversation = conversation; }

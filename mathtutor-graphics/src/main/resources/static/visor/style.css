@@ -1106,3 +1106,18 @@ canvas:focus-visible {
 .tutor-math-display math { margin-inline: auto; }
 .math-error { font-family: monospace; overflow-wrap: anywhere; }
 @media (max-width: 700px) { .study-panel .button { width: 100%; } }
+
+/* El visor conserva su columna al plegarse y limita el contenido abierto. */
+.tutor-layout { align-items: start; }
+.tutor-viewer-slot { align-self: start; overflow: hidden; border-radius: .75rem; }
+.tutor-viewer-slot > summary { cursor: pointer; padding: 1rem; font-weight: 600; color: var(--green); }
+.tutor-viewer-slot > summary span { float: right; font-weight: 400; }
+.tutor-viewer-slot[open] { max-height: 48rem; overflow-y: auto; }
+.tutor-guide { border-radius: .75rem; gap: .75rem; min-height: 28rem; }
+.tutor-guide #tutor-new { text-align: left; border-radius: .5rem; margin-bottom: .75rem; }
+.tutor-guide h2 { margin: 0; padding-top: 1rem; border-top: 1px solid var(--line); }
+.tutor-guide #tutor-sessions { max-height: 24rem; overflow-y: auto; min-height: 0; }
+.tutor-guide .text-link { margin-top: 0; text-align: left; font-size: .8rem; }
+.tutor-guide #sessions-status { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
+.tutor-session-link { border-left: 3px solid transparent; line-height: 1.5; }
+.tutor-session-link[aria-current="page"] { border-left-color: var(--green); font-weight: 600; }

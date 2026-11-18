@@ -14,7 +14,7 @@ export function mountSessions(document,client,{isBusy,onOpen,titleFor}) {
     }
   }
   async function load(more=false) {
-    if (loading || !client.token || client.profile?.role!=='ALUMNO') return;
+    if (loading || !client.token || !['ALUMNO','PROFESOR'].includes(client.profile?.role)) return;
     const current=generation; loading=true; controller=new AbortController();
     if (one('sessions-status')) one('sessions-status').textContent='Cargando conversaciones guardadas…';
     try {

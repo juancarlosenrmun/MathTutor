@@ -124,9 +124,14 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   assert(doc.querySelector('#tutor-diagnosis').textContent.includes('verificado'), 'Falta diagnóstico persistido');
   const messageCall = win.testState.calls.find(([path]) => path.endsWith('/messages'));
   assert(typeof JSON.parse(messageCall[1].body).requestId === 'string', 'El turno no incluye UUID');
-  doc.querySelector('#tutor-study').open = true;
-  doc.querySelector('#exercise-expression').value = 'x^2';
-  doc.querySelector('#exercise-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
+  const slot=doc.querySelector('#tutor-viewer-slot');
+  const widthBefore=slot.getBoundingClientRect().width;
+  slot.open=false; await settle();
+  assert(Math.abs(slot.getBoundingClientRect().width-widthBefore)<1,'El visor cambia de ancho al plegarse');
+  slot.open=true; await settle();
+  assert(!doc.querySelector('#exercise-form'),'Queda selecci?n manual del ejercicio');
+  doc.querySelector('#tutor-message').value='Deriva x^2';
+  doc.querySelector('#tutor-form').dispatchEvent(new Event('submit',{cancelable:true})); await settle();
   assert(doc.querySelector('#exercise-runs').textContent.includes('Derivar'), 'Falta progreso del ejercicio');
   const graphicDetails=doc.querySelector('#graphic-form').closest('details');graphicDetails.open=true;
   doc.querySelector('#graphic-form').dispatchEvent(new Event('submit', {cancelable:true}));await settle();
