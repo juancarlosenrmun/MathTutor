@@ -18,7 +18,14 @@ public interface ConversationStore {
     Run current(Long userId, Long sessionId);
     List<BankExercise> bank(Long userId, Long sessionId, int page, int size);
 
-    record BankExercise(Long id, String statement, String topic, String type, int difficulty) {}
+    /** @brief Vincula un ejercicio reconocido al turno reservado cuando no hay objetivo activo. */
+    Run attachRecognized(Long userId, Long sessionId, UUID requestId, Long exerciseId);
+
+    record BankExercise(Long id, String statement, String topic, String type, int difficulty, String externalId) {
+        public BankExercise(Long id, String statement, String topic, String type, int difficulty) {
+            this(id, statement, topic, type, difficulty, null);
+        }
+    }
 
     record Entry(Long id, UUID requestId, String message, String response, String module, String topic,
                  ErrorType diagnosis, String helpLevel, long latencyMs, Integer tokensIn, Integer tokensOut,
@@ -46,7 +53,13 @@ public interface ConversationStore {
     record Session(Long id, String module, String status, Instant startedAt, Instant lastActivityAt) {}
     /** Referencia y pasos son datos internos: nunca devolver Run directamente en una API pública. */
     record Run(Long id, Long exerciseId, String statement, String reference, String topic, String state,
-               double progress, int verifiedSteps, List<String> steps, int attempts) {
+               double progress, int verifiedSteps, List<String> steps, int attempts,
+               String bankReference, List<String> seedHints) {
+        public Run(Long id, Long exerciseId, String statement, String reference, String topic, String state,
+                   double progress, int verifiedSteps, List<String> steps, int attempts) {
+            this(id, exerciseId, statement, reference, topic, state, progress, verifiedSteps, steps, attempts,
+                    reference, List.of());
+        }
         public Run(Long id, Long exerciseId, String statement, String reference, String topic, String state,
                    double progress, int verifiedSteps, List<String> steps) {
             this(id, exerciseId, statement, reference, topic, state, progress, verifiedSteps, steps, 0);

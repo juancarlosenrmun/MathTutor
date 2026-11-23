@@ -47,13 +47,26 @@ public class TutorConversation {
     }
 
     public Prepared prepare(Long userId, Long sessionId, String message, List<String> history, String exercise) {
-        return prepare(userId, sessionId, message, history, exercise, null, null, null);
+        return prepare(userId, sessionId, message, history, exercise, null, null, null, false);
     }
 
     /** @brief Aplica la acción decidida en Java. La referencia autorizada se muestra desde el repositorio. */
     Prepared prepareExercise(Long userId, Long sessionId, String message, List<String> history,
                              ConversationStore.Run run, ExerciseVerification.Diagnosis diagnosis,
                              PedagogicalAction action) {
+        return prepareExercise(userId, sessionId, message, history, run, diagnosis, action, false);
+    }
+
+    /** @brief Inicia un ejercicio reconocido usando su enunciado como consulta de apuntes. */
+    Prepared prepareRecognized(Long userId, Long sessionId, List<String> history, ConversationStore.Run run,
+                               ExerciseVerification.Diagnosis diagnosis, PedagogicalAction action) {
+        return prepareExercise(userId, sessionId, "¿Cómo empiezo este ejercicio? " + run.statement(),
+                history, run, diagnosis, action, true);
+    }
+
+    private Prepared prepareExercise(Long userId, Long sessionId, String message, List<String> history,
+                                     ConversationStore.Run run, ExerciseVerification.Diagnosis diagnosis,
+                                     PedagogicalAction action, boolean recognized) {
         if (diagnosis.completed()) {
             return new Prepared(Flux.just("Tu resultado ha sido verificado. ¿Qué regla justifica el último paso?"),
                     run.topic(), false);
@@ -62,11 +75,16 @@ public class TutorConversation {
             return new Prepared(Flux.just(action.hint() + "\n\n$" + run.reference() + "$"), run.topic(), false);
         }
         String state = run.statement() + "; progreso: " + run.progress() + "; diagnóstico: " + diagnosis.hint();
-        return prepare(userId, sessionId, message, history, state, action, run.reference(), run.topic());
+        if (!run.seedHints().isEmpty()) {
+            state += "; pistas semilla: " + String.join(" ", run.seedHints());
+        }
+        return prepare(userId, sessionId, message, history, state, action, run.bankReference(), run.topic(),
+                recognized || diagnosis.verdict().equals("INCORRECTO") || diagnosis.verdict().equals("CORRECTO"));
     }
 
     private Prepared prepare(Long userId, Long sessionId, String message, List<String> history, String exercise,
-                             @Nullable PedagogicalAction action, @Nullable String reference, @Nullable String exerciseTopic) {
+                             @Nullable PedagogicalAction action, @Nullable String reference, @Nullable String exerciseTopic,
+                             boolean allowLocalHint) {
         if (message == null || message.isBlank() || message.length() > 4000) {
             throw new IllegalArgumentException("Escribe un mensaje de 1 a 4000 caracteres");
         }
@@ -88,7 +106,7 @@ public class TutorConversation {
             }
         }
         if (retriever != null && chunks.isEmpty()) {
-            if (action != null) {
+            if (action != null && allowLocalHint) {
                 return new Prepared(Flux.just(action.hint()), exerciseTopic, false);
             }
             return new Prepared(Flux.just("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario."), null, true);

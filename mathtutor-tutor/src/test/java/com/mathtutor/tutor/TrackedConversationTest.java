@@ -16,7 +16,8 @@ class TrackedConversationTest {
     final ConversationStore store=mock(ConversationStore.class);
     final TutorConversation conversation=mock(TutorConversation.class);
     final ExerciseVerification verification=mock(ExerciseVerification.class);
-    final TrackedConversation tracked=new TrackedConversation(store,conversation,verification,new PedagogicalPolicyImpl());
+    final TrackedConversation tracked=new TrackedConversation(store,conversation,verification,
+            new PedagogicalPolicyImpl(),new ExerciseRecognizer(mock(com.mathtutor.common.port.CasEngine.class)));
     final UUID request=UUID.randomUUID();
     ConversationStore.Entry entry(String status) {
         return new ConversationStore.Entry(1L,request,"hola","guardado","funciones",null,null,"CONCEPTUAL",0,null,null,status,Instant.EPOCH,null);

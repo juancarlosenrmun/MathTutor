@@ -121,6 +121,20 @@ class SprintFourIntegrationTest {
         mvc.perform(get("/actuator/health")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.components").doesNotExist());
     }
+    @Test void recognizedStatementCreatesBankRunAndDoesNotCountAsAnAttempt() {
+        var exercise = store.bank(user, session, 0, 100).getFirst();
+        var id = UUID.randomUUID();
+        assertThat(tracked.reply(user, session, id, "Ejercicio " + exercise.externalId()).blockLast()).isNotBlank();
+        var run = store.current(user, session);
+        assertThat(run.exerciseId()).isEqualTo(exercise.id());
+        assertThat(run.topic()).isEqualTo(exercise.topic());
+        assertThat(run.bankReference()).isNotBlank();
+        assertThat(run.attempts()).isZero();
+        assertThat(store.history(user, session, 0, 10).getFirst().runId()).isEqualTo(run.id());
+        tracked.reply(user, session, id, "Ejercicio " + exercise.externalId()).blockLast();
+        verify(llm, times(1)).stream(any(), any());
+    }
+
     @Test void chatReservesBeforeSseAndReturnsConflictForActiveRequest() throws Exception {
         store.reserve(user,session,UUID.randomUUID(),"ocupado");
         mvc.perform(post("/api/tutor/sessions/"+session+"/messages").with(actor("ALUMNO")).with(csrf()).contentType("application/json")
