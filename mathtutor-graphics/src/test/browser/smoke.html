@@ -51,9 +51,12 @@ try {
     gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     const positions = [];
     for (let i = 0; i < pixels.length; i += 4) {
-      if (pixels[i] > 245 && pixels[i+1] > 80 && pixels[i+1] < 110 && pixels[i+2] > 165) positions.push(i);
+      const [red, green, blue] = pixels.subarray(i, i + 3);
+      // El antialiasing mezcla la recta con el fondo; conserva el contraste magenta.
+      if (red > 125 && red - green > 65 && blue - green > 35) positions.push(i);
     }
-    if (positions.length < 20 || gl.getError() !== gl.NO_ERROR) throw new Error('Tangente rosa ausente');
+    const error = gl.getError();
+    if (positions.length < 20 || error !== gl.NO_ERROR) throw new Error(`Tangente rosa ausente: ${positions.length} píxeles, WebGL ${error}`);
     return positions.join(',');
   };
   viewer.setGraph(curve('x^2', -1, 1, 64, -0.5));

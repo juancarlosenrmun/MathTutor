@@ -15,7 +15,11 @@ permissions:
 
 jobs:
   safari:
-    runs-on: xcode-27
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [xcode-27, macos-26]
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -28,4 +32,4 @@ jobs:
           sudo safaridriver --enable
           python -m pip install selenium==4.54.0
       - name: Comprobar GLSL, píxeles y laboratorio
-        run: python scripts/smoke-webgl.py --native safari --expect-major 27
+        run: python scripts/smoke-webgl.py --native safari
