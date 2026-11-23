@@ -98,6 +98,9 @@ namespace security {
   class SecurityConfig
   class AuthService
   class AccessPolicy
+  class AccountLifecycle
+  class UserAdministration
+  class PasswordResetMail
   class PasswordEncoderPort {
     <<interface>>
   }
@@ -193,6 +196,8 @@ namespace persistence {
   class SessionRepository
   class ExerciseRunRepository
   class TurnRepository
+  class ExerciseStatistics
+  class PersonalDataStore
   class NoteChunkRepository
   class ExerciseRepository
   class ConsentRepository
@@ -212,11 +217,18 @@ namespace client {
 TutorController --> TutorOrchestrator
 SessionController --> SessionContextService
 ProgressController --> ExerciseRunRepository
-TeacherStatsController --> ExerciseRunRepository
-AdminController --> AuditLogRepository
-AdminController --> UserRepository
+TeacherStatsController --> ExerciseStatistics
+ConversationStoreAdapter --> ExerciseStatistics
+AdminController --> UserAdministration
+AdminController --> PasswordResetMail
+UserAdministration --> AuditLogRepository
+UserAdministration --> UserRepository
+UserAdministration --> PersonalDataStore
 AuthController --> AuthService
-PrivacyController --> ConsentRepository
+PrivacyController --> AccountLifecycle
+PrivacyController --> PersonalDataStore
+AccountLifecycle --> UserRepository
+AccountLifecycle --> PersonalDataStore
 GraphicController --> GraphicSpecService
 AuthService --> PasswordEncoderPort
 AuthService --> UserRepository
@@ -270,7 +282,9 @@ SpecInterpreter --> GraphicController : JSON
 - Estado S3: `TutorConversation` invoca `CasEngine.parse` y `RagRetriever.retrieve` antes de `LlmGateway.stream`. La recuperación selecciona primero el tema más relevante del módulo y vuelve a consultar con ambos filtros; la llamada al LLM continúa siendo única.
 - UC-22 carga el banco con la migración Flyway `V8__exercise_bank.sql`, que crea temas, ejercicios, pasos canónicos y pistas de errores. `ExerciseBankLoader` permanece como diseño futuro; no es una clase ejecutable en S3.
 - UC-29 implementa `surface()` en el cliente como generador de malla y normales; `WebGLViewer.setSurface` y `ShaderPipeline.setSurface` dibujan los triángulos. `MeshBuilder` representa esa responsabilidad, no una clase JavaScript separada.
-- UC-04 implementa `mountPrivacy` y `cookieChoice` en el cliente. La preferencia anónima usa una cookie técnica; `PrivacyController` y `ConsentRepository` quedan como diseño previsto para futuros flujos de datos personales.
+- UC-04 implementa `mountPrivacy` y `cookieChoice` en el cliente. La preferencia anónima usa una cookie técnica. UC-05 usa `PrivacyController` para descargar una instantánea de los datos de la cuenta o suprimirlos en una transacción.
+- La administración de perfiles vuelve a validar el rol del operador bajo bloqueo antes de cada cambio. La recuperación asistida reutiliza la cola SMTP y resuelve el destinatario por identificador persistente.
+- El visor y el tutor generan la descripción de curvas, superficies y tangentes con los mismos datos que alimentan la geometría. La descripción también está disponible si falla la inicialización de WebGL.
 - Corrección S1 en revisión: el filtro JWT valida exclusivamente tokens de acceso y consulta `UserRepositoryPort` en cada petición para obtener rol y estado actuales (RNF-04). El registro público asigna únicamente ALUMNO.
 - La renovación se concentra en una operación transaccional: `TokenServiceAdapter` delega en `RefreshTokenAdapter`, que bloquea primero al usuario con `UserRepository.findByIdForUpdate` y después relee el token con `RefreshTokenRepository.findByTokenHashForUpdate`. La generación del sustituto, la revocación y su almacenamiento son atómicos; el bloqueo por propietario serializa también los cambios de una misma familia.
 - `SpringAiGoogleAiStudioChatModel` y `GoogleAiStudioLlmGateway` preservan mensajes de sistema/usuario y consumen SSE; no reintentan ni cambian de proveedor al fallar. `GoogleAiStudioRateLimiter` limita solicitudes locales por configuración y no representa una garantía de cuota Google.
@@ -286,7 +300,8 @@ SpecInterpreter --> GraphicController : JSON
 | Clase / módulo | UC / EN |
 |---|---|
 | AuthController, AuthService, SecurityConfig | UC-01, UC-03, EN-02 |
-| PrivacyController, ConsentRepository | UC-04, UC-05, EN-09 |
+| mountPrivacy, ConsentRepository | UC-04 |
+| PrivacyController, AccountLifecycle, PersonalDataStore | UC-05 |
 | SessionController, SessionContextService | UC-12, UC-20 |
 | TutorController, TutorOrchestrator | UC-13 |
 | NoteIndexer, LatexExtractor | UC-14 |
@@ -305,8 +320,9 @@ SpecInterpreter --> GraphicController : JSON
 | MeshBuilder | UC-28, UC-29 |
 | GraphicSpecService, GraphicSpecValidator, SpecInterpreter | UC-35, UC-31 |
 | ProgressController | UC-11 |
-| TeacherStatsController | UC-10 |
-| AdminController | UC-06, UC-07, UC-08, UC-09 |
+| TeacherStatsController, ExerciseStatistics | UC-10 |
+| AdminController, UserAdministration, PasswordResetMail | UC-06, UC-07, UC-08 |
+| WebGLViewer, describeCurve, describeSurface | EN-07 |
 
 
 ## Cierre técnico S1 · UC-03 y UC-27 (2026-11-16)
