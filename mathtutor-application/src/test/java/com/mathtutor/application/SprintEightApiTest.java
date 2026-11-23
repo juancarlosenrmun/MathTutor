@@ -3,18 +3,20 @@ package com.mathtutor.application;
 import com.mathtutor.auth.filter.JwtAuthenticationFilter.AuthenticatedUser;
 import com.mathtutor.auth.adapter.TokenServiceAdapter;
 import com.mathtutor.application.security.PasswordResetMail;
+import com.mathtutor.common.port.TokenBudget;
+import com.mathtutor.common.port.TutorSessionStore;
 import com.mathtutor.persistence.entity.User;
 import com.mathtutor.persistence.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -49,27 +52,44 @@ class SprintEightApiTest {
     @Autowired UserRepository users;
     @Autowired JdbcTemplate jdbc;
     @Autowired TokenServiceAdapter jwt;
-    @MockBean PasswordResetMail mail;
+    @Autowired TokenBudget budget;
+    @Autowired TutorSessionStore sessions;
+    @MockitoBean PasswordResetMail mail;
 
     @Test
     void exportIsScopedAndErasureRequiresCsrf() throws Exception {
         User owner = account(User.Role.ALUMNO);
         User other = account(User.Role.ALUMNO);
+        var reservation = budget.reserve(owner.getId(), 10, 20).orElseThrow();
         Long session = jdbc.queryForObject("""
                 INSERT INTO tutor_sessions (user_id, started_at, last_activity_at, status)
                 VALUES (?, now(), now(), 'ACTIVA') RETURNING id
                 """, Long.class, owner.getId());
+        jdbc.update("""
+                INSERT INTO conversation_turns (session_id, request_id, message, status, created_at)
+                VALUES (?, ?, 'Mi pregunta privada', 'COMPLETADO', now())
+                """, session, UUID.randomUUID());
+        jdbc.update("INSERT INTO audit_logs (action, actor_id, target_id, target_type) VALUES ('PRUEBA', ?, ?, 'USER')",
+                other.getId(), owner.getId());
         mvc.perform(get("/api/privacy/export")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/privacy/export").with(actor(owner)))
                 .andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(jsonPath("$.profile.email").value(owner.getEmail()))
                 .andExpect(jsonPath("$.profile.password_hash").doesNotExist())
-                .andExpect(jsonPath("$.sessions[0].id").value(session));
+                .andExpect(jsonPath("$.sessions[0].id").value(session))
+                .andExpect(jsonPath("$.conversations[0].message").value("Mi pregunta privada"))
+                .andExpect(jsonPath("$.conversations[0].request_id").doesNotExist())
+                .andExpect(jsonPath("$.accountEvents[0].actor_id").doesNotExist());
         mvc.perform(get("/api/privacy/export").with(actor(other)))
-                .andExpect(jsonPath("$.sessions").isEmpty());
+                .andExpect(jsonPath("$.sessions").isEmpty())
+                .andExpect(jsonPath("$.conversations").isEmpty());
         mvc.perform(delete("/api/privacy/account").with(actor(owner))).andExpect(status().isForbidden());
         mvc.perform(delete("/api/privacy/account").with(actor(owner)).with(csrf())).andExpect(status().isNoContent());
         assertThat(users.findById(owner.getId())).isEmpty();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM conversation_turns WHERE session_id = ?", Integer.class, session))
+                .isZero();
+        assertThat(jdbc.queryForObject("SELECT target_id FROM audit_logs WHERE action = 'PRUEBA'", Long.class)).isNull();
+        budget.settle(reservation, null);
         assertThat(users.findById(other.getId())).isPresent();
     }
 
@@ -101,6 +121,8 @@ class SprintEightApiTest {
         mvc.perform(put(path + "/anonymize").with(actor(administrator)).with(csrf())).andExpect(status().isNoContent());
         assertThat(users.findByEmail(student.getEmail())).isEmpty();
         assertThat(users.findById(student.getId()).orElseThrow().getAnonymizedAt()).isNotNull();
+        assertThat(budget.reserve(student.getId(), 10, 20)).isEmpty();
+        assertThatThrownBy(() -> sessions.create(student.getId(), "funciones")).hasMessageContaining("Cuenta no disponible");
     }
 
     @Test

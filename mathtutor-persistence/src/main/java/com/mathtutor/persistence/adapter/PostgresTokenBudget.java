@@ -37,6 +37,9 @@ public class PostgresTokenBudget implements TokenBudget {
 
     @Override @Transactional
     public Optional<Reservation> reserve(long user, int input, int output) {
+        // Comparte el bloqueo de ciclo de vida para evitar recrear datos tras anonimizar.
+        if (jdbc.sql("SELECT id FROM users WHERE id = :user AND active FOR SHARE")
+                .param("user", user).query(Long.class).optional().isEmpty()) return Optional.empty();
         var reservation = new Reservation(user, LocalDate.now(ZoneOffset.UTC), input, output);
         jdbc.sql("""
                 INSERT INTO usage_quotas (user_id, quota_day, tokens_used, token_limit, created_at)
@@ -75,9 +78,9 @@ public class PostgresTokenBudget implements TokenBudget {
                 """).param("difference", (long) input + output - reservation.total())
                 .param("cost", cost).param("priced", priced ? 1 : 0)
                 .param("user", reservation.user()).param("day", reservation.day())
-                .query((row, index) -> Optional.ofNullable(row.getBigDecimal(1))).single();
-        LOG.info("event=tutor_turn_cost mean_turn_cost_usd={} input_tokens={} output_tokens={}",
-                average.map(BigDecimal::toPlainString).orElse("sin_tarifa"), input, output);
+                .query((row, index) -> Optional.ofNullable(row.getBigDecimal(1))).optional();
+        average.ifPresent(costAverage -> LOG.info("event=tutor_turn_cost mean_turn_cost_usd={} input_tokens={} output_tokens={}",
+                costAverage.map(BigDecimal::toPlainString).orElse("sin_tarifa"), input, output));
     }
 
     private int measured(Integer tokens, int estimate) {
