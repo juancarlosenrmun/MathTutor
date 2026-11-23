@@ -1,0 +1,3 @@
+ALTER TABLE usage_quotas
+    ADD COLUMN priced_turns BIGINT NOT NULL DEFAULT 0,
+    ADD COLUMN cost_total NUMERIC NOT NULL DEFAULT 0;

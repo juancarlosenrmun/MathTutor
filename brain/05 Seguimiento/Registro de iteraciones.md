@@ -1,3 +1,11 @@
+## 2026-11-23 13:45 · Sprint 06 · Cuota, banco, superficies y seguridad
+
+- **Petición**. Crear Sprint-6 desde DEV, instalar skills individualmente, implementar, probar en caja blanca y negra y abrir una PR sin cofirmas. Código documentado con Doxygen.
+- **Implementado**. UC-21 filtra mensajes y reserva la cuota en PostgreSQL antes de generar. UC-23 reconoce y vincula el ejercicio. UC-30 aplica textura e iluminación. EN-02 activa HTTPS y refuerza cookies y cabeceras. Diagramas en `Sprint-6-docs`.
+- **Pruebas**. 14 casos nuevos de caja blanca y 4 de contrato HTTP/PostgreSQL. Además, textura verificada por píxeles en Chromium, HTTPS real y ZAP pasivo. Suite con 1034 casos Java y verificación del cliente Node. Documentación Doxygen generada.
+- **Cobertura**. Los ocho módulos pasan JaCoCo. Tutor 98,74/96,03 %, política pedagógica 100,00/100,00 % y cliente V8 98,70/91,89 % (líneas/ramas).
+- **Pendiente**. CI de la PR e integración en DEV. Checklist **16/20**, estado `en curso`.
+
 ## 2026-11-23 12:28 · Sprint 05 · Retirada de EN-09
 
 - **Petición**. Retirar EN-09 del sprint porque el prototipo usa Gemini en modalidad gratuita y el proyecto carece de un acuerdo específico con Google.

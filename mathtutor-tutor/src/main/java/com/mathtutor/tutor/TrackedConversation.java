@@ -14,11 +14,14 @@ public class TrackedConversation {
     private final TutorConversation conversation;
     private final ExerciseVerification verification;
     private final PedagogicalPolicyImpl policy;
+    private final ExerciseRecognizer recognizer;
 
     public TrackedConversation(ConversationStore store, TutorConversation conversation,
-                               ExerciseVerification verification, PedagogicalPolicyImpl policy) {
+                               ExerciseVerification verification, PedagogicalPolicyImpl policy,
+                               ExerciseRecognizer recognizer) {
         this.store=store; this.conversation=conversation; this.verification=verification;
         this.policy = policy;
+        this.recognizer = recognizer;
     }
     public Flux<String> reply(Long user,Long session,UUID request,String message) {
         if (message==null || message.isBlank() || message.length()>4000 || request==null) throw new IllegalArgumentException("Mensaje o petición no válidos");
@@ -30,14 +33,27 @@ public class TrackedConversation {
         var response=new StringBuilder();
         var saved=new AtomicBoolean();
         try {
-            var run=store.current(user,session);
-            var diagnosis=verification.verify(message,run);
+            if (TutorInputGuard.rejected(message)) {
+                store.finish(user, session, request, new ConversationStore.Result(TutorInputGuard.REPLY, null,
+                        com.mathtutor.common.dto.ErrorType.OTRO, "RECHAZADO", 0, null, null, 0, false,
+                        "NO_APLICA", com.mathtutor.common.dto.HelpLevel.CONCEPTUAL, false));
+                return Flux.just(TutorInputGuard.REPLY);
+            }
+            var current = store.current(user, session);
+            var run = current == null ? recognize(user, session, request, message) : current;
+            boolean recognized = current == null && run != null;
+            var diagnosis=verification.verify(message, recognized ? null : run);
             var action = action(run, diagnosis);
             var history = boundedHistory(store.context(user, session));
-            var prepared = run == null
-                    ? conversation.prepare(user, session, message, history, "")
-                    : conversation.prepareExercise(user, session, message, history, run, diagnosis, action);
-            boolean attempted = run != null && (run.reference() == null
+            TutorConversation.Prepared prepared;
+            if (recognized) {
+                prepared = conversation.prepareRecognized(user, session, history, run, diagnosis, action);
+            } else if (run == null) {
+                prepared = conversation.prepare(user, session, message, history, "");
+            } else {
+                prepared = conversation.prepareExercise(user, session, message, history, run, diagnosis, action);
+            }
+            boolean attempted = run != null && !recognized && (run.reference() == null
                     || diagnosis.verdict().equals("CORRECTO") || diagnosis.verdict().equals("INCORRECTO"));
             java.util.function.Consumer<String> finish=status -> {
                 if (saved.get()) return;
@@ -66,6 +82,19 @@ public class TrackedConversation {
             store.finish(user,session,request,new ConversationStore.Result("",null,com.mathtutor.common.dto.ErrorType.OTRO,"ERROR",0,null,null,0,false));
             throw error;
         }
+    }
+
+    private ConversationStore.Run recognize(Long user, Long session, UUID request, String message) {
+        var bank = new ArrayList<ConversationStore.BankExercise>();
+        int pageSize = 100;
+        List<ConversationStore.BankExercise> batch;
+        int page = 0;
+        do {
+            batch = store.bank(user, session, page++, pageSize);
+            bank.addAll(batch);
+        } while (batch.size() == pageSize);
+        return recognizer.recognize(message, bank)
+                .map(id -> store.attachRecognized(user, session, request, id)).orElse(null);
     }
 
     /** @brief Solo permite mostrar la referencia tras un nuevo intento incorrecto verificable. */

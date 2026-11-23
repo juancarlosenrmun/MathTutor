@@ -27,6 +27,8 @@ public class TutorChatController {
         return conversation.reply(user.id(), id, body.requestId()==null ? java.util.UUID.randomUUID() : body.requestId(), body.message())
                 .map(token -> new ChatEvent("TOKEN", token))
                 .concatWithValues(new ChatEvent("DONE", ""))
+                .onErrorResume(com.mathtutor.common.dto.TutorQuotaExceededException.class,
+                        error -> Flux.just(new ChatEvent("ERROR", error.getMessage())))
                 .onErrorResume(com.mathtutor.common.dto.ConversationTerminalException.class,
                         error -> Flux.just(new ChatEvent("ERROR",error.getMessage())))
                 .onErrorReturn(new ChatEvent("ERROR", "No se pudo completar la respuesta. Inténtalo de nuevo."));

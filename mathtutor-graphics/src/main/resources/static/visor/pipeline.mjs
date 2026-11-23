@@ -1,17 +1,35 @@
 const vertexSource = `#version 300 es
 layout(location = 0) in vec3 position;
-layout(location = 1) in vec3 color;
+layout(location = 1) in vec3 colorOrNormal;
 uniform mat4 viewProjection;
 out vec3 vertexColor;
+out vec2 surfacePosition;
 void main() {
   gl_Position = viewProjection * vec4(position, 1.0);
-  vertexColor = color;
+  vertexColor = colorOrNormal;
+  surfacePosition = position.xy;
 }`;
 const fragmentSource = `#version 300 es
 precision mediump float;
 in vec3 vertexColor;
+in vec2 surfacePosition;
+uniform bool surfaceMaterial;
 out vec4 fragmentColor;
-void main() { fragmentColor = vec4(vertexColor, 1.0); }`;
+void main() {
+  if (!surfaceMaterial) {
+    fragmentColor = vec4(vertexColor, 1.0);
+    return;
+  }
+  // Textura de cuadrícula declarada en las coordenadas matemáticas del plano XY.
+  vec2 uv = surfacePosition * 2.0;
+  vec2 footprint = max(fwidth(uv), vec2(0.0001));
+  vec2 distance = abs(fract(uv + 0.5) - 0.5) / footprint;
+  float grid = 1.0 - smoothstep(0.25, 1.15, min(distance.x, distance.y));
+  grid *= 1.0 - smoothstep(0.25, 0.65, max(footprint.x, footprint.y));
+  float diffuse = max(dot(normalize(vertexColor), normalize(vec3(-0.5, 0.35, 1.0))), 0.0);
+  vec3 albedo = mix(vec3(0.25, 0.72, 0.62), vec3(0.12, 0.39, 0.34), grid);
+  fragmentColor = vec4(albedo * (0.42 + 0.58 * diffuse), 1.0);
+}`;
 
 /** Pipeline WebGL2 propio. El VAO mantiene aislado el formato de los ejes. */
 export class ShaderPipeline {
@@ -31,6 +49,7 @@ export class ShaderPipeline {
       gl.linkProgram(this.program);
       if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) throw new Error('No se pudo enlazar el programa gráfico');
       this.matrixLocation = gl.getUniformLocation(this.program, 'viewProjection');
+      this.materialLocation = gl.getUniformLocation(this.program, 'surfaceMaterial');
       this.vao = gl.createVertexArray();
       this.buffer = gl.createBuffer();
       gl.bindVertexArray(this.vao);
@@ -82,7 +101,7 @@ export class ShaderPipeline {
   setSurface(mesh) {
     const vertices = [];
     for (const triangle of mesh.triangles) {
-      for (const vertex of triangle.vertices) vertices.push(...vertex, 0.25, 0.72, 0.62);
+      for (const vertex of triangle.vertices) vertices.push(...vertex, ...triangle.normal);
     }
     this.surfaceCount = vertices.length / 6;
     this.lineCount = 0;
@@ -112,10 +131,15 @@ export class ShaderPipeline {
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
     gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
+    gl.uniform1i(this.materialLocation, 0);
     gl.drawArrays(gl.LINES, 0, 6);
     if (this.lineCount) gl.drawArrays(gl.LINES, 6, this.lineCount);
     if (this.areaCount) gl.drawArrays(gl.TRIANGLES, 6 + this.lineCount, this.areaCount);
-    if (this.surfaceCount) gl.drawArrays(gl.TRIANGLES, 6, this.surfaceCount);
+    if (this.surfaceCount) {
+      gl.uniform1i(this.materialLocation, 1);
+      gl.drawArrays(gl.TRIANGLES, 6, this.surfaceCount);
+      gl.uniform1i(this.materialLocation, 0);
+    }
     if (this.tangentCount) {
       gl.disable(gl.DEPTH_TEST);
       gl.drawArrays(gl.LINES, this.tangentStart, this.tangentCount);

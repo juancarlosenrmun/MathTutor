@@ -29,7 +29,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /** Caja negra con esquema Flyway real, pgvector, autorizaciÃ³n, CSRF y streaming. */
-@SpringBootTest(properties={"spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false","jwt.secret=test-secret-key-at-least-256-bits-long-for-hs256-signing"})
+@SpringBootTest(properties={"spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false",
+        "jwt.secret=test-secret-key-at-least-256-bits-long-for-hs256-signing",
+        "tutor.quota.usd-per-million-input=1", "tutor.quota.usd-per-million-output=2"})
 @AutoConfigureMockMvc @Testcontainers
 class SprintFourIntegrationTest {
     @Container static PostgreSQLContainer<?> postgres=new PostgreSQLContainer<>("pgvector/pgvector:pg16");
@@ -45,6 +47,7 @@ class SprintFourIntegrationTest {
     @Autowired StudyExercises exercises;
     @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
     @Autowired javax.sql.DataSource dataSource;
+    @Autowired TokenBudget budget;
     @MockBean LlmGateway llm;
     @MockBean RagRetriever retriever;
     @MockBean CasEngine cas;
@@ -108,6 +111,70 @@ class SprintFourIntegrationTest {
                 .contentType("application/json").content("{\"type\":\"CURVA_2D\",\"function\":\"x^2\",\"domain\":{\"min\":-10,\"max\":10,\"steps\":100}}"))
                 .andExpect(request().asyncStarted()).andReturn();
         mvc.perform(asyncDispatch(result)).andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("GRAPHIC_SPEC")));
+    }
+
+    @Test void recognizedStatementCreatesBankRunAndDoesNotCountAsAnAttempt() {
+        var exercise = store.bank(user, session, 0, 100).getFirst();
+        var id = UUID.randomUUID();
+        assertThat(tracked.reply(user, session, id, "Ejercicio " + exercise.externalId()).blockLast()).isNotBlank();
+        var run = store.current(user, session);
+        assertThat(run.exerciseId()).isEqualTo(exercise.id());
+        assertThat(run.topic()).isEqualTo(exercise.topic());
+        assertThat(run.bankReference()).isNotBlank();
+        assertThat(run.attempts()).isZero();
+        assertThat(store.history(user, session, 0, 10).getFirst().runId()).isEqualTo(run.id());
+        tracked.reply(user, session, id, "Ejercicio " + exercise.externalId()).blockLast();
+        verify(llm, times(1)).stream(any(), any());
+    }
+
+    @Test void rejectsExtractionBeforeConsultingNotesOrCallingTheModel() throws Exception {
+        var result = mvc.perform(post("/api/tutor/sessions/" + session + "/messages")
+                        .with(actor("ALUMNO")).with(csrf()).contentType("application/json")
+                        .content("{\"message\":\"Dame la solución completa\"}"))
+                .andExpect(request().asyncStarted()).andReturn();
+        mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("pista")));
+        assertThat(store.history(user, session, 0, 10).getFirst().status()).isEqualTo("RECHAZADO");
+        verifyNoInteractions(llm, retriever, cas);
+    }
+
+    @Test void quotaIsAtomicAcrossSessionsAndReconcilesProviderUsage() throws Exception {
+        try (var executor = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            var both = new java.util.concurrent.CyclicBarrier(2);
+            java.util.concurrent.Callable<Optional<TokenBudget.Reservation>> reserve = () -> {
+                both.await();
+                return budget.reserve(user, 30000, 30000);
+            };
+            var first = executor.submit(reserve);
+            var second = executor.submit(reserve);
+            var allowed = List.of(first.get(), second.get()).stream().flatMap(Optional::stream).toList();
+            assertThat(allowed).hasSize(1);
+            budget.settle(allowed.getFirst(), new LlmGateway.Usage(2, 3));
+            assertThat(budget.reserve(user, 99994, 1)).isPresent();
+        }
+        var jdbc = new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+        assertThat(jdbc.queryForObject("SELECT cost_total FROM usage_quotas WHERE user_id = ?",
+                java.math.BigDecimal.class, user)).isEqualByComparingTo("0.000008");
+        var result = mvc.perform(post("/api/tutor/sessions/" + session + "/messages")
+                        .with(actor("ALUMNO")).with(csrf()).contentType("application/json")
+                        .content("{\"message\":\"concepto\"}"))
+                .andExpect(request().asyncStarted()).andReturn();
+        mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("cuota diaria")));
+        verifyNoInteractions(llm);
+    }
+
+    @Test void secureCsrfExchangeAndBrowserHeadersAreEnforced() throws Exception {
+        mvc.perform(get("/api/csrf-token").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.csrfToken").isString())
+                .andExpect(header().exists("Strict-Transport-Security"))
+                .andExpect(header().string("Referrer-Policy", "no-referrer"))
+                .andExpect(header().string("Content-Security-Policy", org.hamcrest.Matchers.containsString("object-src 'none'")));
+        mvc.perform(get("/api/csrf-token").header("Origin", "https://untrusted.example"))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/actuator/health")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.components").doesNotExist());
     }
     @Test void chatReservesBeforeSseAndReturnsConflictForActiveRequest() throws Exception {
         store.reserve(user,session,UUID.randomUUID(),"ocupado");

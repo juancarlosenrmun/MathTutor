@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +25,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -45,10 +47,16 @@ public class SecurityConfig {
     private final TokenServiceAdapter tokenServiceAdapter;
 
     private final UserRepositoryPort users;
+    private final List<String> allowedOrigins;
+    private final boolean secureCookies;
 
-    public SecurityConfig(TokenServiceAdapter tokenServiceAdapter, UserRepositoryPort users) {
+    public SecurityConfig(TokenServiceAdapter tokenServiceAdapter, UserRepositoryPort users,
+                          @Value("${mathtutor.security.allowed-origins:}") List<String> allowedOrigins,
+                          @Value("${mathtutor.security.secure-cookies:false}") boolean secureCookies) {
         this.tokenServiceAdapter = tokenServiceAdapter;
         this.users = users;
+        this.allowedOrigins = List.copyOf(allowedOrigins);
+        this.secureCookies = secureCookies;
     }
 
     @PostConstruct
@@ -61,16 +69,18 @@ public class SecurityConfig {
         // Usar CsrfTokenRequestAttributeHandler (sin XOR) para que el token en el request attribute
         // coincida con el de la cookie (necesario para double-submit cookie pattern)
         CsrfTokenRequestAttributeHandler csrfTokenRequestHandler = new CsrfTokenRequestAttributeHandler();
-
         http
-                // CSRF habilitado con CookieCsrfTokenRepository (double-submit cookie pattern)
-                // withHttpOnlyFalse() permite que JavaScript lea la cookie XSRF-TOKEN para AJAX
-                // Todos los métodos no seguros requieren CSRF, incluido el registro.
+                // El cliente obtiene el token de la respuesta JSON y la cookie queda fuera del alcance de JavaScript.
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRepository(csrfTokenRepository())
                         .csrfTokenRequestHandler(csrfTokenRequestHandler)
-
                 )
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+                                + "img-src 'self' data:; object-src 'none'; base-uri 'none'; "
+                                + "form-action 'self'; frame-ancestors 'none'"))
+                        .referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.NO_REFERRER)))
                 // CORS configurado
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // Sesión stateless
@@ -107,6 +117,17 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /** @brief Usa una cookie restringida al host en producción. El cliente lee el token del JSON. */
+    CookieCsrfTokenRepository csrfTokenRepository() {
+        var repository = new CookieCsrfTokenRepository();
+        if (secureCookies) repository.setCookieName("__Host-XSRF-TOKEN");
+        repository.setCookieCustomizer(cookie -> {
+            cookie.httpOnly(true).sameSite("Strict").path("/");
+            if (secureCookies) cookie.secure(true);
+        });
+        return repository;
+    }
+
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(tokenServiceAdapter, users);
@@ -128,9 +149,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173", "http://localhost:8080"));
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

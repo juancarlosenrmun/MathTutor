@@ -37,12 +37,14 @@ jobs:
       - name: Verify imported LaTeX notes are reproducible
         run: python3 scripts/import_industriales.py --check
       - name: Build, integration tests and coverage thresholds
-        run: ./gradlew clean check jacocoAggregateReport --no-daemon --no-scan
+        run: ./gradlew clean check jacocoAggregateReport :mathtutor-application:bootJar --no-daemon --no-scan
       - name: Verify integration tests were executed
         if: always()
         run: python3 scripts/verify-integration-results.py
       - name: Compile shaders and verify rendered pixels in a real browser
         run: python3 scripts/smoke-webgl.py
+      - name: Verify production TLS and passive ZAP results
+        run: python3 scripts/check-production-security.py mathtutor-application/build/libs/mathtutor-application-0.0.1-SNAPSHOT.jar
       - name: Upload test and coverage evidence
         uses: actions/upload-artifact@v4
         if: always()
@@ -53,5 +55,6 @@ jobs:
             **/build/reports/jacoco/**
             **/build/reports/client/**
             **/build/reports/client-browser/**
+            build/reports/security/**
           if-no-files-found: error
           retention-days: 7

@@ -20,6 +20,11 @@ jwt:
 
 # RAG Configuration
 tutor:
+  quota:
+    daily-tokens: ${TUTOR_DAILY_TOKENS:100000}
+    # USD por millón de tokens. El prototipo usa el nivel gratuito. -1 indica tarifa desconocida.
+    usd-per-million-input: ${TUTOR_USD_PER_MILLION_INPUT:0}
+    usd-per-million-output: ${TUTOR_USD_PER_MILLION_OUTPUT:0}
   rag:
     # Umbral de similitud coseno para búsqueda vectorial (0.0-1.0).
     # Obligatorio: debe estar configurado. Recomendado 0.7 (distancia coseno < 0.3).
@@ -31,7 +36,7 @@ tutor:
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: dev | production
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:mathtutor}
@@ -124,4 +129,31 @@ management:
         include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: always
+      show-details: never
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: production
+
+mathtutor:
+  security:
+    secure-cookies: true
+
+logging:
+  level:
+    com.mathtutor: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+
+server:
+  port: ${HTTPS_PORT:8443}
+  ssl:
+    enabled: true
+    enabled-protocols: TLSv1.3,TLSv1.2
+    key-store-type: PKCS12
+    key-store: ${TLS_KEYSTORE}
+    key-store-password: ${TLS_KEYSTORE_PASSWORD}

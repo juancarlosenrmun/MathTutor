@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -38,7 +39,8 @@ class SecurityConfigTest {
 
     @BeforeEach
     void setUp() {
-        securityConfig = new SecurityConfig(tokenServiceAdapter, mock(com.mathtutor.common.auth.port.UserRepositoryPort.class));
+        securityConfig = new SecurityConfig(tokenServiceAdapter, mock(com.mathtutor.common.auth.port.UserRepositoryPort.class),
+                List.of("http://localhost:5173"), false);
     }
 
     @Test
@@ -95,9 +97,9 @@ class SecurityConfigTest {
         HttpServletRequest request = new MockHttpServletRequest("GET", "/api/auth/login");
         CorsConfiguration config = source.getCorsConfiguration(request);
         assertThat(config).isNotNull();
-        assertThat(config.getAllowedOrigins()).containsExactly("http://localhost:3000", "http://localhost:5173", "http://localhost:8080");
+        assertThat(config.getAllowedOrigins()).containsExactly("http://localhost:5173");
         assertThat(config.getAllowedMethods()).containsExactly("GET", "POST", "PUT", "DELETE", "OPTIONS");
-        assertThat(config.getAllowedHeaders()).containsExactly("*");
+        assertThat(config.getAllowedHeaders()).containsExactly("Authorization", "Content-Type", "X-XSRF-TOKEN");
         assertThat(config.getAllowCredentials()).isTrue();
         assertThat(config.getMaxAge()).isEqualTo(3600L);
     }
@@ -107,10 +109,24 @@ class SecurityConfigTest {
     class CsrfConfig {
 
         @Test
-        @DisplayName("Debe instanciar SecurityConfig correctamente")
-        void shouldInstantiateSecurityConfig() {
-            // When / Then
-            assertThat(securityConfig).isNotNull();
+        @DisplayName("Protege la cookie CSRF en HTTP local y en producción")
+        void scopesTheCsrfCookieToItsHostInProduction() {
+            var production = new SecurityConfig(tokenServiceAdapter,
+                    mock(com.mathtutor.common.auth.port.UserRepositoryPort.class), List.of(), true);
+            for (var config : List.of(securityConfig, production)) {
+                var request = new MockHttpServletRequest();
+                var response = new MockHttpServletResponse();
+                var repository = config.csrfTokenRepository();
+                repository.saveToken(repository.generateToken(request), request, response);
+                boolean secure = config == production;
+                var cookie = response.getCookie(secure ? "__Host-XSRF-TOKEN" : "XSRF-TOKEN");
+                assertThat(cookie).isNotNull();
+                assertThat(cookie.getSecure()).isEqualTo(secure);
+                assertThat(cookie.isHttpOnly()).isTrue();
+                assertThat(cookie.getAttribute("SameSite")).isEqualTo("Strict");
+                assertThat(cookie.getPath()).isEqualTo("/");
+                assertThat(cookie.getDomain()).isNull();
+            }
         }
     }
 }

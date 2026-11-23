@@ -3,15 +3,19 @@ package com.mathtutor.tutor;
 import com.mathtutor.common.dto.Prompt;
 import com.mathtutor.common.dto.PedagogicalAction;
 import com.mathtutor.common.dto.NoteChunk;
+import com.mathtutor.common.dto.TutorQuotaExceededException;
 import com.mathtutor.common.port.LlmGateway;
 import com.mathtutor.common.port.RagRetriever;
 import com.mathtutor.common.port.CasEngine;
 import com.mathtutor.common.port.ConversationStore;
+import com.mathtutor.common.port.TokenBudget;
 import org.springframework.stereotype.Service;
 import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
 import java.time.Duration;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** @brief UC-13: orquestación determinista, sin transacción ni reintentos al proveedor. */
 @Service
@@ -21,11 +25,13 @@ public class TutorConversation {
     private final RagRetriever retriever;
     private final CasEngine cas;
     private final OutputGuard outputGuard;
+    private final TokenBudget tokenBudget;
 
     public TutorConversation(TutorSessions sessions, LlmGateway llm, @Nullable RagRetriever retriever,
-                             @Nullable CasEngine cas) {
+                             @Nullable CasEngine cas, TokenBudget tokenBudget) {
         this.sessions = sessions; this.llm = llm; this.retriever = retriever; this.cas = cas;
         this.outputGuard = new OutputGuard(cas);
+        this.tokenBudget = tokenBudget;
     }
 
     /**
@@ -47,13 +53,26 @@ public class TutorConversation {
     }
 
     public Prepared prepare(Long userId, Long sessionId, String message, List<String> history, String exercise) {
-        return prepare(userId, sessionId, message, history, exercise, null, null, null);
+        return prepare(userId, sessionId, message, history, exercise, null, null, null, false);
     }
 
     /** @brief Aplica la acción decidida en Java. La referencia autorizada se muestra desde el repositorio. */
     Prepared prepareExercise(Long userId, Long sessionId, String message, List<String> history,
                              ConversationStore.Run run, ExerciseVerification.Diagnosis diagnosis,
                              PedagogicalAction action) {
+        return prepareExercise(userId, sessionId, message, history, run, diagnosis, action, false);
+    }
+
+    /** @brief Inicia un ejercicio reconocido usando su enunciado como consulta de apuntes. */
+    Prepared prepareRecognized(Long userId, Long sessionId, List<String> history, ConversationStore.Run run,
+                               ExerciseVerification.Diagnosis diagnosis, PedagogicalAction action) {
+        return prepareExercise(userId, sessionId, "¿Cómo empiezo este ejercicio? " + run.statement(),
+                history, run, diagnosis, action, true);
+    }
+
+    private Prepared prepareExercise(Long userId, Long sessionId, String message, List<String> history,
+                                     ConversationStore.Run run, ExerciseVerification.Diagnosis diagnosis,
+                                     PedagogicalAction action, boolean recognized) {
         if (diagnosis.completed()) {
             return new Prepared(Flux.just("Tu resultado ha sido verificado. ¿Qué regla justifica el último paso?"),
                     run.topic(), false);
@@ -62,15 +81,23 @@ public class TutorConversation {
             return new Prepared(Flux.just(action.hint() + "\n\n$" + run.reference() + "$"), run.topic(), false);
         }
         String state = run.statement() + "; progreso: " + run.progress() + "; diagnóstico: " + diagnosis.hint();
-        return prepare(userId, sessionId, message, history, state, action, run.reference(), run.topic());
+        if (!run.seedHints().isEmpty()) {
+            state += "; pistas semilla: " + String.join(" ", run.seedHints());
+        }
+        return prepare(userId, sessionId, message, history, state, action, run.bankReference(), run.topic(),
+                recognized || diagnosis.verdict().equals("INCORRECTO") || diagnosis.verdict().equals("CORRECTO"));
     }
 
     private Prepared prepare(Long userId, Long sessionId, String message, List<String> history, String exercise,
-                             @Nullable PedagogicalAction action, @Nullable String reference, @Nullable String exerciseTopic) {
+                             @Nullable PedagogicalAction action, @Nullable String reference, @Nullable String exerciseTopic,
+                             boolean allowLocalHint) {
         if (message == null || message.isBlank() || message.length() > 4000) {
             throw new IllegalArgumentException("Escribe un mensaje de 1 a 4000 caracteres");
         }
         var session = sessions.active(userId, sessionId);
+        if (TutorInputGuard.rejected(message)) {
+            return new Prepared(Flux.just(TutorInputGuard.REPLY), null, true);
+        }
         String studentPrompt = message;
         if (cas != null && looksLikeExpression(message)) {
             var parsed = cas.parse(message);
@@ -87,11 +114,13 @@ public class TutorConversation {
                 chunks = retriever.retrieve(message, session.moduleCode(), topic);
             }
         }
-        if (retriever != null && chunks.isEmpty()) {
-            if (action != null) {
+        if (chunks.isEmpty()) {
+            if (action != null && allowLocalHint) {
                 return new Prepared(Flux.just(action.hint()), exerciseTopic, false);
             }
-            return new Prepared(Flux.just("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario."), null, true);
+            String reply = retriever == null ? "Los apuntes del módulo no están disponibles."
+                    : "No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.";
+            return new Prepared(Flux.just(reply), null, true);
         }
         var notes = chunks.stream().map(NoteChunk::content).toList();
         var context = new java.util.ArrayList<>(notes);
@@ -108,13 +137,25 @@ public class TutorConversation {
                 + session.moduleCode() + ". Ayuda al alumno a razonar y explica con claridad.",
                 studentPrompt, List.copyOf(context), constraints, 2048, 0.3);
         // La lectura de sesión terminó antes de la suscripción: no se retiene JDBC.
-        var usage=new java.util.concurrent.atomic.AtomicReference<LlmGateway.Usage>();
-        var response = Flux.defer(() -> llm.stream(prompt, usage::set)).timeout(Duration.ofSeconds(30));
-        if (action != null || !notes.isEmpty()) {
-            String fallback = action == null ? "¿Qué definición de los apuntes relaciona los datos con tu pregunta?" : action.hint();
-            response = guarded(response, reference, notes, fallback);
-        }
-        return new Prepared(response, chunks.isEmpty() ? exerciseTopic : chunks.getFirst().topicCode(), false, usage);
+        var usage = new AtomicReference<LlmGateway.Usage>();
+        String fallback = action == null ? "¿Qué definición de los apuntes relaciona los datos con tu pregunta?" : action.hint();
+        var response = guarded(generate(userId, prompt, usage), reference, notes, fallback);
+        return new Prepared(response, chunks.getFirst().topicCode(), false, usage);
+    }
+
+    /** @brief Reserva antes de suscribir al LLM y liquida después de terminar, fallar o cancelar el flujo. */
+    private Flux<String> generate(Long userId, Prompt prompt, AtomicReference<LlmGateway.Usage> usage) {
+        int input = 256 + utf8Length(prompt.systemPrompt()) + utf8Length(prompt.userPrompt())
+                + utf8Length(prompt.constraints()) + prompt.contextChunks().stream().mapToInt(this::utf8Length).sum();
+        return Flux.using(
+                () -> tokenBudget.reserve(userId, input, prompt.maxTokens()).orElseThrow(TutorQuotaExceededException::new),
+                reservation -> Flux.defer(() -> llm.stream(prompt, usage::set)).timeout(Duration.ofSeconds(30))
+                        .publishOn(reactor.core.scheduler.Schedulers.boundedElastic()),
+                reservation -> tokenBudget.settle(reservation, usage.get()));
+    }
+
+    private int utf8Length(String text) {
+        return text.getBytes(StandardCharsets.UTF_8).length;
     }
 
     /** @brief Acumula con un límite estricto. Un delta todavía no validado nunca pasa a SSE ni al historial. */

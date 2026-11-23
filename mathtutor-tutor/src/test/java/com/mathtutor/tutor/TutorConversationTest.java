@@ -6,6 +6,7 @@ import com.mathtutor.common.dto.NoteChunk;
 import com.mathtutor.common.port.LlmGateway;
 import com.mathtutor.common.port.RagRetriever;
 import com.mathtutor.common.port.CasEngine;
+import com.mathtutor.common.port.TokenBudget;
 import com.mathtutor.common.dto.ErrorType;
 import com.mathtutor.common.dto.PedagogicalAction;
 import com.mathtutor.common.port.ConversationStore.Run;
@@ -26,7 +27,14 @@ class TutorConversationTest {
     final LlmGateway llm = mock(LlmGateway.class);
     final RagRetriever retriever = mock(RagRetriever.class);
     final CasEngine cas = mock(CasEngine.class);
-    final TutorConversation conversation = new TutorConversation(sessions, llm, retriever, cas);
+    final TokenBudget budget = mock(TokenBudget.class);
+    final TutorConversation conversation = new TutorConversation(sessions, llm, retriever, cas, budget);
+    @org.junit.jupiter.api.BeforeEach
+    void allowGeneration() {
+        when(budget.reserve(anyLong(), anyInt(), anyInt())).thenAnswer(invocation -> java.util.Optional.of(
+                new TokenBudget.Reservation(invocation.getArgument(0), java.time.LocalDate.of(2026, 1, 1),
+                        invocation.getArgument(1), invocation.getArgument(2))));
+    }
     void active() {
         when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
         when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
@@ -115,7 +123,7 @@ class TutorConversationTest {
     }
     @Test void aProfileWithoutCasKeepsOrdinaryConversationAvailable() {
         active(); when(llm.stream(any(),any())).thenReturn(Flux.just("Pista"));
-        var withoutCas = new TutorConversation(sessions, llm, retriever, null);
+        var withoutCas = new TutorConversation(sessions, llm, retriever, null, budget);
         StepVerifier.create(withoutCas.reply(7L, 1L, "x^2")).expectNext("Pista").verifyComplete();
     }
     @Test void streamsDeltasInOrderWithOneSubscription() {
@@ -179,6 +187,16 @@ class TutorConversationTest {
         verifyNoInteractions(llm);
     }
 
+    @Test void activeExerciseDoesNotBypassOutOfSyllabusCheck() {
+        active();
+        var diagnosis = new ExerciseVerification.Diagnosis("INDETERMINADO", ErrorType.OTRO, "Sin comparación", 0, false);
+        var reply = conversation.prepareExercise(7L, 1L, "¿Quién ganó el partido?", List.of(),
+                exercise(), diagnosis, PedagogicalAction.conceptual("¿Qué propiedad se aplica?"));
+        StepVerifier.create(reply.response()).expectNextMatches(text -> text.contains("temario")).verifyComplete();
+        assertThat(reply.rejected()).isTrue();
+        verifyNoInteractions(llm, budget);
+    }
+
     @Test void analogicalHintAndHistoryReachThePromptButTheTrustedReferenceDoesNot() {
         active();
         when(retriever.retrieve(eq("3"), eq("funciones"), eq("derivadas"))).thenReturn(List.of(
@@ -215,12 +233,12 @@ class TutorConversationTest {
         verify(llm).stream(any(), any());
     }
 
-    @Test void unprotectedConversationWithoutAnIndexRetainsTheOrdinaryDeltaContract() {
+    @Test void unavailableIndexKeepsUnverifiedQueriesAwayFromTheGenerator() {
         active();
-        when(llm.stream(any(), any())).thenReturn(Flux.just("Una ", "pista"));
-        var withoutIndex = new TutorConversation(sessions, llm, null, cas);
+        var withoutIndex = new TutorConversation(sessions, llm, null, cas, budget);
         StepVerifier.create(withoutIndex.reply(7L, 1L, "¿Qué es una función?"))
-                .expectNext("Una ", "pista").verifyComplete();
+                .expectNext("Los apuntes del módulo no están disponibles.").verifyComplete();
+        verifyNoInteractions(llm, budget);
     }
 
     private static Run exercise() {

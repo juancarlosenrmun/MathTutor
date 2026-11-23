@@ -95,18 +95,38 @@ public class ConversationStoreAdapter implements ConversationStore {
     @Override public List<BankExercise> bank(Long user,Long session,int page,int size) {
         var s=owned(user,session);
         return exercises.findByModule(s.getModule(),page(page,size,"id")).stream()
-                .map(e -> new BankExercise(e.getId(),e.getStatementLatex(),e.getTopic()==null ? null : e.getTopic().getCode(),e.getType().name(),e.getDifficulty())).toList();
+                .map(e -> new BankExercise(e.getId(),e.getStatementLatex(),e.getTopic()==null ? null : e.getTopic().getCode(),
+                        e.getType().name(),e.getDifficulty(),e.getExternalId())).toList();
     }
     @Override @Transactional public Run select(Long user,Long session,Long exerciseId,String statement,String reference) {
         var s=locked(user,session); available(session);
         var e=exerciseId==null ? null : exercises.findById(exerciseId).orElseThrow(() -> new IllegalArgumentException("Ejercicio no disponible"));
         if (e!=null && !Objects.equals(e.getModule().getId(),s.getModule().getId())) throw new IllegalArgumentException("Ejercicio de otro módulo");
         activeRun(session).ifPresent(old -> { old.setState(ExerciseRun.RunState.ABANDONADO); old.setEndedAt(Instant.now()); });
+        return run(createRun(s, e, statement, reference));
+    }
+
+    /** @brief Valida módulo y propiedad dentro de la misma transacción que vincula el turno. */
+    @Override @Transactional
+    public Run attachRecognized(Long user, Long session, UUID request, Long exerciseId) {
+        var s = locked(user, session);
+        var turn = turns.findBySessionIdAndRequestId(session, request)
+                .filter(t -> "EN_CURSO".equals(t.getStatus()) && t.getExerciseRun() == null)
+                .orElseThrow(ConversationConflictException::new);
+        var exercise = exercises.findById(exerciseId)
+                .filter(e -> Objects.equals(e.getModule().getId(), s.getModule().getId()))
+                .orElseThrow(() -> new IllegalArgumentException("Ejercicio no disponible en el módulo"));
+        var selected = createRun(s, exercise, null, null);
+        turn.setExerciseRun(selected);
+        return run(selected);
+    }
+
+    private ExerciseRun createRun(TutorSession s, Exercise e, String statement, String reference) {
         var r=ExerciseRun.builder().session(s).exercise(e).topic(e==null ? null : e.getTopic())
                 .statementLatex(e==null ? statement : e.getStatementLatex())
                 .referenceSolution(e==null ? reference : (e.getType()==Exercise.ExerciseType.PROCEDIMENTAL ? e.getReferenceSolutionLatex() : null))
                 .state(ExerciseRun.RunState.COMENZADO).currentLevel(ExerciseRun.HelpLevel.CONCEPTUAL).build();
-        return run(runs.saveAndFlush(r));
+        return runs.saveAndFlush(r);
     }
     private Optional<ExerciseRun> activeRun(Long session) { return runs.findFirstBySessionIdAndStateOrderByStartedAtDescIdDesc(session,ExerciseRun.RunState.COMENZADO); }
     private PageRequest page(int number,int size,String date) {
@@ -121,6 +141,11 @@ public class ConversationStoreAdapter implements ConversationStore {
         var e=r.getExercise();
         var steps=e==null || r.getReferenceSolution()==null ? List.<String>of() : e.getCanonicalSteps().stream()
                 .sorted(Comparator.comparingInt(CanonicalStep::getPosition)).map(CanonicalStep::getExpressionLatex).toList();
-        return new Run(r.getId(),e==null ? null : e.getId(),r.getStatementLatex(),r.getReferenceSolution(),r.getTopic()==null ? null : r.getTopic().getCode(),r.getState().name(),r.getProgress(),r.getVerifiedSteps(),steps,r.getAttempts());
+        var hints = e == null ? List.<String>of() : e.getCanonicalSteps().stream()
+                .sorted(Comparator.comparingInt(CanonicalStep::getPosition))
+                .flatMap(step -> step.getTypicalErrors().stream().sorted(Comparator.comparing(TypicalError::getCode)))
+                .map(TypicalError::getSeedHint).filter(Objects::nonNull).distinct().toList();
+        return new Run(r.getId(),e==null ? null : e.getId(),r.getStatementLatex(),r.getReferenceSolution(),r.getTopic()==null ? null : r.getTopic().getCode(),r.getState().name(),r.getProgress(),r.getVerifiedSteps(),steps,r.getAttempts(),
+                e == null ? r.getReferenceSolution() : e.getReferenceSolutionLatex(), hints);
     }
 }
