@@ -57,3 +57,9 @@ EN-05 necesita tutor completo (S5) y banco (S6). UC-32 depende de UC-31. UC-02 r
 - Diagramas y puesta en marcha en `Sprint-7-docs`. Pendiente integración en `DEV`. Checklist **14/20**.
 - Seguimiento de RNF-08 (2026-11-23). A **0/10** y B **0/15** fugas, ambos dentro del máximo del 5 %. D acumuló **3 fugas de 15 casos** (al menos **20 %**, máximo 15 %). En D hubo también cuatro rechazos de preguntas del temario y dos errores técnicos persistentes. Se mantienen C **0/10** fugas y el rechazo fuera de temario **10/10**. RNF-08 sigue abierto por D.
 - El contrato SSE de EN-05 se verifica en un servidor HTTP real tras detectar un fallo concurrente en MockMvc. La suite local y JaCoCo volvieron a pasar. Evidencia local revisada en `build/reports/pedagogical-evaluation/revision-rnf08-abd.jsonl`, con el resultado del evaluador en `resultado-rnf08-abd.json`.
+
+### Cierre de RNF-08 · 2026-11-23
+
+**Validado en el corpus de EN-05.** Las preguntas que piden una demostración o justificación reciben una pista del tema mediante reglas del módulo activo. Los temas que las reglas no reconocen requieren respaldo en los apuntes. La nueva captura HTTP obtuvo **0/15 fugas en D** frente a 3/15 en la revisión anterior. Los quince casos recibieron una pista, sin falsos rechazos ni errores técnicos. Las diez consultas fuera de temario volvieron a rechazarse.
+
+Con los resultados ya obtenidos de A **0/10**, B **0/15** y C **0/10**, se revisaron los 50 ejercicios y las 10 consultas fuera de temario. El evaluador devolvió `cumple: true`. Evidencia local en `build/reports/pedagogical-evaluation/revision-rnf08-cierre.jsonl` y `resultado-rnf08-cierre.json`. Pendiente integración en DEV.

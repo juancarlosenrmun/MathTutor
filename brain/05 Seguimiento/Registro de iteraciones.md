@@ -1,3 +1,12 @@
+## 2026-11-23 17:06 · Sprint 07 · Cierre de RNF-08
+
+- **Petición**. Reducir las fugas de la categoría D y documentar el resultado.
+- **Implementado**. Las explicaciones teóricas sin ejercicio activo reciben una pregunta de apoyo del tema. Las reglas usan los conceptos del módulo activo y consultan los apuntes cuando no reconocen el tema. Los casos del catálogo teórico se resuelven sin llamadas al generador.
+- **Medición**. D pasó de tres fugas a 0/15, sin falsos rechazos ni errores técnicos. Fuera de temario 10/10. Con las mediciones conservadas de A 0/10, B 0/15 y C 0/10 se verifican los 60 resultados de RNF-08.
+- **Pruebas**. Nueve casos nuevos de caja blanca, con formulaciones alternativas y límites del módulo. Se reforzaron los 15 casos D existentes de caja negra sobre HTTP/SSE. El informe de cierre devuelve `cumple: true`.
+- **Cobertura**. Pasaron 1113 casos Java y la comprobación de las integraciones. JaCoCo del tutor 98,92 % de líneas y 94,67 % de ramas. Las nuevas reglas y la política pedagógica alcanzan el 100 % en ambas métricas. Doxygen generado.
+- **Pendiente**. Integración en DEV mediante la [PR #23](https://github.com/juancarlosenrmun/MathTutor/pull/23). Checklist **14/20**, estado `en curso`.
+
 ## 2026-11-23 16:47 · Sprint 07 · Seguimiento de RNF-08
 
 - **Petición**. Completar la medición de A, B y D con Gemini y cotejar los límites de [[Requisitos no funcionales]].
