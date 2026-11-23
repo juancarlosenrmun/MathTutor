@@ -1,11 +1,13 @@
 const epsilon = 1e-9;
 const subtract = (a, b) => a.map((value, i) => value - b[i]);
 const dot = (a, b) => a.reduce((sum, value, i) => sum + value * b[i], 0);
-const cross = (a, b) => [
-  a[1] * b[2] - a[2] * b[1],
-  a[2] * b[0] - a[0] * b[2],
-  a[0] * b[1] - a[1] * b[0],
-];
+function cross(a, b) {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ];
+}
 const at = (origin, direction, t) => origin.map((value, i) => value + t * direction[i]);
 
 /**

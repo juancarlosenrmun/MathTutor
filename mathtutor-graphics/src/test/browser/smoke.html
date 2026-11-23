@@ -62,6 +62,21 @@ try {
   if (readTangentPixels() === firstLine) throw new Error('La recta no sigue el punto');
   viewer.setSurface(surface('x^2+y^2', -1, 1, -1, 1, 16, [0.5, -0.5]));
   readTangentPixels();
+  viewer.setSurface(surface('x+y', -1, 1, -1, 1, 16, [0, 0]));
+  const rectangle = canvas.getBoundingClientRect();
+  for (const value of ['surface', 'plane']) {
+    viewer.selectionMode = {value};
+    viewer.select(rectangle.left + rectangle.width / 2, rectangle.top + rectangle.height / 2);
+    if (!viewer.selection || viewer.selection.some(coordinate => Math.abs(coordinate) > 1e-6)) {
+      throw new Error('La selección no alcanza el origen en ' + value);
+    }
+    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    let highlights = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      if (pixels[i] > 250 && pixels[i + 1] > 230 && pixels[i + 2] > 105 && pixels[i + 2] < 125) highlights++;
+    }
+    if (highlights < 30 || gl.getError() !== gl.NO_ERROR) throw new Error('Marcador WebGL ausente en ' + value);
+  }
   viewer.dispose();
   document.body.dataset.result = 'passed';
   document.body.dataset.drawn = drawn;
