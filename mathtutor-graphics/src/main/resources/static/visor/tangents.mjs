@@ -55,7 +55,7 @@ export function lineTangent(evaluate, x, min, max) {
   checkValue(value);
   const m = derivative(offset => evaluate(x + offset), value, Math.max(1, Math.abs(x)));
   const lines = extent(x, min, max).map(u => [u, value + m * (u - x), 0]);
-  return { value, slope: m, lines };
+  return { x, value, slope: m, lines };
 }
 
 /**
@@ -85,5 +85,5 @@ export function planeTangent(evaluate, point, bounds) {
     const [u, v] = corners[i];
     return [u, v, value + dx * (u - x) + dy * (v - y)];
   });
-  return { value, dx, dy, lines };
+  return { point, value, dx, dy, lines };
 }

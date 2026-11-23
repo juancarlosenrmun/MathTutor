@@ -139,27 +139,35 @@ export function curve(source, min, max, samples = 256, tangentX) {
   return { points, area, tangent: tangentX === undefined ? undefined : lineTangent(f, tangentX, min, max) };
 }
 
-/** @brief Controles con salida textual: los cálculos son aproximaciones numéricas. */
+/** @brief Expresa dominio, recorrido y magnitudes de una curva sin depender del color o del lienzo. */
+export function describeCurve(source, graph) {
+  const format = value => value.toLocaleString('es-ES', { maximumFractionDigits: 6 });
+  const first = graph.points[0], last = graph.points.at(-1);
+  const values = graph.points.map(point => point.y).filter(Number.isFinite);
+  const range = values.length ? `Valores de f(x) muestreados entre ${format(Math.min(...values))} y ${format(Math.max(...values))}.`
+    : 'No hay valores de f(x) representables en el intervalo.';
+  const integral = graph.area === null ? 'Integral sin calcular por discontinuidades o límites del muestreo.'
+    : `Integral aproximada con signo: ${format(graph.area)}.`;
+  const tangent = graph.tangent ? ` Recta tangente en x = ${format(graph.tangent.x)}. Pendiente aproximada: ${format(graph.tangent.slope)}.` : '';
+  return `f(x) = ${source}. Dominio de ${format(first.x)} a ${format(last.x)}. ${range} ${integral}${tangent}`;
+}
+
+/** @brief Calcula la descripción textual aunque WebGL 2 no esté disponible. */
 export function mountCurveControls(document, viewer) {
   const one = id => document.querySelector('#' + id);
   const form = one('curve-form');
   const tangentX = one('curve-tangent-x');
   if (tangentX) {
-    tangentX.disabled = !viewer;
     tangentX.addEventListener('change', () => form.requestSubmit());
   }
-  one('curve-draw').disabled = !viewer;
   form.addEventListener('submit', event => {
     event.preventDefault();
     try {
       const source = one('curve-function').value;
       const x = tangentX?.value ? Number(tangentX.value) : undefined;
       const graph = curve(source, Number(one('curve-min').value), Number(one('curve-max').value), 256, x);
-      viewer.setGraph(graph);
-      const integral = graph.area === null ? 'No se calcula la integral: hay discontinuidades, muestreo insuficiente o valores fuera del rango representable.'
-        : 'Integral aproximada con signo: ' + graph.area.toLocaleString('es-ES', {maximumFractionDigits:6}) + '.';
-      const tangent = graph.tangent ? ` Recta tangente rosa en x = ${x}. Pendiente aproximada: ${graph.tangent.slope.toLocaleString('es-ES')}.` : '';
-      one('curve-result').textContent = `f(x) = ${source}. Función amarilla, derivada azul y área sombreada. ${integral}${tangent}`;
+      viewer?.setGraph(graph);
+      one('curve-result').textContent = describeCurve(source, graph);
     } catch (error) { one('curve-result').textContent = error.message; }
   });
 }

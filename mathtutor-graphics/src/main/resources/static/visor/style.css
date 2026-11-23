@@ -54,7 +54,7 @@ button {
 a:hover {
   color: var(--green);
 }
-:is(a, button, input, summary, canvas):focus-visible {
+:is(a, button, input, select, textarea, summary, [tabindex="0"]):focus-visible {
   outline: 3px solid #618549;
   outline-offset: 5px;
 }
@@ -383,7 +383,7 @@ input {
   min-width: 0;
 }
 input::placeholder {
-  color: #788176;
+  color: #646e64;
 }
 input[aria-invalid="true"] {
   border-color: var(--error);

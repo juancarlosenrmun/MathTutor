@@ -13,7 +13,10 @@ export function mount(document, host = globalThis) {
   const status = document.querySelector('#graphic-status');
   let viewer;
   try { viewer = new WebGLViewer(document.querySelector('canvas'), status, host); }
-  catch (error) { status.textContent = error.message; }
+  catch (error) {
+    status.textContent = error.message;
+    document.querySelector('canvas')?.removeAttribute?.('tabindex');
+  }
   const selectionMode = document.querySelector('#selection-mode');
   if (selectionMode) {
     selectionMode.disabled = !viewer;

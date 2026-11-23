@@ -72,11 +72,13 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     if (identity!==next) {
       controller?.abort(); identity=next; generation++; session=null; pending=undefined; busy=false; loaded=false; loading=false;
       one('tutor-message').value=''; status.textContent='Inicia sesión como alumno para conversar con el tutor.';
+        history.setAttribute('aria-busy', 'false');
       history.replaceChildren(); entries=[]; modules=[]; visits.clear(); study.enter(null); controls();
       if (one('history-more')) one('history-more').hidden=true;
     }
     if (view!=='tutor') {
       if (busy) {controller.abort();generation++;busy=false;loading=false;status.textContent='Operación cancelada al salir de la conversación.';controls();}
+      history.setAttribute('aria-busy', 'false');
       study.suspend?.(); return;
     }
     study.resume?.();
@@ -118,6 +120,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     const bubbles=prior && [...history.children].includes(prior.answer) ? prior : appendTurn(document,history,message);
     pending={...bubbles,message,requestId:prior?.requestId || randomUUID()}; controls();
     const requestId=pending.requestId; let markdown='';
+    history.setAttribute('aria-busy', 'true');
     renderTutorMarkdown(document,pending.body,''); status.textContent=retry ? 'Recuperando el envío sin iniciar otro turno…' : 'El tutor está respondiendo…';
     try {
       if (!retry) await study.fromMessage?.(message);
@@ -146,7 +149,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
             busy=false;
           }
         } catch { /* La respuesta visible se conserva; el alumno puede actualizar el historial. */ }
-        if (current===generation) {busy=false;controls();}
+        if (current===generation) {history.setAttribute('aria-busy', 'false');busy=false;controls();}
       }
     }
   }

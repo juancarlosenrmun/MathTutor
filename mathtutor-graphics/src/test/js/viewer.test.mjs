@@ -18,6 +18,19 @@ function surface(gl = fakeGl()) {
   return { canvas, listeners, host, status: { textContent: '' } };
 }
 
+test('EN-07 Entrar selecciona el centro del visor sin usar el puntero', () => {
+  const { canvas, status, host, listeners } = surface();
+  const viewer = new WebGLViewer(canvas, status, host);
+  viewer.selectionMode = { value: 'surface' };
+  viewer.setSurface(meshSurface('0', -1, 1, -1, 1, 4));
+  let handled = false;
+  listeners.get('keydown')({ key: 'Enter', preventDefault() { handled = true; } });
+  assert.equal(handled, true);
+  assert.ok(viewer.selection.every(value => Math.abs(value) < 1e-9));
+  assert.match(status.textContent, /Punto seleccionado/);
+  viewer.dispose();
+});
+
 test('UC-32 distingue pulsación, arrastre, cancelación y selecciona el objeto indicado', () => {
   const {canvas, status, host, listeners} = surface();
   const viewer = new WebGLViewer(canvas, status, host);

@@ -76,8 +76,10 @@ export function mountInterface(document, host, onView) {
         button.setAttribute('aria-label', 'Mostrar contraseña');
       }
       for (const error of all('[data-error]')) error.hidden = true;
-      one('#main').focus({ preventScroll: true });
-      host.scrollTo(0, 0);
+      if (currentView !== undefined) {
+        one('#main').focus({ preventScroll: true });
+        host.scrollTo(0, 0);
+      }
       currentView = view;
     }
     onView(view, client);
