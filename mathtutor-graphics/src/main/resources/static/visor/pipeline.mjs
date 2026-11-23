@@ -75,8 +75,7 @@ export class ShaderPipeline {
       }
     }
     this.lineCount = lines.length / 6; this.areaCount = area.length / 6;
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([...this.axes, ...lines, ...area]), this.gl.STATIC_DRAW);
+    this.upload([...lines, ...area], graph.tangent);
   }
 
   /** @brief Dibuja la triangulación y conserva las normales calculadas por la malla. */
@@ -88,8 +87,20 @@ export class ShaderPipeline {
     this.surfaceCount = vertices.length / 6;
     this.lineCount = 0;
     this.areaCount = 0;
+    this.upload(vertices, mesh.tangent);
+  }
+
+  /** @brief Guarda al final del VBO las aristas de la tangente como guía superpuesta. */
+  upload(positions, tangent) {
+    const overlay = tangent?.lines.flatMap(vertex => [...vertex, 1, 0.38, 0.72]) ?? [];
+    this.tangentStart = 6 + positions.length / 6;
+    this.tangentCount = overlay.length / 6;
+    const buffer = new Float32Array(this.axes.length + positions.length + overlay.length);
+    buffer.set(this.axes);
+    buffer.set(positions, this.axes.length);
+    buffer.set(overlay, this.axes.length + positions.length);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([...this.axes, ...vertices]), this.gl.STATIC_DRAW);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, buffer, this.gl.STATIC_DRAW);
   }
 
   draw(matrix, width, height) {
@@ -105,6 +116,11 @@ export class ShaderPipeline {
     if (this.lineCount) gl.drawArrays(gl.LINES, 6, this.lineCount);
     if (this.areaCount) gl.drawArrays(gl.TRIANGLES, 6 + this.lineCount, this.areaCount);
     if (this.surfaceCount) gl.drawArrays(gl.TRIANGLES, 6, this.surfaceCount);
+    if (this.tangentCount) {
+      gl.disable(gl.DEPTH_TEST);
+      gl.drawArrays(gl.LINES, this.tangentStart, this.tangentCount);
+      gl.enable(gl.DEPTH_TEST);
+    }
     gl.bindVertexArray(null);
   }
 

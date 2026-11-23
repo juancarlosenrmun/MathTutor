@@ -290,6 +290,7 @@
           <input id="curve-function" value="x^2" required maxlength="200" aria-describedby="curve-help" /></div>
           <div><label for="curve-min">Desde x =</label><input id="curve-min" type="number" value="-1" min="-10000" max="10000" step="any" required /></div>
           <div><label for="curve-max">Hasta x =</label><input id="curve-max" type="number" value="1" min="-10000" max="10000" step="any" required /></div>
+          <div><label for="curve-tangent-x">Tangente en x (opcional)</label><input id="curve-tangent-x" type="number" step="any" /></div>
           <button id="curve-draw" class="button" type="submit">Dibujar función, derivada y área</button>
         </form>
         <p id="curve-help" class="field-help">Usa x, números, + − * / ^, sin, cos, tan, exp, log, sqrt o abs. Ejemplos: x^2, sin(x), 1/x. La integral usa los extremos indicados.</p>
@@ -300,6 +301,8 @@
           <div><label for="surface-x-max">x hasta</label><input id="surface-x-max" type="number" value="1" step="any" required /></div>
           <div><label for="surface-y-min">y desde</label><input id="surface-y-min" type="number" value="-1" step="any" required /></div>
           <div><label for="surface-y-max">y hasta</label><input id="surface-y-max" type="number" value="1" step="any" required /></div>
+          <div><label for="surface-tangent-x">Tangencia x (opcional)</label><input id="surface-tangent-x" type="number" step="any" /></div>
+          <div><label for="surface-tangent-y">Tangencia y (opcional)</label><input id="surface-tangent-y" type="number" step="any" /></div>
           <div><label for="surface-resolution">Detalle de la malla</label><select id="surface-resolution" aria-describedby="surface-help"><option value="16">Bajo (16 × 16)</option><option value="32" selected>Medio (32 × 32)</option><option value="64">Alto (64 × 64)</option></select></div>
           <button id="surface-draw" class="button" type="submit">Dibujar superficie</button>
         </form>
@@ -539,11 +542,13 @@
             <div class="tutor-viewer-intro"><p class="overline">Laboratorio</p><h2>Explora lo que conversas.</h2><p>Escribe una función para que se compruebe antes de dibujarla.</p>
               <details class="study-panel"><summary>Dibujar una gráfica</summary>
                 <form id="graphic-form"><fieldset id="graphic-fields"><legend>Función y dominio</legend>
-                  <label for="graphic-type">Tipo de gráfica</label><select id="graphic-type"><option value="CURVA_2D">Curva 2D</option><option value="SUPERFICIE">Superficie 3D</option></select>
+                  <label for="graphic-type">Tipo de gráfica</label><select id="graphic-type"><option value="CURVA_2D">Curva 2D</option><option value="SUPERFICIE">Superficie 3D</option><option value="RECTA_TANGENTE">Recta tangente</option><option value="PLANO_TANGENTE">Plano tangente</option></select>
                   <label for="graphic-function">Función</label><input id="graphic-function" value="x^2" maxlength="200" required aria-describedby="graphic-help" />
                   <div class="study-domain"><div><label for="graphic-min">Desde</label><input id="graphic-min" type="number" value="-2" min="-10000" max="10000" step="any" required /></div>
                   <div><label for="graphic-max">Hasta</label><input id="graphic-max" type="number" value="2" min="-10000" max="10000" step="any" required /></div></div>
                   <label for="graphic-steps">Divisiones</label><input id="graphic-steps" type="number" value="32" min="2" max="200" step="1" required />
+                  <div id="graphic-tangent-x-field" hidden><label for="graphic-tangent-x">Tangencia x</label><input id="graphic-tangent-x" type="number" step="any" value="0" disabled /></div>
+                  <div id="graphic-tangent-y-field" hidden><label for="graphic-tangent-y">Tangencia y</label><input id="graphic-tangent-y" type="number" step="any" value="0" disabled /></div>
                   <p id="graphic-help" class="field-help">Usa x para curvas, x e y para superficies, y operaciones como x^2 o sin(x). En superficies, el intervalo se aplica a ambos ejes; máximo 128 divisiones y dominio entre −100 y 100.</p>
                   <button class="button secondary" type="submit">Comprobar y dibujar</button>
                 </fieldset></form>

@@ -39,6 +39,21 @@ try {
     if (pixels[i] > 40 && pixels[i] < 110 && pixels[i+1] > 120 && pixels[i+2] > 100) meshPixels++;
   }
   if (meshPixels < 100 || gl.getError() !== gl.NO_ERROR) throw new Error(`Superficie 3D incompleta: ${meshPixels}`);
+  const readTangentPixels = () => {
+    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const positions = [];
+    for (let i = 0; i < pixels.length; i += 4) {
+      if (pixels[i] > 245 && pixels[i+1] > 80 && pixels[i+1] < 110 && pixels[i+2] > 165) positions.push(i);
+    }
+    if (positions.length < 20 || gl.getError() !== gl.NO_ERROR) throw new Error('Tangente rosa ausente');
+    return positions.join(',');
+  };
+  viewer.setGraph(curve('x^2', -1, 1, 64, -0.5));
+  const firstLine = readTangentPixels();
+  viewer.setGraph(curve('x^2', -1, 1, 64, 0.5));
+  if (readTangentPixels() === firstLine) throw new Error('La recta no sigue el punto');
+  viewer.setSurface(surface('x^2+y^2', -1, 1, -1, 1, 16, [0.5, -0.5]));
+  readTangentPixels();
   viewer.dispose();
   document.body.dataset.result = 'passed';
   document.body.dataset.drawn = drawn;
