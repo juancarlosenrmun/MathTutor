@@ -3,7 +3,7 @@ export function mountTeacherStatistics(document, client) {
   const button = document.querySelector('#teacher-load');
   const status = document.querySelector('#teacher-status');
   const results = document.querySelector('#teacher-results');
-  const region = document.querySelector('.statistics-scroll');
+  const region = document.querySelector('#teacher-table');
   let generation = 0, identity;
 
   function sync(view) {

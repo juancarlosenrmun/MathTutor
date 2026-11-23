@@ -476,15 +476,42 @@
             <button type="button" data-admin-action="password-reset" class="button secondary">Enviar enlace de recuperación</button>
             <button type="button" data-admin-action="deactivate" class="button secondary">Desactivar</button>
             <button type="button" data-admin-action="anonymize" class="button secondary">Anonimizar</button>
+            <button type="button" id="admin-sessions-load" class="button secondary" disabled>Consultar sesiones</button>
           </fieldset>
           <button type="button" id="admin-previous" class="button secondary" disabled>Anterior</button>
           <button type="button" id="admin-next" class="button secondary" disabled>Siguiente</button>
+          <p id="admin-sessions-status" role="status"></p>
+          <div id="admin-sessions-table" class="statistics-scroll" tabindex="0" role="region" aria-label="Tabla de sesiones" hidden>
+            <table>
+              <caption>Sesiones del perfil seleccionado</caption>
+              <thead><tr><th scope="col">Sesión</th><th scope="col">Módulo</th><th scope="col">Estado</th>
+                <th scope="col">Inicio</th><th scope="col">Última actividad</th></tr></thead>
+              <tbody id="admin-sessions-results"></tbody>
+            </table>
+          </div>
+          <button type="button" id="admin-sessions-previous" class="button secondary" disabled>Sesiones anteriores</button>
+          <button type="button" id="admin-sessions-next" class="button secondary" disabled>Sesiones siguientes</button>
+        </section>
+        <section data-permission="ADMIN" hidden class="account-details" aria-labelledby="admin-topics-title">
+          <h2 id="admin-topics-title">Uso por tema</h2>
+          <button type="button" id="admin-topics-load" class="button secondary">Consultar uso</button>
+          <p id="admin-topics-status" role="status"></p>
+          <div id="admin-topics-table" class="statistics-scroll" tabindex="0" role="region" aria-label="Tabla de uso por tema" hidden>
+            <table>
+              <caption>Sesiones y turnos completados</caption>
+              <thead><tr><th scope="col">Módulo</th><th scope="col">Tema</th>
+                <th scope="col">Sesiones</th><th scope="col">Turnos</th></tr></thead>
+              <tbody id="admin-topics-results"></tbody>
+            </table>
+          </div>
+          <button type="button" id="admin-topics-previous" class="button secondary" disabled>Temas anteriores</button>
+          <button type="button" id="admin-topics-next" class="button secondary" disabled>Temas siguientes</button>
         </section>
         <section id="teacher-panel" data-permission="PROFESOR ADMIN" hidden class="account-details" aria-labelledby="teacher-title">
           <h2 id="teacher-title">Estadísticas de ejercicios</h2>
           <button type="button" id="teacher-load" class="button secondary">Consultar estadísticas</button>
           <p id="teacher-status" role="status"></p>
-          <div class="statistics-scroll" tabindex="0" role="region" aria-label="Tabla de estadísticas" hidden>
+          <div id="teacher-table" class="statistics-scroll" tabindex="0" role="region" aria-label="Tabla de estadísticas" hidden>
             <table>
               <caption>Ejercicios por módulo y tema</caption>
               <thead><tr><th scope="col">Módulo</th><th scope="col">Tema</th>

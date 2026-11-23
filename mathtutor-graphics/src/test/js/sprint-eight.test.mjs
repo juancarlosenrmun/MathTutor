@@ -64,7 +64,9 @@ function panel(ids, actions = []) {
 test('la administración excluye la cuenta propia y cancela la mutación cuando no hay confirmación', async () => {
   const change = element({ dataset: { adminAction: 'role' } });
   const { nodes, document } = panel(['#admin-status', '#admin-user', '#admin-role', '#admin-actions',
-    '#admin-load', '#admin-previous', '#admin-next'], [change]);
+    '#admin-load', '#admin-previous', '#admin-next',
+    ...['sessions', 'topics'].flatMap(panel =>
+      ['status', 'results', 'table', 'load', 'previous', 'next'].map(id => `#admin-${panel}-${id}`))], [change]);
   let requests = 0;
   const client = { profile: { id: 1, role: 'ADMIN', email: 'a@example.test' }, async request() {
     requests++;
@@ -86,7 +88,7 @@ test('la administración excluye la cuenta propia y cancela la mutación cuando 
 });
 
 test('el panel docente descarta respuestas que llegan tras salir del espacio', async () => {
-  const { nodes, document } = panel(['#teacher-load', '#teacher-status', '#teacher-results', '.statistics-scroll']);
+  const { nodes, document } = panel(['#teacher-load', '#teacher-status', '#teacher-results', '#teacher-table']);
   let deliver;
   const client = { profile: { role: 'PROFESOR', email: 'p@example.test' }, request: () => new Promise(resolve => { deliver = resolve; }) };
   const statistics = mountTeacherStatistics(document, client);
@@ -96,5 +98,5 @@ test('el panel docente descarta respuestas que llegan tras salir del espacio', a
   deliver(Response.json([{ module: 'funciones', started: 5 }]));
   await pending;
   assert.deepEqual(nodes['#teacher-results'].children, []);
-  assert.equal(nodes['.statistics-scroll'].hidden, true);
+  assert.equal(nodes['#teacher-table'].hidden, true);
 });
