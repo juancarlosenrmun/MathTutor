@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.annotation.DirtiesContext;
@@ -36,6 +39,8 @@ import com.mathtutor.persistence.entity.RefreshToken;
 import com.mathtutor.common.auth.port.TokenServicePort;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -44,12 +49,110 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests de integración para AuthController usando MockMvc y Testcontainers.
  * Verifica los endpoints REST: /register, /login, /logout, /refresh, /me
  */
-@SpringBootTest(classes = MathTutorApplication.class)
+@SpringBootTest(classes = MathTutorApplication.class, properties = {
+        "app.password-reset.from=cuentas@example.org",
+        "app.password-reset.page=https://tutor.example.org/visor/index.html"
+})
 @AutoConfigureMockMvc
 @Testcontainers(disabledWithoutDocker = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @DisplayName("AuthController Integration Tests")
 class AuthControllerIntegrationTest {
+    @MockitoBean
+    private JavaMailSender resetSender;
+
+    @Autowired
+    private com.mathtutor.persistence.repository.PasswordResetTokenRepository resetTokens;
+
+    @Test
+    void passwordResetRequiresCsrfAndRejectsInvalidInput() throws Exception {
+        mockMvc.perform(post("/api/auth/password-reset/request").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"alumna@example.org\"}")).andExpect(status().isForbidden());
+        mockMvc.perform(resetPost("/api/auth/password-reset/request")
+                .contentType(MediaType.APPLICATION_JSON).content("{\"email\":\"inválido\"}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(resetPost("/api/auth/password-reset/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"token\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\"password\":\"NuevaClave2026!\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void passwordResetChangesLoginAndConsumesConcurrentLinksOnlyOnce() throws Exception {
+        String oldPassword = "AntesDeCambiar2026!";
+        String newPassword = "DespuesDeCambiar2026!";
+        var account = userRepositoryPort.save(User.create(testEmail, passwordEncoderPort.encode(oldPassword), User.Role.ALUMNO));
+        String session = tokenServiceAdapter.storeRefreshToken(account.id(), account.email(), "ALUMNO", UUID.randomUUID().toString());
+        var existing = requestReset(account.email().toUpperCase(java.util.Locale.ROOT));
+        var missing = requestReset(UUID.randomUUID() + "@example.org");
+        assertThat(existing.getResponse().getContentAsString()).isEqualTo(missing.getResponse().getContentAsString());
+
+        var message = org.mockito.ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(resetSender, timeout(5000)).send(message.capture());
+        assertThat(message.getValue().getTo()).containsExactly(account.email());
+        String link = message.getValue().getText().lines().filter(line -> line.startsWith("https://")).findFirst().orElseThrow();
+        assertThat(link).startsWith("https://tutor.example.org/visor/index.html#/restablecer/");
+        String token = link.substring(link.lastIndexOf('/') + 1);
+        assertThat(resetTokens.findByTokenHash(token)).isEmpty();
+        mockMvc.perform(confirmReset(token, "NoTieneSimbolo1")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("La contraseña debe contener al menos un carácter especial"));
+
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try (var executor = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            var firstRequest = confirmReset(token, newPassword);
+            var secondRequest = confirmReset(token, newPassword);
+            var first = executor.submit(() -> executeAtOnce(start, firstRequest));
+            var second = executor.submit(() -> executeAtOnce(start, secondRequest));
+            start.countDown();
+            assertThat(java.util.List.of(first.get(15, java.util.concurrent.TimeUnit.SECONDS),
+                    second.get(15, java.util.concurrent.TimeUnit.SECONDS))).containsExactlyInAnyOrder(200, 400);
+        }
+        assertThat(tokenServiceAdapter.rotateRefreshToken(session)).isEmpty();
+        mockMvc.perform(resetLogin(account.email(), oldPassword)).andExpect(status().isUnauthorized());
+        mockMvc.perform(resetLogin(account.email(), newPassword)).andExpect(status().isOk());
+    }
+
+    @Test
+    void passwordResetLimitsRequestsPerAddressAndKeepsOtherClientsAvailable() throws Exception {
+        String email = UUID.randomUUID() + "@example.org";
+        for (int attempt = 0; attempt < 10; attempt++) requestReset(email);
+        mockMvc.perform(resetRequest(email)).andExpect(status().isTooManyRequests())
+                .andExpect(header().string("Retry-After", "900"));
+        mockMvc.perform(resetRequest(email).with(request -> {
+            request.setRemoteAddr("192.0.2.24");
+            return request;
+        })).andExpect(status().isAccepted());
+    }
+
+    private MvcResult requestReset(String email) throws Exception {
+        return mockMvc.perform(resetRequest(email)).andExpect(status().isAccepted()).andReturn();
+    }
+
+    private MockHttpServletRequestBuilder resetRequest(String email) throws Exception {
+        return resetPost("/api/auth/password-reset/request")
+                .header("Host", "otro.example.org").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(java.util.Map.of("email", email)));
+    }
+
+    private MockHttpServletRequestBuilder confirmReset(String token, String password) throws Exception {
+        return resetPost("/api/auth/password-reset/confirm").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(java.util.Map.of("token", token, "password", password)));
+    }
+
+    private MockHttpServletRequestBuilder resetLogin(String email, String password) throws Exception {
+        return resetPost("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(java.util.Map.of("email", email, "password", password)));
+    }
+
+    private MockHttpServletRequestBuilder resetPost(String path) throws Exception {
+        String csrf = getCsrfToken();
+        return post(path).header("X-XSRF-TOKEN", csrf).cookie(new Cookie("XSRF-TOKEN", csrfTokenCookie));
+    }
+
+    private int executeAtOnce(java.util.concurrent.CountDownLatch start, MockHttpServletRequestBuilder request) throws Exception {
+        if (!start.await(5, java.util.concurrent.TimeUnit.SECONDS)) throw new IllegalStateException("Inicio agotado");
+        return mockMvc.perform(request).andReturn().getResponse().getStatus();
+    }
 
     @Test
     void servesWebGlClientWithoutAuthentication() throws Exception {
