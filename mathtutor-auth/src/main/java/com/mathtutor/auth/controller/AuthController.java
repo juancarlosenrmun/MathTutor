@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -195,6 +196,13 @@ public class AuthController {
         clearRefreshTokenCookie(response);
 
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    /** @brief Descarta la sesión inicial si la cuenta se cerró durante la autenticación. */
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> unavailableAccount() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("Credenciales inválidas o cuenta no disponible"));
     }
 
     /**

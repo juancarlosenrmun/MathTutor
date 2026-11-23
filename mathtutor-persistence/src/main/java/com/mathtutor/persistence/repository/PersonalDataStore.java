@@ -34,7 +34,7 @@ public class PersonalDataStore {
                         FROM usage_quotas q WHERE q.user_id = u.id), '[]'),
                     'accountEvents', COALESCE((SELECT jsonb_agg(jsonb_build_object('action', a.action, 'at', a.created_at)
                         ORDER BY a.id) FROM audit_logs a
-                        WHERE a.actor_id = u.id OR (a.target_type = 'USER' AND a.target_id = u.id)), '[]'))
+                        WHERE a.actor_id = u.id OR (a.target_type IN ('USER', 'User') AND a.target_id = u.id)), '[]'))
                 FROM users u WHERE u.id = ? AND u.active
                 """, rows -> rows.next() ? rows.getString(1) : null, userId, userId);
     }
@@ -55,7 +55,7 @@ public class PersonalDataStore {
         jdbc.update("DELETE FROM password_reset_tokens WHERE user_id = ?", userId);
         jdbc.update("DELETE FROM refresh_tokens WHERE user_id = ?", userId);
         jdbc.update("UPDATE audit_logs SET actor_id = NULL WHERE actor_id = ?", userId);
-        jdbc.update("UPDATE audit_logs SET target_id = NULL WHERE target_type = 'USER' AND target_id = ?", userId);
+        jdbc.update("UPDATE audit_logs SET target_id = NULL WHERE target_type IN ('USER', 'User') AND target_id = ?", userId);
     }
 
     /** @brief Serializa cambios que pueden afectar al conjunto de administradores activos. */

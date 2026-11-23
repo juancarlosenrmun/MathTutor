@@ -69,7 +69,7 @@ class SprintEightApiTest {
                 INSERT INTO conversation_turns (session_id, request_id, message, status, created_at)
                 VALUES (?, ?, 'Mi pregunta privada', 'COMPLETADO', now())
                 """, session, UUID.randomUUID());
-        jdbc.update("INSERT INTO audit_logs (action, actor_id, target_id, target_type) VALUES ('PRUEBA', ?, ?, 'USER')",
+        jdbc.update("INSERT INTO audit_logs (action, actor_id, target_id, target_type) VALUES ('PRUEBA', ?, ?, 'User')",
                 other.getId(), owner.getId());
         mvc.perform(get("/api/privacy/export")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/privacy/export").with(actor(owner)))
@@ -79,6 +79,7 @@ class SprintEightApiTest {
                 .andExpect(jsonPath("$.sessions[0].id").value(session))
                 .andExpect(jsonPath("$.conversations[0].message").value("Mi pregunta privada"))
                 .andExpect(jsonPath("$.conversations[0].request_id").doesNotExist())
+                .andExpect(jsonPath("$.accountEvents[0].action").value("PRUEBA"))
                 .andExpect(jsonPath("$.accountEvents[0].actor_id").doesNotExist());
         mvc.perform(get("/api/privacy/export").with(actor(other)))
                 .andExpect(jsonPath("$.sessions").isEmpty())

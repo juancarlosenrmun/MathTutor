@@ -49,6 +49,7 @@ class RefreshTokenAdapterTest {
     }
 
     @Test void storesConfiguredExpiryInsteadOfSevenDays() {
+        lockedUser(true);
         org.springframework.test.util.ReflectionTestUtils.setField(adapter, "refreshTokenExpirationDays", 1L);
         adapter.init();
         Instant before = Instant.now();
@@ -65,6 +66,7 @@ class RefreshTokenAdapterTest {
     }
 
     @Test void storesDeterministicDigestWithoutPasswordHashing() {
+        lockedUser(true);
         assertThat(adapter.storeRefreshToken(1L, "test@example.com", "ALUMNO", "random-jwt")).isEqualTo("random-jwt");
         ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
         verify(refreshTokenRepository).save(captor.capture());
@@ -75,8 +77,22 @@ class RefreshTokenAdapterTest {
     }
 
     @Test void storesExistingFamily() {
+        lockedUser(true);
         adapter.storeRefreshTokenWithFamily(1L, "test@example.com", "ALUMNO", "new-jwt", "family");
         verify(refreshTokenRepository).save(argThat(value -> value.getFamilyId().equals("family")));
+    }
+
+    @Test void refusesInitialIssuanceIfTheAccountWasDeletedOrDeactivated() {
+        assertThatThrownBy(() -> adapter.storeRefreshToken(1L, "test@example.com", "ALUMNO", "token"))
+                .isInstanceOf(org.springframework.security.core.userdetails.UsernameNotFoundException.class);
+        lockedUser(false);
+        assertThatThrownBy(() -> adapter.storeRefreshToken(1L, "test@example.com", "ALUMNO", "token"))
+                .isInstanceOf(org.springframework.security.core.userdetails.UsernameNotFoundException.class);
+        verifyNoInteractions(refreshTokenRepository);
+    }
+
+    private void lockedUser(boolean active) {
+        when(userRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(User.builder().id(1L).active(active).build()));
     }
 
     @Test void validatesUsingIndexedDigest() {

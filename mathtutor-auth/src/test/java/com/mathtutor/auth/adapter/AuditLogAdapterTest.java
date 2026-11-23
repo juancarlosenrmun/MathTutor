@@ -8,7 +8,9 @@ import com.mathtutor.common.auth.domain.UserRegisteredEvent;
 import com.mathtutor.common.auth.domain.UserRegistrationFailedEvent;
 import com.mathtutor.common.auth.port.AuditLogPort;
 import com.mathtutor.persistence.entity.AuditLog;
+import com.mathtutor.persistence.entity.User;
 import com.mathtutor.persistence.repository.AuditLogRepository;
+import com.mathtutor.persistence.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -32,12 +35,27 @@ class AuditLogAdapterTest {
 
     @Mock
     private AuditLogRepository auditLogRepository;
+    @Mock
+    private UserRepository users;
 
     private AuditLogAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new AuditLogAdapter(auditLogRepository);
+        adapter = new AuditLogAdapter(auditLogRepository, users);
+    }
+
+    @Test
+    void doesNotRelinkAnonymizedOrDeletedAccounts() {
+        var event = new UserLoggedOutEvent(1L, "test@example.com", Instant.now());
+        adapter.save(event);
+        when(users.findByIdForUpdate(1L)).thenReturn(Optional.of(User.builder().id(1L).anonymizedAt(Instant.now()).build()));
+        adapter.save(event);
+        verify(auditLogRepository, times(2)).save(argThat(record -> record.getTargetId() == null));
+    }
+
+    private void existingAccount() {
+        when(users.findByIdForUpdate(1L)).thenReturn(Optional.of(User.builder().id(1L).build()));
     }
 
     @Nested
@@ -47,6 +65,7 @@ class AuditLogAdapterTest {
         @Test
         @DisplayName("Debe persistir evento de registro de usuario")
         void shouldPersistUserRegisteredEvent() {
+            existingAccount();
             // Given
             UserRegisteredEvent event = new UserRegisteredEvent(1L, "test@example.com", Instant.now());
 
@@ -97,6 +116,7 @@ class AuditLogAdapterTest {
         @Test
         @DisplayName("Debe persistir evento de inicio de sesión")
         void shouldPersistUserLoggedInEvent() {
+            existingAccount();
             // Given
             UserLoggedInEvent event = new UserLoggedInEvent(1L, "test@example.com", Instant.now(), "192.168.1.1");
 
@@ -122,6 +142,7 @@ class AuditLogAdapterTest {
         @Test
         @DisplayName("Debe persistir evento de cierre de sesión")
         void shouldPersistUserLoggedOutEvent() {
+            existingAccount();
             // Given
             UserLoggedOutEvent event = new UserLoggedOutEvent(1L, "test@example.com", Instant.now());
 
