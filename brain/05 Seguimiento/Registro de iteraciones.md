@@ -1,3 +1,11 @@
+## 2026-11-23 11:56 · Sprint 05 · Tutor socrático y tangentes
+
+- **Petición**. Completar Sprint 5 en una rama desde DEV, buscar e instalar las skills necesarias, probar en caja blanca y negra, comentar con Doxygen y abrir la PR sin cofirmas.
+- **Implementado**. UC-18 aplica cuatro niveles con diagnóstico e intentos persistidos. UC-19 valida la respuesta completa antes de SSE y del historial. UC-31 añade recta y plano sobre la función base con coordenadas editables. Se instaló `socratic-tutor` individualmente. El expediente EN-09 y los diagramas se registraron en `sprint-5-docs` a partir de DOC.
+- **Pruebas**. 23 casos nuevos de caja blanca y 5 de caja negra automatizados, además de tres comprobaciones de píxeles y desplazamiento en Chromium. Suite local con 1017 casos Java y 96 Node. Se verificaron PostgreSQL/pgvector y Doxygen.
+- **Cobertura**. Tutor 99,23 % líneas y 98,46 % ramas. Política pedagógica 100 % en ambas. Los ocho módulos superan JaCoCo. Cliente V8 98,68 % líneas y 91,87 % ramas.
+- **Pendiente**. CI e integración en DEV. EN-09 requiere formalización del acuerdo, decisiones sobre el tratamiento y validación del DPD. Checklist **12/20**, estado `en curso`.
+
 ## 2026-11-18 12:13 · Sprint 01 · README del arranque local con IA
 
 - **Petición**: actualizar README con la nueva forma de iniciar el tutor con IA.
