@@ -48,7 +48,7 @@ class DevDatabaseMigrationIntegrationTest {
 
     @Test
     void startsWithAllExistingMappingsValidatedAfterFlyway() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("12");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("13");
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM pg_extension WHERE extname = 'vector'", Integer.class))
                 .isEqualTo(1);
@@ -79,15 +79,15 @@ class DevDatabaseMigrationIntegrationTest {
                 + "AND module_id IS NOT NULL AND reference_solution_latex <> ''", Integer.class)).isEqualTo(21);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises WHERE type = 'TEORICO'", Integer.class)).isEqualTo(10);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises WHERE type = 'PROCEDIMENTAL'", Integer.class)).isEqualTo(10);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(4);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors WHERE seed_hint <> ''", Integer.class)).isEqualTo(2);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(14);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors WHERE seed_hint <> ''", Integer.class)).isEqualTo(12);
     }
 
     @Test
     void rerunningMigrationsDoesNotDuplicateExerciseBank() {
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises", Integer.class)).isEqualTo(21);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(4);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors", Integer.class)).isEqualTo(2);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(14);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors", Integer.class)).isEqualTo(12);
     }
 }

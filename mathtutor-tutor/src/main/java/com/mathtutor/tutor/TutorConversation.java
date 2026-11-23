@@ -66,6 +66,10 @@ public class TutorConversation {
     /** @brief Inicia un ejercicio reconocido usando su enunciado como consulta de apuntes. */
     Prepared prepareRecognized(Long userId, Long sessionId, List<String> history, ConversationStore.Run run,
                                ExerciseVerification.Diagnosis diagnosis, PedagogicalAction action) {
+        if (run.reference() == null && !run.seedHints().isEmpty()) {
+            // La pista del banco orienta el primer turno sin adelantar la conclusión teórica.
+            return new Prepared(Flux.just(run.seedHints().getFirst()), run.topic(), false);
+        }
         return prepareExercise(userId, sessionId, "¿Cómo empiezo este ejercicio? " + run.statement(),
                 history, run, diagnosis, action, true);
     }

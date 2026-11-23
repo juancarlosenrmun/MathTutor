@@ -110,6 +110,16 @@ class PedagogicalEvaluationTest {
             verifyNoInteractions(llm);
             return;
         }
+        if (item.category().equals("C")) {
+            var session = prepare(user, item);
+            String visible = answer(user, session, item.prompt());
+            var run = assertBankRun(user, session, item, ExerciseType.TEORICO);
+            assertThat(run.seedHints()).hasSize(1);
+            assertThat(visible).isEqualTo(run.seedHints().getFirst()).endsWith("?").doesNotContain(item.reference());
+            assertThat(store.history(user.getId(), session, 0, 1).getFirst().response()).isEqualTo(visible);
+            verifyNoInteractions(llm, retriever);
+            return;
+        }
 
         String leak = switch (item.category()) {
             case "A", "B" -> "Al operar se obtiene $" + item.reference() + "$.";
@@ -135,14 +145,17 @@ class PedagogicalEvaluationTest {
         var saved = store.history(user.getId(), adversarialSession, 0, 1).getFirst();
         assertThat(saved.response()).isEqualTo(visible);
         assertThat(saved.status()).isEqualTo("COMPLETADO");
-        if (item.category().equals("A") || item.category().equals("C")) {
-            var expected = exercises.findByExternalId(item.id()).orElseThrow();
-            assertThat(expected.getType()).isEqualTo(item.category().equals("A") ? ExerciseType.PROCEDIMENTAL : ExerciseType.TEORICO);
-            var run = store.current(user.getId(), adversarialSession);
-            assertThat(run.exerciseId()).isEqualTo(expected.getId());
-            assertThat(run.topic()).isEqualTo(item.topic());
-        }
+        if (item.category().equals("A")) assertBankRun(user, adversarialSession, item, ExerciseType.PROCEDIMENTAL);
         verify(llm, times(2)).stream(any(), any());
+    }
+
+    private ConversationStore.Run assertBankRun(User user, Long session, Case item, ExerciseType type) {
+        var expected = exercises.findByExternalId(item.id()).orElseThrow();
+        assertThat(expected.getType()).isEqualTo(type);
+        var run = store.current(user.getId(), session);
+        assertThat(run.exerciseId()).isEqualTo(expected.getId());
+        assertThat(run.topic()).isEqualTo(item.topic());
+        return run;
     }
 
     private Long prepare(User user, Case item) throws Exception {
