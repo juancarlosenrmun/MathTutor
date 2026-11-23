@@ -28,12 +28,29 @@ test('sin WebGL2 la interfaz sigue operativa y desactiva controles', async () =>
   const f = fixture();
   f.nodes.canvas = element({ getContext: () => null });
   const button = element({ dataset: { camera: 'in' } });
+  const contrast = f.nodes['#graphic-contrast'] = element({ disabled: true });
   const original = f.doc.querySelectorAll;
   f.doc.querySelectorAll = selector => selector === '[data-camera]' ? [button] : original(selector);
   await mount(f.doc, f.host).ready;
   assert.match(f.nodes['#graphic-status'].textContent, /WebGL 2/);
   assert.equal(button.disabled, true);
+  assert.equal(contrast.disabled, true);
   f.host.location.hash = '#/laboratorio'; f.host.listeners.hashchange();
+});
+
+test('el control de contraste mantiene la vista directa si falla el shader', async () => {
+  const f = fixture();
+  const gl = fakeGl();
+  f.nodes.canvas = element({ clientWidth: 600, clientHeight: 400, getContext: () => gl });
+  const contrast = f.nodes['#graphic-contrast'] = element({ disabled: true });
+  await mount(f.doc, f.host).ready;
+  assert.equal(contrast.disabled, false);
+  assert.equal(contrast.checked, false);
+  gl.getShaderParameter = () => false;
+  contrast.checked = true;
+  contrast.listeners.change();
+  assert.equal(contrast.checked, false);
+  assert.match(f.nodes['#graphic-status'].textContent, /No se pudo aplicar el contraste/);
 });
 
 test('la página habilita la secante solo cuando puede reproducirse y devuelve el foco al detenerla', async () => {

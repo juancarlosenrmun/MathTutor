@@ -89,7 +89,8 @@ test('UC-34 compone la textura antes de dibujar guías y reutiliza el framebuffe
   gl.calls.length = 0;
   draw();
   assert.deepEqual(gl.calls.filter(([name]) => name === 'drawArrays').map(call => call.slice(1)), [
-    [9, 0, 6], [10, 6, 24], [10, 0, 3], [9, 30, 12], [11, 42, 1],
+    [gl.LINES, 0, 6], [gl.TRIANGLES, 6, 24], [gl.TRIANGLES, 0, 3],
+    [gl.LINES, 30, 12], [gl.POINTS, 42, 1],
   ]);
   draw();
   assert.equal(gl.buffers.filter(([name]) => name === 'texImage2D').length, 1);
@@ -103,6 +104,16 @@ test('UC-34 compone la textura antes de dibujar guías y reutiliza el framebuffe
   for (const resource of ['Framebuffer', 'Renderbuffer', 'Texture']) {
     assert.equal(gl.buffers.filter(([name]) => name === 'delete' + resource).length, 2);
   }
+});
+
+test('UC-34 libera los recursos parciales si no se puede crear la textura', () => {
+  const gl = effectsGl({ createTexture: () => null });
+  const pipeline = new ShaderPipeline(gl);
+  assert.equal(pipeline.setContrast(true), false);
+  assert.ok(gl.buffers.some(([name]) => name === 'deleteFramebuffer'));
+  assert.ok(gl.buffers.some(([name]) => name === 'deleteRenderbuffer'));
+  pipeline.draw(new Float32Array(16), 800, 600);
+  assert.equal(gl.buffers.some(([name]) => name === 'bindFramebuffer'), false);
 });
 
 test('UC-34 dibuja directamente si el framebuffer es incompleto o falla la compilación del efecto', () => {

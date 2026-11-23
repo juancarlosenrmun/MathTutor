@@ -25,6 +25,10 @@ export class PostProcessing {
     this.framebuffer = gl.createFramebuffer();
     this.color = gl.createTexture();
     this.depth = gl.createRenderbuffer();
+    if (!this.framebuffer || !this.color || !this.depth) {
+      this.dispose();
+      throw new Error('No hay recursos para la pasada de contraste');
+    }
   }
 
   /**
@@ -48,8 +52,7 @@ export class PostProcessing {
       gl.bindRenderbuffer(gl.RENDERBUFFER, null);
       this.width = width;
       this.height = height;
-      this.ready = Boolean(this.framebuffer && this.color && this.depth &&
-        gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE);
+      this.ready = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
     }
     if (!this.ready) gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     return this.ready;
