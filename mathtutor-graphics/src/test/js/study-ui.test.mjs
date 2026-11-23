@@ -9,6 +9,7 @@ function fixture() {
     'tutor-status','tutor-history','tutor-composer','tutor-new','tutor-sessions','tutor-topics','tutor-topic-picker',
     'tutor-chat-title','tutor-viewer-slot','graphic-fields','graphic-result',
     'graphic-function','graphic-form','graphic-type','graphic-min','graphic-max','graphic-steps',
+    'graphic-tangent-x','graphic-tangent-y','graphic-tangent-x-field','graphic-tangent-y-field',
     'sessions-more','sessions-refresh','sessions-status','history-more','tutor-retry'];
   const nodes=Object.fromEntries(ids.map(id=>[id,element({children:[]})]));
   const doc={querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:tagName=>element({tagName,children:[]})};
@@ -83,6 +84,30 @@ test('gráficas validadas se dibujan y se borran al perder la identidad',async()
   assert.match(f.nodes['graphic-result'].textContent,/inválida/);
   f.client.token=null;await f.ui.sync('tutor');
   assert.equal(f.viewer.cleared,true);assert.equal(f.nodes['tutor-history'].children.length,0);assert.equal(f.nodes['tutor-history'].children.length,0);
+});
+
+test('el plano tangente del tutor se redibuja para las coordenadas enviadas', async () => {
+  const f = fixture();
+  await f.open();
+  f.nodes['graphic-type'].value = 'PLANO_TANGENTE';
+  f.nodes['graphic-type'].listeners.change();
+  assert.equal(f.nodes['graphic-tangent-y'].required, true);
+  assert.equal(f.nodes['graphic-tangent-y-field'].hidden, false);
+  f.nodes['graphic-function'].value = 'x^2+y^2';
+  f.nodes['graphic-tangent-x'].valueAsNumber = 0;
+  f.nodes['graphic-tangent-y'].valueAsNumber = -0.5;
+  await f.submit('graphic-form');
+  assert.match(f.nodes['graphic-result'].textContent, /Plano tangente/);
+  assert.ok(Math.abs(f.viewer.mesh.tangent.dy + 1) < 1e-6);
+
+  f.nodes['graphic-tangent-y'].valueAsNumber = 0.5;
+  await f.submit('graphic-form');
+  const graphics = f.state.calls.filter(([path]) => path.endsWith('/graphics'));
+  assert.deepEqual(JSON.parse(graphics.at(-1)[1].body).points, [{x: 0, y: 0.5, z: 0}]);
+  assert.ok(Math.abs(f.viewer.mesh.tangent.dy - 1) < 1e-6);
+  f.nodes['graphic-type'].value = 'RECTA_TANGENTE';
+  f.nodes['graphic-type'].listeners.change();
+  assert.equal(f.nodes['graphic-tangent-y'].disabled, true);
 });
 test('una sesión cerrada admite consulta pero nunca mensajes, ejercicios ni gráficas',async()=>{
   const f=fixture();f.state.sessions[0].status='CERRADA';await f.open();

@@ -20,6 +20,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.*;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -42,6 +43,8 @@ class SprintFourIntegrationTest {
     @Autowired ConversationStore store;
     @Autowired TrackedConversation tracked;
     @Autowired StudyExercises exercises;
+    @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
+    @Autowired javax.sql.DataSource dataSource;
     @MockBean LlmGateway llm;
     @MockBean RagRetriever retriever;
     @MockBean CasEngine cas;
@@ -111,5 +114,73 @@ class SprintFourIntegrationTest {
         mvc.perform(post("/api/tutor/sessions/"+session+"/messages").with(actor("ALUMNO")).with(csrf()).contentType("application/json")
                 .content("{\"message\":\"hola\",\"requestId\":\""+UUID.randomUUID()+"\"}"))
                 .andExpect(status().isConflict());
+    }
+
+    @Test void socraticLevelsAndLeakFallbackSurviveReplayAndHistory() throws Exception {
+        store.select(user,session,null,"Deriva x^2","2*x");
+        when(cas.compare(anyString(),eq("2*x"))).thenReturn(CasEngine.Comparison.UNKNOWN);
+        for (String attempt : List.of("3","4","5","6")) {
+            when(cas.compare(attempt,"2*x")).thenReturn(CasEngine.Comparison.DIFFERENT);
+        }
+        when(cas.compare("x+x","2*x")).thenReturn(CasEngine.Comparison.EQUIVALENT);
+        var deltas = Sinks.many().unicast().<String>onBackpressureBuffer();
+        when(llm.stream(any(),any())).thenReturn(deltas.asFlux(),
+                Flux.just("La pendiente es $x", "+x$."));
+
+        UUID initial = UUID.randomUUID();
+        // Emite después de que MockMvc complete el despacho inicial y sus cabeceras.
+        String feedback = turn("3", initial, () -> {
+            deltas.emitNext("La pendiente es $x", Sinks.EmitFailureHandler.FAIL_FAST);
+            deltas.emitNext("+x$.", Sinks.EmitFailureHandler.FAIL_FAST);
+            deltas.emitComplete(Sinks.EmitFailureHandler.FAIL_FAST);
+        });
+        assertThat(feedback).contains("concepto").doesNotContain("La pendiente", "x+x", "+x$");
+        assertThat(tracked.reply(user, session, initial, "3").blockLast()).contains("concepto");
+        assertThat(tracked.reply(user, session, UUID.randomUUID(), "¿Puedes orientarme?").blockLast()).contains("operación");
+        assertThat(store.current(user,session).attempts()).isEqualTo(1);
+        assertThat(tracked.reply(user, session, UUID.randomUUID(), "4").blockLast()).contains("operación");
+        assertThat(tracked.reply(user, session, UUID.randomUUID(), "5").blockLast()).contains("problema más sencillo");
+        assertThat(tracked.reply(user, session, UUID.randomUUID(), "6").blockLast()).contains("2*x");
+
+        mvc.perform(get("/api/tutor/sessions/" + session + "/history").with(actor("ALUMNO")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].helpLevel").value("REVELACION"))
+                .andExpect(jsonPath("$[1].helpLevel").value("EJEMPLO_ANALOGO"))
+                .andExpect(jsonPath("$[2].helpLevel").value("PROCEDIMENTAL"))
+                .andExpect(jsonPath("$[4].helpLevel").value("CONCEPTUAL"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("x+x"))));
+        var prompts = org.mockito.ArgumentCaptor.forClass(Prompt.class);
+        verify(llm, times(4)).stream(prompts.capture(), any());
+        assertThat(prompts.getAllValues()).allSatisfy(prompt -> assertThat(prompt.constraints())
+                .contains("No des la solución").doesNotContain("2*x"));
+    }
+
+    @Test void migrationCountsOnlyPreviouslyVerifiableAttempts() {
+        var run = store.select(user, session, null, "Deriva x^2", "2*x");
+        for (String verdict : List.of("INCORRECTO", "INDETERMINADO", "NO_APLICA")) {
+            var request = UUID.randomUUID();
+            store.reserve(user, session, request, "Propuesta");
+            // El constructor anterior contabilizaba cualquier turno completado.
+            store.finish(user, session, request,
+                    new ConversationStore.Result("Pista", null, ErrorType.OTRO, "COMPLETADO",
+                            0, null, null, 0, false, verdict));
+        }
+        assertThat(store.current(user, session).attempts()).isEqualTo(3);
+        new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
+                new org.springframework.core.io.ClassPathResource("db/migration/V10__verified_exercise_attempts.sql"))
+                .execute(dataSource);
+        assertThat(store.current(user, session).attempts()).isEqualTo(1);
+        assertThat(store.history(user, session, 0, 10)).hasSize(3).allMatch(entry -> entry.runId().equals(run.id()));
+    }
+
+    private String turn(String message, UUID id, Runnable emitProviderResponse) throws Exception {
+        String body = json.writeValueAsString(Map.of("message", message, "requestId", id));
+        var result = mvc.perform(post("/api/tutor/sessions/" + session + "/messages")
+                        .with(actor("ALUMNO")).with(csrf()).contentType("application/json").content(body))
+                .andExpect(request().asyncStarted()).andReturn();
+        emitProviderResponse.run();
+        return mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"type\":\"DONE\"")))
+                .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
     }
 }

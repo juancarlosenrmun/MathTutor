@@ -61,12 +61,14 @@ public class ConversationStoreAdapter implements ConversationStore {
         if (!t.getStatus().equals("EN_CURSO")) return;
         t.setResponse(result.response()); t.setTopic(result.topic()); t.setDiagnosis(result.diagnosis().name());
         t.setVerdict(result.verdict());
+        t.setHelpLevel(result.helpLevel().name());
         t.setStatus(result.status()); t.setLatencyMs(result.latencyMs());
         t.setTokensIn(result.tokensIn()); t.setTokensOut(result.tokensOut());
         s.setLastActivityAt(Instant.now());
         var run=t.getExerciseRun();
         if (run!=null && result.status().equals("COMPLETADO")) {
-            run.setAttempts(run.getAttempts()+1);
+            if (result.attempted()) run.setAttempts(run.getAttempts() + 1);
+            run.setCurrentLevel(ExerciseRun.HelpLevel.valueOf(result.helpLevel().name()));
             run.setVerifiedSteps(Math.max(run.getVerifiedSteps(), result.verifiedSteps()));
             int count=run.getExercise()==null ? 0 : run.getExercise().getCanonicalSteps().size();
             run.setProgress(result.completed() ? 1 : (count==0 ? 0 : (double)run.getVerifiedSteps()/count));
@@ -119,6 +121,6 @@ public class ConversationStoreAdapter implements ConversationStore {
         var e=r.getExercise();
         var steps=e==null || r.getReferenceSolution()==null ? List.<String>of() : e.getCanonicalSteps().stream()
                 .sorted(Comparator.comparingInt(CanonicalStep::getPosition)).map(CanonicalStep::getExpressionLatex).toList();
-        return new Run(r.getId(),e==null ? null : e.getId(),r.getStatementLatex(),r.getReferenceSolution(),r.getTopic()==null ? null : r.getTopic().getCode(),r.getState().name(),r.getProgress(),r.getVerifiedSteps(),steps);
+        return new Run(r.getId(),e==null ? null : e.getId(),r.getStatementLatex(),r.getReferenceSolution(),r.getTopic()==null ? null : r.getTopic().getCode(),r.getState().name(),r.getProgress(),r.getVerifiedSteps(),steps,r.getAttempts());
     }
 }

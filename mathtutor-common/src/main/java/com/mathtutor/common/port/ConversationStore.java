@@ -1,6 +1,7 @@
 package com.mathtutor.common.port;
 
 import com.mathtutor.common.dto.ErrorType;
+import com.mathtutor.common.dto.HelpLevel;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,14 @@ public interface ConversationStore {
         }
     }
     record Result(String response, String topic, ErrorType diagnosis, String status, long latencyMs,
-                  Integer tokensIn, Integer tokensOut, int verifiedSteps, boolean completed, String verdict) {
+                  Integer tokensIn, Integer tokensOut, int verifiedSteps, boolean completed, String verdict,
+                  HelpLevel helpLevel, boolean attempted) {
+        public Result(String response, String topic, ErrorType diagnosis, String status, long latencyMs,
+                      Integer tokensIn, Integer tokensOut, int verifiedSteps, boolean completed, String verdict) {
+            this(response, topic, diagnosis, status, latencyMs, tokensIn, tokensOut, verifiedSteps, completed,
+                    verdict, HelpLevel.CONCEPTUAL, true);
+        }
+
         public Result(String response, String topic, ErrorType diagnosis, String status, long latencyMs,
                       Integer tokensIn, Integer tokensOut, int verifiedSteps, boolean completed) {
             this(response,topic,diagnosis,status,latencyMs,tokensIn,tokensOut,verifiedSteps,completed,"NO_APLICA");
@@ -38,5 +46,10 @@ public interface ConversationStore {
     record Session(Long id, String module, String status, Instant startedAt, Instant lastActivityAt) {}
     /** Referencia y pasos son datos internos: nunca devolver Run directamente en una API pública. */
     record Run(Long id, Long exerciseId, String statement, String reference, String topic, String state,
-               double progress, int verifiedSteps, List<String> steps) {}
+               double progress, int verifiedSteps, List<String> steps, int attempts) {
+        public Run(Long id, Long exerciseId, String statement, String reference, String topic, String state,
+                   double progress, int verifiedSteps, List<String> steps) {
+            this(id, exerciseId, statement, reference, topic, state, progress, verifiedSteps, steps, 0);
+        }
+    }
 }

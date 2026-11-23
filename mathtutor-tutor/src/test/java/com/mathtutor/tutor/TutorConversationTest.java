@@ -6,6 +6,9 @@ import com.mathtutor.common.dto.NoteChunk;
 import com.mathtutor.common.port.LlmGateway;
 import com.mathtutor.common.port.RagRetriever;
 import com.mathtutor.common.port.CasEngine;
+import com.mathtutor.common.dto.ErrorType;
+import com.mathtutor.common.dto.PedagogicalAction;
+import com.mathtutor.common.port.ConversationStore.Run;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -152,5 +155,79 @@ class TutorConversationTest {
         active(); when(llm.stream(any(),any())).thenReturn(Flux.error(new IllegalStateException("proveedor")));
         StepVerifier.create(conversation.reply(7L, 1L, "hola")).verifyError(IllegalStateException.class);
         verify(llm).stream(any(),any());
+    }
+
+    @Test void trustedReferenceAndVerifiedCorrectnessNeverGoToTheProvider() {
+        var run = exercise();
+        var correct = new ExerciseVerification.Diagnosis("CORRECTO", ErrorType.NINGUNO, "Verificado", 0, true);
+        var reveal = PedagogicalAction.revelation("Compara tu intento.");
+        StepVerifier.create(conversation.prepareExercise(7L, 1L, "3", List.of(), run, incorrect(), reveal).response())
+                .expectNext("Compara tu intento.\n\n$2*x$").verifyComplete();
+        StepVerifier.create(conversation.prepareExercise(7L, 1L, "2x", List.of(), run, correct, reveal).response())
+                .expectNextMatches(text -> text.contains("verificado") && !text.contains("2x")).verifyComplete();
+        verifyNoInteractions(llm, retriever);
+    }
+
+    @Test void exerciseUsesItsTopicAndDegradesToALocalQuestionWhenNotesAreMissing() {
+        active();
+        var action = PedagogicalAction.conceptual("¿Qué propiedad se aplica?");
+        when(retriever.retrieve("3", "funciones", "derivadas")).thenReturn(List.of());
+        var reply = conversation.prepareExercise(7L, 1L, "3", List.of(), exercise(), incorrect(), action);
+        StepVerifier.create(reply.response()).expectNext(action.hint()).verifyComplete();
+        assertThat(reply.rejected()).isFalse();
+        assertThat(reply.topic()).isEqualTo("derivadas");
+        verifyNoInteractions(llm);
+    }
+
+    @Test void analogicalHintAndHistoryReachThePromptButTheTrustedReferenceDoesNot() {
+        active();
+        when(retriever.retrieve(eq("3"), eq("funciones"), eq("derivadas"))).thenReturn(List.of(
+                new NoteChunk(1L, "Una regla del módulo", null, "DEFINICION", "a.tex", "funciones", "derivadas", "1")));
+        when(llm.stream(any(), any())).thenReturn(Flux.just("", "¿Puedes aplicar esa regla?"));
+        var reply = conversation.prepareExercise(7L, 1L, "3", List.of("Intento anterior"), exercise(), incorrect(),
+                PedagogicalPolicyImpl.analogy());
+        StepVerifier.create(reply.response()).expectNext("¿Puedes aplicar esa regla?").verifyComplete();
+        var prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(llm).stream(prompt.capture(), any());
+        assertThat(prompt.getValue().constraints()).contains("EJEMPLO_ANALOGO", "datos distintos");
+        assertThat(prompt.getValue().contextChunks()).anyMatch(c -> c.contains("Intento anterior"))
+                .anyMatch(c -> c.contains("Revisa el signo")).noneMatch(c -> c.contains("2*x"));
+    }
+
+    @Test void bufferedResponsesHaveABoundAndReplaceWorkedNotesBeforePublishing() {
+        active();
+        when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(
+                new NoteChunk(1L, "Solución final: Se sustituye todo el polinomio en la expresión.", null,
+                        "OTRO", "a.tex", "funciones", " ", "1")));
+        when(llm.stream(any(), any())).thenReturn(Flux.just("Se sustituye todo ", "el polinomio en la expresión."),
+                Flux.just("x".repeat(64000), "y"));
+        StepVerifier.create(conversation.reply(7L, 1L, "hola"))
+                .expectNextMatches(text -> text.startsWith("¿Qué definición")).verifyComplete();
+        StepVerifier.create(conversation.reply(7L, 1L, "hola")).verifyError(IllegalStateException.class);
+    }
+
+    @Test void aPartialResponseIsNeverPublishedIfTheModelFails() {
+        active();
+        when(llm.stream(any(), any())).thenReturn(Flux.just("La posible solución empieza por...")
+                .concatWith(Flux.error(new IllegalStateException("proveedor desconectado"))));
+        StepVerifier.create(conversation.reply(7L, 1L, "hola"))
+                .verifyErrorMessage("proveedor desconectado");
+        verify(llm).stream(any(), any());
+    }
+
+    @Test void unprotectedConversationWithoutAnIndexRetainsTheOrdinaryDeltaContract() {
+        active();
+        when(llm.stream(any(), any())).thenReturn(Flux.just("Una ", "pista"));
+        var withoutIndex = new TutorConversation(sessions, llm, null, cas);
+        StepVerifier.create(withoutIndex.reply(7L, 1L, "¿Qué es una función?"))
+                .expectNext("Una ", "pista").verifyComplete();
+    }
+
+    private static Run exercise() {
+        return new Run(1L, 2L, "Deriva x^2", "2*x", "derivadas", "COMENZADO", 0, 0, List.of());
+    }
+
+    private static ExerciseVerification.Diagnosis incorrect() {
+        return new ExerciseVerification.Diagnosis("INCORRECTO", ErrorType.SIGNO, "Revisa el signo", 0, false);
     }
 }

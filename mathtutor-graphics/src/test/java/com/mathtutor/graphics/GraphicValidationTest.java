@@ -63,4 +63,25 @@ class GraphicValidationTest {
         for (int steps:new int[]{2,200})
             assertThat(service.build(GraphicSpec.GraphicType.CURVA_2D,"x",new GraphicSpec.Domain(-10000,10000,steps),java.util.Collections.nCopies(100,new GraphicSpec.Point(0,0,0))).points()).hasSize(100);
     }
+
+    @Test void tangentRequiresOnePointInTheDomainAndValidatesTheBaseFunction() {
+        var point = new GraphicSpec.Point(10, -10, 0);
+        when(cas.parse("x")).thenReturn(new CasEngine.Expr("x", "x", "x"));
+        when(cas.parse("x+y")).thenReturn(new CasEngine.Expr("x+y", "x+y", "x+y"));
+        assertThat(service.build(GraphicSpec.GraphicType.RECTA_TANGENTE, "x", domain, java.util.List.of(point))
+                .points()).containsExactly(point);
+        assertThat(service.build(GraphicSpec.GraphicType.PLANO_TANGENTE, "x+y", domain, java.util.List.of(point))
+                .points()).containsExactly(point);
+        var outsideX = new GraphicSpec.Point(10.1, 0, 0);
+        var outsideY = new GraphicSpec.Point(0, -10.1, 0);
+        for (var bad : java.util.List.of(java.util.List.of(point, point), java.util.List.of(outsideX), java.util.List.of(outsideY))) {
+            assertThatThrownBy(() -> service.build(GraphicSpec.GraphicType.PLANO_TANGENTE, "x+y", domain, bad))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+        assertThatThrownBy(() -> service.build(GraphicSpec.GraphicType.RECTA_TANGENTE, "x+y", domain, java.util.List.of(point)))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.build(GraphicSpec.GraphicType.PLANO_TANGENTE, "x+y",
+                new GraphicSpec.Domain(-1, 1, 129), java.util.List.of(new GraphicSpec.Point(0, 0, 0))))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
 }

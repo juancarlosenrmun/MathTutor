@@ -4,7 +4,10 @@ import { drawSpecification } from './graphic-spec.mjs';
 /** Estado interno del ejercicio y controles del visor de la conversación. */
 export function mountStudy(document,client,viewer) {
   const one=id=>document.querySelector('#'+id);
-  if (!one('graphic-form')) return {enter:async()=>{},setBusy(){}};
+  const form = one('graphic-form');
+  if (!form) return {enter:async()=>{},setBusy(){}};
+  const graphicType = one('graphic-type');
+  const tangentX = one('graphic-tangent-x'), tangentY = one('graphic-tangent-y');
   let session, generation=0, controller, busy=false, chatBusy=false, bank=[], ownsGraph=false;
   const active=()=>Boolean(client.token) && ['ALUMNO','PROFESOR'].includes(client.profile?.role) && session?.status!=='CERRADA';
   function controls() {
@@ -20,6 +23,9 @@ export function mountStudy(document,client,viewer) {
   async function enter(next) {
     generation++; controller?.abort(); controller=new AbortController(); session=next; busy=false; bank=[];
     one('graphic-function').value='x^2';
+    for (const field of [tangentX, tangentY]) {
+      if (field) field.value = '0';
+    }
     one('graphic-result').textContent=viewer ? 'Solicita una gráfica para explorarla en el visor.' : 'WebGL 2 no está disponible. Puedes continuar con el tutor.';
     if (ownsGraph) { viewer.clear(); ownsGraph=false; }
     controls();
@@ -29,11 +35,15 @@ export function mountStudy(document,client,viewer) {
       if (current===generation) bank=result;
     },true);
   }
-  one('graphic-form').addEventListener('submit',event=>{
+  form.addEventListener('submit',event=>{
     event.preventDefault(); if (!active()) return;
     return perform(async current=>{
-      const body={type:one('graphic-type').value,function:one('graphic-function').value,
-        domain:{min:Number(one('graphic-min').value),max:Number(one('graphic-max').value),steps:Number(one('graphic-steps').value)},points:[]};
+      const type = graphicType.value;
+      const points = ['RECTA_TANGENTE', 'PLANO_TANGENTE'].includes(type)
+        ? [{ x: tangentX.valueAsNumber, y: type === 'PLANO_TANGENTE' ? tangentY.valueAsNumber : 0, z: 0 }]
+        : [];
+      const body={type,function:one('graphic-function').value,
+        domain:{min:Number(one('graphic-min').value),max:Number(one('graphic-max').value),steps:Number(one('graphic-steps').value)},points};
       const response=await request(client,`/api/tutor/sessions/${session.id}/graphics`,body,controller.signal);
       let spec;
       await readEvents(response,event=>{
@@ -45,11 +55,19 @@ export function mountStudy(document,client,viewer) {
 
     },false,one('graphic-result'));
   });
-  one('graphic-type').addEventListener('change',()=>{
-    const surface=one('graphic-type').value==='SUPERFICIE';
+  graphicType.addEventListener('change',()=>{
+    const type = graphicType.value;
+    const surface = ['SUPERFICIE', 'PLANO_TANGENTE'].includes(type);
+    const tangent = ['RECTA_TANGENTE', 'PLANO_TANGENTE'].includes(type);
     one('graphic-function').maxLength=surface ? 150 : 200;
     one('graphic-steps').max=surface ? '128' : '200';
     for (const id of ['graphic-min','graphic-max']) { one(id).min=surface ? '-100' : '-10000'; one(id).max=surface ? '100' : '10000'; }
+    for (const [axis, field, visible] of [['x', tangentX, tangent], ['y', tangentY, tangent && surface]]) {
+      if (!field) continue;
+      one(`graphic-tangent-${axis}-field`).hidden = !visible;
+      field.disabled = !visible;
+      field.required = visible;
+    }
   });
   async function fromMessage(message) {
     if (!active() || !session) return;

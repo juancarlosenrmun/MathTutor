@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:mathtutor:graphic-spec:1",
-  "title": "Especificación gráfica S4",
+  "title": "Especificación gráfica",
   "type": "object",
   "additionalProperties": false,
   "required": ["type", "function", "domain", "points"],
   "properties": {
-    "type": {"enum": ["CURVA_2D", "SUPERFICIE"]},
+    "type": {"enum": ["CURVA_2D", "SUPERFICIE", "RECTA_TANGENTE", "PLANO_TANGENTE"]},
     "function": {"type": "string", "minLength": 1, "maxLength": 200},
     "domain": {
       "type": "object", "additionalProperties": false,
@@ -24,5 +24,22 @@
         "properties": {"x": {"type": "number"}, "y": {"type": "number"}, "z": {"type": "number"}}
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"type": {"enum": ["RECTA_TANGENTE", "PLANO_TANGENTE"]}}},
+      "then": {"properties": {"points": {"minItems": 1, "maxItems": 1}}}
+    },
+    {
+      "if": {"properties": {"type": {"const": "PLANO_TANGENTE"}}},
+      "then": {"properties": {
+        "function": {"maxLength": 150},
+        "domain": {"properties": {
+          "min": {"minimum": -100},
+          "max": {"maximum": 100},
+          "steps": {"maximum": 128}
+        }}
+      }}
+    }
+  ]
 }

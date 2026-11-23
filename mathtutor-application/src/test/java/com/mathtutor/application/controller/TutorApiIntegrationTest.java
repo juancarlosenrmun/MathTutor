@@ -157,4 +157,19 @@ class TutorApiIntegrationTest {
                 .content("{\"message\":\"hola\"}")).andExpect(status().isNotFound());
         org.mockito.Mockito.verifyNoInteractions(llm);
     }
+
+    @Test void tangentSpecRejectsMissingAndOutOfDomainCoordinates() throws Exception {
+        long id = start("metodos-3d");
+        String body = """
+                {"type":"PLANO_TANGENTE","function":"x+y","domain":{"min":-1,"max":1,"steps":16},
+                 "points":[%s]}
+                """;
+        var path = "/api/tutor/sessions/" + id + "/graphics";
+        for (String invalid : java.util.List.of("{\"x\":0,\"y\":1.01,\"z\":0}",
+                "{\"x\":0,\"y\":null,\"z\":0}", "{\"x\":0,\"z\":0}")) {
+            mvc.perform(post(path).with(csrf()).header("Authorization", "Bearer " + token)
+                            .contentType("application/json").content(body.formatted(invalid)))
+                    .andExpect(status().isBadRequest());
+        }
+    }
 }

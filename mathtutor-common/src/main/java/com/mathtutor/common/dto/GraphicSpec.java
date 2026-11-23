@@ -1,5 +1,9 @@
 package com.mathtutor.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
+
 import java.util.List;
 
 /**
@@ -17,10 +21,11 @@ public record GraphicSpec(
         int steps
     ) {}
 
+    /** @brief En una recta tangente se usa x y en un plano se usan x e y. El visor calcula la altura. */
     public record Point(
-        double x,
-        double y,
-        double z
+        @JsonProperty(required = true) @JsonSetter(nulls = Nulls.FAIL) double x,
+        @JsonProperty(required = true) @JsonSetter(nulls = Nulls.FAIL) double y,
+        @JsonProperty(required = true) @JsonSetter(nulls = Nulls.FAIL) double z
     ) {}
 
     public enum GraphicType {
