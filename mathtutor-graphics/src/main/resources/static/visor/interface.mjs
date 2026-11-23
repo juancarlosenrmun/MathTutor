@@ -56,6 +56,9 @@ export function mountInterface(document, host, onView) {
     for (const link of all('[data-guest]')) link.hidden = signedIn;
     for (const link of all('[data-member]')) link.hidden = !signedIn;
     for (const link of all('[data-student]')) link.hidden = !signedIn || !['ALUMNO', 'PROFESOR'].includes(client.profile?.role);
+    for (const panel of all('[data-permission]')) {
+      panel.hidden = !signedIn || !panel.dataset.permission.split(' ').includes(client.profile?.role);
+    }
     one('#role').textContent = client.profile?.role || 'Sin sesión';
     one('#account-email').textContent = client.profile?.email || '—';
     one('#permission-description').textContent = permissionDescription(client.profile?.role);

@@ -4,6 +4,7 @@ import { mountTutor } from './tutor.mjs';
 import { mountCurveControls } from './curves.mjs';
 import { mountSurfaceControls } from './surfaces.mjs';
 import { mountPrivacy } from './privacy.mjs';
+import { mountAdministration } from './administration.mjs';
 
 /** Conecta el visor al laboratorio y conserva sus recursos entre vistas. */
 export function mount(document, host = globalThis) {
@@ -27,10 +28,15 @@ export function mount(document, host = globalThis) {
     if (!event.persisted) viewer?.dispose();
   });
   let tutor;
+  let administration;
   const panel = document.querySelector('.viewer-panel');
   const lab = panel?.parentElement;
   const next = panel?.nextSibling;
   return mountInterface(document, host, (view, client) => {
+    if (!administration && document.querySelector('#admin-panel')) {
+      administration = mountAdministration(document, host, client);
+    }
+    administration?.sync(view);
     if (!tutor && document.querySelector('#tutor-form')) tutor = mountTutor(document, client, {viewer});
     tutor?.sync(view);
     const slot = document.querySelector('#tutor-viewer-slot');

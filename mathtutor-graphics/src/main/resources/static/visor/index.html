@@ -458,6 +458,27 @@
             <a class="text-link" href="#/cuenta">Ver tu cuenta <span aria-hidden="true">↗</span></a>
           </section>
         </div>
+        <section id="admin-panel" data-permission="ADMIN" hidden class="account-details" aria-labelledby="admin-title">
+          <h2 id="admin-title">Gestionar perfiles</h2>
+          <button type="button" id="admin-load" class="button secondary">Cargar perfiles</button>
+          <p id="admin-status" role="status"></p>
+          <fieldset id="admin-actions" disabled>
+            <legend>Acciones sobre el perfil</legend>
+            <label for="admin-user">Perfil</label>
+            <select id="admin-user"></select>
+            <label for="admin-role">Nuevo rol</label>
+            <select id="admin-role">
+              <option value="ALUMNO">Alumno</option><option value="PROFESOR">Profesor</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+            <button type="button" data-admin-action="role" class="button secondary">Cambiar rol</button>
+            <button type="button" data-admin-action="password-reset" class="button secondary">Enviar enlace de recuperación</button>
+            <button type="button" data-admin-action="deactivate" class="button secondary">Desactivar</button>
+            <button type="button" data-admin-action="anonymize" class="button secondary">Anonimizar</button>
+          </fieldset>
+          <button type="button" id="admin-previous" class="button secondary" disabled>Anterior</button>
+          <button type="button" id="admin-next" class="button secondary" disabled>Siguiente</button>
+        </section>
         <p class="workspace-note">Cada idea necesita su tiempo. Empieza explorando y encuentra tu forma de entender.</p>
       </section>
       <section data-view="cuenta" class="account" hidden>
