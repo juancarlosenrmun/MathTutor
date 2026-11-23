@@ -1,6 +1,6 @@
 package com.mathtutor.application;
 
-import com.mathtutor.auth.filter.JwtAuthenticationFilter.AuthenticatedUser;
+import com.mathtutor.auth.adapter.TokenServiceAdapter;
 import com.mathtutor.common.dto.NoteChunk;
 import com.mathtutor.common.port.CasEngine;
 import com.mathtutor.common.port.ConversationStore;
@@ -16,16 +16,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -36,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -48,16 +46,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** @brief Contrato determinista de RNF-08 con CAS, persistencia y SSE reales. */
-@SpringBootTest(properties = "jwt.secret=synthetic-sprint-seven-key-for-local-evaluation-only")
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {"jwt.secret=synthetic-sprint-seven-key-for-local-evaluation-only",
+                "mathtutor.security.secure-cookies=false"})
 @Testcontainers
 class PedagogicalEvaluationTest {
     private static final String HINT = "¿Qué dato del problema puedes relacionar con el concepto de los apuntes?";
@@ -76,8 +69,9 @@ class PedagogicalEvaluationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
     }
 
-    @Autowired MockMvc mvc;
+    @LocalServerPort int port;
     @Autowired ObjectMapper json;
+    @Autowired TokenServiceAdapter tokens;
     @Autowired UserRepository users;
     @Autowired ExerciseRepository exercises;
     @Autowired TutorSessions sessions;
@@ -161,10 +155,9 @@ class PedagogicalEvaluationTest {
     private Long prepare(User user, Case item) throws Exception {
         var session = sessions.start(user.getId(), item.module()).id();
         if (item.category().equals("B")) {
-            mvc.perform(post("/api/tutor/sessions/{id}/exercises", session).with(actor(user)).with(csrf())
-                    .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(
-                            Map.of("operation", item.operation(), "expression", item.expression()))))
-                    .andExpect(status().isCreated());
+            post(user, "/api/tutor/sessions/" + session + "/exercises")
+                    .bodyValue(Map.of("operation", item.operation(), "expression", item.expression()))
+                    .exchange().expectStatus().isCreated();
             var run = store.current(user.getId(), session);
             assertThat(run.exerciseId()).isNull();
             assertThat(cas.compare(item.reference(), run.reference())).isEqualTo(CasEngine.Comparison.EQUIVALENT);
@@ -173,25 +166,36 @@ class PedagogicalEvaluationTest {
     }
 
     private String answer(User user, Long session, String prompt) throws Exception {
-        var async = mvc.perform(post("/api/tutor/sessions/{id}/messages", session).with(actor(user)).with(csrf())
-                .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(Map.of("message", prompt))))
-                .andExpect(request().asyncStarted()).andReturn();
-        String events = mvc.perform(asyncDispatch(async)).andExpect(status().isOk()).andReturn()
-                .getResponse().getContentAsString(StandardCharsets.UTF_8);
+        byte[] response = post(user, "/api/tutor/sessions/" + session + "/messages")
+                .accept(MediaType.TEXT_EVENT_STREAM).bodyValue(Map.of("message", prompt))
+                .exchange().expectStatus().isOk().expectHeader().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM)
+                .expectBody().returnResult().getResponseBody();
+        assertThat(response).isNotEmpty();
+        String events = new String(response, StandardCharsets.UTF_8);
         var visible = new StringBuilder();
+        String lastType = "";
         for (String line : events.split("\\R")) {
             if (!line.startsWith("data:")) continue;
             var event = json.readTree(line.substring(5));
-            assertThat(event.path("type").asText()).isNotEqualTo("ERROR");
-            if (event.path("type").asText().equals("TOKEN")) visible.append(event.path("content").asText());
+            lastType = event.path("type").asText();
+            assertThat(lastType).isNotEqualTo("ERROR");
+            if (lastType.equals("TOKEN")) visible.append(event.path("content").asText());
         }
+        assertThat(lastType).isEqualTo("DONE");
         return visible.toString();
     }
 
-    private RequestPostProcessor actor(User user) {
-        return authentication(UsernamePasswordAuthenticationToken.authenticated(
-                new AuthenticatedUser(user.getId(), user.getEmail(), "ALUMNO"), "",
-                List.of(new SimpleGrantedAuthority("ROLE_ALUMNO"))));
+    private WebTestClient.RequestBodySpec post(User user, String path) {
+        // Tomcat gestiona las escrituras concurrentes de SSE sobre un socket real.
+        var client = WebTestClient.bindToServer().baseUrl("http://localhost:" + port)
+                .responseTimeout(Duration.ofSeconds(35)).build();
+        var csrf = client.get().uri("/api/csrf-token").exchange().expectStatus().isOk()
+                .expectCookie().exists("XSRF-TOKEN").expectBody().returnResult();
+        String value = csrf.getResponseCookies().getFirst("XSRF-TOKEN").getValue();
+        String token = tokens.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
+        return client.post().uri(path).contentType(MediaType.APPLICATION_JSON)
+                .cookie("XSRF-TOKEN", value).header("X-XSRF-TOKEN", value)
+                .headers(headers -> headers.setBearerAuth(token));
     }
 
     static List<Case> cases() throws IOException {
