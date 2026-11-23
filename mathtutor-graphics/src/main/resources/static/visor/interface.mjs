@@ -200,6 +200,35 @@ export function mountInterface(document, host, onView) {
     }
     finally { setBusy(false); host.location.hash = '#/acceso'; render(); }
   });
+  one('#export-account')?.addEventListener('click', async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+      const response = await client.request('/api/privacy/export');
+      const url = host.URL.createObjectURL(await response.blob());
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'mathtutor-datos.json';
+      link.click();
+      host.setTimeout(() => host.URL.revokeObjectURL(url), 1000);
+      announce('La descarga de tus datos está lista.');
+    } catch (error) { announce(error.message); }
+    finally { button.disabled = false; }
+  });
+  one('#erase-account')?.addEventListener('click', async event => {
+    if (busy) return;
+    const button = event.currentTarget;
+    button.disabled = true;
+    setBusy(true);
+    try {
+      await client.request('/api/privacy/account', { method: 'DELETE' });
+      client.clear();
+      button.closest('details').open = false;
+      host.location.hash = '#/acceso';
+      announce('Tu cuenta y tus datos se han suprimido.');
+    } catch (error) { announce(error.message); }
+    finally { button.disabled = false; setBusy(false); render(); }
+  });
   one('.skip-link').addEventListener('click', event => {
     event.preventDefault(); one('#main').focus(); one('#main').scrollIntoView();
   });

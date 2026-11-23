@@ -19,6 +19,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
+    long countByActiveTrueAndRole(User.Role role);
+
     @Query("SELECT u FROM User u WHERE u.email = :email AND u.active = true")
     Optional<User> findActiveByEmail(@Param("email") String email);
 

@@ -37,6 +37,22 @@ export class SessionClient {
     return error;
   }
 
+  /** @brief Envía solicitudes autenticadas fuera del espacio de autenticación. */
+  async request(path, { method = 'GET', body } = {}) {
+    const headers = { Authorization: `Bearer ${this.token}` };
+    if (method !== 'GET') {
+      const csrf = await this.fetch('/api/csrf-token', { credentials: 'same-origin', signal: AbortSignal.timeout(4000) });
+      if (!csrf.ok) throw this.failure(csrf, 'No se pudo autorizar la operación.');
+      headers['X-XSRF-TOKEN'] = (await csrf.json()).csrfToken;
+    }
+    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    const response = await this.fetch(path, { method, credentials: 'same-origin', headers,
+      signal: AbortSignal.timeout(15000), body: JSON.stringify(body) });
+    if (!response.ok) throw this.failure(response, response.status === 409
+      ? 'La operación no es posible con el estado actual de la cuenta.' : 'No se pudo completar la operación.');
+    return response;
+  }
+
   async authenticate(action, body) {
     this.clear();
     const generation = this.query;
