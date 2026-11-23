@@ -10,7 +10,6 @@ import com.mathtutor.common.port.PasswordEncoderPort;
  */
 public class RegisterUserUseCase {
 
-    private static final int MIN_PASSWORD_LENGTH = 12; // ASVS L1
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
     private final UserRepositoryPort userRepositoryPort;
@@ -87,23 +86,9 @@ public class RegisterUserUseCase {
         }
 
         // Validar contraseña
-        if (password == null) {
-            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "Contraseña es obligatoria");
-        }
-        if (password.length() < MIN_PASSWORD_LENGTH) {
-            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe tener al menos 12 caracteres");
-        }
-        if (!password.matches(".*[A-Z].*")) {
-            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe contener al menos una mayúscula");
-        }
-        if (!password.matches(".*[a-z].*")) {
-            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe contener al menos una minúscula");
-        }
-        if (!password.matches(".*\\d.*")) {
-            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe contener al menos un dígito");
-        }
-        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
-            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, "La contraseña debe contener al menos un carácter especial");
+        var violation = PasswordPolicy.violation(password);
+        if (violation.isPresent()) {
+            return Result.fail(Result.ErrorCode.VALIDATION_ERROR, violation.get());
         }
 
         // Validar rol
