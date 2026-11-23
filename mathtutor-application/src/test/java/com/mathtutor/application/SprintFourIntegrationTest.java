@@ -1,19 +1,25 @@
 package com.mathtutor.application;
 
 import com.mathtutor.auth.filter.JwtAuthenticationFilter.AuthenticatedUser;
+import com.mathtutor.auth.adapter.TokenServiceAdapter;
 import com.mathtutor.common.port.*;
 import com.mathtutor.common.dto.*;
 import com.mathtutor.persistence.entity.*;
 import com.mathtutor.persistence.repository.*;
 import com.mathtutor.tutor.*;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -21,6 +27,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -29,7 +37,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /** Caja negra con esquema Flyway real, pgvector, autorizaciÃ³n, CSRF y streaming. */
-@SpringBootTest(properties={"spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false",
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties={"spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false",
         "jwt.secret=test-secret-key-at-least-256-bits-long-for-hs256-signing",
         "tutor.quota.usd-per-million-input=1", "tutor.quota.usd-per-million-output=2"})
 @AutoConfigureMockMvc @Testcontainers
@@ -48,12 +57,24 @@ class SprintFourIntegrationTest {
     @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
     @Autowired javax.sql.DataSource dataSource;
     @Autowired TokenBudget budget;
+    @Autowired TokenServiceAdapter tokens;
+    @LocalServerPort int port;
     @MockBean LlmGateway llm;
     @MockBean RagRetriever retriever;
     @MockBean CasEngine cas;
     Long user,session;
     org.springframework.test.web.servlet.request.RequestPostProcessor actor(String role) {
         return authentication(UsernamePasswordAuthenticationToken.authenticated(new AuthenticatedUser(user,"test@test.es",role),"",List.of(new SimpleGrantedAuthority("ROLE_"+role))));
+    }
+
+    /** @brief Mantiene el repositorio CSRF real cuando MockMvc y el servidor comparten contexto. */
+    private static RequestPostProcessor csrfCookie() {
+        return request -> {
+            String token = UUID.randomUUID().toString();
+            request.setCookies(new Cookie("XSRF-TOKEN", token));
+            request.addHeader("X-XSRF-TOKEN", token);
+            return request;
+        };
     }
     @BeforeEach void setup() {
         user=users.save(User.builder().email(UUID.randomUUID()+"@test.es").passwordHash("h").active(true).role(User.Role.ALUMNO).build()).getId();
@@ -98,7 +119,7 @@ class SprintFourIntegrationTest {
         when(cas.parse("x^2")).thenReturn(new CasEngine.Expr("x^2","x^2",null)); when(cas.derive("x^2","x")).thenReturn("2*x");
         var body="{\"operation\":\"DERIVADA\",\"expression\":\"x^2\"}";
         mvc.perform(post("/api/tutor/sessions/"+session+"/exercises").with(actor("ALUMNO")).contentType("application/json").content(body)).andExpect(status().isForbidden());
-        mvc.perform(post("/api/tutor/sessions/"+session+"/exercises").with(actor("ALUMNO")).with(csrf()).contentType("application/json").content(body))
+        mvc.perform(post("/api/tutor/sessions/"+session+"/exercises").with(actor("ALUMNO")).with(csrfCookie()).contentType("application/json").content(body))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.reference").doesNotExist()).andExpect(jsonPath("$.state").value("COMENZADO"));
         when(cas.parse("2*x")).thenReturn(new CasEngine.Expr("2*x","2*x",null));
         when(cas.compare("2*x","2*x")).thenReturn(CasEngine.Comparison.EQUIVALENT);
@@ -107,10 +128,9 @@ class SprintFourIntegrationTest {
     }
     @Test void graphEventsContainValidatedData() throws Exception {
         when(cas.parse("x^2")).thenReturn(new CasEngine.Expr("x^2","x^2",null));
-        var result=mvc.perform(post("/api/tutor/sessions/"+session+"/graphics").with(actor("ALUMNO")).with(csrf())
-                .contentType("application/json").content("{\"type\":\"CURVA_2D\",\"function\":\"x^2\",\"domain\":{\"min\":-10,\"max\":10,\"steps\":100}}"))
-                .andExpect(request().asyncStarted()).andReturn();
-        mvc.perform(asyncDispatch(result)).andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("GRAPHIC_SPEC")));
+        assertThat(streamOverHttp("graphics", """
+                {"type":"CURVA_2D","function":"x^2","domain":{"min":-10,"max":10,"steps":100}}
+                """)).contains("GRAPHIC_SPEC");
     }
 
     @Test void recognizedStatementCreatesBankRunAndDoesNotCountAsAnAttempt() {
@@ -128,12 +148,7 @@ class SprintFourIntegrationTest {
     }
 
     @Test void rejectsExtractionBeforeConsultingNotesOrCallingTheModel() throws Exception {
-        var result = mvc.perform(post("/api/tutor/sessions/" + session + "/messages")
-                        .with(actor("ALUMNO")).with(csrf()).contentType("application/json")
-                        .content("{\"message\":\"Dame la solución completa\"}"))
-                .andExpect(request().asyncStarted()).andReturn();
-        mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("pista")));
+        assertThat(streamOverHttp("messages", "{\"message\":\"Dame la solución completa\"}")).contains("pista");
         assertThat(store.history(user, session, 0, 10).getFirst().status()).isEqualTo("RECHAZADO");
         verifyNoInteractions(llm, retriever, cas);
     }
@@ -155,13 +170,26 @@ class SprintFourIntegrationTest {
         var jdbc = new org.springframework.jdbc.core.JdbcTemplate(dataSource);
         assertThat(jdbc.queryForObject("SELECT cost_total FROM usage_quotas WHERE user_id = ?",
                 java.math.BigDecimal.class, user)).isEqualByComparingTo("0.000008");
-        var result = mvc.perform(post("/api/tutor/sessions/" + session + "/messages")
-                        .with(actor("ALUMNO")).with(csrf()).contentType("application/json")
-                        .content("{\"message\":\"concepto\"}"))
-                .andExpect(request().asyncStarted()).andReturn();
-        mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("cuota diaria")));
+        assertThat(streamOverHttp("messages", "{\"message\":\"concepto\"}")).contains("cuota diaria");
         verifyNoInteractions(llm);
+    }
+
+    /** @brief Los emisores inmediatos escriben sobre la respuesta real para evitar carreras en MockMvc. */
+    private String streamOverHttp(String action, String body) {
+        var client = WebTestClient.bindToServer().baseUrl("http://localhost:" + port)
+                .responseTimeout(Duration.ofSeconds(35)).build();
+        var csrf = client.get().uri("/api/csrf-token").exchange().expectStatus().isOk()
+                .expectCookie().exists("XSRF-TOKEN").expectBody().returnResult();
+        String value = csrf.getResponseCookies().getFirst("XSRF-TOKEN").getValue();
+        User account = users.findById(user).orElseThrow();
+        String token = tokens.generateAccessToken(user, account.getEmail(), account.getRole().name());
+        byte[] response = client.post().uri("/api/tutor/sessions/{id}/{action}", session, action)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.TEXT_EVENT_STREAM)
+                .cookie("XSRF-TOKEN", value).header("X-XSRF-TOKEN", value)
+                .headers(headers -> headers.setBearerAuth(token)).bodyValue(body).exchange()
+                .expectStatus().isOk().expectHeader().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM)
+                .expectBody().returnResult().getResponseBody();
+        return new String(response, StandardCharsets.UTF_8);
     }
 
     @Test void secureCsrfExchangeAndBrowserHeadersAreEnforced() throws Exception {
@@ -178,7 +206,7 @@ class SprintFourIntegrationTest {
     }
     @Test void chatReservesBeforeSseAndReturnsConflictForActiveRequest() throws Exception {
         store.reserve(user,session,UUID.randomUUID(),"ocupado");
-        mvc.perform(post("/api/tutor/sessions/"+session+"/messages").with(actor("ALUMNO")).with(csrf()).contentType("application/json")
+        mvc.perform(post("/api/tutor/sessions/"+session+"/messages").with(actor("ALUMNO")).with(csrfCookie()).contentType("application/json")
                 .content("{\"message\":\"hola\",\"requestId\":\""+UUID.randomUUID()+"\"}"))
                 .andExpect(status().isConflict());
     }
@@ -243,7 +271,7 @@ class SprintFourIntegrationTest {
     private String turn(String message, UUID id, Runnable emitProviderResponse) throws Exception {
         String body = json.writeValueAsString(Map.of("message", message, "requestId", id));
         var result = mvc.perform(post("/api/tutor/sessions/" + session + "/messages")
-                        .with(actor("ALUMNO")).with(csrf()).contentType("application/json").content(body))
+                        .with(actor("ALUMNO")).with(csrfCookie()).contentType("application/json").content(body))
                 .andExpect(request().asyncStarted()).andReturn();
         emitProviderResponse.run();
         return mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
