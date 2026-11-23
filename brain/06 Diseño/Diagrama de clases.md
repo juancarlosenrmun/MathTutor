@@ -1,5 +1,22 @@
 # Diagrama de clases general
 
+## Sprint 10 · Postprocesamiento del visor
+
+```mermaid
+classDiagram
+  WebGLViewer --> ShaderPipeline : dibuja la escena
+  ShaderPipeline "1" --> "0..1" PostProcessing : compone el contraste
+  class PostProcessing {
+    +begin(width, height) boolean
+    +compose()
+    +dispose()
+  }
+```
+
+En [[Casos de uso#UC-34|UC-34]], el visor dibuja en el búfer de pantalla cuando el contraste está desactivado. Al activarlo, el pipeline prepara una textura de color con un adjunto de profundidad del tamaño del lienzo. Compone el contraste a pantalla completa y después dibuja encima la tangente y el marcador de selección. Si el framebuffer está incompleto, usa el renderizado directo. Al redimensionar reajusta los adjuntos y al desactivar el efecto libera sus recursos. El visor compartido conserva la preferencia al volver del tutor al laboratorio y al recuperar el contexto WebGL.
+
+[[Casos de uso#EN-06|EN-06]] mide por HTTP los eventos del tutor y observa el pool y PostgreSQL con 30 generaciones simultáneas. El escenario WebGL usa la superficie y el visor reales desde una página de prueba. Véase [[Sprint 10]].
+
 ## Ampliación frontend Sprint 04
 
 ```mermaid

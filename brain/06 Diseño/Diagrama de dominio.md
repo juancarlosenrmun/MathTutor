@@ -1,5 +1,9 @@
 # Diagrama de dominio
 
+## Sprint 10 · Presentación de la gráfica
+
+[[Casos de uso#UC-34|UC-34]] aplica el contraste al representar la escena. `GraphicSpec` sigue describiendo la geometría matemática. El contraste, la textura de composición y sus capas se mantienen en el visor durante la visita. La preferencia se aplica a curvas y superficies del laboratorio y del tutor.
+
 ## Proyección para la selección en frontend S4
 
 `BankExercise` es una proyección de lectura de `Exercise` (id, enunciado, tema, tipo y dificultad). No es una entidad nueva ni expone referencia o pasos canónicos. El catálogo se limita al módulo de una conversación propia. La ampliación frontend conserva las entidades y reservas de S4; no añade almacenamiento local de chats, credenciales ni expresiones privadas. Véase [[Sprint 04 - Frontend]].
