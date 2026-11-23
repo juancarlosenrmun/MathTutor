@@ -1,19 +1,24 @@
 package com.mathtutor.tutor;
 
 import com.mathtutor.common.port.ConversationStore;
+import com.mathtutor.common.dto.PedagogicalAction;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** UC-20/25: reserva y escritura fuera de la llamada al LLM. */
+/** @brief UC-18/20/25. Coordina la política, la reserva y la escritura fuera de la llamada al LLM. */
 @Service
 public class TrackedConversation {
     private final ConversationStore store;
     private final TutorConversation conversation;
     private final ExerciseVerification verification;
-    public TrackedConversation(ConversationStore store,TutorConversation conversation,ExerciseVerification verification) {
+    private final PedagogicalPolicyImpl policy;
+
+    public TrackedConversation(ConversationStore store, TutorConversation conversation,
+                               ExerciseVerification verification, PedagogicalPolicyImpl policy) {
         this.store=store; this.conversation=conversation; this.verification=verification;
+        this.policy = policy;
     }
     public Flux<String> reply(Long user,Long session,UUID request,String message) {
         if (message==null || message.isBlank() || message.length()>4000 || request==null) throw new IllegalArgumentException("Mensaje o petición no válidos");
@@ -27,14 +32,20 @@ public class TrackedConversation {
         try {
             var run=store.current(user,session);
             var diagnosis=verification.verify(message,run);
-            var prepared=conversation.prepare(user,session,message,boundedHistory(store.context(user,session)),
-                    run==null ? "" : run.statement()+"; progreso: "+run.progress()+"; diagnóstico: "+diagnosis.verdict());
+            var action = action(run, diagnosis);
+            var history = boundedHistory(store.context(user, session));
+            var prepared = run == null
+                    ? conversation.prepare(user, session, message, history, "")
+                    : conversation.prepareExercise(user, session, message, history, run, diagnosis, action);
+            boolean attempted = run != null && (run.reference() == null
+                    || diagnosis.verdict().equals("CORRECTO") || diagnosis.verdict().equals("INCORRECTO"));
             java.util.function.Consumer<String> finish=status -> {
                 if (saved.get()) return;
                 var usage=prepared.usage().get();
                 store.finish(user,session,request,new ConversationStore.Result(response.toString(),
                         run!=null && run.topic()!=null ? run.topic() : prepared.topic(),diagnosis.diagnosis(),status,
-                        (System.nanoTime()-started)/1_000_000,usage==null ? null : usage.inputTokens(),usage==null ? null : usage.outputTokens(),diagnosis.verifiedSteps(),diagnosis.completed(),diagnosis.verdict()));
+                        (System.nanoTime()-started)/1_000_000,usage==null ? null : usage.inputTokens(),usage==null ? null : usage.outputTokens(),diagnosis.verifiedSteps(),diagnosis.completed(),diagnosis.verdict(),
+                        action.helpLevel(), attempted));
                 saved.set(true);
             };
             var subscribed=new AtomicBoolean();
@@ -55,6 +66,15 @@ public class TrackedConversation {
             store.finish(user,session,request,new ConversationStore.Result("",null,com.mathtutor.common.dto.ErrorType.OTRO,"ERROR",0,null,null,0,false));
             throw error;
         }
+    }
+
+    /** @brief Solo permite mostrar la referencia tras un nuevo intento incorrecto verificable. */
+    private PedagogicalAction action(ConversationStore.Run run, ExerciseVerification.Diagnosis diagnosis) {
+        if (run == null || diagnosis.completed()) {
+            return policy.decide(false, diagnosis.diagnosis(), 0);
+        }
+        boolean eligible = run.reference() != null && diagnosis.verdict().equals("INCORRECTO");
+        return policy.decide(eligible, diagnosis.diagnosis(), run.attempts());
     }
     /** Últimos diez turnos completos; límite adicional de caracteres sin resumir con IA. */
     static List<String> boundedHistory(List<ConversationStore.Entry> entries) {

@@ -3,6 +3,8 @@ package com.mathtutor.tutor;
 import com.mathtutor.common.dto.*;
 import com.mathtutor.common.port.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import java.time.Instant;
@@ -14,7 +16,7 @@ class TrackedConversationTest {
     final ConversationStore store=mock(ConversationStore.class);
     final TutorConversation conversation=mock(TutorConversation.class);
     final ExerciseVerification verification=mock(ExerciseVerification.class);
-    final TrackedConversation tracked=new TrackedConversation(store,conversation,verification);
+    final TrackedConversation tracked=new TrackedConversation(store,conversation,verification,new PedagogicalPolicyImpl());
     final UUID request=UUID.randomUUID();
     ConversationStore.Entry entry(String status) {
         return new ConversationStore.Entry(1L,request,"hola","guardado","funciones",null,null,"CONCEPTUAL",0,null,null,status,Instant.EPOCH,null);
@@ -95,5 +97,38 @@ class TrackedConversationTest {
         StepVerifier.withVirtualTime(() -> tracked.reply(1L,2L,request,"hola"))
                 .expectNext("inicio").thenAwait(java.time.Duration.ofSeconds(31)).expectError(IllegalStateException.class).verify(java.time.Duration.ofSeconds(2));
         verify(store).finish(eq(1L),eq(2L),eq(request),argThat(r -> r.status().equals("ERROR")));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "2*x, INCORRECTO, false, REVELACION, true",
+            "2*x, INDETERMINADO, false, EJEMPLO_ANALOGO, false",
+            "2*x, CORRECTO, false, EJEMPLO_ANALOGO, true",
+            "2*x, CORRECTO, true, CONCEPTUAL, true",
+            ", NO_APLICA, false, EJEMPLO_ANALOGO, true"
+    })
+    void recordsOnlyVerifiableAttemptsForExercisesWithReference(
+            String reference, String verdict, boolean completed, HelpLevel level, boolean attempted) {
+        var run = new ConversationStore.Run(1L, null, "Deriva", reference, "derivadas", "COMENZADO",
+                0, 0, List.of(), 3);
+        var diagnosis = new ExerciseVerification.Diagnosis(verdict, ErrorType.OTRO, "Pista", 0, completed);
+        when(store.reserve(1L, 2L, request, "hola")).thenReturn(entry("EN_CURSO"));
+        when(store.current(1L, 2L)).thenReturn(run);
+        when(store.context(1L, 2L)).thenReturn(List.of());
+        when(verification.verify("hola", run)).thenReturn(diagnosis);
+        when(conversation.prepareExercise(eq(1L), eq(2L), eq("hola"), anyList(), eq(run), eq(diagnosis), any()))
+                .thenReturn(new TutorConversation.Prepared(Flux.just("Pista"), null, false));
+
+        StepVerifier.create(tracked.reply(1L, 2L, request, "hola")).expectNext("Pista").verifyComplete();
+        verify(store).finish(eq(1L), eq(2L), eq(request), argThat(r ->
+                r.helpLevel() == level && r.attempted() == attempted && r.topic().equals("derivadas")));
+    }
+
+    @Test void terminalRequestsDoNotPrepareOrDiscloseAResponse() {
+        for (String status : List.of("ERROR", "CANCELADO")) {
+            when(store.reserve(1L, 2L, request, "hola")).thenReturn(entry(status));
+            StepVerifier.create(tracked.reply(1L, 2L, request, "hola")).verifyError(ConversationTerminalException.class);
+        }
+        verifyNoInteractions(conversation, verification);
     }
 }
