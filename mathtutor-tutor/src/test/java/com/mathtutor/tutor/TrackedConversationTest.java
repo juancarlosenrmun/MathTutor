@@ -125,6 +125,26 @@ class TrackedConversationTest {
                 r.helpLevel() == level && r.attempted() == attempted && r.topic().equals("derivadas")));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "'  EXPLICA EL SIGNIFICADO DEL LÍMITE.  ', false",
+            "'El valor se aproxima por ambos lados.', true"
+    })
+    void distinguishesProsePracticeFromRestatingThePrompt(String message, boolean attempted) {
+        var run = new ConversationStore.Run(1L, 3L, "Explica el significado del límite.", null,
+                "limites", "COMENZADO", 0, 0, List.of());
+        var diagnosis = new ExerciseVerification.Diagnosis("NO_APLICA", ErrorType.OTRO, "Pista", 0, false);
+        when(store.reserve(1L, 2L, request, message)).thenReturn(entry("EN_CURSO"));
+        when(store.current(1L, 2L)).thenReturn(run);
+        when(store.context(1L, 2L)).thenReturn(List.of());
+        when(verification.verify(message, run)).thenReturn(diagnosis);
+        when(conversation.prepareExercise(eq(1L), eq(2L), eq(message), anyList(), eq(run), eq(diagnosis), any()))
+                .thenReturn(new TutorConversation.Prepared(Flux.just("Pista"), null, false));
+
+        StepVerifier.create(tracked.reply(1L, 2L, request, message)).expectNext("Pista").verifyComplete();
+        verify(store).finish(eq(1L), eq(2L), eq(request), argThat(result -> result.attempted() == attempted));
+    }
+
     @Test void terminalRequestsDoNotPrepareOrDiscloseAResponse() {
         for (String status : List.of("ERROR", "CANCELADO")) {
             when(store.reserve(1L, 2L, request, "hola")).thenReturn(entry(status));

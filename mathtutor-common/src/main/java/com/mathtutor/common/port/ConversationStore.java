@@ -4,6 +4,7 @@ import com.mathtutor.common.dto.ErrorType;
 import com.mathtutor.common.dto.HelpLevel;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /** Persistencia de S4. Cada operación termina su transacción antes de invocar al proveedor. */
@@ -17,6 +18,11 @@ public interface ConversationStore {
     Run select(Long userId, Long sessionId, Long exerciseId, String statement, String reference);
     Run current(Long userId, Long sessionId);
     List<BankExercise> bank(Long userId, Long sessionId, int page, int size);
+
+    /** @brief Lee el punto de partida de la práctica y bloquea la sesión durante la selección. */
+    Progression progression(Long userId, Long sessionId);
+
+    record Progression(Run active, List<BankExercise> candidates, Set<String> practicedTypes) {}
 
     /** @brief Vincula un ejercicio reconocido al turno reservado cuando no hay objetivo activo. */
     Run attachRecognized(Long userId, Long sessionId, UUID requestId, Long exerciseId);

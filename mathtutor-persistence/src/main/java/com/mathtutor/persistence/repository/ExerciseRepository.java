@@ -31,6 +31,9 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
 
     List<Exercise> findByType(Exercise.ExerciseType type);
 
+    /** @brief Primer ejercicio de la etapa, con desempate por el identificador estable del banco. */
+    Optional<Exercise> findFirstByModuleAndTypeOrderByDifficultyAscExternalIdAsc(Module module, Exercise.ExerciseType type);
+
     Page<Exercise> findByModule(Module module, Pageable pageable);
 
     Page<Exercise> findByTopic(Topic topic, Pageable pageable);

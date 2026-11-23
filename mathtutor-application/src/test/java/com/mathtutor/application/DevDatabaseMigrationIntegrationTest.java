@@ -24,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class DevDatabaseMigrationIntegrationTest {
 
+    private static final int BANK_SIZE = 23;
+
     @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(
             DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
@@ -48,7 +50,7 @@ class DevDatabaseMigrationIntegrationTest {
 
     @Test
     void startsWithAllExistingMappingsValidatedAfterFlyway() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("14");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("15");
         assertThat(jdbc.queryForObject("""
                 SELECT is_nullable FROM information_schema.columns
                 WHERE table_name = 'exercise_runs' AND column_name = 'last_activity_at'
@@ -63,7 +65,7 @@ class DevDatabaseMigrationIntegrationTest {
                 + "'tutor_sessions','exercise_runs','turns','consent_records','usage_quotas','conversation_turns')", Integer.class))
                 .isEqualTo(17);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM topics", Integer.class)).isEqualTo(8);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises", Integer.class)).isEqualTo(21);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises", Integer.class)).isEqualTo(BANK_SIZE);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isGreaterThanOrEqualTo(2);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors", Integer.class)).isGreaterThanOrEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT count(DISTINCT m.code) FROM exercises e JOIN modules m ON m.id=e.module_id", Integer.class)).isEqualTo(3);
@@ -77,12 +79,17 @@ class DevDatabaseMigrationIntegrationTest {
     @Test
     void exerciseBankHasStableIdsTopicsSolutionsAndSeedHints() {
         assertThat(jdbc.queryForList("SELECT external_id FROM exercises ORDER BY external_id", String.class))
-                .contains("3D-PROC-001", "3D-TEO-001", "CAL-PROC-001", "CAL-TEO-001", "FUN-INT-001", "FUN-TEO-001")
+                .contains("3D-PROC-001", "3D-TEO-001", "3D-INT-001", "CAL-PROC-001", "CAL-TEO-001", "CAL-INT-001",
+                        "FUN-INT-001", "FUN-TEO-001")
                 .doesNotHaveDuplicates();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises WHERE topic_id IS NOT NULL "
-                + "AND module_id IS NOT NULL AND reference_solution_latex <> ''", Integer.class)).isEqualTo(21);
+                + "AND module_id IS NOT NULL AND reference_solution_latex <> ''", Integer.class)).isEqualTo(BANK_SIZE);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises WHERE type = 'TEORICO'", Integer.class)).isEqualTo(10);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises WHERE type = 'PROCEDIMENTAL'", Integer.class)).isEqualTo(10);
+        assertThat(jdbc.queryForList("""
+                SELECT m.code FROM exercises e JOIN modules m ON m.id = e.module_id
+                WHERE e.type = 'INTERPRETACION'
+                """, String.class)).containsExactlyInAnyOrder("funciones", "derivadas-integrales", "metodos-3d");
         assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(14);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors WHERE seed_hint <> ''", Integer.class)).isEqualTo(12);
     }
@@ -90,7 +97,7 @@ class DevDatabaseMigrationIntegrationTest {
     @Test
     void rerunningMigrationsDoesNotDuplicateExerciseBank() {
         assertThat(flyway.migrate().migrationsExecuted).isZero();
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises", Integer.class)).isEqualTo(21);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM exercises", Integer.class)).isEqualTo(BANK_SIZE);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM canonical_steps", Integer.class)).isEqualTo(14);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM typical_errors", Integer.class)).isEqualTo(12);
     }

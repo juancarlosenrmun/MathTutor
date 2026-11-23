@@ -566,6 +566,15 @@ canvas:focus-visible {
 .camera-toolbar button:hover {
   background: var(--green-light);
 }
+.animation-toolbar {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+  padding-top: 0;
+}
+#animation-status:empty {
+  padding: 0;
+}
 .graphic-status {
   padding: 0 22px 14px;
   font-size: 0.73rem;

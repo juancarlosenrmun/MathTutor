@@ -108,6 +108,26 @@ class SpringAiPgVectorRetrieverIntegrationTest {
     }
 
     @Test
+    void localNotesSearchStaysWithinModuleTopicAndIndexedTheory() {
+        jdbcTemplate.update("""
+                INSERT INTO vector_store (id, content, metadata, embedding)
+                SELECT gen_random_uuid(), content,
+                    jsonb_build_object('module_code', module, 'topic_code', topic, 'managed_by', owner, 'type', type),
+                    array_fill(0::real, ARRAY[384])::vector
+                FROM (VALUES
+                    ('Definición de catenaria', 'CALCULUS', 'CURVAS', 'UC-14', 'DEFINICION'),
+                    ('Ejemplo resuelto de catenaria', 'CALCULUS', 'CURVAS', 'UC-14', 'EJEMPLO'),
+                    ('Teorema sobre catenaria', 'OTRO', 'CURVAS', 'UC-14', 'TEOREMA'),
+                    ('Apunte de catenaria externo', 'CALCULUS', 'CURVAS', 'OTRO', 'DEFINICION')
+                ) AS notes(content, module, topic, owner, type)
+                """);
+        assertThat(ragRetriever.retrieveLocal("¿Qué es una catenaria?", "CALCULUS", null))
+                .extracting(NoteChunk::content).containsExactly("Definición de catenaria");
+        assertThat(ragRetriever.retrieveLocal("catenaria", "CALCULUS", "DERIVADAS")).isEmpty();
+        assertThat(ragRetriever.retrieveLocal("hipérbola", "CALCULUS", null)).isEmpty();
+    }
+
+    @Test
     void indexAtStartup_withEmptyDatabase_doesNotFail() {
         // No debe lanzar excepción aunque no haya datos
         ragRetriever.indexAtStartup();

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Repositorio para entidad ExerciseRun.
@@ -33,4 +34,14 @@ public interface ExerciseRunRepository extends JpaRepository<ExerciseRun, Long> 
     List<ExerciseRun> findBySessionOrderByStartedAtDesc(@Param("session") TutorSession session);
 
     Optional<ExerciseRun> findBySessionAndExercise(TutorSession session, Exercise exercise);
+
+    /** @brief Acredita cada etapa con el historial del mismo alumno y módulo, incluidas sesiones cerradas. */
+    @Query("""
+            SELECT DISTINCT e.type FROM ExerciseRun r JOIN r.exercise e JOIN r.session s
+            WHERE s.user.id = :userId AND s.module.id = :moduleId
+              AND ((e.type = :procedural AND r.state = :completed)
+                   OR (e.type <> :procedural AND r.attempts > 0))
+            """)
+    Set<Exercise.ExerciseType> findPracticedTypes(Long userId, Long moduleId,
+            Exercise.ExerciseType procedural, ExerciseRun.RunState completed);
 }

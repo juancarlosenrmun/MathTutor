@@ -15,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +28,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import reactor.netty.http.client.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
@@ -115,6 +117,41 @@ class SprintFourIntegrationTest {
         var prompts=org.mockito.ArgumentCaptor.forClass(Prompt.class); verify(llm,times(2)).stream(prompts.capture(),any());
         assertThat(prompts.getAllValues().getLast().contextChunks()).anyMatch(s -> s.contains("HISTORIAL") && s.contains("concepto"));
     }
+    @Test void providerOutageStreamsAndPersistsNotesWithoutPartialGeneratedText() {
+        when(llm.stream(any(), any())).thenReturn(Flux.just("delta privado")
+                .concatWith(Flux.error(new IllegalStateException("fallo interno"))));
+        UUID request = UUID.randomUUID();
+        String body = "{\"message\":\"concepto\",\"requestId\":\"" + request + "\"}";
+        assertThat(streamOverHttp("messages", body)).contains("Modo solo apuntes", "apunte", "DONE")
+                .doesNotContain("delta privado", "fallo interno");
+        assertThat(store.history(user, session, 0, 20).getFirst().response()).contains("Modo solo apuntes");
+        assertThat(streamOverHttp("messages", body)).contains("Modo solo apuntes", "DONE");
+        verify(llm, times(1)).stream(any(), any());
+    }
+    @Test void metricsReflectCommittedTurnsWithoutCountingSseReplays() throws Exception {
+        when(llm.stream(any(), any())).thenAnswer(invocation -> {
+            java.util.function.Consumer<LlmGateway.Usage> usage = invocation.getArgument(1);
+            usage.accept(new LlmGateway.Usage(13, 4));
+            return Flux.just("Pista");
+        });
+        var path = "/actuator/metrics/mathtutor.turn.tokens?tag=direction:input";
+        var admin = actor("ADMIN");
+        mvc.perform(get(path)).andExpect(status().isUnauthorized());
+        mvc.perform(get(path).with(actor("ALUMNO"))).andExpect(status().isForbidden());
+        double previous = inputTokensMetric(path, admin);
+        String body = "{\"message\":\"concepto\",\"requestId\":\"" + UUID.randomUUID() + "\"}";
+        assertThat(streamOverHttp("messages", body)).contains("DONE");
+        assertThat(streamOverHttp("messages", body)).contains("DONE");
+        assertThat(inputTokensMetric(path, admin) - previous).isEqualTo(13);
+        mvc.perform(get("/actuator/metrics/mathtutor.turn.latency").with(admin)).andExpect(status().isOk());
+    }
+
+    private double inputTokensMetric(String path, RequestPostProcessor admin) throws Exception {
+        var response = mvc.perform(get(path).with(admin)).andReturn().getResponse();
+        if (response.getStatus() == 404) return 0;
+        assertThat(response.getStatus()).isEqualTo(200);
+        return json.readTree(response.getContentAsString()).path("measurements").path(0).path("value").asDouble();
+    }
     @Test void freeExerciseNeverExposesReferenceAndRequiresCsrf() throws Exception {
         when(cas.parse("x^2")).thenReturn(new CasEngine.Expr("x^2","x^2",null)); when(cas.derive("x^2","x")).thenReturn("2*x");
         var body="{\"operation\":\"DERIVADA\",\"expression\":\"x^2\"}";
@@ -176,7 +213,8 @@ class SprintFourIntegrationTest {
 
     /** @brief Los emisores inmediatos escriben sobre la respuesta real para evitar carreras en MockMvc. */
     private String streamOverHttp(String action, String body) {
-        var client = WebTestClient.bindToServer().baseUrl("http://localhost:" + port)
+        var client = WebTestClient.bindToServer(new ReactorClientHttpConnector(HttpClient.newConnection()))
+                .baseUrl("http://127.0.0.1:" + port)
                 .responseTimeout(Duration.ofSeconds(35)).build();
         var csrf = client.get().uri("/api/csrf-token").exchange().expectStatus().isOk()
                 .expectCookie().exists("XSRF-TOKEN").expectBody().returnResult();

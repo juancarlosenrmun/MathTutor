@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
  * Devuelve una respuesta fija para permitir que el contexto arranque.
  */
 @Component
-@Profile("!google-ai-studio")
+@Profile("!google-ai-studio & !openai-chat")
 public class StubLlmGateway implements LlmGateway {
 
     @Override

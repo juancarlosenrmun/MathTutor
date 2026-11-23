@@ -23,7 +23,7 @@ class SpringAiPgVectorRetrieverTest {
     private final RagProperties properties = new RagProperties();
     private SpringAiPgVectorRetriever retriever() {
         properties.setSimilarityThreshold(0.7);
-        return new SpringAiPgVectorRetriever(store, properties);
+        return new SpringAiPgVectorRetriever(store, properties, mock(org.springframework.jdbc.core.JdbcTemplate.class));
     }
 
     @Test

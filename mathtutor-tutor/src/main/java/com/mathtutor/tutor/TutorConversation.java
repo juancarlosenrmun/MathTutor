@@ -12,10 +12,13 @@ import com.mathtutor.common.port.TokenBudget;
 import org.springframework.stereotype.Service;
 import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** @brief UC-13: orquestación determinista, sin transacción ni reintentos al proveedor. */
 @Service
@@ -26,6 +29,7 @@ public class TutorConversation {
     private final CasEngine cas;
     private final OutputGuard outputGuard;
     private final TokenBudget tokenBudget;
+    private final GenerationCircuit circuit = new GenerationCircuit(System::nanoTime);
 
     public TutorConversation(TutorSessions sessions, LlmGateway llm, @Nullable RagRetriever retriever,
                              @Nullable CasEngine cas, TokenBudget tokenBudget) {
@@ -118,13 +122,12 @@ public class TutorConversation {
             }
             studentPrompt = message + "\nForma simbólica: " + parsed.normalized();
         }
-        var chunks = retriever == null ? List.<NoteChunk>of()
-                : retriever.retrieve(message, session.moduleCode(), exerciseTopic);
-        if (retriever != null && exerciseTopic == null && !chunks.isEmpty()) {
-            String topic = chunks.getFirst().topicCode();
-            if (topic != null && !topic.isBlank()) {
-                chunks = retriever.retrieve(message, session.moduleCode(), topic);
-            }
+        String fallback = action == null ? "¿Qué definición de los apuntes relaciona los datos con tu pregunta?" : action.hint();
+        List<NoteChunk> chunks;
+        try {
+            chunks = retrieve(message, session.moduleCode(), exerciseTopic);
+        } catch (RuntimeException retrievalFailure) {
+            return prepareLocalNotes(message, session.moduleCode(), exerciseTopic, reference, fallback);
         }
         if (chunks.isEmpty()) {
             if (action != null && allowLocalHint) {
@@ -155,20 +158,76 @@ public class TutorConversation {
                 studentPrompt, List.copyOf(context), constraints, 2048, 0.3);
         // La lectura de sesión terminó antes de la suscripción: no se retiene JDBC.
         var usage = new AtomicReference<LlmGateway.Usage>();
-        String fallback = action == null ? "¿Qué definición de los apuntes relaciona los datos con tu pregunta?" : action.hint();
-        var response = guarded(generate(userId, prompt, usage), reference, notes, fallback);
+        var response = guarded(generate(userId, prompt, usage), reference, notes, fallback)
+                .onErrorResume(GenerationCircuit.Unavailable.class,
+                        ignored -> Mono.fromSupplier(() -> notesOnly(chunks, reference, notes, fallback))
+                                .subscribeOn(Schedulers.boundedElastic()));
         return new Prepared(response, chunks.getFirst().topicCode(), false, usage);
+    }
+
+    /** @brief Ajusta la recuperación al tema identificado, además del módulo de la sesión. */
+    private List<NoteChunk> retrieve(String message, String module, @Nullable String exerciseTopic) {
+        if (retriever == null) return List.of();
+        var chunks = retriever.retrieve(message, module, exerciseTopic);
+        if (exerciseTopic == null && !chunks.isEmpty()) {
+            String topic = chunks.getFirst().topicCode();
+            if (topic != null && !topic.isBlank()) return retriever.retrieve(message, module, topic);
+        }
+        return chunks;
+    }
+
+    /** @brief Mantiene el turno en modo local incluso si falla el servicio de embeddings. */
+    private Prepared prepareLocalNotes(String message, String module, @Nullable String topic,
+                                       @Nullable String reference, String hint) {
+        List<NoteChunk> local;
+        try {
+            local = retriever.retrieveLocal(message, module, topic);
+        } catch (RuntimeException localFailure) {
+            local = List.of();
+        }
+        if (local.isEmpty()) {
+            return new Prepared(Flux.just("**Modo solo apuntes.** No hay un fragmento disponible para esta consulta."), topic, true);
+        }
+        return new Prepared(Flux.just(notesOnly(local, reference, local.stream().map(NoteChunk::content).toList(), hint)),
+                local.getFirst().topicCode(), true);
     }
 
     /** @brief Reserva antes de suscribir al LLM y liquida después de terminar, fallar o cancelar el flujo. */
     private Flux<String> generate(Long userId, Prompt prompt, AtomicReference<LlmGateway.Usage> usage) {
         int input = 256 + utf8Length(prompt.systemPrompt()) + utf8Length(prompt.userPrompt())
                 + utf8Length(prompt.constraints()) + prompt.contextChunks().stream().mapToInt(this::utf8Length).sum();
-        return Flux.using(
+        return Flux.using(circuit::acquire, permit -> Flux.using(
                 () -> tokenBudget.reserve(userId, input, prompt.maxTokens()).orElseThrow(TutorQuotaExceededException::new),
-                reservation -> Flux.defer(() -> llm.stream(prompt, usage::set)).timeout(Duration.ofSeconds(30))
-                        .publishOn(reactor.core.scheduler.Schedulers.boundedElastic()),
-                reservation -> tokenBudget.settle(reservation, usage.get()));
+                reservation -> request(prompt, usage, permit),
+                reservation -> tokenBudget.settle(reservation, usage.get())), circuit::release);
+    }
+
+    private Flux<String> request(Prompt prompt, AtomicReference<LlmGateway.Usage> usage,
+                                 GenerationCircuit.Permit permit) {
+        var hasText = new AtomicBoolean();
+        var expired = new AtomicBoolean();
+        return Flux.defer(() -> llm.stream(prompt, usage::set))
+                .filter(delta -> !delta.isEmpty())
+                .doOnNext(delta -> { if (!delta.isBlank()) hasText.set(true); })
+                .timeout(Duration.ofSeconds(8))
+                .takeUntilOther(Mono.delay(Duration.ofSeconds(20)).doOnNext(ignored -> expired.set(true)))
+                .concatWith(Mono.defer(() -> !expired.get() && hasText.get()
+                        ? Mono.empty() : Mono.error(new GenerationCircuit.Unavailable())))
+                .publishOn(Schedulers.boundedElastic())
+                .doOnComplete(() -> circuit.succeeded(permit))
+                .doOnError(error -> circuit.failed(permit))
+                .onErrorMap(error -> new GenerationCircuit.Unavailable());
+    }
+
+    /** @brief Ofrece un pasaje teórico acotado cuando supera el mismo filtro que la respuesta generada. */
+    private String notesOnly(List<NoteChunk> chunks, @Nullable String reference, List<String> notes, String hint) {
+        String heading = "**Modo solo apuntes.** El generador no está disponible.\n\n";
+        return chunks.stream().filter(chunk -> "DEFINICION".equals(chunk.type()) || "TEOREMA".equals(chunk.type()))
+                .map(NoteChunk::content)
+                .filter(content -> !content.isBlank() && content.length() <= 2400)
+                .filter(content -> outputGuard.safe(content, reference, notes))
+                .findFirst().map(content -> heading + content + "\n\n" + hint)
+                .orElseGet(() -> heading + hint);
     }
 
     private int utf8Length(String text) {

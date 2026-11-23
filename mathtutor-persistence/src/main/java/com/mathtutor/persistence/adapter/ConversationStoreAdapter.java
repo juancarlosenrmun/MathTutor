@@ -6,6 +6,7 @@ import com.mathtutor.common.dto.ErrorType;
 import com.mathtutor.common.port.ConversationStore;
 import com.mathtutor.persistence.entity.*;
 import com.mathtutor.persistence.repository.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
@@ -21,10 +22,13 @@ public class ConversationStoreAdapter implements ConversationStore {
     private final ExerciseRunRepository runs;
     private final ExerciseRepository exercises;
     private final ExerciseStatistics statistics;
+    private final ApplicationEventPublisher events;
     public ConversationStoreAdapter(TutorSessionRepository sessions, ConversationTurnRepository turns,
-                                    ExerciseRunRepository runs, ExerciseRepository exercises, ExerciseStatistics statistics) {
+                                    ExerciseRunRepository runs, ExerciseRepository exercises, ExerciseStatistics statistics,
+                                    ApplicationEventPublisher events) {
         this.sessions=sessions; this.turns=turns; this.runs=runs; this.exercises=exercises;
         this.statistics = statistics;
+        this.events = events;
     }
     private TutorSession owned(Long user, Long session) {
         return sessions.findByIdAndUserId(session,user).orElseThrow(ConversationUnavailableException::new);
@@ -80,6 +84,7 @@ public class ConversationStoreAdapter implements ConversationStore {
             run.setProgress(result.completed() ? 1 : (count==0 ? 0 : (double)run.getVerifiedSteps()/count));
             if (result.completed()) { run.setState(ExerciseRun.RunState.COMPLETADO); run.setEndedAt(now); }
         }
+        events.publishEvent(new TurnObserved(result.status(), result.latencyMs(), result.tokensIn(), result.tokensOut()));
     }
     @Override public List<Entry> context(Long user, Long session) {
         owned(user,session);
@@ -103,8 +108,28 @@ public class ConversationStoreAdapter implements ConversationStore {
     @Override public List<BankExercise> bank(Long user,Long session,int page,int size) {
         var s=owned(user,session);
         return exercises.findByModule(s.getModule(),page(page,size,"id")).stream()
-                .map(e -> new BankExercise(e.getId(),e.getStatementLatex(),e.getTopic()==null ? null : e.getTopic().getCode(),
-                        e.getType().name(),e.getDifficulty(),e.getExternalId())).toList();
+                .map(this::bankExercise).toList();
+    }
+
+    /** @brief Mantiene el bloqueo sobre la sesión hasta que el servicio elige o recupera la práctica. */
+    @Override
+    @Transactional
+    public Progression progression(Long user, Long session) {
+        var module = locked(user, session).getModule();
+        var candidates = Arrays.stream(Exercise.ExerciseType.values())
+                .flatMap(type -> exercises.findFirstByModuleAndTypeOrderByDifficultyAscExternalIdAsc(module, type).stream())
+                .map(this::bankExercise)
+                .toList();
+        var practiced = runs.findPracticedTypes(user, module.getId(), Exercise.ExerciseType.PROCEDIMENTAL,
+                        ExerciseRun.RunState.COMPLETADO).stream()
+                .map(Enum::name).collect(java.util.stream.Collectors.toUnmodifiableSet());
+        return new Progression(current(user, session), candidates, practiced);
+    }
+
+    private BankExercise bankExercise(Exercise exercise) {
+        var topic = exercise.getTopic();
+        return new BankExercise(exercise.getId(), exercise.getStatementLatex(), topic == null ? null : topic.getCode(),
+                exercise.getType().name(), exercise.getDifficulty(), exercise.getExternalId());
     }
     @Override @Transactional public Run select(Long user,Long session,Long exerciseId,String statement,String reference) {
         var s=locked(user,session); available(session);

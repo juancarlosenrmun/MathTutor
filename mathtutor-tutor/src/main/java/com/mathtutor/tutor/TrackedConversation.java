@@ -53,8 +53,7 @@ public class TrackedConversation {
             } else {
                 prepared = conversation.prepareExercise(user, session, message, history, run, diagnosis, action);
             }
-            boolean attempted = run != null && !recognized && (run.reference() == null
-                    || diagnosis.verdict().equals("CORRECTO") || diagnosis.verdict().equals("INCORRECTO"));
+            boolean attempted = run != null && !recognized && isAttempt(message, run, diagnosis);
             java.util.function.Consumer<String> finish=status -> {
                 if (saved.get()) return;
                 var usage=prepared.usage().get();
@@ -82,6 +81,14 @@ public class TrackedConversation {
             store.finish(user,session,request,new ConversationStore.Result("",null,com.mathtutor.common.dto.ErrorType.OTRO,"ERROR",0,null,null,0,false));
             throw error;
         }
+    }
+
+    /** @brief Para las etapas de razonamiento, repetir el enunciado no acredita práctica. */
+    private boolean isAttempt(String message, ConversationStore.Run run, ExerciseVerification.Diagnosis diagnosis) {
+        if (run.reference() == null) {
+            return !run.statement().strip().equalsIgnoreCase(message.strip());
+        }
+        return diagnosis.verdict().equals("CORRECTO") || diagnosis.verdict().equals("INCORRECTO");
     }
 
     private ConversationStore.Run recognize(Long user, Long session, UUID request, String message) {

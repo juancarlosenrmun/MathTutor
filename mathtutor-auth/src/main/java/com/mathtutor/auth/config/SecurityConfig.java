@@ -98,6 +98,8 @@ public class SecurityConfig {
                         .requestMatchers("/visor/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/info").permitAll()
+                        .requestMatchers(org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest
+                                .to("metrics", "prometheus")).hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 // Filtro JWT personalizado
