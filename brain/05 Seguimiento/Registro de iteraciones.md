@@ -1,3 +1,12 @@
+## 2026-11-23 16:22 · Sprint 07 · Recuperación, intersecciones y evaluación
+
+- **Petición**. Crear `Sprint-7` desde DEV, aplicar AGENTS.md, instalar skills individualmente, documentar con Doxygen, probar y abrir una PR hacia DEV con commits pequeños sin cofirmas.
+- **Implementado**. UC-02 añade formularios, correo SMTP y consumo transaccional del enlace. UC-32 selecciona sobre la malla o el plano tangente y marca las coordenadas. EN-05 amplía el banco, incorpora pistas de apertura teóricas y aporta captura y evaluación reproducibles de 60 casos. Diagramas en `Sprint-7-docs`.
+- **Pruebas**. 14 casos nuevos de caja blanca y 68 de caja negra, más comprobaciones de marcador y formulario en Chromium. Suite local con 1104 Java, 104 Node y 20 Python, sin fallos. Doxygen generado y producción verificada con TLS y ZAP pasivo.
+- **Cobertura**. JaCoCo en umbral en ocho módulos, política pedagógica 100/100 %. Cliente V8 96,19/91,84 % de líneas y ramas.
+- **Evaluación real**. C logró 0/10 fugas tras introducir pistas de apertura. Las diez preguntas fuera de temario fueron rechazadas. A, B y D tuvieron 9/10, 12/15 y 4/15 respuestas puntuables. En la captura de D hubo una fuga entre las respuestas puntuadas, tres falsos rechazos y ocho errores técnicos. La validación de RNF-08 queda abierta.
+- **Pendiente**. CI de la PR e integración en DEV. Checklist **14/20**, estado `en curso`.
+
 ## 2026-11-23 13:45 · Sprint 06 · Cuota, banco, superficies y seguridad
 
 - **Petición**. Crear Sprint-6 desde DEV, instalar skills individualmente, implementar, probar en caja blanca y negra y abrir una PR sin cofirmas. Código documentado con Doxygen.
