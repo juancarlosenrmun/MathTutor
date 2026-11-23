@@ -1,0 +1,31 @@
+name: WebGL en Safari nativo
+
+on:
+  pull_request:
+    branches: [DEV]
+    paths:
+      - '.github/workflows/webgl-safari.yml'
+      - 'scripts/smoke-webgl.py'
+      - 'mathtutor-graphics/src/main/resources/static/visor/**'
+      - 'mathtutor-graphics/src/test/browser/smoke.html'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safari:
+    runs-on: xcode-27
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Preparar WebDriver de Safari
+        run: |
+          defaults read /Applications/Safari.app/Contents/Info CFBundleShortVersionString
+          sudo safaridriver --enable
+          python -m pip install selenium==4.54.0
+      - name: Comprobar GLSL, píxeles y laboratorio
+        run: python scripts/smoke-webgl.py --native safari --expect-major 27
