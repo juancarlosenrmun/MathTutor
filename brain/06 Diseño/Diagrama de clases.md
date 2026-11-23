@@ -324,3 +324,32 @@ classDiagram
 ### Importación del corpus Industriales
 
 El flujo de UC-14 añade un importador offline (`scripts/import_industriales.py`) y un manifiesto de procedencia. El runtime conserva `NoteIndexStartup → LatexNotes → NoteIndex`: no lee el directorio externo del usuario ni ejecuta los fuentes. Se indexan ocho recursos de tema, con 121 fragmentos; los doce archivos fuente de referencia quedan excluidos por el glob no recursivo. La CI comprueba que los derivados se regeneran exactamente.
+
+## Sprint 09
+
+```mermaid
+classDiagram
+    AdminUsageController --> AdminUsage
+    AdminUsage --> AdminUsageRepository
+    AdminUsage --> AuditLogRepository
+    StudyProgressController --> StudyProgression
+    StudyProgression --> ProgressionPlanner
+    StudyProgression --> ConversationStore
+    TutorConversation --> GenerationCircuit
+    TutorConversation --> SpringAiLlmGateway : mediante LlmGateway
+    SpringAiLlmGateway --> ChatModel
+    OpenAiChatConfiguration --> SpringAiLlmGateway
+    SpringAiLlmGateway <|-- GoogleAiStudioLlmGateway
+    ConversationStoreAdapter ..> TurnObserved : publica
+    TurnObserved ..> TurnTelemetry : después del commit
+    TurnTelemetry --> MeterRegistry
+    WebGLViewer --> ShaderPipeline : actualiza secante
+    WebGLViewer --> Camera : interpola la vista
+```
+
+- UC-09 consulta estadísticas por bloque y tema y permite paginar las sesiones de una cuenta. La consulta individual y su auditoría se confirman en la misma transacción.
+- UC-24 aplica procedimental → conceptual → interpretación usando la práctica del alumno en el módulo. La selección y el inicio de la recomendación usan el bloqueo de sesión.
+- UC-26 permite una generación por turno. El circuito abre tras tres fallos consecutivos, admite una prueba después de 30 segundos y usa un pasaje apto de los apuntes y una pregunta durante la interrupción. Se limita la espera sin datos a 8 segundos y la generación a 20 segundos. Si falla la búsqueda por embeddings, PostgreSQL busca términos en las definiciones y teoremas del corpus indexado del módulo.
+- UC-33 reutiliza el dominio y la cámara del visor. La secante se aproxima al punto de tangencia, y la cámara recorre una órbita en 3D o acerca la vista en el plano XY.
+- EN-03 emite latencia y tokens declarados después de confirmar cada turno. Actuator restringe las métricas a ADMIN.
+- EN-08 usa los perfiles `dev,google-ai-studio,notes-indexing` para chat y embeddings de Google. Añadir `openai-chat` selecciona OpenAI para generar las respuestas y conserva el índice y los embeddings de Google. OpenAI lee `SPRING_AI_OPENAI_API_KEY` y `SPRING_AI_OPENAI_CHAT_MODEL`. La aplicación usa el mismo puerto para ambos proveedores.

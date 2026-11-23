@@ -259,3 +259,28 @@ ExerciseRun --> HelpLevel
 ### Procedencia de los apuntes de Industriales
 
 Los temas iniciales se sustituyen por ocho temas del corpus de Industriales, repartidos entre los tres bloques existentes, sin añadir entidades ni módulos. Cada fragmento mantiene el archivo derivado como fuente; `industriales-manifest.json` relaciona esa fuente con el capítulo original, su SHA-256, tema y módulo. Las parejas de resultado y demostración no se separan. Los ejercicios propuestos se conservan en las fuentes, sin crear todavía entidades Exercise ni anticipar UC-22.
+
+## Sprint 09
+
+```mermaid
+classDiagram
+    User "1" --> "0..*" TutorSession : propietario
+    User "1" --> "0..*" AuditLog : administrador
+    AuditLog ..> User : cuenta consultada
+    TutorSession "*" --> "1" Module
+    TutorSession "1" *-- "0..*" ConversationTurn
+    TutorSession "1" *-- "0..*" ExerciseRun
+    ExerciseRun "*" --> "0..1" Exercise
+    Exercise --> ExerciseType
+    class ExerciseType {
+        <<enumeration>>
+        PROCEDIMENTAL
+        TEORICO
+        INTERPRETACION
+    }
+```
+
+- UC-09 agrega turnos completados con tema por cada módulo. `USER_SESSIONS_VIEWED` identifica al administrador y la cuenta consultada. El resultado individual contiene únicamente metadatos de la sesión.
+- UC-24 deriva la etapa de los intentos y resultados registrados en el módulo. `TEORICO` es la etapa conceptual. La migración V15 incorpora ejercicios de interpretación al catálogo.
+- EN-03 mide cada cierre de turno usando su latencia y los tokens declarados. Los registros operativos contienen estado y medidas agregables.
+- La secante, los puntos intermedios y la trayectoria de cámara existen mientras se usa el visor.
