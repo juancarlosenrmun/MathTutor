@@ -11,6 +11,7 @@ REQUIRED = {
     "com.mathtutor.application.Rnf03NoOpenTransactionDuringLlmCallTest",
     "com.mathtutor.application.controller.TutorApiIntegrationTest",
     "com.mathtutor.application.NoteStartupIntegrationTest",
+    "com.mathtutor.application.PedagogicalEvaluationTest",
 }
 
 
