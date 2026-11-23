@@ -1,3 +1,11 @@
+## 2026-11-23 21:43 · Sprint 08 · Lectura del chat y matriz nativa
+
+- **Petición**. Retomar EN-07 y contrastar la rama y la PR mediante `git log` y `git status`.
+- **Implementado**. NVDA leía la etiqueta y el estado del chat, pero omitía la respuesta. Ahora una región de estado anuncia el texto completo con semántica Markdown y MathML al terminar el streaming. El detector de tangentes reconoce el contraste magenta bajo antialiasing y conserva las comprobaciones de píxeles y geometría.
+- **Pruebas**. Se amplió un caso de caja blanca del cliente. En caja negra se verificaron ocho compilaciones nativas de escritorio y el anuncio real con NVDA. También pasaron los cuatro recorridos Playwright con axe. Gradle en verde con 1131 pruebas Java y 110 de cliente. Pasaron 20 pruebas de Python y se generó Doxygen.
+- **Cobertura**. JaCoCo en umbral en ocho módulos. Cliente V8 con 94,50 % de líneas y 89,53 % de ramas en Gradle.
+- **Pendiente**. Integración de la [PR #24](https://github.com/juancarlosenrmun/MathTutor/pull/24) en `DEV`. Checklist **24/30**, estado `en curso`. Versiones y plataformas en [[Sprint 08]].
+
 ## 2026-11-23 17:48 · Sprint 08 · Privacidad, administración, estadísticas y accesibilidad
 
 - **Petición**. Crear `Sprint-8` desde `DEV`, instalar skills individualmente, implementar los seis elementos con comentarios Doxygen, probarlos y publicar una PR con commits pequeños sin cofirmas.
