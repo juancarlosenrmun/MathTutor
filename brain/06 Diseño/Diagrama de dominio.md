@@ -275,6 +275,7 @@ ExerciseRun --> HelpLevel
 - Estadística docente (RF-24) se calcula agregando `ExerciseRun` por módulo y tema, sin exponer `User`.
 - La actividad de un ejercicio se actualiza al reservar y finalizar un turno. V14 inicializa el campo con las fechas históricas disponibles. RF-24 considera abandonado un ejercicio activo después de 30 minutos sin interacción o cuando se selecciona otro ejercicio.
 - El umbral de avance por defecto es 0,5. Con referencia se usa la proporción verificada por el CAS. En los demás casos se usan los niveles de ayuda. Las estadísticas cuentan todos los ejercicios iniciados y distinguen los que siguen activos de los completados y los abandonados.
+- Los umbrales se configuran mediante `tutor.statistics.inactivity-minutes` y `tutor.statistics.near-solution-threshold`.
 - La supresión elimina el usuario y sus registros personales. La anonimización administrativa conserva una fila de perfil inactiva con alias aleatorio, desvincula sus referencias de auditoría y borra los datos personales asociados. El agregado docente refleja los ejercicios que permanecen en la base.
 - `GraphicSpec` no se persiste como entidad propia salvo necesidad (valor embebido en `Turn`).
 
