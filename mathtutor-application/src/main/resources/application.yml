@@ -26,6 +26,15 @@ spring:
 jwt:
   secret: ${JWT_SECRET:}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never
+
 app:
   password-reset:
     page: ${PASSWORD_RESET_PAGE:}
@@ -135,15 +144,6 @@ logging:
 server:
   port: 8080
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: never
-
 ---
 
 spring:
@@ -156,6 +156,9 @@ mathtutor:
     secure-cookies: true
 
 logging:
+  structured:
+    format:
+      console: ecs
   level:
     com.mathtutor: INFO
     org.springframework.security: INFO
