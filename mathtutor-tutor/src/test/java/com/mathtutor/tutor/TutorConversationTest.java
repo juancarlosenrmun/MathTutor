@@ -236,6 +236,41 @@ class TutorConversationTest {
         verify(llm).stream(any(), any());
     }
 
+    @Test void totalDeadlineDiscardsDeltasEvenWhenTheProviderKeepsSending() {
+        active();
+        var cancelled = new java.util.concurrent.atomic.AtomicBoolean();
+        when(llm.stream(any(), any())).thenReturn(Flux.defer(() -> Flux.interval(java.time.Duration.ofSeconds(5)))
+                .map(index -> "delta pendiente").doOnCancel(() -> cancelled.set(true)));
+        StepVerifier.withVirtualTime(() -> conversation.reply(7L, 1L, "hola"))
+                .thenAwait(java.time.Duration.ofSeconds(20))
+                .expectNextMatches(text -> text.contains("Modo solo apuntes") && !text.contains("delta pendiente"))
+                .verifyComplete();
+        assertThat(cancelled).isTrue();
+        verify(llm).stream(any(), any());
+    }
+
+    @Test void embeddingOutageUsesLocallyIndexedNotesAndSkipsGeneration() {
+        active();
+        var note = new NoteChunk(1L, "Apunte local", null, "DEFINICION", "a.tex", "funciones", "intro", "1");
+        when(retriever.retrieve("pregunta", "funciones", null)).thenThrow(new IllegalStateException("embeddings"));
+        when(retriever.retrieveLocal("pregunta", "funciones", null)).thenReturn(List.of(note));
+        StepVerifier.create(conversation.reply(7L, 1L, "pregunta"))
+                .expectNextMatches(text -> text.contains("Modo solo apuntes") && text.contains("Apunte local"))
+                .verifyComplete();
+        verifyNoInteractions(llm, budget);
+    }
+
+    @Test void unavailableLocalIndexDoesNotPublishProviderErrorsOrCreditAnAttempt() {
+        active();
+        when(retriever.retrieve(anyString(), anyString(), isNull())).thenThrow(new IllegalStateException("embeddings"));
+        when(retriever.retrieveLocal(anyString(), anyString(), isNull())).thenThrow(new IllegalStateException("PostgreSQL"));
+        var turn = conversation.prepare(7L, 1L, "pregunta", List.of(), "");
+        assertThat(turn.rejected()).isTrue();
+        StepVerifier.create(turn.response()).expectNext("**Modo solo apuntes.** No hay un fragmento disponible para esta consulta.")
+                .verifyComplete();
+        verifyNoInteractions(llm, budget);
+    }
+
     @Test void notesOnlySkipsWorkedSolutionsAndUsesThePedagogicalQuestion() {
         active();
         when(retriever.retrieve("3", "funciones", "derivadas")).thenReturn(List.of(

@@ -9,6 +9,7 @@ import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
@@ -34,12 +35,42 @@ public class SpringAiPgVectorRetriever implements RagRetriever {
     private final VectorStore vectorStore;
     private final FilterExpressionBuilder filterBuilder;
     private final RagProperties ragProperties;
+    private final JdbcTemplate jdbc;
 
     @Autowired
-    public SpringAiPgVectorRetriever(VectorStore vectorStore, RagProperties ragProperties) {
+    public SpringAiPgVectorRetriever(VectorStore vectorStore, RagProperties ragProperties, JdbcTemplate jdbc) {
         this.vectorStore = vectorStore;
         this.filterBuilder = new FilterExpressionBuilder();
         this.ragProperties = ragProperties;
+        this.jdbc = jdbc;
+    }
+
+    /** @brief Busca léxicamente sobre el corpus ya indexado, sin invocar al proveedor de embeddings. */
+    @Override
+    @Transactional(propagation = Propagation.NEVER)
+    public List<NoteChunk> retrieveLocal(String query, String module, String topic) {
+        return jdbc.query("""
+                WITH terms AS (
+                    SELECT to_tsquery('simple', string_agg(quote_literal(term), ' | ')) AS query
+                    FROM unnest(tsvector_to_array(to_tsvector('spanish', ?))) AS term
+                )
+                SELECT content, metadata->>'type' AS type, metadata->>'source_file' AS source_file,
+                       metadata->>'topic_code' AS topic_code, metadata->>'version' AS version
+                FROM vector_store CROSS JOIN terms
+                WHERE metadata->>'managed_by' = 'UC-14' AND metadata->>'module_code' = ?
+                  AND metadata->>'type' IN ('DEFINICION', 'TEOREMA')
+                  AND (CAST(? AS text) IS NULL OR metadata->>'topic_code' = ?)
+                  AND to_tsvector('spanish', content) @@ terms.query
+                ORDER BY ts_rank_cd(to_tsvector('spanish', content), terms.query) DESC, id
+                LIMIT 10
+                """, statement -> {
+            statement.setString(1, query);
+            statement.setString(2, module);
+            statement.setString(3, topic);
+            statement.setString(4, topic);
+            statement.setQueryTimeout(3);
+        }, (row, index) -> new NoteChunk(0L, row.getString("content"), null, row.getString("type"),
+                row.getString("source_file"), module, row.getString("topic_code"), row.getString("version")));
     }
 
     @Override

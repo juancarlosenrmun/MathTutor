@@ -20,6 +20,11 @@ public interface RagRetriever {
      */
     List<NoteChunk> retrieve(String query, String module, String topic);
 
+    /** @brief Recupera apuntes sin embeddings cuando el índice remoto no responde. */
+    default List<NoteChunk> retrieveLocal(String query, String module, String topic) {
+        return List.of();
+    }
+
     /**
      * Índice los apuntes al arranque.
      */

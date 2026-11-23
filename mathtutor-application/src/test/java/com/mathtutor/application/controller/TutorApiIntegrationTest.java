@@ -136,7 +136,7 @@ class TutorApiIntegrationTest {
         org.mockito.Mockito.verify(llm).stream(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
     }
 
-    @Test void streamingErrorsAreSanitizedWithoutRetry() throws Exception {
+    @Test void providerErrorsStreamRelevantNotesWithoutLeakingTheCauseOrRetrying() throws Exception {
         long id = start("funciones");
         org.mockito.Mockito.when(llm.stream(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(reactor.core.publisher.Flux.error(new IllegalStateException("secreto-del-proveedor")));
@@ -145,7 +145,9 @@ class TutorApiIntegrationTest {
                         .content("{\"message\":\"hola\"}"))
                 .andExpect(request().asyncStarted()).andReturn();
         mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"type\":\"ERROR\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Modo solo apuntes")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"type\":\"DONE\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("\"type\":\"ERROR\""))))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("secreto-del-proveedor"))));
         org.mockito.Mockito.verify(llm).stream(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
     }

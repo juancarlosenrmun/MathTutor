@@ -54,8 +54,8 @@ public class SpringAiGoogleAiStudioEmbeddingModel implements EmbeddingModel {
 
     private static RestClient createClient(String apiKey, String model) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(10000);
-        factory.setReadTimeout(30000);
+        factory.setConnectTimeout(2000);
+        factory.setReadTimeout(5000);
         return RestClient.builder().baseUrl("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":embedContent")
                 .defaultHeader("x-goog-api-key", apiKey == null ? "" : apiKey)
                 .requestFactory(factory).build();
