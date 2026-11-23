@@ -8,8 +8,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
 /** @brief Selecciona el proveedor de generación por perfil, independientemente de los embeddings. */
 @Configuration(proxyBeanMethods = false)
@@ -24,8 +27,10 @@ public class OpenAiChatConfiguration {
         Assert.hasText(model, "Configura el modelo de chat OpenAI.");
         var options = OpenAiChatOptions.builder().model(model).streamUsage(true)
                 .internalToolExecutionEnabled(false).build();
+        var webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(
+                HttpClient.create().disableRetry(true)));
         var chat = OpenAiChatModel.builder()
-                .openAiApi(OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).build())
+                .openAiApi(OpenAiApi.builder().baseUrl(baseUrl).apiKey(apiKey).webClientBuilder(webClient).build())
                 .defaultOptions(options).retryTemplate(RetryTemplate.builder().maxAttempts(1).build()).build();
         return new SpringAiLlmGateway(chat, model + " (OpenAI)");
     }

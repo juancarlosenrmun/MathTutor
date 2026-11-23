@@ -25,6 +25,18 @@ class OpenAiChatConfigurationTest {
                 .run(app -> assertThat(app).hasFailed());
     }
 
+    @Test void openAiChatKeepsGoogleEmbeddingsAndSelectsExactlyOneGateway() {
+        context.withUserConfiguration(GoogleAiStudioLlmGateway.class, SpringAiGoogleAiStudioChatModel.class,
+                        SpringAiGoogleAiStudioEmbeddingModel.class)
+                .withPropertyValues("spring.profiles.active=google-ai-studio,openai-chat,spring-ai-pgvector",
+                        "spring.ai.google.ai-studio.api-key=local-google", "spring.ai.openai.api-key=local-openai")
+                .run(app -> {
+                    assertThat(app).hasSingleBean(LlmGateway.class).hasSingleBean(SpringAiGoogleAiStudioEmbeddingModel.class);
+                    assertThat(app).doesNotHaveBean(SpringAiGoogleAiStudioChatModel.class);
+                    assertThat(app.getBean(LlmGateway.class).getModelName()).endsWith("(OpenAI)");
+                });
+    }
+
     @Test void configuredProviderStreamsFromItsHttpEndpointAndReportsUsage() throws Exception {
         var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         var calls = new AtomicInteger();

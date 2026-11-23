@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 /** @brief Selecciona el modelo de Google AI Studio mediante su perfil de Spring. */
 @Component
-@Profile("google-ai-studio")
+@Profile("google-ai-studio & !openai-chat")
 public class GoogleAiStudioLlmGateway extends SpringAiLlmGateway {
     public GoogleAiStudioLlmGateway(ChatModel chatModel,
             @Value("${spring.ai.google.ai-studio.chat-model:gemini-3.5-flash-lite}") String modelName) {

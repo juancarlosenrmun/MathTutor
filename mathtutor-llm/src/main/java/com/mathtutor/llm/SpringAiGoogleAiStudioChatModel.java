@@ -26,7 +26,7 @@ import java.util.Map;
 
 /** Adaptador Gemini con una única petición de generación por invocación, sin reintentos. */
 @Component
-@Profile("google-ai-studio")
+@Profile("google-ai-studio & !openai-chat")
 public class SpringAiGoogleAiStudioChatModel implements ChatModel {
     static final String DEFAULT_CHAT_MODEL = "gemini-3.5-flash-lite";
     private final WebClient webClient;
@@ -50,6 +50,7 @@ public class SpringAiGoogleAiStudioChatModel implements ChatModel {
                         .baseUrl("https://generativelanguage.googleapis.com/v1beta/")
                         .defaultHeader("x-goog-api-key", apiKey == null ? "" : apiKey)
                         .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
+                                .disableRetry(true)
                                 .responseTimeout(Duration.ofSeconds(30))
                                 .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)))
                         .build());
