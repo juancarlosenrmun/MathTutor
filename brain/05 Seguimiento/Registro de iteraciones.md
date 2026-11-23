@@ -1,3 +1,28 @@
+## 2026-11-23 17:06 · Sprint 07 · Cierre de RNF-08
+
+- **Petición**. Reducir las fugas de la categoría D y documentar el resultado.
+- **Implementado**. Las explicaciones teóricas sin ejercicio activo reciben una pregunta de apoyo del tema. Las reglas usan los conceptos del módulo activo y consultan los apuntes cuando no reconocen el tema. Los casos del catálogo teórico se resuelven sin llamadas al generador.
+- **Medición**. D pasó de tres fugas a 0/15, sin falsos rechazos ni errores técnicos. Fuera de temario 10/10. Con las mediciones conservadas de A 0/10, B 0/15 y C 0/10 se verifican los 60 resultados de RNF-08.
+- **Pruebas**. Nueve casos nuevos de caja blanca, con formulaciones alternativas y límites del módulo. Se reforzaron los 15 casos D existentes de caja negra sobre HTTP/SSE. El informe de cierre devuelve `cumple: true`.
+- **Cobertura**. Pasaron 1113 casos Java y la comprobación de las integraciones. JaCoCo del tutor 98,92 % de líneas y 94,67 % de ramas. Las nuevas reglas y la política pedagógica alcanzan el 100 % en ambas métricas. Doxygen generado.
+- **Pendiente**. Integración en DEV mediante la [PR #23](https://github.com/juancarlosenrmun/MathTutor/pull/23). Checklist **14/20**, estado `en curso`.
+
+## 2026-11-23 16:47 · Sprint 07 · Seguimiento de RNF-08
+
+- **Petición**. Completar la medición de A, B y D con Gemini y cotejar los límites de [[Requisitos no funcionales]].
+- **Medición**. Se repitieron 15 casos sin respuesta evaluable en sesiones sintéticas nuevas. Se hizo un intento adicional sobre los cuatro errores técnicos que persistían. A obtuvo 0/10 fugas y B 0/15. D acumuló tres fugas en 15 casos (al menos 20 %), cuatro rechazos dentro del temario y dos errores técnicos persistentes. Se conservaron las mediciones previas de C (0/10 fugas) y fuera de temario (10/10 rechazos).
+- **Pruebas**. Sin casos nuevos de caja blanca ni negra. Los 61 casos existentes de la evaluación se ejecutan sobre HTTP real para evitar la condición de carrera de MockMvc en SSE. Pasaron `check`, JaCoCo y la comprobación de integraciones. La política pedagógica conserva 100 % de líneas y ramas.
+- **Pendiente**. D supera el máximo de fuga del 15 %. RNF-08 sigue abierto. Pendiente integración en DEV mediante la [PR #23](https://github.com/juancarlosenrmun/MathTutor/pull/23). Checklist **14/20**, estado `en curso`.
+
+## 2026-11-23 16:22 · Sprint 07 · Recuperación, intersecciones y evaluación
+
+- **Petición**. Crear `Sprint-7` desde DEV, aplicar AGENTS.md, instalar skills individualmente, documentar con Doxygen, probar y abrir una PR hacia DEV con commits pequeños sin cofirmas.
+- **Implementado**. UC-02 añade formularios, correo SMTP y consumo transaccional del enlace. UC-32 selecciona sobre la malla o el plano tangente y marca las coordenadas. EN-05 amplía el banco, incorpora pistas de apertura teóricas y aporta captura y evaluación reproducibles de 60 casos. Diagramas en `Sprint-7-docs`.
+- **Pruebas**. 14 casos nuevos de caja blanca y 68 de caja negra, más comprobaciones de marcador y formulario en Chromium. Suite local con 1104 Java, 104 Node y 20 Python, sin fallos. Doxygen generado y producción verificada con TLS y ZAP pasivo.
+- **Cobertura**. JaCoCo en umbral en ocho módulos, política pedagógica 100/100 %. Cliente V8 96,19/91,84 % de líneas y ramas.
+- **Evaluación real**. C logró 0/10 fugas tras introducir pistas de apertura. Las diez preguntas fuera de temario fueron rechazadas. A, B y D tuvieron 9/10, 12/15 y 4/15 respuestas puntuables. En la captura de D hubo una fuga entre las respuestas puntuadas, tres falsos rechazos y ocho errores técnicos. La validación de RNF-08 queda abierta.
+- **Pendiente**. CI de la PR e integración en DEV. Checklist **14/20**, estado `en curso`.
+
 ## 2026-11-23 13:45 · Sprint 06 · Cuota, banco, superficies y seguridad
 
 - **Petición**. Crear Sprint-6 desde DEV, instalar skills individualmente, implementar, probar en caja blanca y negra y abrir una PR sin cofirmas. Código documentado con Doxygen.

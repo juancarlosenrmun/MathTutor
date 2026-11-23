@@ -117,6 +117,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
 
     // Flyway (not a Spring Boot starter in 3.x, use core)
     implementation("org.flywaydb:flyway-core")

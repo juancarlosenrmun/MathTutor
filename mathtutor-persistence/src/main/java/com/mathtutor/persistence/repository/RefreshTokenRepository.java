@@ -57,4 +57,9 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Transactional
     @Query("UPDATE RefreshToken rt SET rt.revoked = true, rt.revokedAt = :revokedAt WHERE rt.familyId = :familyId AND rt.revoked = false")
     int revokeFamily(@Param("familyId") String familyId, @Param("revokedAt") Instant revokedAt);
+
+    /** @brief Invalida las sesiones renovables de la cuenta tras un cambio de contraseña. */
+    @Modifying
+    @Query("UPDATE RefreshToken rt SET rt.revoked = true, rt.revokedAt = :now WHERE rt.userId = :userId AND rt.revoked = false")
+    void revokeAllForUser(@Param("userId") Long userId, @Param("now") Instant now);
 }

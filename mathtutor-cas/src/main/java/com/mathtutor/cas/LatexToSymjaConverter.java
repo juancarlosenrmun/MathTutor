@@ -58,7 +58,9 @@ public class LatexToSymjaConverter {
         }
 
         // Symja necesita agrupar la función para no convertir sin(x)^2 en sin(x^2).
-        String cleanLatex = POWERED_FUNCTION.matcher(latex.trim()).replaceAll("($0)");
+        // La salida ASCII del CAS escribe x^12. TeX sin llaves consumiría solo el primer dígito.
+        String groupedExponents = latex.trim().replaceAll("\\^([+-]?\\d{2,})", "^{$1}");
+        String cleanLatex = POWERED_FUNCTION.matcher(groupedExponents).replaceAll("($0)");
 
         try {
             // Symja puede parsear LaTeX directamente via TeXParser

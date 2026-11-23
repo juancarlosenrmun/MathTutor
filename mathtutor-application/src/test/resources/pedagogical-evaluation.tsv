@@ -1,0 +1,61 @@
+id	category	module	topic	prompt	operation	expression	reference
+CAL-PROC-001	A	derivadas-integrales	calculo-diferencial	Calcula la derivada de f(x)=x^2.			2*x
+3D-PROC-001	A	metodos-3d	geometria	Calcula e_1 \times e_2.			e_3
+FUN-PROC-001	A	funciones	numeros-reales-complejos	Calcula el cuadrado de la unidad imaginaria.			-1
+FUN-PROC-002	A	funciones	numeros-reales-complejos	Calcula el módulo de 5+12i.			13
+FUN-PROC-003	A	funciones	funciones-continuidad	Calcula el límite de 3x+2 cuando x tiende a 5.			17
+CAL-PROC-002	A	derivadas-integrales	calculo-diferencial	Calcula la derivada de 7x^3.			21*x^2
+CAL-PROC-003	A	derivadas-integrales	calculo-diferencial	Calcula la derivada de 4x^5.			20*x^4
+CAL-PROC-004	A	derivadas-integrales	calculo-integral	Calcula la integral definida de 6x entre 0 y 3.			27
+3D-PROC-002	A	metodos-3d	matrices	Calcula el determinante de la matriz diagonal con entradas 7 y 5.			35
+3D-PROC-003	A	metodos-3d	geometria	Calcula el producto escalar de (2,3,1) y (1,-1,4).			3
+FUN-TEO-001	C	funciones	funciones-continuidad	Define continuidad de f en a.			f es continua en a si existe el límite y \lim_{x\to a}f(x)=f(a).
+CAL-TEO-001	C	derivadas-integrales	calculo-integral	Enuncia la relación entre derivada e integral definida.			Si F(x)=\int_a^x f(t)dt y f es continua, entonces F'(x)=f(x).
+3D-TEO-001	C	metodos-3d	espacios-vectoriales	Define independencia lineal de tres vectores.			v_1,v_2,v_3 son independientes si c_1v_1+c_2v_2+c_3v_3=0 implica c_1=c_2=c_3=0.
+FUN-TEO-002	C	funciones	numeros-reales-complejos	Define el módulo de un número complejo.			El módulo de a+bi es la raíz cuadrada de la suma de los cuadrados de a y b.
+FUN-TEO-003	C	funciones	funciones-continuidad	Enuncia el teorema del valor intermedio.			Una función continua en un intervalo cerrado toma todos los valores comprendidos entre los valores de sus extremos.
+CAL-TEO-002	C	derivadas-integrales	calculo-diferencial	Define la derivada en un punto mediante un límite.			La derivada es el límite del cociente entre el incremento de la función y el incremento de la variable cuando este último tiende a cero.
+CAL-TEO-003	C	derivadas-integrales	calculo-integral	Explica qué condición convierte dos primitivas en la misma salvo una constante.			En un intervalo dos primitivas de la misma función difieren en una constante porque su diferencia tiene derivada nula.
+3D-TEO-002	C	metodos-3d	matrices	Enuncia el criterio de invertibilidad de una matriz cuadrada mediante el determinante.			Una matriz cuadrada es invertible si y solo si su determinante es distinto de cero.
+3D-TEO-003	C	metodos-3d	espacios-vectoriales	Define una base de un espacio vectorial.			Una base es un conjunto de vectores linealmente independientes que genera el espacio vectorial.
+3D-TEO-004	C	metodos-3d	diagonalizacion	Explica qué debe aportar una base para diagonalizar una matriz.			Una matriz es diagonalizable si existe una base del espacio formada por vectores propios de la matriz.
+B-1	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	3*x^2+5*x	6*x+5
+B-2	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	5*x^4+4*x	20*x^3+4
+B-3	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	7*x^6-1*x	42*x^5-1
+B-4	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	11*x^7+1*x	77*x^6+1
+B-5	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	2*x^8+6*x	16*x^7+6
+B-6	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	3*x^9+3*x	27*x^8+3
+B-7	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	4*x^10	40*x^9
+B-8	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	5*x^11+8*x	55*x^10+8
+B-9	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	6*x^12-4*x	72*x^11-4
+B-10	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	7*x^13+2*x	91*x^12+2
+B-11	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	8*x^14+2*x	112*x^13+2
+B-12	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	9*x^15+10*x	135*x^14+10
+B-13	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	10*x^16	160*x^15
+B-14	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	11*x^17+6*x	187*x^16+6
+B-15	B	derivadas-integrales	calculo-diferencial	¿Qué regla usarías primero para calcular la derivada de este ejercicio?	DERIVADA	12*x^18-3*x	216*x^17-3
+D-1	D	funciones	funciones-continuidad	¿Por qué la continuidad de la composición se deduce de la continuidad de ambas funciones?			Para un entorno del valor de la composición se toma primero un entorno en la función exterior y después su preimagen por la función interior.
+D-2	D	funciones	funciones-continuidad	¿Por qué una función con límites laterales distintos tiene una discontinuidad no evitable?			Si los límites laterales son distintos no existe un límite bilateral que pueda igualarse cambiando únicamente el valor en el punto.
+D-3	D	funciones	funciones-continuidad	¿Cómo justificas que una función continua en un intervalo cerrado y acotado alcance un máximo?			La imagen continua de un compacto es compacta y por ello contiene su supremo.
+D-4	D	funciones	numeros-reales-complejos	¿Por qué las raíces no reales de un polinomio con coeficientes reales aparecen en parejas?			Conjugar la ecuación polinómica conserva sus coeficientes y transforma cada raíz en su conjugada.
+D-5	D	funciones	numeros-reales-complejos	¿Por qué multiplicar por el conjugado ayuda a dividir números complejos?			Multiplicar numerador y denominador por el conjugado del denominador convierte este último en el cuadrado de su módulo.
+D-6	D	derivadas-integrales	calculo-diferencial	¿Por qué una función derivable con derivada positiva es estrictamente creciente en un intervalo?			El teorema del valor medio convierte la diferencia de valores en una derivada positiva multiplicada por una distancia positiva.
+D-7	D	derivadas-integrales	calculo-diferencial	¿Por qué el valor absoluto en cero sirve para distinguir continuidad y derivabilidad?			El valor absoluto es continuo en cero pero sus cocientes incrementales laterales tienden a menos uno y a uno.
+D-8	D	derivadas-integrales	calculo-diferencial	¿Por qué una derivada nula en un punto no garantiza un extremo local?			La función cúbica tiene derivada nula en el origen pero continúa creciendo a ambos lados del punto.
+D-9	D	derivadas-integrales	calculo-integral	¿Por qué la integral de una función impar continua sobre un intervalo simétrico es nula?			El cambio de variable que invierte el signo de la abscisa muestra que las integrales de ambas mitades se cancelan.
+D-10	D	derivadas-integrales	calculo-integral	¿Cómo se deduce la integración por partes a partir de una regla de derivación?			Se integra la regla del producto en ambos lados y se despeja la integral que contiene la derivada del segundo factor.
+D-11	D	metodos-3d	matrices	¿Por qué intercambiar dos filas cambia el signo del determinante?			El determinante es alternante respecto a las filas y cada transposición de filas multiplica su valor por menos uno.
+D-12	D	metodos-3d	espacios-vectoriales	¿Por qué la unión de dos subespacios puede dejar de ser un subespacio?			Al sumar vectores de dos subespacios sin inclusión mutua el resultado puede quedar fuera de ambos y romper la clausura por suma.
+D-13	D	metodos-3d	diagonalizacion	¿Por qué dos vectores propios correspondientes a valores propios diferentes son independientes?			Aplicar la matriz a una posible relación de proporcionalidad obligaría a que sus valores propios fueran iguales.
+D-14	D	metodos-3d	diagonalizacion	¿Por qué la multiplicidad algebraica de un valor propio mayor que uno no determina la diagonalización?			La diagonalización exige suficientes vectores propios independientes y depende de que la multiplicidad geométrica iguale la algebraica.
+D-15	D	metodos-3d	geometria	¿Por qué el producto escalar sirve para comprobar que dos vectores son perpendiculares?			Para vectores no nulos el producto escalar es el producto de sus módulos por el coseno del ángulo y se anula cuando el ángulo es recto.
+F-1	F	funciones		¿Cómo se prepara un gazpacho tradicional?			No aplica
+F-2	F	metodos-3d		¿Cómo funciona la visa para viajar a Japón?			No aplica
+F-3	F	derivadas-integrales		¿Qué notas forman un acorde de sol mayor en guitarra?			No aplica
+F-4	F	metodos-3d		¿Cómo se limpia el filtro de una aspiradora?			No aplica
+F-5	F	funciones		¿Quién dirigió la película Casablanca?			No aplica
+F-6	F	derivadas-integrales		¿Cómo se construye un nido para pájaros?			No aplica
+F-7	F	metodos-3d		¿Qué ropa conviene para un día lluvioso?			No aplica
+F-8	F	funciones		¿Cómo se escribe una carta formal en francés?			No aplica
+F-9	F	derivadas-integrales		¿Cuáles son las etapas de la metamorfosis de una mariposa?			No aplica
+F-10	F	funciones		¿Qué plantas resisten bien en un balcón sombreado?			No aplica

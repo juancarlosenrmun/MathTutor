@@ -2,9 +2,13 @@ import { SessionClient } from './session.mjs';
 
 const titles = { inicio: 'Inicio', acceso: 'Iniciar sesión', registro: 'Crear cuenta', espacio: 'Tu espacio',
   laboratorio: 'Laboratorio', tutor: 'Tutor de Matemáticas', cuenta: 'Tu cuenta', restringido: 'Acceso restringido',
-  privacidad: 'Privacidad y cookies' };
+  privacidad: 'Privacidad y cookies', recuperar: 'Recuperar contraseña', restablecer: 'Nueva contraseña' };
+
+const resetLink = /^#\/restablecer\/([A-Za-z0-9_-]{43})$/;
 
 export function viewFor(hash, signedIn) {
+  if (resetLink.test(hash)) return 'restablecer';
+  if (hash === '#/restablecer' || hash.startsWith('#/restablecer/')) return 'recuperar';
   const requested = hash.replace('#/', '');
   const view = Object.hasOwn(titles, requested) ? requested : 'inicio';
   if ((view === 'cuenta' || view === 'espacio' || view === 'tutor') && !signedIn) return 'acceso';
@@ -79,6 +83,7 @@ export function mountInterface(document, host, onView) {
     busy = value;
     if (value) activity++;
     for (const button of all('[data-auth] button[type="submit"], [data-logout]')) button.disabled = value;
+    for (const button of all('[data-reset] button[type="submit"]')) button.disabled = value;
   }
   async function updateRole() {
     if (busy || polling || disposed || !client.token) return;
@@ -138,6 +143,52 @@ export function mountInterface(document, host, onView) {
     button.textContent = show ? 'Ocultar' : 'Mostrar';
     button.setAttribute('aria-pressed', String(show));
     button.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña');
+  });
+  for (const form of all('[data-reset]')) form.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (busy) return;
+    const route = host.location.hash;
+    const error = form.querySelector('[data-error]');
+    const password = form.elements.password;
+    const confirmation = form.elements.confirm;
+    error.hidden = true;
+    if (password && password.value !== confirmation.value) {
+      error.textContent = 'Las contraseñas no coinciden.';
+      error.hidden = false;
+      confirmation.focus();
+      return;
+    }
+    setBusy(true);
+    try {
+      if (form.dataset.reset === 'request') {
+        await client.requestPasswordReset(form.elements.email.value.trim());
+        if (host.location.hash === route) {
+          form.elements.email.value = '';
+          announce('Si existe una cuenta activa con ese correo, recibirás un enlace de recuperación.');
+        }
+      } else {
+        const token = resetLink.exec(route)?.[1];
+        if (!token) throw new Error('Abre el enlace de recuperación desde el correo.');
+        await client.confirmPasswordReset(token, password.value);
+        if (host.location.hash === route) {
+          host.location.replace(new URL('#/acceso', host.location.href));
+          announce('Tu contraseña ha cambiado. Ya puedes iniciar sesión.');
+        }
+      }
+    } catch (failure) {
+      if (host.location.hash === route) {
+        error.textContent = failure.message;
+        error.hidden = false;
+        error.focus();
+      }
+    } finally {
+      if (password) {
+        password.value = '';
+        confirmation.value = '';
+      }
+      setBusy(false);
+      render();
+    }
   });
   for (const button of all('[data-logout]')) button.addEventListener('click', async () => {
     if (busy) return;

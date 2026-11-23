@@ -1,6 +1,14 @@
 spring:
   application:
     name: mathtutor
+  mail:
+    properties:
+      "[mail.smtp.connectiontimeout]": 5000
+      "[mail.smtp.timeout]": 5000
+      "[mail.smtp.writetimeout]": 5000
+      "[mail.smtp.starttls.enable]": true
+      "[mail.smtp.starttls.required]": true
+      "[mail.smtp.ssl.checkserveridentity]": true
   jpa:
     # RNF-03: la respuesta SSE no conserva un EntityManager ni una conexión JDBC.
     open-in-view: false
@@ -17,6 +25,11 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET:}
+
+app:
+  password-reset:
+    page: ${PASSWORD_RESET_PAGE:}
+    from: ${PASSWORD_RESET_FROM:}
 
 # RAG Configuration
 tutor:

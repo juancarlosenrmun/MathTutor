@@ -49,6 +49,45 @@ class TutorConversationTest {
                 .verifyComplete();
         verifyNoInteractions(llm);
     }
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource(value = {
+            "funciones|Demuestra que componer dos funciones continuas conserva la continuidad.|qué función se aplica primero",
+            "funciones|¿Por qué el conjugado facilita la división de complejos?|una fracción equivalente",
+            "derivadas-integrales|Justifica por qué integrar una función impar en límites simétricos tiene ese resultado.|separas la integral",
+            "derivadas-integrales|Explica por qué el valor absoluto no es derivable en el origen.|a izquierda y derecha",
+            "metodos-3d|Razona cómo cambia el determinante al permutar filas.|distinguir el orden de las filas",
+            "metodos-3d|¿Por qué los vectores ortogonales se estudian con el producto escalar?|qué datos geométricos"
+    }, delimiter = '|')
+    void theoreticalQuestionsUseCourseHintsWithoutRequestingASolution(String module, String message, String clue) {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, module, "ACTIVA"));
+        var turn = conversation.prepare(7L, 1L, message, List.of(), "");
+        StepVerifier.create(turn.response()).expectNextMatches(text -> text.toLowerCase(java.util.Locale.ROOT)
+                .contains(clue.toLowerCase(java.util.Locale.ROOT)) && text.endsWith("?")).verifyComplete();
+        assertThat(turn.rejected()).isFalse();
+        verifyNoInteractions(retriever, llm, budget);
+    }
+
+    @Test void anUncataloguedProofUsesRetrievedContextWithoutPublishingAGeneratedProof() {
+        active();
+        var turn = conversation.prepare(7L, 1L, "¿Por qué una función continua puede no ser inyectiva?", List.of(), "");
+        assertThat(turn.rejected()).isFalse();
+        assertThat(turn.topic()).isEqualTo("intro");
+        StepVerifier.create(turn.response()).expectNextMatches(text -> text.contains("hipótesis") && text.endsWith("?"))
+                .verifyComplete();
+        verifyNoInteractions(llm, budget);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"¿Por qué el gazpacho se sirve frío?",
+            "¿Por qué el producto escalar sirve para estudiar vectores perpendiculares?"})
+    void aProofWithoutSupportInTheSelectedModuleIsStillRejected(String message) {
+        active();
+        when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of());
+        var turn = conversation.prepare(7L, 1L, message, List.of(), "");
+        assertThat(turn.rejected()).isTrue();
+        StepVerifier.create(turn.response()).expectNextMatches(text -> text.contains("dentro del temario")).verifyComplete();
+        verifyNoInteractions(llm, budget);
+    }
     @Test void selectsTheTopMatchingTopicAndDoesNotMixOtherTopicsInPrompt() {
         active();
         when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of(

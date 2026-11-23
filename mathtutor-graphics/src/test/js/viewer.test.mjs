@@ -12,10 +12,50 @@ function surface(gl = fakeGl()) {
     addEventListener: (name, fn) => listeners.set(name, fn),
     removeEventListener: name => listeners.delete(name),
     setPointerCapture() {},
+    getBoundingClientRect: () => ({left: 100, top: 50, width: 800, height: 400}),
   };
   const host = { devicePixelRatio: 2, addEventListener() {}, removeEventListener() {} };
   return { canvas, listeners, host, status: { textContent: '' } };
 }
+
+test('UC-32 distingue pulsación, arrastre, cancelación y selecciona el objeto indicado', () => {
+  const {canvas, status, host, listeners} = surface();
+  const viewer = new WebGLViewer(canvas, status, host);
+  viewer.selectionMode = {value: 'surface'};
+  viewer.setSurface(meshSurface('0', -1, 1, -1, 1, 4, [0, 0]));
+  const emit = (name, x, y, button = 0) => listeners.get(name)({pointerId: 1, clientX: x, clientY: y, button});
+  const click = (x, y) => { emit('pointerdown', x, y); emit('pointerup', x, y); };
+  emit('pointerdown', 500, 250, 2);
+  emit('pointerup', 500, 250, 2);
+  assert.equal(viewer.selection, null);
+  emit('pointerdown', 500, 250);
+  emit('pointercancel');
+  emit('pointerup', 500, 250);
+  assert.equal(viewer.selection, null);
+
+  click(500, 250);
+  assert.match(status.textContent, /Punto seleccionado/);
+  assert.ok(viewer.selection.every(value => Math.abs(value) < 1e-9));
+  assert.ok(viewer.pipeline.selectionIndex > 6);
+  const previous = viewer.selection;
+  emit('pointerdown', 500, 250);
+  emit('pointermove', 530, 260);
+  emit('pointerup', 530, 260);
+  assert.equal(viewer.selection, previous);
+  click(50, 50);
+  assert.equal(viewer.selection, previous);
+
+  viewer.selectionMode.value = 'plane';
+  click(500, 250);
+  assert.match(status.textContent, /Punto seleccionado/);
+  click(100, 50);
+  assert.match(status.textContent, /No hay intersección/);
+  assert.equal(viewer.pipeline.selectionIndex, null);
+  viewer.setSurface(meshSurface('0', -1, 1, -1, 1, 4));
+  click(500, 250);
+  assert.match(status.textContent, /No hay intersección/);
+  viewer.dispose();
+});
 test('eliminar la geometría privada impide restaurarla después de perder WebGL',()=>{
   const state=surface();const viewer=new WebGLViewer(state.canvas,state.status,state.host);
   viewer.setGraph(curve('x',-1,1));viewer.clear();assert.equal(viewer.graph,null);assert.equal(viewer.pipeline.lineCount,0);

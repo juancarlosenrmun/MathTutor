@@ -60,6 +60,28 @@ export class SessionClient {
   login(email, password) { return this.authenticate('login', { email, password }); }
   register(email, password) { return this.authenticate('register', { email, password, role: 'ALUMNO' }); }
 
+  /** @brief Solicita un enlace con el mismo contrato para cualquier correo válido. */
+  async requestPasswordReset(email) {
+    const response = await this.post('password-reset/request', {email});
+    if (!response.ok) throw this.failure(response, 'No se pudo solicitar el enlace. Revisa el correo.');
+  }
+
+  /** @brief Canjea el enlace y elimina la sesión local tras cambiar la contraseña. */
+  async confirmPasswordReset(token, password) {
+    const response = await this.post('password-reset/confirm', {token, password});
+    if (!response.ok) {
+      const error = this.failure(response, 'El enlace no es válido o ha caducado. Solicita otro.');
+      if (response.status === 400) {
+        try {
+          const reason = (await response.json())?.error;
+          if (registrationMessages.has(reason)) error.message = reason;
+        } catch { /* Se mantiene el mensaje predeterminado. */ }
+      }
+      throw error;
+    }
+    this.clear();
+  }
+
   async restore() {
     const generation = this.query;
     const response = await this.post('refresh');

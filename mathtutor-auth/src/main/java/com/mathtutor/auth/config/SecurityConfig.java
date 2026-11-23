@@ -92,6 +92,8 @@ public class SecurityConfig {
                         // La petición original ya fue autorizada; el redispatch SSE no lleva un nuevo JWT.
                         .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ASYNC).permitAll()
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/logout", "/api/auth/refresh").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST,
+                                "/api/auth/password-reset/request", "/api/auth/password-reset/confirm").permitAll()
                         .requestMatchers("/api/csrf-token").permitAll()
                         .requestMatchers("/visor/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()

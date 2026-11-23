@@ -1,5 +1,6 @@
 import { Camera } from './camera.mjs';
 import { ShaderPipeline } from './pipeline.mjs';
+import { raySurface, visiblePlane } from './intersections.mjs';
 
 /** Dibuja bajo demanda: no consume GPU mientras la cámara permanece inmóvil. */
 export class WebGLViewer {
@@ -17,19 +18,26 @@ export class WebGLViewer {
       this.listeners.set(name, fn);
     };
     on('pointerdown', event => {
+      if (event.button !== undefined && event.button !== 0) return;
       canvas.setPointerCapture(event.pointerId);
-      this.drag = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      this.drag = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
     });
     on('pointermove', event => {
       if (!this.drag || event.pointerId !== this.drag.id) return;
       const dx = event.clientX - this.drag.x, dy = event.clientY - this.drag.y;
+      if (!this.drag.moved && Math.hypot(dx, dy) < 4) return;
+      this.drag.moved = true;
       if (event.shiftKey) this.camera.pan(-dx * 0.02, dy * 0.02);
       else this.camera.orbit(-dx * 0.01, dy * 0.01);
       this.drag.x = event.clientX;
       this.drag.y = event.clientY;
       this.render();
     });
-    on('pointerup', () => { this.drag = null; });
+    on('pointerup', event => {
+      if (!event || this.drag?.id !== event.pointerId) return;
+      if (!this.drag.moved) this.select(event.clientX, event.clientY);
+      this.drag = null;
+    });
     on('pointercancel', () => { this.drag = null; });
     on('wheel', event => {
       event.preventDefault();
@@ -58,7 +66,7 @@ export class WebGLViewer {
       try {
         this.pipeline = new ShaderPipeline(this.gl);
         if (this.graph) this.pipeline.setGraph(this.graph);
-        if (this.surface) this.pipeline.setSurface(this.surface);
+        if (this.surface) this.pipeline.setSurface(this.surface, this.selection);
         this.lost = false;
         this.render();
       } catch (error) { status.textContent = error.message; }
@@ -80,12 +88,14 @@ export class WebGLViewer {
 
   /** @brief Orienta el visor hacia el plano XY y conserva la geometría al recuperar contexto. */
   clear() {
+    this.selection = null;
     this.graph=null; this.surface=null;
     if (!this.lost) this.pipeline.setGraph({points:[],area:null});
     this.camera.reset(); this.render();
   }
 
   setGraph(graph) {
+    this.selection = null;
     this.graph = graph;
     this.surface = null;
     if (!this.lost) this.pipeline.setGraph(graph);
@@ -101,8 +111,9 @@ export class WebGLViewer {
   /** @brief Centra una malla de superficie y permite recuperar el contexto WebGL. */
   setSurface(mesh) {
     this.graph = null;
+    if (this.surface !== mesh) this.selection = null;
     this.surface = mesh;
-    if (!this.lost) this.pipeline.setSurface(mesh);
+    if (!this.lost) this.pipeline.setSurface(mesh, this.selection);
     const [xMin,xMax,yMin,yMax] = mesh.bounds;
     const heights = mesh.triangles.flatMap(t => t.vertices.map(v => v[2]));
     const [minZ,maxZ] = heights.reduce(([min,max], z) => [Math.min(min,z),Math.max(max,z)], [0,0]);
@@ -111,6 +122,27 @@ export class WebGLViewer {
     this.camera.yaw = 0.6;
     this.camera.pitch = 0.4;
     this.render();
+  }
+
+  /**
+   * @brief Selecciona un punto del objeto activo a partir de un clic en el lienzo.
+   * @param clientX Coordenada horizontal del puntero en la ventana.
+   * @param clientY Coordenada vertical del puntero en la ventana.
+   */
+  select(clientX, clientY) {
+    if (this.lost || !this.surface || !this.selectionMode) return;
+    const {left, top, width, height} = this.canvas.getBoundingClientRect();
+    if (!width || !height) return;
+    const x = 2 * (clientX - left) / width - 1;
+    const y = 1 - 2 * (clientY - top) / height;
+    if (Math.abs(x) > 1 || Math.abs(y) > 1) return;
+    const ray = this.camera.ray(x, y, this.canvas.width / this.canvas.height);
+    this.selection = this.selectionMode.value === 'plane'
+      ? visiblePlane(ray, this.surface.tangent)
+      : raySurface(ray.origin, ray.direction, this.surface.triangles, ray.limit);
+    this.pipeline.setSurface(this.surface, this.selection);
+    this.render();
+    if (!this.selection) this.status.textContent = 'No hay intersección visible en ese punto.';
   }
 
   render() {
@@ -123,7 +155,9 @@ export class WebGLViewer {
       this.canvas.height = height;
     }
     this.pipeline.draw(this.camera.matrix(width / height), width, height);
-    this.status.textContent = 'Visor listo. Ejes X rojo, Y verde y Z azul.';
+    this.status.textContent = this.selection
+      ? `Punto seleccionado (x, y, z) = (${this.selection.map(value => value.toLocaleString('es-ES', {maximumFractionDigits: 4})).join('; ')}).`
+      : 'Visor listo. Ejes X rojo, Y verde y Z azul.';
   }
 
   dispose() {

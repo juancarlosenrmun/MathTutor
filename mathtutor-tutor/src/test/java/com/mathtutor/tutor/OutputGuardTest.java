@@ -7,11 +7,36 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class OutputGuardTest {
+    @Test
+    void notesStillProtectWorkedAnswersWhenBankHasAReference() {
+        var guard = new OutputGuard(null);
+        String solution = "Se aplica la continuidad primero a la función interior";
+        assertThat(guard.safe(solution, "referencia del banco",
+                List.of("\\begin{solution}\n" + solution + "\n\\end{solution}"))).isFalse();
+    }
+
+    @Test
+    void symbolicReferenceWithAFunctionLabelProtectsItsRightHandSide() {
+        var guard = new OutputGuard(null);
+        assertThat(guard.safe("Pista: escribe $2x$.", "f'(x)=2x", List.of())).isFalse();
+        assertThat(guard.safe("Pista: escribe $12x$.", "f'(x)=2x", List.of())).isTrue();
+        assertThat(guard.safe("¿Qué parte de 142 usarías?", "42", List.of())).isTrue();
+    }
     private final CasEngine cas = mock(CasEngine.class);
     private final OutputGuard guard = new OutputGuard(cas);
+
+    @Test
+    void doesNotSendNarrativeWordsToSymbolicSimplification() {
+        assertThat(guard.safe("El determinante es una propiedad de la matriz. ¿Qué entradas usarías?",
+                "35", List.of())).isTrue();
+        assertThat(guard.safe("Compara $x+1$ y $x-1$.", "Una matriz invertible tiene determinante no nulo.",
+                List.of())).isTrue();
+        verifyNoInteractions(cas);
+    }
 
     @Test
     void blocksEquivalentMathAndKeepsAnIntermediateHint() {
