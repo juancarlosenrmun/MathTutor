@@ -1,11 +1,11 @@
-## 2026-11-23 22:34 ? Sprint 09 ? Administraci?n, pr?ctica guiada, resiliencia y animaciones
+## 2026-11-23 22:34 · Sprint 09 · Administración, práctica guiada, resiliencia y animaciones
 
-- **Petici?n**. Crear `Sprint-9` desde `DEV`, instalar skills por separado, implementar el sprint con comentarios Doxygen, probarlo y abrir una PR con commits peque?os sin cofirmas.
-- **Implementado**. Uso por tema y consulta de sesiones con auditor?a; pr?ctica procedimental, conceptual y de interpretaci?n; modo solo apuntes con circuito y recuperaci?n local; secante a tangente y recorridos de c?mara; m?tricas de latencia y tokens; selecci?n de Google AI Studio u OpenAI por perfil. Instaladas individualmente `spring-boot-actuator`, `spring-ai-integration` y `threejs-3d-graphics`. Diagramas en `Sprint-9-docs`.
-- **Caja blanca**. UC-09, 8 casos Java; UC-24, 8; UC-26, 9 casos nuevos m?s dos actualizados; UC-33, 6 Node; EN-03, 1; EN-08, 2 de configuraci?n. Tambi?n se ejecutaron las regresiones del cat?logo y la API existente.
-- **Caja negra**. Dos contratos HTTP administrativos, dos de progresi?n HTTP/SSE, tres de continuidad y b?squeda de apuntes, uno de m?tricas y uno contra un endpoint OpenAI simulado. Se verificaron interacciones del cliente y tres recorridos Chrome para administraci?n y animaciones.
-- **Verificaci?n**. 1167 Java, 121 Node y 20 Python correctas. JaCoCo en umbral en ocho m?dulos, pol?tica pedag?gica 100 % de l?neas y ramas. V8 95,17 % de l?neas y 90,60 % de ramas. WebGL2, Doxygen y TLS verificados. ZAP pasivo sin alertas altas ni cr?ticas.
-- **Pendiente**. CI remota e integraci?n en `DEV`; medir la disponibilidad mensual tras el despliegue. Checklist **24/30**, estado `en curso`. V?ase [[Sprint 09]].
+- **Petición**. Crear `Sprint-9` desde `DEV`, instalar skills por separado, implementar el sprint con comentarios Doxygen, probarlo y abrir una PR con commits pequeños sin cofirmas.
+- **Implementado**. Uso por tema y consulta de sesiones con auditoría. Práctica procedimental, conceptual y de interpretación. Modo solo apuntes con circuito y recuperación local. Secante a tangente y recorridos de cámara. Métricas de latencia y tokens. Selección de Google AI Studio u OpenAI por perfil. Instaladas individualmente `spring-boot-actuator`, `spring-ai-integration` y `threejs-3d-graphics`. Diagramas en `Sprint-9-docs`.
+- **Caja blanca**. UC-09, 8 casos Java. UC-24, 8. UC-26, 9 casos nuevos y dos actualizados. UC-33, 6 Node. EN-03, 1. EN-08, 2 de configuración. También se ejecutaron las regresiones del catálogo y la API.
+- **Caja negra**. Dos contratos HTTP administrativos, dos de progresión HTTP/SSE, tres de continuidad y búsqueda de apuntes, uno de métricas y uno contra un endpoint OpenAI simulado. Se verificaron interacciones del cliente y tres recorridos Chrome para administración y animaciones.
+- **Verificación**. 1167 Java, 121 Node y 20 Python correctas. JaCoCo en umbral en ocho módulos, política pedagógica 100 % de líneas y ramas. V8 95,17 % de líneas y 90,60 % de ramas. WebGL2, Doxygen y TLS verificados. ZAP pasivo sin alertas altas ni críticas.
+- **Pendiente**. CI remota e integración en `DEV`. Disponibilidad mensual por medir tras el despliegue. Checklist **24/30**, estado `en curso`. Véase [[Sprint 09]] y la [PR #25](https://github.com/juancarlosenrmun/MathTutor/pull/25).
 
 ## 2026-11-23 21:43 · Sprint 08 · Lectura del chat y matriz nativa
 

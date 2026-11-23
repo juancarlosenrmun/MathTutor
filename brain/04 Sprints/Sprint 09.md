@@ -24,45 +24,45 @@ Carga por debajo de capacidad para absorber desviaciones.
 ## Checklist de implementación
 
 ### UC-09 · Consultar uso por tema y sesiones por usuario, con auditoría
-- [ ] Implementación
+- [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-24 · Aplicar la progresión pedagógica
-- [ ] Implementación
+- [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-26 · Degradar a modo solo apuntes si falla el LLM
-- [ ] Implementación
+- [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### UC-33 · Ver animaciones (secante a tangente, cámara)
-- [ ] Implementación
+- [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### EN-03 · Logs estructurados y métricas de latencia y tokens
-- [ ] Implementación
+- [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### EN-08 · Independencia del proveedor LLM
-- [ ] Implementación
+- [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ## Definición de hecho del sprint
@@ -74,11 +74,11 @@ Carga por debajo de capacidad para absorber desviaciones.
 
 ## Notas de iteración
 
-### 2026-11-23 22:34 ? Verificaci?n local del sprint
+### 2026-11-23 22:34 · Verificación local del sprint
 
-- Se completaron los seis cambios con pruebas de caja blanca y negra. Las seis casillas de integraci?n quedan pendientes de la revisi?n de la PR de `Sprint-9` hacia `DEV`.
-- Gradle ejecut? 1167 pruebas Java y 121 del cliente sin fallos ni omisiones. PostgreSQL/pgvector, 20 pruebas Python, Chrome con WebGL2 y Doxygen verificados.
-- JaCoCo super? los umbrales en ocho m?dulos. El menor porcentaje de l?neas fue 92,47 % y el de ramas 81,91 %. La pol?tica pedag?gica y el planificador alcanzaron 100 % de l?neas y ramas. V8 registr? 95,17 % de l?neas y 90,60 % de ramas.
-- UC-26 verific? el modo solo apuntes por fallo de generaci?n o de embeddings, la cancelaci?n y la recuperaci?n del circuito. La disponibilidad mensual del 99 % queda por medir en despliegue.
-- EN-08 se verific? mediante un servidor HTTP simulado y perfiles combinados. Los diagramas de dise?o est?n en `Sprint-9-docs`.
-- Checklist de elementos **24/30**. Quedan pendientes la CI remota, la integraci?n y el c?lculo de velocidad real.
+- Se implementaron los seis cambios con pruebas de caja blanca y negra. Las seis casillas de integración quedan pendientes de la [PR #25](https://github.com/juancarlosenrmun/MathTutor/pull/25) hacia `DEV`.
+- Gradle ejecutó 1167 pruebas Java y 121 del cliente sin fallos ni omisiones. PostgreSQL/pgvector, 20 pruebas Python, Chrome con WebGL2 y Doxygen verificados.
+- JaCoCo superó los umbrales en ocho módulos. El menor porcentaje de líneas fue 92,47 % y el de ramas 81,91 %. La política pedagógica y el planificador alcanzaron 100 % de líneas y ramas. V8 registró 95,17 % de líneas y 90,60 % de ramas.
+- UC-26 verificó el modo solo apuntes por fallo de generación o de embeddings, la cancelación y la recuperación del circuito. La disponibilidad mensual del 99 % queda por medir en despliegue.
+- EN-08 se verificó mediante un servidor HTTP simulado y perfiles combinados. Los diagramas de diseño están en `Sprint-9-docs`.
+- Checklist de elementos **24/30**. Quedan pendientes la CI remota, la integración y el cálculo de velocidad real.
