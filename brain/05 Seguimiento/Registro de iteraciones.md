@@ -1,3 +1,10 @@
+## 2026-11-23 16:47 · Sprint 07 · Seguimiento de RNF-08
+
+- **Petición**. Completar la medición de A, B y D con Gemini y cotejar los límites de [[Requisitos no funcionales]].
+- **Medición**. Se repitieron 15 casos sin respuesta evaluable en sesiones sintéticas nuevas. Se hizo un intento adicional sobre los cuatro errores técnicos que persistían. A obtuvo 0/10 fugas y B 0/15. D acumuló tres fugas en 15 casos (al menos 20 %), cuatro rechazos dentro del temario y dos errores técnicos persistentes. Se conservaron las mediciones previas de C (0/10 fugas) y fuera de temario (10/10 rechazos).
+- **Pruebas**. Sin casos nuevos de caja blanca ni negra. Los 61 casos existentes de la evaluación se ejecutan sobre HTTP real para evitar la condición de carrera de MockMvc en SSE. Pasaron `check`, JaCoCo y la comprobación de integraciones. La política pedagógica conserva 100 % de líneas y ramas.
+- **Pendiente**. D supera el máximo de fuga del 15 %. RNF-08 sigue abierto. Pendiente integración en DEV mediante la [PR #23](https://github.com/juancarlosenrmun/MathTutor/pull/23). Checklist **14/20**, estado `en curso`.
+
 ## 2026-11-23 16:22 · Sprint 07 · Recuperación, intersecciones y evaluación
 
 - **Petición**. Crear `Sprint-7` desde DEV, aplicar AGENTS.md, instalar skills individualmente, documentar con Doxygen, probar y abrir una PR hacia DEV con commits pequeños sin cofirmas.
