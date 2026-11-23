@@ -3,7 +3,9 @@ package com.mathtutor.application.controller;
 import com.mathtutor.auth.adapter.TokenServiceAdapter;
 import com.mathtutor.common.auth.domain.User;
 import com.mathtutor.common.auth.port.UserRepositoryPort;
+import com.mathtutor.common.dto.NoteChunk;
 import com.mathtutor.common.port.LlmGateway;
+import com.mathtutor.common.port.RagRetriever;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -41,10 +43,15 @@ class TutorApiIntegrationTest {
     @Autowired TokenServiceAdapter tokens;
     @Autowired javax.sql.DataSource datasource;
     @MockBean LlmGateway llm;
+    @MockBean RagRetriever notes;
     String token;
     @BeforeEach void user() {
         var user = users.save(User.create(UUID.randomUUID() + "@test.es", "hash", User.Role.ALUMNO));
         token = tokens.generateAccessToken(user.id(), user.email(), "ALUMNO");
+        org.mockito.Mockito.when(notes.retrieve(org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.eq("funciones"), org.mockito.ArgumentMatchers.isNull()))
+                .thenReturn(java.util.List.of(new NoteChunk(1L, "El dominio indica dónde está definida la función.",
+                        null, "DEFINICION", "nota.tex", "funciones", null, "1")));
     }
     @Test void teacherUsesOwnTutorAndCannotReadAnotherSession() throws Exception {
         long studentSession = start("funciones");

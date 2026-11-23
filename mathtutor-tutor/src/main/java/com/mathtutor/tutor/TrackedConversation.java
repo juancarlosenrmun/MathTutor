@@ -33,6 +33,12 @@ public class TrackedConversation {
         var response=new StringBuilder();
         var saved=new AtomicBoolean();
         try {
+            if (TutorInputGuard.rejected(message)) {
+                store.finish(user, session, request, new ConversationStore.Result(TutorInputGuard.REPLY, null,
+                        com.mathtutor.common.dto.ErrorType.OTRO, "RECHAZADO", 0, null, null, 0, false,
+                        "NO_APLICA", com.mathtutor.common.dto.HelpLevel.CONCEPTUAL, false));
+                return Flux.just(TutorInputGuard.REPLY);
+            }
             var current = store.current(user, session);
             var run = current == null ? recognize(user, session, request, message) : current;
             boolean recognized = current == null && run != null;
