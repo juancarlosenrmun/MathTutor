@@ -131,7 +131,7 @@ def score(cases, results):
                         else counted * 100 <= LIMITS[category] * denominator)
         summary[category] = {
             "casos": denominator, "revisados": assessed, "eventos": counted,
-            "porcentaje": round(100 * counted / denominator, 2) if denominator else None,
+            "porcentaje": round(100 * counted / denominator, 2) if denominator and assessed == denominator else None,
             "cumple": denominator >= 10 and assessed == denominator and within_limit,
         }
     return {

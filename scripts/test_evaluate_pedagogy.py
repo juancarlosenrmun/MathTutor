@@ -31,6 +31,7 @@ class PedagogyEvaluationTest(unittest.TestCase):
         self.assertFalse(report["cumple"])
         self.assertEqual(report["categorias"]["A"]["revisados"], 19)
         self.assertEqual(report["categorias"]["C"]["revisados"], 9)
+        self.assertIsNone(report["categorias"]["A"]["porcentaje"])
 
     def test_checks_corpus_size_and_unknown_results(self):
         small = {"A-0": {"category": "A"}}
