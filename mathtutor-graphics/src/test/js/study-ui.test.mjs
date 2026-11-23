@@ -10,7 +10,8 @@ function fixture() {
     'tutor-chat-title','tutor-viewer-slot','graphic-fields','graphic-result',
     'graphic-function','graphic-form','graphic-type','graphic-min','graphic-max','graphic-steps',
     'graphic-tangent-x','graphic-tangent-y','graphic-tangent-x-field','graphic-tangent-y-field',
-    'sessions-more','sessions-refresh','sessions-status','history-more','tutor-retry'];
+    'sessions-more','sessions-refresh','sessions-status','history-more','tutor-retry',
+    'tutor-practice','tutor-practice-prompt'];
   const nodes=Object.fromEntries(ids.map(id=>[id,element({children:[]})]));
   const doc={querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:tagName=>element({tagName,children:[]})};
   Object.assign(nodes['tutor-block'],{value:'funciones'});
@@ -21,6 +22,7 @@ function fixture() {
     const json=data=>({ok:true,json:async()=>data});
     if(path.endsWith('csrf-token')) return json({csrfToken:'csrf'});
     if(path.endsWith('/modules')) return json([{code:'funciones',name:'Funciones'}]);
+    if(path.endsWith('/progression')) return state.practice ? json(state.practice) : {ok:true,status:204};
     if(path.includes('/progress')) return json(state.sessions.slice(page*20,(page+1)*20));
     if(path.includes('/history')) return json(state.turns.slice(page*20,(page+1)*20));
     if(path.includes('/bank')) return json(state.bank.slice(page*20,(page+1)*20));
@@ -73,6 +75,25 @@ test('el ejercicio del banco se selecciona desde el chat sin publicar progreso',
   f.nodes['tutor-message'].value='Deriva x^2';await f.submit('tutor-form');
   assert.deepEqual(JSON.parse(f.state.calls.find(([p,o])=>p.endsWith('/exercises')&&o.method==='POST')[1].body),{exerciseId:7});
   assert.equal(f.state.calls.filter(([p,o])=>p.includes('/exercises')&&o.method!=='POST').length,0);
+});
+
+test('la práctica guiada presenta la etapa y el enunciado sin enviar un turno', async () => {
+  const f = fixture();
+  await f.open();
+  f.state.practice = {type: 'TEORICO', statement: 'Explica el significado del límite.'};
+  f.nodes['tutor-message'].value = 'Mi borrador';
+  await f.click('tutor-practice');
+  assert.equal(f.nodes['tutor-practice-prompt'].hidden, false);
+  assert.equal(f.nodes['tutor-practice-prompt'].textContent,
+    'Práctica conceptual. Explica el significado del límite.');
+  assert.equal(f.nodes['tutor-message'].value, 'Mi borrador');
+  assert.equal(f.state.calls.filter(([path]) => path.endsWith('/messages')).length, 0);
+  assert.equal(f.state.calls.find(([path]) => path.endsWith('/progression'))[1].method, 'POST');
+  f.state.practice = null;
+  await f.click('tutor-practice');
+  assert.match(f.nodes['tutor-practice-prompt'].textContent, /completado/i);
+  await f.click('tutor-new');
+  assert.equal(f.nodes['tutor-practice-prompt'].hidden, true);
 });
 
 test('gráficas validadas se dibujan y se borran al perder la identidad',async()=>{

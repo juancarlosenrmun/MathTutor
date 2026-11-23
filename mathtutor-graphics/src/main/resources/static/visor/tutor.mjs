@@ -4,6 +4,10 @@ import { appendTurn, renderTurns } from './tutor-history.mjs';
 import { mountSessions } from './tutor-sessions.mjs';
 import { mountStudy } from './study.mjs';
 
+const PRACTICE_LEVELS = new Map([
+  ['PROCEDIMENTAL', 'procedimental'], ['TEORICO', 'conceptual'], ['INTERPRETACION', 'de interpretación']
+]);
+
 export async function readReply(response,onToken) {
   return readEvents(response,event=>{
     if (event.type!=='TOKEN' || typeof event.content!=='string') throw new Error('Respuesta del tutor inválida.');
@@ -24,6 +28,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
   };
   const noteQuestions={funciones:'¿Qué es la continuidad de una función?',
     'derivadas-integrales':'¿Cómo se calcula la derivada de una función?', 'metodos-3d':'¿Qué es un espacio vectorial?'};
+  const practiceButton = one('tutor-practice'), practicePrompt = one('tutor-practice-prompt');
   let session,identity,controller,generation=0,busy=false,loaded=false,loading=false,pending;
   let modules=[],entries=[],historyPage=0,viewerOpen=true;
   const allowed=()=>Boolean(client.token) && ['ALUMNO','PROFESOR'].includes(client.profile?.role);
@@ -31,8 +36,15 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
   const titleFor=visit=>visit.title || modules.find(m=>m.code===(visit.moduleCode || visit.module))?.name || 'Conversación de Matemáticas';
   const study=mountStudy(document,client,viewer);
   const visits=mountSessions(document,client,{isBusy:()=>busy || !allowed(),onOpen:open,titleFor});
+  function clearPractice() {
+    if (practicePrompt) {
+      practicePrompt.hidden = true;
+      practicePrompt.textContent = '';
+    }
+  }
   function controls() {
     one('tutor-composer').hidden=!writable(); one('tutor-send').disabled=busy || Boolean(pending);
+    if (practiceButton) practiceButton.disabled = !writable() || busy || Boolean(pending);
     one('tutor-start').disabled=busy || !allowed() || !loaded; one('tutor-block').disabled=busy || !allowed() || !loaded;
     one('tutor-cancel').disabled=!busy;
     if (one('tutor-retry')) { one('tutor-retry').hidden=!pending; one('tutor-retry').disabled=busy; }
@@ -60,6 +72,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     if (busy || !allowed()) return;
     controller?.abort(); generation++; const current=generation; busy=true; controller=new AbortController();
     session={...visit,moduleCode:visit.moduleCode || visit.module}; pending=undefined; entries=[]; historyPage=0;
+    clearPractice();
     announceAnswer('');
     study.enter(null);
     if (one('history-more')) one('history-more').hidden=true;
@@ -81,6 +94,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     if (identity!==next) {
       controller?.abort(); identity=next; generation++; session=null; pending=undefined; busy=false; loaded=false; loading=false;
       one('tutor-message').value=''; status.textContent='Inicia sesión como alumno para conversar con el tutor.';
+      clearPractice();
       history.setAttribute('aria-busy', 'false');
       announceAnswer('');
       history.replaceChildren(); entries=[]; modules=[]; visits.clear(); study.enter(null); controls();
@@ -116,6 +130,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
       const created=await (await request(client,'/api/tutor/sessions',{moduleCode:one('tutor-block').value},controller.signal)).json();
       if (current!==generation) return;
       session={...created,status:created.status || 'ACTIVA'}; session.title=titleFor(session); entries=[]; pending=undefined;
+      clearPractice();
       announceAnswer('');
       visits.add(session); history.replaceChildren(); one('tutor-chat-title').textContent=session.title;
       if (one('history-more')) one('history-more').hidden=true;
@@ -174,6 +189,33 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     }
   }
   one('tutor-form').addEventListener('submit',event=>{event.preventDefault();return send();});
+  /** @brief Activa una práctica del módulo y anuncia el enunciado sin enviar un turno de chat. */
+  practiceButton?.addEventListener('click', async () => {
+    if (!practicePrompt || !writable() || busy || pending) return;
+    const current = generation;
+    busy = true;
+    controller = new AbortController();
+    controls();
+    try {
+      const response = await request(client, `/api/tutor/sessions/${session.id}/progression`, {}, controller.signal);
+      const practice = response.status === 204 ? null : await response.json();
+      if (current !== generation) return;
+      if (!practice) {
+        practicePrompt.textContent = 'Has completado el itinerario de práctica de este módulo.';
+        practicePrompt.hidden = false;
+        return;
+      }
+      const level = PRACTICE_LEVELS.get(practice.type);
+      if (!level || typeof practice.statement !== 'string') throw new Error('Práctica guiada no disponible.');
+      practicePrompt.textContent = `Práctica ${level}. ${practice.statement}`;
+      practicePrompt.hidden = false;
+      one('tutor-message').focus();
+    } catch (error) {
+      if (current === generation) status.textContent = error.message;
+    } finally {
+      if (current === generation) { busy = false; controls(); }
+    }
+  });
   one('tutor-retry')?.addEventListener('click',()=>send(true));
   one('history-more')?.addEventListener('click',async()=>{
     if (busy || !session || !allowed()) return;
@@ -190,6 +232,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
   one('tutor-new')?.addEventListener('click',()=>{
     if (busy || !allowed()) return;
     session=null;pending=undefined;entries=[];history.replaceChildren();study.enter(null);visits.select(undefined);
+    clearPractice();
     announceAnswer('');
     if (one('history-more')) one('history-more').hidden=true;
     status.textContent='Elige un bloque para empezar una conversación.';controls();
