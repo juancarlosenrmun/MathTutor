@@ -48,18 +48,28 @@ public class PasswordResetService {
     public Optional<String> issue(String email) {
         return users.findActiveByEmail(email).map(User::getId).flatMap(users::findByIdForUpdate)
                 .filter(user -> user.isActive() && email.equals(user.getEmail()))
-                .filter(user -> limits.tryConsume("password-reset:account:" + user.getId(), 3, VALIDITY))
-                .map(user -> {
-                    Instant now = Instant.now();
-                    byte[] bytes = new byte[32];
-                    random.nextBytes(bytes);
-                    String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-                    tokens.deleteExpired(user.getId(), now);
-                    tokens.save(PasswordResetToken.builder().user(user).tokenHash(digest(token))
-                            .expiresAt(now.plus(VALIDITY)).build());
-                    return token;
-                });
+                .flatMap(this::issue).map(Delivery::token);
     }
+
+    /** @brief Resuelve por identidad persistente para evitar entregar un enlace a una cuenta recreada. */
+    @Transactional
+    public Optional<Delivery> issue(long userId) {
+        return users.findByIdForUpdate(userId).filter(User::isActive).flatMap(this::issue);
+    }
+
+    private Optional<Delivery> issue(User user) {
+        if (!limits.tryConsume("password-reset:account:" + user.getId(), 3, VALIDITY)) return Optional.empty();
+        Instant now = Instant.now();
+        byte[] bytes = new byte[32];
+        random.nextBytes(bytes);
+        String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        tokens.deleteExpired(user.getId(), now);
+        tokens.save(PasswordResetToken.builder().user(user).tokenHash(digest(token))
+                .expiresAt(now.plus(VALIDITY)).build());
+        return Optional.of(new Delivery(user.getEmail(), token));
+    }
+
+    public record Delivery(String email, String token) {}
 
     /**
      * @param token Secreto recibido por correo.
