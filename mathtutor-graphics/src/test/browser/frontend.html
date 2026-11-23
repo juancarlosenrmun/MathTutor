@@ -59,7 +59,7 @@ try {
   assert(visible().length === 1, 'Debe haber una sola vista activa');
   for (const width of [1440, 1024, 768, 375, 320]) {
     frame.style.width = width + 'px';
-    for (const view of ['inicio', 'acceso', 'registro', 'laboratorio', 'restringido']) {
+    for (const view of ['inicio', 'acceso', 'registro', 'recuperar', 'laboratorio', 'restringido']) {
       await go(view);
       assert(visible()[0].dataset.view === view, 'Ruta incorrecta: ' + view);
       assert(doc.documentElement.scrollWidth <= doc.documentElement.clientWidth + 1, 'Desbordamiento: ' + view + '/' + width);
@@ -68,6 +68,30 @@ try {
   }
   await go('cuenta'); assert(visible()[0].dataset.view === 'acceso', 'Cuenta sin protección');
   await go('espacio'); assert(visible()[0].dataset.view === 'acceso', 'Espacio sin protección');
+  const forgot = doc.querySelector('[data-view="acceso"] a[href="#/recuperar"]');
+  assert(forgot, 'El acceso no enlaza con recuperación');
+  await go(forgot.getAttribute('href').slice(2));
+  assert(visible()[0].dataset.view === 'recuperar', 'El acceso no enlaza con recuperación');
+  const resetRequest = doc.querySelector('[data-reset="request"]');
+  resetRequest.elements.email.value = 'alumno@ejemplo.es';
+  resetRequest.requestSubmit();
+  await idle();
+  assert(doc.querySelector('#notice').textContent.includes('Si existe una cuenta activa'), 'Falta la confirmación genérica');
+  const resetToken = 'A'.repeat(43);
+  await go('restablecer/' + resetToken);
+  const resetConfirm = doc.querySelector('[data-reset="confirm"]');
+  assert(visible()[0].dataset.view === 'restablecer', 'El enlace no abre el formulario');
+  resetConfirm.elements.password.value = 'OtraClaveSegura12!';
+  resetConfirm.elements.confirm.value = 'OtraIncorrecta12!';
+  resetConfirm.requestSubmit();
+  await settle();
+  assert(!resetConfirm.querySelector('[data-error]').hidden, 'Se admite una confirmación diferente');
+  resetConfirm.elements.confirm.value = 'OtraClaveSegura12!';
+  resetConfirm.requestSubmit();
+  await idle();
+  const resetCall = win.testState.calls.find(([path]) => path.endsWith('password-reset/confirm'));
+  assert(JSON.parse(resetCall[1].body).token === resetToken, 'El token no llega a la confirmación');
+  assert(win.location.hash === '#/acceso' && !resetConfirm.elements.password.value, 'El cambio debe regresar al acceso sin el secreto');
   await go('registro');
   const register = doc.querySelector('[data-auth="register"]');
   register.elements.email.value = 'alumno@ejemplo.es';

@@ -191,12 +191,42 @@
             ></p>
             <button class="button full" type="submit">Iniciar sesión</button>
           </form>
+          <p><a href="#/recuperar">¿Olvidaste tu contraseña?</a></p>
           <p class="form-footnote">
             Tu sesión se mantiene de forma segura en este navegador.
           </p>
           <a class="text-link" href="#/laboratorio"
             >Explorar el laboratorio sin cuenta</a
           >
+        </div>
+      </section>
+      <section data-view="recuperar" class="auth-layout" hidden>
+        <div class="auth-card">
+          <h2>Recuperar contraseña</h2>
+          <form data-reset="request">
+            <label for="reset-email">Correo electrónico</label>
+            <input id="reset-email" name="email" type="email" autocomplete="email" maxlength="255" required />
+            <p data-error role="alert" tabindex="-1" hidden></p>
+            <button class="button full" type="submit">Enviar enlace</button>
+          </form>
+          <p><a href="#/acceso">Volver a iniciar sesión</a></p>
+        </div>
+      </section>
+      <section data-view="restablecer" class="auth-layout" hidden>
+        <div class="auth-card">
+          <h2>Elegir una nueva contraseña</h2>
+          <form data-reset="confirm">
+            <label for="reset-password">Nueva contraseña</label>
+            <input id="reset-password" name="password" type="password" autocomplete="new-password"
+              minlength="12" maxlength="256" aria-describedby="reset-password-rules" required />
+            <p id="reset-password-rules">Usa al menos 12 caracteres, con mayúscula, minúscula, número y símbolo.</p>
+            <label for="reset-confirm">Repite la nueva contraseña</label>
+            <input id="reset-confirm" name="confirm" type="password" autocomplete="new-password"
+              minlength="12" maxlength="256" required />
+            <p data-error role="alert" tabindex="-1" hidden></p>
+            <button class="button full" type="submit">Cambiar contraseña</button>
+          </form>
+          <p><a href="#/recuperar">Solicitar otro enlace</a></p>
         </div>
       </section>
       <section data-view="registro" class="auth-layout" hidden>
