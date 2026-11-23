@@ -63,3 +63,57 @@ test('falla de forma controlada si el compilador o el enlazador rechazan los sha
     assert.ok(gl.calls.some(call => call[0] === 'deleteShader'));
   }
 });
+
+function effectsGl(overrides = {}) {
+  const buffers = [];
+  return fakeGl({
+    TRIANGLES: 10, POINTS: 11, FRAMEBUFFER: 12, FRAMEBUFFER_COMPLETE: 13,
+    createFramebuffer: () => ({}), createTexture: () => ({}), createRenderbuffer: () => ({}),
+    checkFramebufferStatus: () => 13,
+    ...Object.fromEntries(['bindFramebuffer', 'bindTexture', 'texImage2D', 'texParameteri',
+      'framebufferTexture2D', 'bindRenderbuffer', 'renderbufferStorage', 'framebufferRenderbuffer',
+      'activeTexture', 'deleteFramebuffer', 'deleteRenderbuffer', 'deleteTexture']
+      .map(name => [name, (...args) => buffers.push([name, ...args])])),
+    buffers, ...overrides,
+  });
+}
+
+test('UC-34 compone la textura antes de dibujar guías y reutiliza el framebuffer hasta redimensionar', () => {
+  const gl = effectsGl();
+  const pipeline = new ShaderPipeline(gl);
+  pipeline.setSurface(surface('x+y', -1, 1, -1, 1, 2, [0, 0]), [0, 0, 0]);
+  const draw = (width = 800) => pipeline.draw(new Float32Array(16), width, 600);
+  draw();
+  assert.equal(gl.buffers.length, 0);
+  assert.equal(pipeline.setContrast(true), true);
+  gl.calls.length = 0;
+  draw();
+  assert.deepEqual(gl.calls.filter(([name]) => name === 'drawArrays').map(call => call.slice(1)), [
+    [9, 0, 6], [10, 6, 24], [10, 0, 3], [9, 30, 12], [11, 42, 1],
+  ]);
+  draw();
+  assert.equal(gl.buffers.filter(([name]) => name === 'texImage2D').length, 1);
+  draw(801);
+  assert.equal(gl.buffers.filter(([name]) => name === 'texImage2D').length, 2);
+  assert.equal(pipeline.setContrast(false), true);
+  assert.equal(gl.buffers.filter(([name]) => name === 'deleteFramebuffer').length, 1);
+  pipeline.setContrast(true);
+  draw();
+  pipeline.dispose();
+  for (const resource of ['Framebuffer', 'Renderbuffer', 'Texture']) {
+    assert.equal(gl.buffers.filter(([name]) => name === 'delete' + resource).length, 2);
+  }
+});
+
+test('UC-34 dibuja directamente si el framebuffer es incompleto o falla la compilación del efecto', () => {
+  const gl = effectsGl({ checkFramebufferStatus: () => 0 });
+  const pipeline = new ShaderPipeline(gl);
+  pipeline.setContrast(true);
+  pipeline.draw(new Float32Array(16), 800, 600);
+  assert.ok(gl.calls.some(([name, mode, start, count]) => name === 'drawArrays' && mode === 9 && start === 0 && count === 6));
+  assert.equal(gl.calls.filter(([name]) => name === 'drawArrays').length, 1);
+  assert.deepEqual(gl.buffers.findLast(([name]) => name === 'bindFramebuffer').slice(2), [null]);
+  gl.getProgramParameter = () => false;
+  pipeline.setContrast(false);
+  assert.equal(pipeline.setContrast(true), false);
+});

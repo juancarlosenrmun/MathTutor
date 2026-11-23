@@ -81,6 +81,7 @@ export class WebGLViewer {
     on('webglcontextrestored', () => {
       try {
         this.pipeline = new ShaderPipeline(this.gl);
+        if (this.contrast) this.pipeline.setContrast(true);
         if (this.graph) this.pipeline.setGraph(this.graph);
         if (this.surface) this.pipeline.setSurface(this.surface, this.selection);
         this.lost = false;
@@ -233,6 +234,14 @@ export class WebGLViewer {
     this.pipeline.setSurface(this.surface, this.selection);
     this.render();
     if (!this.selection) this.status.textContent = 'No hay intersección visible en ese punto.';
+  }
+
+  /** @brief Configura el contraste del visor y conserva la preferencia al recuperar WebGL. */
+  setContrast(enabled) {
+    if (!this.lost && !this.pipeline.setContrast(enabled)) return false;
+    this.contrast = enabled;
+    this.render();
+    return true;
   }
 
   render() {

@@ -22,6 +22,17 @@ export function mount(document, host = globalThis) {
     selectionMode.disabled = !viewer;
     if (viewer) viewer.selectionMode = selectionMode;
   }
+  const contrast = document.querySelector('#graphic-contrast');
+  if (contrast && viewer) {
+    contrast.disabled = false;
+    contrast.checked = false;
+    contrast.addEventListener('change', () => {
+      if (!viewer.setContrast(contrast.checked)) {
+        contrast.checked = Boolean(viewer.contrast);
+        status.textContent = 'No se pudo aplicar el contraste al visor.';
+      }
+    });
+  }
   if (document.querySelector('#curve-form')) mountCurveControls(document, viewer);
   if (document.querySelector('#surface-form')) mountSurfaceControls(document, viewer);
   for (const button of document.querySelectorAll('[data-camera]')) {
