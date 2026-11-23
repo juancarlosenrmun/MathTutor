@@ -39,6 +39,14 @@ try {
     if (pixels[i] > 40 && pixels[i] < 110 && pixels[i+1] > 120 && pixels[i+2] > 100) meshPixels++;
   }
   if (meshPixels < 100 || gl.getError() !== gl.NO_ERROR) throw new Error(`Superficie 3D incompleta: ${meshPixels}`);
+  viewer.setSurface(surface('0', -1, 1, -1, 1, 16));
+  gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const surfaceGreens = new Set();
+  for (let i = 0; i < pixels.length; i += 4) {
+    const [r, g, b] = pixels.subarray(i, i + 3);
+    if (r < 75 && g > 70 && g > b && b > 2 * r) surfaceGreens.add(g);
+  }
+  if (surfaceGreens.size < 10) throw new Error('Textura visible ausente en la superficie plana');
   const readTangentPixels = () => {
     gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     const positions = [];

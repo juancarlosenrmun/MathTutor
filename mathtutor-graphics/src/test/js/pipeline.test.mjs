@@ -13,6 +13,22 @@ test('UC-29 envía triángulos de superficie al pipeline WebGL2', () => {
   assert.ok(gl.calls.some(c => c[0] === 'drawArrays' && c[1] === 10 && c[3] === 24));
 });
 
+test('UC-30 carga las normales de la malla y aísla el material de la tangente', () => {
+  const gl = fakeGl({ TRIANGLES: 10 });
+  const pipeline = new ShaderPipeline(gl);
+  const mesh = surface('x+2*y', -1, 1, -1, 1, 2, [0, 0]);
+  pipeline.setSurface(mesh);
+  const data = gl.calls.findLast(([name]) => name === 'bufferData')[2];
+  assert.deepEqual([...data.slice(39, 42)], mesh.triangles[0].normal.map(Math.fround));
+  gl.calls.length = 0;
+  pipeline.draw(new Float32Array(16), 800, 600);
+  assert.deepEqual(gl.calls.filter(([name]) => ['uniform1i', 'drawArrays'].includes(name))
+    .map(([name, , value]) => [name, value]), [
+    ['uniform1i', 0], ['drawArrays', 0], ['uniform1i', 1], ['drawArrays', 6],
+    ['uniform1i', 0], ['drawArrays', 30],
+  ]);
+});
+
 test('UC-28 dibuja función, derivada y triángulos de área sin puentear discontinuidades', () => {
   const gl = fakeGl({ TRIANGLES: 10 });
   const pipeline = new ShaderPipeline(gl);

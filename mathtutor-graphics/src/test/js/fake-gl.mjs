@@ -11,6 +11,6 @@ export function fakeGl(overrides = {}) {
   for (const name of ['shaderSource', 'compileShader', 'attachShader', 'linkProgram', 'deleteShader',
     'deleteProgram', 'deleteBuffer', 'deleteVertexArray', 'bindBuffer', 'bufferData', 'bindVertexArray',
     'enableVertexAttribArray', 'vertexAttribPointer', 'viewport', 'clearColor', 'clear', 'enable', 'disable',
-    'useProgram', 'uniformMatrix4fv', 'drawArrays']) gl[name] = (...args) => calls.push([name, ...args]);
+    'useProgram', 'uniformMatrix4fv', 'uniform1i', 'drawArrays']) gl[name] = (...args) => calls.push([name, ...args]);
   return Object.assign(gl, overrides);
 }
