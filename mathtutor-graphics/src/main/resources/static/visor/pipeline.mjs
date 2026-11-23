@@ -6,6 +6,7 @@ out vec3 vertexColor;
 out vec2 surfacePosition;
 void main() {
   gl_Position = viewProjection * vec4(position, 1.0);
+  gl_PointSize = 9.0;
   vertexColor = colorOrNormal;
   surfacePosition = position.xy;
 }`;
@@ -98,7 +99,7 @@ export class ShaderPipeline {
   }
 
   /** @brief Dibuja la triangulación y conserva las normales calculadas por la malla. */
-  setSurface(mesh) {
+  setSurface(mesh, selection) {
     const vertices = [];
     for (const triangle of mesh.triangles) {
       for (const vertex of triangle.vertices) vertices.push(...vertex, ...triangle.normal);
@@ -106,18 +107,20 @@ export class ShaderPipeline {
     this.surfaceCount = vertices.length / 6;
     this.lineCount = 0;
     this.areaCount = 0;
-    this.upload(vertices, mesh.tangent);
+    this.upload(vertices, mesh.tangent, selection);
   }
 
   /** @brief Guarda al final del VBO las aristas de la tangente como guía superpuesta. */
-  upload(positions, tangent) {
+  upload(positions, tangent, selection) {
     const overlay = tangent?.lines.flatMap(vertex => [...vertex, 1, 0.38, 0.72]) ?? [];
     this.tangentStart = 6 + positions.length / 6;
     this.tangentCount = overlay.length / 6;
-    const buffer = new Float32Array(this.axes.length + positions.length + overlay.length);
+    this.selectionIndex = selection ? this.tangentStart + this.tangentCount : null;
+    const buffer = new Float32Array(this.axes.length + positions.length + overlay.length + (selection ? 6 : 0));
     buffer.set(this.axes);
     buffer.set(positions, this.axes.length);
     buffer.set(overlay, this.axes.length + positions.length);
+    if (selection) buffer.set([...selection, 1, 0.94, 0.45], buffer.length - 6);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, buffer, this.gl.STATIC_DRAW);
   }
@@ -140,9 +143,10 @@ export class ShaderPipeline {
       gl.drawArrays(gl.TRIANGLES, 6, this.surfaceCount);
       gl.uniform1i(this.materialLocation, 0);
     }
-    if (this.tangentCount) {
+    if (this.tangentCount || this.selectionIndex != null) {
       gl.disable(gl.DEPTH_TEST);
-      gl.drawArrays(gl.LINES, this.tangentStart, this.tangentCount);
+      if (this.tangentCount) gl.drawArrays(gl.LINES, this.tangentStart, this.tangentCount);
+      if (this.selectionIndex != null) gl.drawArrays(gl.POINTS, this.selectionIndex, 1);
       gl.enable(gl.DEPTH_TEST);
     }
     gl.bindVertexArray(null);

@@ -12,6 +12,11 @@ export function mount(document, host = globalThis) {
   let viewer;
   try { viewer = new WebGLViewer(document.querySelector('canvas'), status, host); }
   catch (error) { status.textContent = error.message; }
+  const selectionMode = document.querySelector('#selection-mode');
+  if (selectionMode) {
+    selectionMode.disabled = !viewer;
+    if (viewer) viewer.selectionMode = selectionMode;
+  }
   if (document.querySelector('#curve-form')) mountCurveControls(document, viewer);
   if (document.querySelector('#surface-form')) mountSurfaceControls(document, viewer);
   for (const button of document.querySelectorAll('[data-camera]')) {
