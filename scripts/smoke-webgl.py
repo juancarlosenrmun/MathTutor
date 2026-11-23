@@ -21,7 +21,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(b'{"csrfToken":"smoke"}')
-        elif self.path in ("/smoke.html", "/frontend.html"):
+        elif self.path in ("/smoke.html", "/frontend.html", "/performance.html"):
             content = (ROOT / "mathtutor-graphics/src/test/browser" / self.path.lstrip("/")).read_bytes()
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -78,7 +78,9 @@ def run_native(name, expected_major, origin):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--native", choices=("firefox", "safari"))
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--native", choices=("firefox", "safari"))
+    mode.add_argument("--performance", action="store_true", help="mide RNF-02 con aceleración gráfica")
     parser.add_argument("--expect-major")
     args = parser.parse_args()
     candidates = [os.environ.get("CHROME_BIN"), shutil.which("google-chrome"),
@@ -92,6 +94,11 @@ def main():
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(Handler, directory=str(STATIC)))
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
+        if args.performance:
+            subprocess.run(["node", str(ROOT / "scripts/performance-webgl.mjs"), browser,
+                            f"http://127.0.0.1:{server.server_port}/performance.html", str(EVIDENCE)],
+                           check=True, timeout=45)
+            return
         if args.native:
             run_native(args.native, args.expect_major, f"http://127.0.0.1:{server.server_port}")
             return
