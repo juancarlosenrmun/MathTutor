@@ -42,6 +42,6 @@ Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlos
 | [[Sprint 05\|S5]] | Hito: tutor socrático completo con tangentes | 29 | 0/3 integrados, 3/3 verificados, 12/15 casillas | en curso (integración en DEV pendiente) |
 | [[Sprint 06\|S6]] | Seguridad transversal, filtrado, banco de ejercicios y superficies iluminadas | 32 | 0/4 integrados, 4/4 verificados, 16/20 casillas | en curso (CI e integración pendientes) |
 | [[Sprint 07\|S7]] | Hito: todos los Must completados; evaluación y selección por intersección | 31 | 0/3 integrados; 14/20 casillas | en curso (RNF-08 validado; integración en DEV pendiente) |
-| [[Sprint 08\|S8]] | Should restantes y administración | 32 | 0/6 | pendiente |
+| [[Sprint 08\|S8]] | Should restantes y administración | 32 | 0/6 integrados, 6/6 verificados, 24/30 casillas | en curso ([PR #24](https://github.com/juancarlosenrmun/MathTutor/pull/24) abierta hacia DEV) |
 | [[Sprint 09\|S9]] | Could (1) | 29 | 0/6 | pendiente |
 | [[Sprint 10\|S10]] | Contingencia y Could (2) | 21 | 0/2 | pendiente |

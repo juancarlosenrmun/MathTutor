@@ -51,7 +51,16 @@ export class WebGLViewer {
         else this.camera.orbit(...direction);
       } else if (event.key === '+') this.camera.zoom(-100);
       else if (event.key === '-') this.camera.zoom(100);
-      else if (event.key === 'Home') { this.command('reset'); return; }
+      else if (event.key === 'Home') {
+        event.preventDefault();
+        this.command('reset');
+        return;
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        const { left, top, width, height } = canvas.getBoundingClientRect();
+        this.select(left + width / 2, top + height / 2);
+        return;
+      }
       else return;
       event.preventDefault();
       this.render();

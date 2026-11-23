@@ -4,6 +4,8 @@ import { mountTutor } from './tutor.mjs';
 import { mountCurveControls } from './curves.mjs';
 import { mountSurfaceControls } from './surfaces.mjs';
 import { mountPrivacy } from './privacy.mjs';
+import { mountAdministration } from './administration.mjs';
+import { mountTeacherStatistics } from './teacher-statistics.mjs';
 
 /** Conecta el visor al laboratorio y conserva sus recursos entre vistas. */
 export function mount(document, host = globalThis) {
@@ -11,7 +13,10 @@ export function mount(document, host = globalThis) {
   const status = document.querySelector('#graphic-status');
   let viewer;
   try { viewer = new WebGLViewer(document.querySelector('canvas'), status, host); }
-  catch (error) { status.textContent = error.message; }
+  catch (error) {
+    status.textContent = error.message;
+    document.querySelector('canvas')?.removeAttribute?.('tabindex');
+  }
   const selectionMode = document.querySelector('#selection-mode');
   if (selectionMode) {
     selectionMode.disabled = !viewer;
@@ -27,10 +32,18 @@ export function mount(document, host = globalThis) {
     if (!event.persisted) viewer?.dispose();
   });
   let tutor;
+  let administration;
+  let statistics;
   const panel = document.querySelector('.viewer-panel');
   const lab = panel?.parentElement;
   const next = panel?.nextSibling;
   return mountInterface(document, host, (view, client) => {
+    if (!administration && document.querySelector('#admin-panel')) {
+      administration = mountAdministration(document, host, client);
+    }
+    administration?.sync(view);
+    if (!statistics && document.querySelector('#teacher-panel')) statistics = mountTeacherStatistics(document, client);
+    statistics?.sync(view);
     if (!tutor && document.querySelector('#tutor-form')) tutor = mountTutor(document, client, {viewer});
     tutor?.sync(view);
     const slot = document.querySelector('#tutor-viewer-slot');

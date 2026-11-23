@@ -30,7 +30,7 @@ test('UC-29 rechaza dominios, resoluciones y expresiones no admitidas', () => {
   }
 });
 
-test('UC-29 el formulario dibuja la malla y anuncia el número de triángulos', () => {
+test('EN-07 el formulario de superficie anuncia dominio y altura con o sin WebGL', () => {
   const nodes = new Map();
   for (const [id,value] of Object.entries({'surface-function':'x+y','surface-x-min':'-1',
     'surface-x-max':'1','surface-y-min':'-1','surface-y-max':'1'})) nodes.set(id,{value});
@@ -42,8 +42,12 @@ test('UC-29 el formulario dibuja la malla y anuncia el número de triángulos', 
   mountSurfaceControls({querySelector:selector=>nodes.get(selector.slice(1))},{setSurface:mesh=>{drawn=mesh;}});
   nodes.get('surface-form').submit({preventDefault(){}});
   assert.equal(drawn.triangles.length, 8);
-  assert.match(nodes.get('surface-result').textContent,/triángulos/);
+  assert.match(nodes.get('surface-result').textContent,/Valores de z muestreados entre -2 y 2/);
   nodes.get('surface-resolution').value = '0';
   nodes.get('surface-form').submit({preventDefault(){}});
   assert.match(nodes.get('surface-result').textContent,/inválidos/);
+  mountSurfaceControls({querySelector:selector=>nodes.get(selector.slice(1))}, null);
+  nodes.get('surface-resolution').value = '2';
+  nodes.get('surface-form').submit({preventDefault(){}});
+  assert.match(nodes.get('surface-result').textContent,/Valores de z muestreados entre -2 y 2/);
 });

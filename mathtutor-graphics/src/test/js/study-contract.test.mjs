@@ -46,5 +46,5 @@ test('la especificación remota nunca autoriza código ni geometría sin límite
     {...good,type:'SUPERFICIE',domain:{min:-1,max:1,steps:129}}]) {
     assert.throws(()=>drawSpecification(viewer,bad));
   }
-  assert.throws(()=>drawSpecification(null,good),/WebGL/);
+  assert.match(drawSpecification(null,good),/Dominio de/);
 });

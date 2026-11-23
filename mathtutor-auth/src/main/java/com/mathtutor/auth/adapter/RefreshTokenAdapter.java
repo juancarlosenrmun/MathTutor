@@ -2,9 +2,11 @@ package com.mathtutor.auth.adapter;
 
 import com.mathtutor.common.auth.port.TokenServicePort;
 import com.mathtutor.persistence.entity.RefreshToken;
+import com.mathtutor.persistence.entity.User;
 import com.mathtutor.persistence.repository.RefreshTokenRepository;
 import com.mathtutor.persistence.repository.UserRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -41,12 +43,19 @@ public class RefreshTokenAdapter {
         return storeRefreshTokenWithFamily(userId, email, role, rawToken, UUID.randomUUID().toString());
     }
 
+    /** @brief Serializa la emisión inicial con la desactivación o la supresión de la cuenta. */
     @Transactional
     public String storeRefreshTokenWithFamily(Long userId, String email, String role, String rawToken, String familyId) {
+        userRepository.findByIdForUpdate(userId).filter(User::isActive)
+                .orElseThrow(() -> new UsernameNotFoundException("Cuenta no disponible"));
+        store(userId, rawToken, familyId);
+        return rawToken;
+    }
+
+    private void store(Long userId, String rawToken, String familyId) {
         Instant now = Instant.now();
         repository.save(new RefreshToken(digest(rawToken), userId, familyId,
                 now.plusSeconds(refreshTokenExpirationDays * 86400), now));
-        return rawToken;
     }
 
     @Transactional(readOnly = true)
@@ -85,7 +94,7 @@ public class RefreshTokenAdapter {
         previous.setRevoked(true);
         previous.setRevokedAt(Instant.now());
         repository.save(previous);
-        storeRefreshTokenWithFamily(user.userId(), user.email(), user.role(), replacement, user.familyId());
+        store(user.userId(), replacement, user.familyId());
         return Optional.of(new Rotation(replacement, user));
     }
 

@@ -48,7 +48,11 @@ class DevDatabaseMigrationIntegrationTest {
 
     @Test
     void startsWithAllExistingMappingsValidatedAfterFlyway() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("13");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("14");
+        assertThat(jdbc.queryForObject("""
+                SELECT is_nullable FROM information_schema.columns
+                WHERE table_name = 'exercise_runs' AND column_name = 'last_activity_at'
+                """, String.class)).isEqualTo("NO");
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM pg_extension WHERE extname = 'vector'", Integer.class))
                 .isEqualTo(1);

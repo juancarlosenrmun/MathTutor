@@ -50,28 +50,41 @@ export function surface(source, xMin, xMax, yMin, yMax, divisions = 32, tangentP
   return { triangles, bounds, tangent };
 }
 
-/** @brief Conecta el formulario de superficies y muestra errores sin ejecutar la entrada. */
+/** @brief Describe el dominio, los valores representables y el plano tangente de una superficie. */
+export function describeSurface(source, mesh) {
+  const format = value => value.toLocaleString('es-ES', { maximumFractionDigits: 6 });
+  const [xMin, xMax, yMin, yMax] = mesh.bounds.map(format);
+  let lo = Infinity, hi = -Infinity;
+  for (const triangle of mesh.triangles) for (const [, , z] of triangle.vertices) {
+    lo = Math.min(lo, z);
+    hi = Math.max(hi, z);
+  }
+  const range = mesh.triangles.length ? `Valores de z muestreados entre ${format(lo)} y ${format(hi)}.`
+    : 'No hay superficie representable en ese dominio.';
+  const tangent = mesh.tangent ? ` Plano tangente en (${mesh.tangent.point.map(format).join('; ')}). Pendientes aproximadas: ${format(mesh.tangent.dx)} en x y ${format(mesh.tangent.dy)} en y.` : '';
+  return `z = f(x,y) = ${source}. Dominio de ${xMin} a ${xMax} en x y de ${yMin} a ${yMax} en y. ${range}${tangent}`;
+}
+
+/** @brief Conecta el formulario de superficies y ofrece una descripción independiente de WebGL. */
 export function mountSurfaceControls(document, viewer) {
   const one = id => document.querySelector('#' + id);
   const form = one('surface-form');
   const tangentX = one('surface-tangent-x'), tangentY = one('surface-tangent-y');
   for (const field of [tangentX, tangentY]) {
     if (!field) continue;
-    field.disabled = !viewer;
     field.addEventListener('change', () => form.requestSubmit());
   }
-  one('surface-draw').disabled = !viewer;
   form.addEventListener('submit', event => {
     event.preventDefault();
     try {
       const point = tangentX?.value || tangentY?.value
         ? [tangentX.valueAsNumber, tangentY.valueAsNumber] : undefined;
-      const mesh = surface(one('surface-function').value, Number(one('surface-x-min').value),
+      const source = one('surface-function').value;
+      const mesh = surface(source, Number(one('surface-x-min').value),
         Number(one('surface-x-max').value), Number(one('surface-y-min').value),
         Number(one('surface-y-max').value), Number(one('surface-resolution').value), point);
-      viewer.setSurface(mesh);
-      const tangent = mesh.tangent ? ` Plano tangente rosa en (${point.join(', ')}). Pendientes aproximadas: ${mesh.tangent.dx.toLocaleString('es-ES')} en x y ${mesh.tangent.dy.toLocaleString('es-ES')} en y.` : '';
-      one('surface-result').textContent = `Superficie dibujada con ${mesh.triangles.length} triángulos y normales unitarias.${tangent}`;
+      viewer?.setSurface(mesh);
+      one('surface-result').textContent = describeSurface(source, mesh);
     } catch (error) { one('surface-result').textContent = error.message; }
   });
 }

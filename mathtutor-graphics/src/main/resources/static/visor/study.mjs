@@ -11,7 +11,7 @@ export function mountStudy(document,client,viewer) {
   let session, generation=0, controller, busy=false, chatBusy=false, bank=[], ownsGraph=false;
   const active=()=>Boolean(client.token) && ['ALUMNO','PROFESOR'].includes(client.profile?.role) && session?.status!=='CERRADA';
   function controls() {
-    one('graphic-fields').disabled=!session || !active() || busy || chatBusy || !viewer;
+    one('graphic-fields').disabled=!session || !active() || busy || chatBusy;
   }
   async function perform(action,readOnly=false,errorTarget=one('graphic-result')) {
     if (!session || busy || (chatBusy && !readOnly)) return;
@@ -26,7 +26,7 @@ export function mountStudy(document,client,viewer) {
     for (const field of [tangentX, tangentY]) {
       if (field) field.value = '0';
     }
-    one('graphic-result').textContent=viewer ? 'Solicita una gráfica para explorarla en el visor.' : 'WebGL 2 no está disponible. Puedes continuar con el tutor.';
+    one('graphic-result').textContent='Solicita una gráfica para consultar su descripción y explorarla en el visor.';
     if (ownsGraph) { viewer.clear(); ownsGraph=false; }
     controls();
     if (!session) return;
@@ -51,7 +51,7 @@ export function mountStudy(document,client,viewer) {
         spec=event.spec;
       });
       if (current!==generation) return;
-      one('graphic-result').textContent=drawSpecification(viewer,spec); ownsGraph=true;
+      one('graphic-result').textContent=drawSpecification(viewer,spec); ownsGraph=Boolean(viewer);
 
     },false,one('graphic-result'));
   });

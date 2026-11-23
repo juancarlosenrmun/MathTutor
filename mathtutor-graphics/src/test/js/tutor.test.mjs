@@ -23,8 +23,9 @@ test('SSE incompleto, error de servidor y desbordamiento se anuncian como errore
 });
 function fixture(moduleCode = 'funciones') {
   const nodes = Object.fromEntries(['tutor-form','tutor-select-form','tutor-block','tutor-message',
-    'tutor-send','tutor-start','tutor-cancel','tutor-status','tutor-history','tutor-composer',
+    'tutor-send','tutor-start','tutor-cancel','tutor-status','tutor-announcement','tutor-history','tutor-composer',
     'tutor-new','tutor-sessions','tutor-topics','tutor-topic-picker','tutor-chat-title','tutor-viewer-slot','tutor-viewer-toggle'].map(k => [k, element()]));
+  nodes['tutor-announcement'].querySelectorAll = () => [];
   const starters = ['notes', 'x^2+2*x=0'].map(prompt =>
     element({dataset:{prompt}}));
   nodes['tutor-block'].value = moduleCode; nodes['tutor-message'].value = '¿Qué es una función?';
@@ -87,11 +88,13 @@ test('selección previa, POST protegido, respuesta progresiva y sesión nueva', 
   const answer = f.nodes['tutor-history'].children[1];
   assert.equal(answer.children[0].textContent, 'Tutor:');
   assert.equal(answer.children[1].children[0].children[0].textContent, 'Función ñ');
+  assert.equal(f.nodes['tutor-announcement'].children[0].children[0].textContent, 'Función ñ');
   const [, options] = f.client.calls.find(([p]) => p.endsWith('/messages'));
   assert.equal(options.headers.Authorization,'Bearer jwt');
   assert.equal(options.headers['X-XSRF-TOKEN'],'csrf');
   await f.submit('tutor-select-form');
   assert.equal(f.nodes['tutor-history'].children.length,0);
+  assert.equal(f.nodes['tutor-announcement'].children.length,0);
 });
 test('la pestaña del tutor deja el cambio de módulo en Nueva conversación', async () => {
   const html = readFileSync(new URL('../../main/resources/static/visor/index.html', import.meta.url), 'utf8');

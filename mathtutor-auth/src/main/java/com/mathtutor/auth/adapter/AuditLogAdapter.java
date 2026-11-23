@@ -10,10 +10,9 @@ import com.mathtutor.common.auth.port.AuditLogPort;
 import com.mathtutor.persistence.entity.AuditLog;
 import com.mathtutor.persistence.entity.User;
 import com.mathtutor.persistence.repository.AuditLogRepository;
+import com.mathtutor.persistence.repository.UserRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 
 /**
  * Adaptador que implementa AuditLogPort usando Spring Data JPA.
@@ -23,9 +22,11 @@ import java.time.Instant;
 public class AuditLogAdapter implements AuditLogPort {
 
     private final AuditLogRepository auditLogRepository;
+    private final UserRepository users;
 
-    public AuditLogAdapter(AuditLogRepository auditLogRepository) {
+    public AuditLogAdapter(AuditLogRepository auditLogRepository, UserRepository users) {
         this.auditLogRepository = auditLogRepository;
+        this.users = users;
     }
 
     @Override
@@ -36,23 +37,26 @@ public class AuditLogAdapter implements AuditLogPort {
         auditLog.setCreatedAt(event.occurredAt());
 
         if (event instanceof UserRegisteredEvent registeredEvent) {
-            auditLog.setTargetType("User");
-            auditLog.setTargetId(registeredEvent.userId());
-            // actor se establecerá si hay usuario autenticado en el contexto
+            setUserTarget(auditLog, registeredEvent.userId());
         } else if (event instanceof UserRegistrationFailedEvent failedEvent) {
             auditLog.setTargetType("UserRegistration");
             auditLog.setTargetId(null);
         } else if (event instanceof UserLoggedInEvent loggedInEvent) {
-            auditLog.setTargetType("User");
-            auditLog.setTargetId(loggedInEvent.userId());
+            setUserTarget(auditLog, loggedInEvent.userId());
         } else if (event instanceof UserLoggedOutEvent loggedOutEvent) {
-            auditLog.setTargetType("User");
-            auditLog.setTargetId(loggedOutEvent.userId());
+            setUserTarget(auditLog, loggedOutEvent.userId());
         } else if (event instanceof UserLoginFailedEvent loginFailedEvent) {
             auditLog.setTargetType("UserLogin");
             auditLog.setTargetId(null);
         }
 
         auditLogRepository.save(auditLog);
+    }
+
+    /** @brief Conserva el evento, incluso si la cuenta se suprimió antes de registrarlo. */
+    private void setUserTarget(AuditLog entry, Long id) {
+        entry.setTargetType("User");
+        users.findByIdForUpdate(id).filter(user -> user.getAnonymizedAt() == null)
+                .map(User::getId).ifPresent(entry::setTargetId);
     }
 }

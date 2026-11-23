@@ -11,6 +11,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
+import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -41,24 +43,33 @@ public class PasswordResetMail {
      * @return Si la solicitud se encoló, con independencia de la existencia de la cuenta.
      */
     public boolean enqueue(String email) {
+        return enqueue(() -> resets.issue(email).map(token -> new PasswordResetService.Delivery(email, token)));
+    }
+
+    /** @brief Encola la recuperación asistida utilizando el identificador de la cuenta. */
+    public boolean enqueue(long userId) {
+        return enqueue(() -> resets.issue(userId));
+    }
+
+    private boolean enqueue(Supplier<Optional<PasswordResetService.Delivery>> issuance) {
         if (sender == null || from.isBlank() || page == null) return false;
         try {
-            queue.execute(() -> deliver(email));
+            queue.execute(() -> deliver(issuance));
             return true;
         } catch (RejectedExecutionException e) {
             return false;
         }
     }
 
-    private void deliver(String email) {
+    private void deliver(Supplier<Optional<PasswordResetService.Delivery>> issuance) {
         try {
-            resets.issue(email).ifPresent(token -> {
+            issuance.get().ifPresent(delivery -> {
                 var message = new SimpleMailMessage();
                 message.setFrom(from);
-                message.setTo(email);
+                message.setTo(delivery.email());
                 message.setSubject("Restablece tu contraseña de MathTutor");
                 message.setText("Abre este enlace en los próximos 30 minutos:\n"
-                        + page.toASCIIString() + "#/restablecer/" + token
+                        + page.toASCIIString() + "#/restablecer/" + delivery.token()
                         + "\n\nSi no solicitaste el cambio, ignora este correo.");
                 sender.send(message);
             });

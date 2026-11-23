@@ -51,6 +51,10 @@ public class ExerciseRun {
     @Column(name = "started_at", nullable = false, updatable = false)
     private Instant startedAt;
 
+    @CreationTimestamp
+    @Column(name = "last_activity_at", nullable = false)
+    private Instant lastActivityAt;
+
     @Column(name = "ended_at")
     private Instant endedAt;
 

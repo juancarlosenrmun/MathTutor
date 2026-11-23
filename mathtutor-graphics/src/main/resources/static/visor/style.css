@@ -16,6 +16,15 @@
 * {
   box-sizing: border-box;
 }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 body {
   margin: 0;
 }
@@ -54,7 +63,7 @@ button {
 a:hover {
   color: var(--green);
 }
-:is(a, button, input, summary, canvas):focus-visible {
+:is(a, button, input, select, textarea, summary, [tabindex="0"]):focus-visible {
   outline: 3px solid #618549;
   outline-offset: 5px;
 }
@@ -383,7 +392,7 @@ input {
   min-width: 0;
 }
 input::placeholder {
-  color: #788176;
+  color: #646e64;
 }
 input[aria-invalid="true"] {
   border-color: var(--error);
@@ -1135,6 +1144,13 @@ canvas:focus-visible {
 .tutor-guide .text-link { margin-top: 0; color: #f0f7ed; font-size: .85rem; text-align: left; }
 .tutor-guide :is(button,a):focus-visible, .viewer-toggle:focus-visible { outline: 3px solid #d4e9ac; outline-offset: 3px; }
 .tutor-guide #sessions-more { border-color: #60816d; color: #f3f8f4; background: #29533f; }
+
+.statistics-scroll { max-width: 100%; overflow-x: auto; }
+.statistics-scroll table { width: 100%; border-collapse: collapse; }
+.statistics-scroll caption { text-align: left; padding-block: .5rem; font-weight: 600; }
+.statistics-scroll :is(td, th) { padding: .6rem; border-bottom: 1px solid var(--line); text-align: left; }
+#admin-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; min-width: 0; }
+#admin-actions select { max-width: 100%; font: inherit; padding: .45rem; }
 @media (min-width: 901px) {
   .tutor-layout { align-items: stretch; }
   .tutor-viewer-slot { align-self: stretch; max-height: none; }

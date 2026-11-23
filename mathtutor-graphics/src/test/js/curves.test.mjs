@@ -62,5 +62,9 @@ test('controles conectados al visor y alternativa textual muestran área y error
   assert.match(nodes['curve-result'].textContent,/discontinuidades/);
   nodes['curve-function'].value = 'alert(1)'; nodes['curve-form'].listeners.submit({preventDefault(){}});
   assert.match(nodes['curve-result'].textContent,/inválida/);
-  mountCurveControls(document,null); assert.equal(nodes['curve-draw'].disabled,true);
+  mountCurveControls(document,null);
+  nodes['curve-function'].value = 'x^2';
+  nodes['curve-form'].listeners.submit({preventDefault(){}});
+  assert.equal(nodes['curve-draw'].disabled,false);
+  assert.match(nodes['curve-result'].textContent,/Valores de f\(x\) muestreados entre 0 y 1/);
 });

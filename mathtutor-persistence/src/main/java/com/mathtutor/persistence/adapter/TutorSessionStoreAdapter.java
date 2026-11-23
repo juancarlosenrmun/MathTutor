@@ -4,6 +4,7 @@ import com.mathtutor.common.dto.TutorModule;
 import com.mathtutor.common.dto.TutorSessionInfo;
 import com.mathtutor.common.port.TutorSessionStore;
 import com.mathtutor.persistence.entity.TutorSession;
+import com.mathtutor.persistence.entity.User;
 import com.mathtutor.persistence.repository.ModuleRepository;
 import com.mathtutor.persistence.repository.TutorSessionRepository;
 import com.mathtutor.persistence.repository.UserRepository;
@@ -33,7 +34,9 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
     public TutorSessionInfo create(Long userId, String moduleCode) {
         var module = modules.findByCode(moduleCode)
                 .orElseThrow(() -> new IllegalArgumentException("Módulo no disponible"));
-        var session = TutorSession.builder().user(users.getReferenceById(userId)).module(module)
+        var user = users.findByIdForUpdate(userId).filter(User::isActive)
+                .orElseThrow(() -> new IllegalArgumentException("Cuenta no disponible"));
+        var session = TutorSession.builder().user(user).module(module)
                 .status(TutorSession.SessionStatus.ACTIVA).build();
         return info(sessions.save(session));
     }

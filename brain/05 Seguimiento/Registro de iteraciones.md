@@ -1,3 +1,19 @@
+## 2026-11-23 21:43 · Sprint 08 · Lectura del chat y matriz nativa
+
+- **Petición**. Retomar EN-07 y contrastar la rama y la PR mediante `git log` y `git status`.
+- **Implementado**. NVDA leía la etiqueta y el estado del chat, pero omitía la respuesta. Ahora una región de estado anuncia el texto completo con semántica Markdown y MathML al terminar el streaming. El detector de tangentes reconoce el contraste magenta bajo antialiasing y conserva las comprobaciones de píxeles y geometría.
+- **Pruebas**. Se amplió un caso de caja blanca del cliente. En caja negra se verificaron ocho compilaciones nativas de escritorio y el anuncio real con NVDA. También pasaron los cuatro recorridos Playwright con axe. Gradle en verde con 1131 pruebas Java y 110 de cliente. Pasaron 20 pruebas de Python y se generó Doxygen.
+- **Cobertura**. JaCoCo en umbral en ocho módulos. Cliente V8 con 94,50 % de líneas y 89,53 % de ramas en Gradle.
+- **Pendiente**. Integración de la [PR #24](https://github.com/juancarlosenrmun/MathTutor/pull/24) en `DEV`. Checklist **24/30**, estado `en curso`. Versiones y plataformas en [[Sprint 08]].
+
+## 2026-11-23 17:48 · Sprint 08 · Privacidad, administración, estadísticas y accesibilidad
+
+- **Petición**. Crear `Sprint-8` desde `DEV`, instalar skills individualmente, implementar los seis elementos con comentarios Doxygen, probarlos y publicar una PR con commits pequeños sin cofirmas.
+- **Implementado**. Exportación y supresión propias, desactivación y anonimización, cambio de rol con la sesión vigente, restablecimiento asistido de contraseña, agregados docentes y alternativa textual de gráficas. Diagramas actualizados en `Sprint-8-docs`. Instaladas individualmente `gdpr-compliant` y `playwright-best-practices`.
+- **Pruebas**. 19 casos nuevos de caja blanca y cinco de contrato HTTP sobre PostgreSQL/pgvector. Playwright ejecutó dos recorridos de caja negra en cada una de cinco configuraciones de navegador. Pasaron 1131 pruebas Java, 110 Node y 20 Python, sin fallos ni omisiones. Doxygen generado. Verificadas cabeceras, cookies y TLS con el artefacto de producción. ZAP pasivo sin alertas altas o críticas.
+- **Cobertura**. JaCoCo superó los umbrales en ocho módulos. Aplicación 94,89 % de líneas y 78,21 % de ramas, autenticación 96,99/87,93 %, persistencia 92,24/82,10 % y política pedagógica 100/100 %. Cliente V8 94,54 % de líneas y 89,77 % de ramas.
+- **Pendiente**. CI remota e integración en `DEV`. EN-07 requiere comprobar lectores de pantalla y las dos últimas versiones nativas de Chrome, Firefox, Edge y Safari según RNF-12. Checklist **23/30**, estado `en curso`.
+
 ## 2026-11-23 17:06 · Sprint 07 · Cierre de RNF-08
 
 - **Petición**. Reducir las fugas de la categoría D y documentar el resultado.
