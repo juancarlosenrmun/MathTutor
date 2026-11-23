@@ -39,7 +39,7 @@ Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlos
 | [[Sprint 02\|S2]] | Chat con LLM, apuntes indexados y gráficas 2D | 32 | 4/4 base (32/32 pts); corrección Markdown 4/5; fórmulas 4/5 | en curso (corrección pendiente de CI e integración; checklist 40/44) |
 | [[Sprint 03\|S3]] | RAG, interpretación de expresiones y superficies | 34 | 5/5 base (34/34 pts); frontend 5/5; corrección 4/5; checklist 39/40 | en curso (corrección pendiente de CI e integración) |
 | [[Sprint 04\|S4]] | Verificación con CAS, contexto, registro y especificación gráfica | 33 | 5/5 UC y 33/33 puntos integrados; base 30/30; frontend 4/5; corrección de visor y chat (altura alineada) 4/5; total 38/40 | en curso ([PR #17](https://github.com/juancarlosenrmun/MathTutor/pull/17) frontend con CI verde, pendiente de integración; base PR #16 integrada) |
-| [[Sprint 05\|S5]] | Hito: tutor socrático completo con tangentes y RGPD | 34 | 0/4 integrados, 3/4 verificados localmente, 12/20 casillas | en curso (pendientes CI e integración en DEV, y cierre institucional de EN-09) |
+| [[Sprint 05\|S5]] | Hito: tutor socrático completo con tangentes | 29 | 0/3 integrados, 3/3 verificados, 12/15 casillas | en curso (integración en DEV pendiente) |
 | [[Sprint 06\|S6]] | Seguridad transversal, filtrado, banco de ejercicios y superficies iluminadas | 32 | 0/4 | pendiente |
 | [[Sprint 07\|S7]] | Hito: todos los Must completados; evaluación y selección por intersección | 31 | 0/3 | pendiente |
 | [[Sprint 08\|S8]] | Should restantes y administración | 32 | 0/6 | pendiente |

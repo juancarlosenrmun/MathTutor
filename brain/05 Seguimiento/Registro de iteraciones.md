@@ -1,3 +1,10 @@
+## 2026-11-23 12:28 · Sprint 05 · Retirada de EN-09
+
+- **Petición**. Retirar EN-09 del sprint porque el prototipo usa Gemini en modalidad gratuita y el proyecto carece de un acuerdo específico con Google.
+- **Cambio**. Se retiran el elemento y su expediente. El sprint queda en 29 puntos con UC-18, UC-19 y UC-31. El catálogo, planificación y trazabilidad se ajustan en la rama documental. Se mantiene RNF-06 asociado a UC-04.
+- **Verificación**. Cambio documental. 0 pruebas nuevas de caja blanca y 0 de caja negra. Se conserva la evidencia de la PR #21 en verde para el mismo código y la cobertura registrada en la iteración anterior.
+- **Pendiente**. Integración en DEV. Checklist **12/15**, estado `en curso`.
+
 ## 2026-11-23 11:56 · Sprint 05 · Tutor socrático y tangentes
 
 - **Petición**. Completar Sprint 5 en una rama desde DEV, buscar e instalar las skills necesarias, probar en caja blanca y negra, comentar con Doxygen y abrir la PR sin cofirmas.
