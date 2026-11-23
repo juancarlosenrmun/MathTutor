@@ -1,6 +1,7 @@
 import importlib.util
 import unittest
 from pathlib import Path
+from unittest.mock import Mock
 
 
 spec = importlib.util.spec_from_file_location("pedagogy", Path(__file__).with_name("evaluate-pedagogy.py"))
@@ -45,3 +46,15 @@ class PedagogyEvaluationTest(unittest.TestCase):
         for events in (token, token + error, done, ""):
             with self.subTest(events=events), self.assertRaises(ValueError):
                 pedagogy.parse_answer(events)
+
+    def test_local_http_renews_with_login_because_refresh_cookie_is_secure(self):
+        client = object.__new__(pedagogy.TutorClient)
+        client.credentials = {"email": "eval@example.invalid", "password": "Eval1!SoloPruebas"}
+        client.post = Mock(return_value={"data": {"accessToken": "nuevo"}})
+        client.base = "http://localhost:8080"
+        client.renew()
+        self.assertEqual(client.token, "nuevo")
+        client.post.assert_called_once_with("/api/auth/login", client.credentials)
+        client.base = "https://tutor.example.invalid"
+        client.renew()
+        client.post.assert_called_with("/api/auth/refresh", {})

@@ -8,6 +8,7 @@ import secrets
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -38,9 +39,8 @@ class TutorClient:
         self.http = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
         self.token = None
         suffix = secrets.token_hex(12)
-        registration = self.post("/api/auth/register", {
-            "email": f"evaluacion-{suffix}@example.invalid", "password": "Eval1!" + suffix, "role": "ALUMNO",
-        })
+        self.credentials = {"email": f"evaluacion-{suffix}@example.invalid", "password": "Eval1!" + suffix}
+        registration = self.post("/api/auth/register", {**self.credentials, "role": "ALUMNO"})
         self.update_token(registration)
 
     def update_token(self, response):
@@ -66,12 +66,19 @@ class TutorClient:
 
     def turn(self, item):
         if time.monotonic() - self.signed_in_at >= 300:
-            self.update_token(self.post("/api/auth/refresh", {}))
+            self.renew()
         session = self.post("/api/tutor/sessions", {"moduleCode": item["module"]})
         path = f"/api/tutor/sessions/{session['id']}"
         if item["operation"]:
             self.post(path + "/exercises", {"operation": item["operation"], "expression": item["expression"]})
         return self.post(path + "/messages", {"message": item["prompt"]}, events=True)
+
+    def renew(self):
+        if urllib.parse.urlsplit(self.base).scheme == "https":
+            self.update_token(self.post("/api/auth/refresh", {}))
+        else:
+            # La cookie de renovación es Secure también en desarrollo.
+            self.update_token(self.post("/api/auth/login", self.credentials))
 
 
 def parse_answer(events):
