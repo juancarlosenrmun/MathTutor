@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** @brief Convierte un turno al contrato com?n ChatModel y conserva deltas y uso declarado. */
+/** @brief Convierte un turno al contrato de ChatModel y conserva los deltas y el uso declarado. */
 class SpringAiLlmGateway implements LlmGateway {
     private final ChatModel chatModel;
     private final String modelName;
