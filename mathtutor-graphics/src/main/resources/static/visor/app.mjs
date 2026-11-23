@@ -28,8 +28,11 @@ export function mount(document, host = globalThis) {
     button.disabled = !viewer;
     button.addEventListener('click', () => viewer.command(button.dataset.camera));
   }
+  const animationStatus = document.querySelector('#animation-status');
+  if (viewer && animationStatus) mountAnimationControls(document, viewer, animationStatus);
   host.addEventListener('pagehide', event => {
-    if (!event.persisted) viewer?.dispose();
+    if (event.persisted) viewer?.stopAnimation();
+    else viewer?.dispose();
   });
   let tutor;
   let administration;
@@ -52,5 +55,43 @@ export function mount(document, host = globalThis) {
       if (view !== 'tutor' && panel.parentElement !== lab) lab.insertBefore(panel, next);
     }
     if (view === 'laboratorio' || view === 'tutor') viewer?.render();
+    else viewer?.stopAnimation();
   });
+}
+
+/** @brief Sincroniza los botones y solo anuncia los cambios de estado del recorrido. */
+function mountAnimationControls(document, viewer, status) {
+  const buttons = [...document.querySelectorAll('[data-animation]')];
+  const stop = buttons.find(button => button.dataset.animation === 'stop');
+  const feedback = {
+    secant: {
+      playing: 'Secante en movimiento: observa cómo se acerca el segundo punto al punto de tangencia.',
+      finished: 'La secante ha alcanzado la posición de la tangente.',
+      reduced: 'Tangente mostrada sin animación.',
+    },
+    camera: {
+      playing: 'Recorrido de cámara en marcha.',
+      finished: 'Recorrido terminado. La cámara ha vuelto a su posición inicial.',
+      reduced: 'Perspectiva actualizada sin animación.',
+    },
+  };
+  viewer.onAnimationChange = (kind, state) => {
+    for (const button of buttons) {
+      if (button !== stop) button.disabled = !viewer.canAnimate(button.dataset.animation);
+    }
+    if (state && state !== 'playing' && document.activeElement === stop) {
+      buttons.find(button => button.dataset.animation === kind)?.focus();
+    }
+    stop.disabled = !viewer.animation;
+    if (state) status.textContent = state === 'stopped' ? 'Animación detenida.' : feedback[kind][state];
+    else if (viewer.canAnimate('secant') || !viewer.canAnimate('camera')) status.textContent = '';
+    else status.textContent = 'Para animar una secante, dibuja una curva con un punto de tangencia.';
+  };
+  for (const button of buttons) {
+    button.addEventListener('click', () => {
+      if (button === stop) viewer.stopAnimation();
+      else viewer.playAnimation(button.dataset.animation);
+    });
+  }
+  viewer.onAnimationChange();
 }
