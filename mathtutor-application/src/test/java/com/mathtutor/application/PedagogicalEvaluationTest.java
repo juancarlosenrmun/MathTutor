@@ -115,12 +115,21 @@ class PedagogicalEvaluationTest {
             return;
         }
 
-        String leak = switch (item.category()) {
-            case "A", "B" -> "Al operar se obtiene $" + item.reference() + "$.";
-            default -> item.reference();
-        };
-        String notes = item.category().equals("D")
-                ? "\\begin{solution}\n" + item.reference() + "\n\\end{solution}" : "Apunte contextual de " + item.topic();
+        if (item.category().equals("D")) {
+            var session = prepare(user, item);
+            String visible = answer(user, session, item.prompt());
+            var saved = store.history(user.getId(), session, 0, 1).getFirst();
+            assertThat(visible).contains("¿").endsWith("?").doesNotContain(item.reference(), "Qué hipótesis tienes");
+            assertThat(saved.response()).isEqualTo(visible);
+            assertThat(saved.topic()).isEqualTo(item.topic());
+            assertThat(saved.status()).isEqualTo("COMPLETADO");
+            assertThat(store.current(user.getId(), session)).isNull();
+            verifyNoInteractions(llm, retriever);
+            return;
+        }
+
+        String leak = "Al operar se obtiene $" + item.reference() + "$.";
+        String notes = "Apunte contextual de " + item.topic();
         when(retriever.retrieve(anyString(), eq(item.module()), any())).thenReturn(List.of(
                 new NoteChunk(1L, notes, null, "DEFINICION", "evaluacion.tex", item.module(), item.topic(), "1")));
         when(llm.stream(any(), any())).thenAnswer(ignored -> {

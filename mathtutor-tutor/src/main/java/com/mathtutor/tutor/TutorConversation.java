@@ -102,6 +102,14 @@ public class TutorConversation {
         if (TutorInputGuard.rejected(message)) {
             return new Prepared(Flux.just(TutorInputGuard.REPLY), null, true);
         }
+        String normalized = TheoreticalHints.normalize(message);
+        boolean theoretical = action == null && exercise.isBlank() && TheoreticalHints.requestsReasoning(normalized);
+        if (theoretical) {
+            var hint = TheoreticalHints.find(normalized, session.moduleCode());
+            if (hint.isPresent()) {
+                return new Prepared(Flux.just(hint.get().question()), hint.get().topic(), false);
+            }
+        }
         String studentPrompt = message;
         if (cas != null && looksLikeExpression(message)) {
             var parsed = cas.parse(message);
@@ -125,6 +133,10 @@ public class TutorConversation {
             String reply = retriever == null ? "Los apuntes del módulo no están disponibles."
                     : "No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.";
             return new Prepared(Flux.just(reply), null, true);
+        }
+        if (theoretical) {
+            return new Prepared(Flux.just("¿Qué hipótesis tienes y qué definición de los apuntes podrías aplicar primero?"),
+                    chunks.getFirst().topicCode(), false);
         }
         var notes = chunks.stream().map(NoteChunk::content).toList();
         var context = new java.util.ArrayList<>(notes);
