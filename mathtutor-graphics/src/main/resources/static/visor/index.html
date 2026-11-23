@@ -479,6 +479,21 @@
           <button type="button" id="admin-previous" class="button secondary" disabled>Anterior</button>
           <button type="button" id="admin-next" class="button secondary" disabled>Siguiente</button>
         </section>
+        <section id="teacher-panel" data-permission="PROFESOR ADMIN" hidden class="account-details" aria-labelledby="teacher-title">
+          <h2 id="teacher-title">Estadísticas de ejercicios</h2>
+          <button type="button" id="teacher-load" class="button secondary">Consultar estadísticas</button>
+          <p id="teacher-status" role="status"></p>
+          <div class="statistics-scroll" tabindex="0" role="region" aria-label="Tabla de estadísticas" hidden>
+            <table>
+              <caption>Ejercicios por módulo y tema</caption>
+              <thead><tr><th scope="col">Módulo</th><th scope="col">Tema</th>
+                <th scope="col">Comenzados</th><th scope="col">En curso</th><th scope="col">Completados</th>
+                <th scope="col">Abandonados</th><th scope="col">Al inicio</th><th scope="col">Cerca de la solución</th>
+              </tr></thead>
+              <tbody id="teacher-results"></tbody>
+            </table>
+          </div>
+        </section>
         <p class="workspace-note">Cada idea necesita su tiempo. Empieza explorando y encuentra tu forma de entender.</p>
       </section>
       <section data-view="cuenta" class="account" hidden>
