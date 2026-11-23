@@ -103,8 +103,28 @@ public class ConversationStoreAdapter implements ConversationStore {
     @Override public List<BankExercise> bank(Long user,Long session,int page,int size) {
         var s=owned(user,session);
         return exercises.findByModule(s.getModule(),page(page,size,"id")).stream()
-                .map(e -> new BankExercise(e.getId(),e.getStatementLatex(),e.getTopic()==null ? null : e.getTopic().getCode(),
-                        e.getType().name(),e.getDifficulty(),e.getExternalId())).toList();
+                .map(this::bankExercise).toList();
+    }
+
+    /** @brief Mantiene el bloqueo sobre la sesión hasta que el servicio elige o recupera la práctica. */
+    @Override
+    @Transactional
+    public Progression progression(Long user, Long session) {
+        var module = locked(user, session).getModule();
+        var candidates = Arrays.stream(Exercise.ExerciseType.values())
+                .flatMap(type -> exercises.findFirstByModuleAndTypeOrderByDifficultyAscExternalIdAsc(module, type).stream())
+                .map(this::bankExercise)
+                .toList();
+        var practiced = runs.findPracticedTypes(user, module.getId(), Exercise.ExerciseType.PROCEDIMENTAL,
+                        ExerciseRun.RunState.COMPLETADO).stream()
+                .map(Enum::name).collect(java.util.stream.Collectors.toUnmodifiableSet());
+        return new Progression(current(user, session), candidates, practiced);
+    }
+
+    private BankExercise bankExercise(Exercise exercise) {
+        var topic = exercise.getTopic();
+        return new BankExercise(exercise.getId(), exercise.getStatementLatex(), topic == null ? null : topic.getCode(),
+                exercise.getType().name(), exercise.getDifficulty(), exercise.getExternalId());
     }
     @Override @Transactional public Run select(Long user,Long session,Long exerciseId,String statement,String reference) {
         var s=locked(user,session); available(session);

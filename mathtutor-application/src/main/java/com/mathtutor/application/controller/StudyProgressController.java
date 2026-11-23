@@ -5,10 +5,13 @@ import com.mathtutor.common.port.ConversationStore;
 import com.mathtutor.common.port.GraphicSpecService;
 import com.mathtutor.common.dto.*;
 import com.mathtutor.tutor.StudyExercises;
+import com.mathtutor.tutor.StudyProgression;
 import com.mathtutor.tutor.TutorSessions;
 import com.mathtutor.tutor.SessionUnavailableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +25,11 @@ public class StudyProgressController {
     private final StudyExercises exercises;
     private final TutorSessions sessions;
     private final GraphicSpecService graphics;
-    public StudyProgressController(ConversationStore store,StudyExercises exercises,TutorSessions sessions,GraphicSpecService graphics) {
+    private final StudyProgression progression;
+    public StudyProgressController(ConversationStore store,StudyExercises exercises,TutorSessions sessions,
+                                   GraphicSpecService graphics, StudyProgression progression) {
         this.store=store; this.exercises=exercises; this.sessions=sessions; this.graphics=graphics;
+        this.progression = progression;
     }
     @GetMapping("/progress") public List<ConversationStore.Session> progress(@AuthenticationPrincipal AuthenticatedUser user,
             @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) { return store.sessions(user.id(),page,size); }
@@ -40,6 +46,14 @@ public class StudyProgressController {
     @PostMapping("/sessions/{id}/exercises") @ResponseStatus(HttpStatus.CREATED)
     public RunView select(@AuthenticationPrincipal AuthenticatedUser user,@PathVariable Long id,@RequestBody Selection selection) {
         return RunView.from(exercises.select(user.id(),id,selection.exerciseId(),selection.operation(),selection.expression()));
+    }
+    /** @brief UC-24. Activa la práctica recomendada o indica que el itinerario se ha completado. */
+    @PostMapping("/sessions/{id}/progression")
+    public ResponseEntity<StudyProgression.Practice> advance(@AuthenticationPrincipal AuthenticatedUser user,
+                                                            @PathVariable Long id) {
+        return progression.advance(user.id(), id)
+                .map(practice -> ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(practice))
+                .orElseGet(() -> ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build());
     }
     @PostMapping(value="/sessions/{id}/graphics",produces=MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<GraphicEvent> graphics(@AuthenticationPrincipal AuthenticatedUser user,@PathVariable Long id,@RequestBody GraphicSpec spec) {
