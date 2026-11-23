@@ -21,6 +21,11 @@ public class TeacherStatsController {
         this.statistics = statistics;
     }
 
+    /**
+     * @brief Consulta los conteos sin identificadores ni contenido del alumnado.
+     * @param module Código opcional del módulo.
+     * @return Una fila por módulo y tema con ejercicios registrados.
+     */
     @GetMapping
     public List<ExerciseStatistics.Summary> statistics(@RequestParam(required = false) String module) {
         return statistics.summarize(module, Instant.now());

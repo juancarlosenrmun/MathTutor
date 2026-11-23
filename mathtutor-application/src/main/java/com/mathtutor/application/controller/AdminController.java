@@ -29,24 +29,28 @@ public class AdminController {
         this.mail = mail;
     }
 
+    /** @brief Lista perfiles gestionables sin permitir guardar los datos en caché. */
     @GetMapping
     public ResponseEntity<List<UserAdministration.Profile>> profiles(@RequestParam(defaultValue = "0") int page,
                                                                    @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(admin.profiles(page, size));
     }
 
+    /** @brief Desactiva el acceso del perfil e invalida sus credenciales de renovación. */
     @PutMapping("/{id}/deactivate")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deactivate(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable long id) {
         admin.deactivate(actor.id(), id);
     }
 
+    /** @brief Desvincula la identidad del perfil y suprime sus registros personales. */
     @PutMapping("/{id}/anonymize")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void anonymize(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable long id) {
         admin.anonymize(actor.id(), id);
     }
 
+    /** @brief Actualiza el permiso del perfil. Se aplica en la siguiente petición autenticada. */
     @PutMapping("/{id}/role")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changeRole(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable long id,
@@ -54,6 +58,7 @@ public class AdminController {
         admin.changeRole(actor.id(), id, change.role());
     }
 
+    /** @brief Solicita el envío SMTP para una cuenta activa y devuelve 202 si se encola. */
     @PostMapping("/{id}/password-reset")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void reset(@AuthenticationPrincipal AuthenticatedUser actor, @PathVariable long id) {
