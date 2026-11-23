@@ -20,9 +20,11 @@ public class ConversationStoreAdapter implements ConversationStore {
     private final ConversationTurnRepository turns;
     private final ExerciseRunRepository runs;
     private final ExerciseRepository exercises;
+    private final ExerciseStatistics statistics;
     public ConversationStoreAdapter(TutorSessionRepository sessions, ConversationTurnRepository turns,
-                                    ExerciseRunRepository runs, ExerciseRepository exercises) {
+                                    ExerciseRunRepository runs, ExerciseRepository exercises, ExerciseStatistics statistics) {
         this.sessions=sessions; this.turns=turns; this.runs=runs; this.exercises=exercises;
+        this.statistics = statistics;
     }
     private TutorSession owned(Long user, Long session) {
         return sessions.findByIdAndUserId(session,user).orElseThrow(ConversationUnavailableException::new);
@@ -52,7 +54,9 @@ public class ConversationStoreAdapter implements ConversationStore {
         available(session);
         var t=new ConversationTurn(); t.setSession(s); t.setRequestId(request); t.setMessage(message);
         t.setStatus("EN_CURSO"); t.setCreatedAt(Instant.now()); t.setHelpLevel("CONCEPTUAL");
+        statistics.closeInactive(session, t.getCreatedAt());
         t.setExerciseRun(activeRun(session).orElse(null));
+        if (t.getExerciseRun() != null) t.getExerciseRun().setLastActivityAt(t.getCreatedAt());
         return entry(turns.saveAndFlush(t));
     }
     @Override @Transactional public void finish(Long user, Long session, UUID request, Result result) {
@@ -64,15 +68,17 @@ public class ConversationStoreAdapter implements ConversationStore {
         t.setHelpLevel(result.helpLevel().name());
         t.setStatus(result.status()); t.setLatencyMs(result.latencyMs());
         t.setTokensIn(result.tokensIn()); t.setTokensOut(result.tokensOut());
-        s.setLastActivityAt(Instant.now());
+        Instant now = Instant.now();
+        s.setLastActivityAt(now);
         var run=t.getExerciseRun();
+        if (run != null) run.setLastActivityAt(now);
         if (run!=null && result.status().equals("COMPLETADO")) {
             if (result.attempted()) run.setAttempts(run.getAttempts() + 1);
             run.setCurrentLevel(ExerciseRun.HelpLevel.valueOf(result.helpLevel().name()));
             run.setVerifiedSteps(Math.max(run.getVerifiedSteps(), result.verifiedSteps()));
-            int count=run.getExercise()==null ? 0 : run.getExercise().getCanonicalSteps().size();
+            int count=run.getExercise()==null ? 1 : run.getExercise().getCanonicalSteps().size();
             run.setProgress(result.completed() ? 1 : (count==0 ? 0 : (double)run.getVerifiedSteps()/count));
-            if (result.completed()) { run.setState(ExerciseRun.RunState.COMPLETADO); run.setEndedAt(Instant.now()); }
+            if (result.completed()) { run.setState(ExerciseRun.RunState.COMPLETADO); run.setEndedAt(now); }
         }
     }
     @Override public List<Entry> context(Long user, Long session) {
@@ -90,7 +96,9 @@ public class ConversationStoreAdapter implements ConversationStore {
         owned(user,session); return runs.findBySessionId(session,page(page,size,"startedAt")).stream().map(this::run).toList();
     }
     @Override public Run current(Long user,Long session) {
-        owned(user,session); return activeRun(session).map(this::run).orElse(null);
+        owned(user,session);
+        return activeRun(session).filter(run -> !statistics.expired(run.getLastActivityAt(), Instant.now()))
+                .map(this::run).orElse(null);
     }
     @Override public List<BankExercise> bank(Long user,Long session,int page,int size) {
         var s=owned(user,session);
@@ -102,7 +110,9 @@ public class ConversationStoreAdapter implements ConversationStore {
         var s=locked(user,session); available(session);
         var e=exerciseId==null ? null : exercises.findById(exerciseId).orElseThrow(() -> new IllegalArgumentException("Ejercicio no disponible"));
         if (e!=null && !Objects.equals(e.getModule().getId(),s.getModule().getId())) throw new IllegalArgumentException("Ejercicio de otro módulo");
-        activeRun(session).ifPresent(old -> { old.setState(ExerciseRun.RunState.ABANDONADO); old.setEndedAt(Instant.now()); });
+        Instant now = Instant.now();
+        statistics.closeInactive(session, now);
+        activeRun(session).ifPresent(old -> { old.setState(ExerciseRun.RunState.ABANDONADO); old.setEndedAt(now); });
         return run(createRun(s, e, statement, reference));
     }
 
@@ -145,7 +155,9 @@ public class ConversationStoreAdapter implements ConversationStore {
                 .sorted(Comparator.comparingInt(CanonicalStep::getPosition))
                 .flatMap(step -> step.getTypicalErrors().stream().sorted(Comparator.comparing(TypicalError::getCode)))
                 .map(TypicalError::getSeedHint).filter(Objects::nonNull).distinct().toList();
-        return new Run(r.getId(),e==null ? null : e.getId(),r.getStatementLatex(),r.getReferenceSolution(),r.getTopic()==null ? null : r.getTopic().getCode(),r.getState().name(),r.getProgress(),r.getVerifiedSteps(),steps,r.getAttempts(),
+        String state = r.getState() == ExerciseRun.RunState.COMENZADO
+                && statistics.expired(r.getLastActivityAt(), Instant.now()) ? "ABANDONADO" : r.getState().name();
+        return new Run(r.getId(),e==null ? null : e.getId(),r.getStatementLatex(),r.getReferenceSolution(),r.getTopic()==null ? null : r.getTopic().getCode(),state,r.getProgress(),r.getVerifiedSteps(),steps,r.getAttempts(),
                 e == null ? r.getReferenceSolution() : e.getReferenceSolutionLatex(), hints);
     }
 }
