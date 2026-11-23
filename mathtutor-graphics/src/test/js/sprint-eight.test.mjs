@@ -3,7 +3,8 @@ import { test } from 'node:test';
 import { SessionClient } from '../../main/resources/static/visor/session.mjs';
 import { mountAdministration } from '../../main/resources/static/visor/administration.mjs';
 import { mountTeacherStatistics } from '../../main/resources/static/visor/teacher-statistics.mjs';
-import { element } from './ui-fixture.mjs';
+import { mountInterface } from '../../main/resources/static/visor/interface.mjs';
+import { element, fixture } from './ui-fixture.mjs';
 
 test('la solicitud de supresión incluye CSRF y JWT, y la exportación es una lectura', async () => {
   const calls = [];
@@ -30,6 +31,25 @@ test('si falla CSRF o el servidor rechaza la acción, el cliente devuelve un men
     ? Response.json({ csrfToken: 'csrf' }) : new Response('detalle interno', { status: 409 }));
   await assert.rejects(conflict.request('/api/privacy/account', { method: 'DELETE' }),
     error => error.status === 409 && !error.message.includes('detalle interno'));
+});
+
+test('una descarga de datos pendiente se cancela si se cierra la sesión', async () => {
+  const f = fixture();
+  f.state.restore = true;
+  f.host.location.hash = '#/cuenta';
+  const button = f.nodes['#export-account'] = element();
+  const fetch = f.host.fetch.bind(f.host);
+  let finishExport, downloaded = false;
+  f.host.fetch = (path, options) => path === '/api/privacy/export'
+    ? new Promise(resolve => { finishExport = resolve; }) : fetch(path, options);
+  f.host.URL = { createObjectURL() { downloaded = true; } };
+  await mountInterface(f.doc, f.host, () => {}).ready;
+  const download = button.listeners.click({ currentTarget: button });
+  await f.nodes['#logout'].listeners.click();
+  finishExport(Response.json({ profile: { email: 'a@test.es' } }));
+  await download;
+  assert.equal(downloaded, false);
+  assert.equal(button.disabled, false);
 });
 
 function panel(ids, actions = []) {

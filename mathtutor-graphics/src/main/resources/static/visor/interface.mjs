@@ -206,18 +206,25 @@ export function mountInterface(document, host, onView) {
     finally { setBusy(false); host.location.hash = '#/acceso'; render(); }
   });
   one('#export-account')?.addEventListener('click', async event => {
+    if (busy) return;
     const button = event.currentTarget;
+    const generation = activity;
+    const owner = client.profile?.email;
+    const stillOwnAccount = () => !disposed && generation === activity && currentView === 'cuenta'
+      && Boolean(client.token) && owner === client.profile?.email;
     button.disabled = true;
     try {
       const response = await client.request('/api/privacy/export');
-      const url = host.URL.createObjectURL(await response.blob());
+      const snapshot = await response.blob();
+      if (!stillOwnAccount()) return;
+      const url = host.URL.createObjectURL(snapshot);
       const link = document.createElement('a');
       link.href = url;
       link.download = 'mathtutor-datos.json';
       link.click();
       host.setTimeout(() => host.URL.revokeObjectURL(url), 1000);
       announce('La descarga de tus datos está lista.');
-    } catch (error) { announce(error.message); }
+    } catch (error) { if (stillOwnAccount()) announce(error.message); }
     finally { button.disabled = false; }
   });
   one('#erase-account')?.addEventListener('click', async event => {
