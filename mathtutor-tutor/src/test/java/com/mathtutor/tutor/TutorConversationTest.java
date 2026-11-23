@@ -200,8 +200,53 @@ class TutorConversationTest {
     }
     @Test void errorsAreNotRetried() {
         active(); when(llm.stream(any(),any())).thenReturn(Flux.error(new IllegalStateException("proveedor")));
-        StepVerifier.create(conversation.reply(7L, 1L, "hola")).verifyError(IllegalStateException.class);
+        StepVerifier.create(conversation.reply(7L, 1L, "hola"))
+                .expectNextMatches(text -> text.contains("Modo solo apuntes") && text.contains("Definición de función"))
+                .verifyComplete();
         verify(llm).stream(any(),any());
+    }
+
+    @Test void repeatedFailuresOpenTheCircuitWithoutReservingAnotherQuota() {
+        active();
+        when(llm.stream(any(), any())).thenReturn(Flux.empty());
+        for (int turn = 0; turn < 4; turn++) {
+            StepVerifier.create(conversation.reply(7L, 1L, "hola"))
+                    .expectNextMatches(text -> text.contains("Modo solo apuntes")).verifyComplete();
+        }
+        verify(llm, times(3)).stream(any(), any());
+        verify(budget, times(3)).reserve(anyLong(), anyInt(), anyInt());
+    }
+
+    @Test void quotaRefusalRemainsAFailureInsteadOfEnteringNotesMode() {
+        active();
+        when(budget.reserve(anyLong(), anyInt(), anyInt())).thenReturn(java.util.Optional.empty());
+        StepVerifier.create(conversation.reply(7L, 1L, "hola"))
+                .verifyError(com.mathtutor.common.dto.TutorQuotaExceededException.class);
+        verifyNoInteractions(llm);
+    }
+
+    @Test void providerSilenceIsBoundedAndCancelsTheRequest() {
+        active();
+        var cancelled = new java.util.concurrent.atomic.AtomicBoolean();
+        when(llm.stream(any(), any())).thenReturn(Flux.<String>never().doOnCancel(() -> cancelled.set(true)));
+        StepVerifier.withVirtualTime(() -> conversation.reply(7L, 1L, "hola"))
+                .thenAwait(java.time.Duration.ofSeconds(8))
+                .expectNextMatches(text -> text.contains("Modo solo apuntes")).verifyComplete();
+        assertThat(cancelled).isTrue();
+        verify(llm).stream(any(), any());
+    }
+
+    @Test void notesOnlySkipsWorkedSolutionsAndUsesThePedagogicalQuestion() {
+        active();
+        when(retriever.retrieve("3", "funciones", "derivadas")).thenReturn(List.of(
+                new NoteChunk(1L, "Solución final: $2*x$", null, "DEFINICION", "a.tex", "funciones", "derivadas", "1"),
+                new NoteChunk(2L, "Una regla del módulo", null, "EJEMPLO", "a.tex", "funciones", "derivadas", "1")));
+        when(llm.stream(any(), any())).thenReturn(Flux.just(" "));
+        var action = PedagogicalAction.conceptual("¿Qué propiedad se aplica?");
+        StepVerifier.create(conversation.prepareExercise(7L, 1L, "3", List.of(), exercise(), incorrect(), action).response())
+                .expectNextMatches(text -> text.contains("Modo solo apuntes") && text.endsWith(action.hint())
+                        && !text.contains("2*x") && !text.contains("Una regla"))
+                .verifyComplete();
     }
 
     @Test void trustedReferenceAndVerifiedCorrectnessNeverGoToTheProvider() {
@@ -268,7 +313,8 @@ class TutorConversationTest {
         when(llm.stream(any(), any())).thenReturn(Flux.just("La posible solución empieza por...")
                 .concatWith(Flux.error(new IllegalStateException("proveedor desconectado"))));
         StepVerifier.create(conversation.reply(7L, 1L, "hola"))
-                .verifyErrorMessage("proveedor desconectado");
+                .expectNextMatches(text -> text.contains("Modo solo apuntes") && !text.contains("posible solución"))
+                .verifyComplete();
         verify(llm).stream(any(), any());
     }
 

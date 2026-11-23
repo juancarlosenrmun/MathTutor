@@ -115,6 +115,17 @@ class SprintFourIntegrationTest {
         var prompts=org.mockito.ArgumentCaptor.forClass(Prompt.class); verify(llm,times(2)).stream(prompts.capture(),any());
         assertThat(prompts.getAllValues().getLast().contextChunks()).anyMatch(s -> s.contains("HISTORIAL") && s.contains("concepto"));
     }
+    @Test void providerOutageStreamsAndPersistsNotesWithoutPartialGeneratedText() {
+        when(llm.stream(any(), any())).thenReturn(Flux.just("delta privado")
+                .concatWith(Flux.error(new IllegalStateException("fallo interno"))));
+        UUID request = UUID.randomUUID();
+        String body = "{\"message\":\"concepto\",\"requestId\":\"" + request + "\"}";
+        assertThat(streamOverHttp("messages", body)).contains("Modo solo apuntes", "apunte", "DONE")
+                .doesNotContain("delta privado", "fallo interno");
+        assertThat(store.history(user, session, 0, 20).getFirst().response()).contains("Modo solo apuntes");
+        assertThat(streamOverHttp("messages", body)).contains("Modo solo apuntes", "DONE");
+        verify(llm, times(1)).stream(any(), any());
+    }
     @Test void freeExerciseNeverExposesReferenceAndRequiresCsrf() throws Exception {
         when(cas.parse("x^2")).thenReturn(new CasEngine.Expr("x^2","x^2",null)); when(cas.derive("x^2","x")).thenReturn("2*x");
         var body="{\"operation\":\"DERIVADA\",\"expression\":\"x^2\"}";
