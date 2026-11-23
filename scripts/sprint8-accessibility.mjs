@@ -79,10 +79,9 @@ async function verifyAccessibleViewer(browser, base, name) {
   await page.getByRole('button', { name: 'Dibujar superficie' }).press('Enter');
   assert.match(await page.locator('#surface-result').textContent(), /Valores de z muestreados/);
   const webgl = await page.evaluate(() => Boolean(document.querySelector('canvas').getContext('webgl2')));
-  if (webgl) {
-    await page.locator('canvas').press('Enter');
-    assert.match(await page.locator('#graphic-status').textContent(), /seleccionado|intersección/);
-  }
+  assert.ok(webgl, `${name} debe ofrecer WebGL 2 en la prueba del visor`);
+  await page.locator('canvas').press('Enter');
+  assert.match(await page.locator('#graphic-status').textContent(), /seleccionado|intersección/);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await audit(page, 'laboratorio a 390 px');
   await page.goto(base + '#/tutor');
@@ -101,7 +100,7 @@ async function verifyAccessibleViewer(browser, base, name) {
   await fallback.getByRole('button', { name: 'Dibujar superficie' }).press('Enter');
   assert.match(await fallback.locator('#surface-result').textContent(), /Valores de z muestreados/);
   await fallback.close();
-  console.log(`${name} ${browser.version()} · WebGL 2 ${webgl ? 'activo' : 'no disponible'} · teclado, vista móvil, chat y alternativa textual verificados`);
+  console.log(`${name} ${browser.version()} · WebGL 2 activo · teclado, vista móvil, chat y alternativa textual verificados`);
 }
 
 async function verifyAccount(browser, base, name) {
