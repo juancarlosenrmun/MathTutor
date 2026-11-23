@@ -109,6 +109,18 @@ class SprintFourIntegrationTest {
                 .andExpect(request().asyncStarted()).andReturn();
         mvc.perform(asyncDispatch(result)).andExpect(status().isOk()).andExpect(content().string(org.hamcrest.Matchers.containsString("GRAPHIC_SPEC")));
     }
+    @Test void secureCsrfExchangeAndBrowserHeadersAreEnforced() throws Exception {
+        mvc.perform(get("/api/csrf-token").secure(true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.csrfToken").isString())
+                .andExpect(header().exists("Strict-Transport-Security"))
+                .andExpect(header().string("Referrer-Policy", "no-referrer"))
+                .andExpect(header().string("Content-Security-Policy", org.hamcrest.Matchers.containsString("object-src 'none'")));
+        mvc.perform(get("/api/csrf-token").header("Origin", "https://untrusted.example"))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/actuator/health")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.components").doesNotExist());
+    }
     @Test void chatReservesBeforeSseAndReturnsConflictForActiveRequest() throws Exception {
         store.reserve(user,session,UUID.randomUUID(),"ocupado");
         mvc.perform(post("/api/tutor/sessions/"+session+"/messages").with(actor("ALUMNO")).with(csrf()).contentType("application/json")

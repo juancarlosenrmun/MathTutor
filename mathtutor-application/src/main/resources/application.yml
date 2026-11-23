@@ -31,7 +31,7 @@ tutor:
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: dev | production
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:mathtutor}
@@ -124,4 +124,31 @@ management:
         include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: always
+      show-details: never
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: production
+
+mathtutor:
+  security:
+    secure-cookies: true
+
+logging:
+  level:
+    com.mathtutor: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+
+server:
+  port: ${HTTPS_PORT:8443}
+  ssl:
+    enabled: true
+    enabled-protocols: TLSv1.3,TLSv1.2
+    key-store-type: PKCS12
+    key-store: ${TLS_KEYSTORE}
+    key-store-password: ${TLS_KEYSTORE_PASSWORD}
