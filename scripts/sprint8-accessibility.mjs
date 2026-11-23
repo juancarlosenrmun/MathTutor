@@ -21,7 +21,7 @@ const server = createServer(async (request, response) => {
   } catch { response.writeHead(404).end(); }
 });
 
-const answer = 'data: {"type":"TOKEN","content":"Piensa en la pendiente."}\n\ndata: {"type":"DONE"}\n\n';
+const answer = 'data: {"type":"TOKEN","content":"Piensa en la pendiente. [Apuntes](https://example.test)."}\n\ndata: {"type":"DONE"}\n\n';
 
 async function fixture(page, role = 'ALUMNO') {
   const requests = [];
@@ -92,6 +92,11 @@ async function verifyAccessibleViewer(browser, base, name) {
   await log.locator('[class="tutor-answer-body"]', { hasText: 'Piensa en la pendiente.' }).waitFor();
   await page.waitForFunction(() => document.querySelector('[role="log"]').getAttribute('aria-busy') === 'false');
   assert.match(await log.ariaSnapshot(), /Piensa en la pendiente/);
+  const announcement = page.locator('#tutor-announcement');
+  assert.equal(await announcement.getAttribute('role'), 'status');
+  assert.match(await announcement.textContent(), /Piensa en la pendiente/);
+  assert.equal(await announcement.locator('a, [tabindex]').count(), 0);
+  await log.getByRole('link', { name: 'Apuntes' }).waitFor();
   await audit(page, 'chat');
   await context.close();
   const fallback = await browser.newPage();

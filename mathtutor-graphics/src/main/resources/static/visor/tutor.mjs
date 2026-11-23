@@ -14,6 +14,14 @@ export async function readReply(response,onToken) {
 /** Conversación persistente con cancelación, UUID por envío y aislamiento de identidad. */
 export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.crypto.randomUUID()}={}) {
   const one=id=>document.querySelector('#'+id), history=one('tutor-history'), status=one('tutor-status');
+  const announcement=one('tutor-announcement');
+  /** @brief Anuncia una respuesta completa con su semántica de Markdown y MathML. */
+  const announceAnswer = markdown => {
+    if (!announcement) return;
+    renderTutorMarkdown(document, announcement, markdown);
+    for (const link of announcement.querySelectorAll('a')) link.replaceWith(...link.childNodes);
+    for (const formula of announcement.querySelectorAll('[tabindex]')) formula.removeAttribute('tabindex');
+  };
   const noteQuestions={funciones:'¿Qué es la continuidad de una función?',
     'derivadas-integrales':'¿Cómo se calcula la derivada de una función?', 'metodos-3d':'¿Qué es un espacio vectorial?'};
   let session,identity,controller,generation=0,busy=false,loaded=false,loading=false,pending;
@@ -52,6 +60,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     if (busy || !allowed()) return;
     controller?.abort(); generation++; const current=generation; busy=true; controller=new AbortController();
     session={...visit,moduleCode:visit.moduleCode || visit.module}; pending=undefined; entries=[]; historyPage=0;
+    announceAnswer('');
     study.enter(null);
     if (one('history-more')) one('history-more').hidden=true;
     history.replaceChildren(...(visit.messages || []));
@@ -72,13 +81,15 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     if (identity!==next) {
       controller?.abort(); identity=next; generation++; session=null; pending=undefined; busy=false; loaded=false; loading=false;
       one('tutor-message').value=''; status.textContent='Inicia sesión como alumno para conversar con el tutor.';
-        history.setAttribute('aria-busy', 'false');
+      history.setAttribute('aria-busy', 'false');
+      announceAnswer('');
       history.replaceChildren(); entries=[]; modules=[]; visits.clear(); study.enter(null); controls();
       if (one('history-more')) one('history-more').hidden=true;
     }
     if (view!=='tutor') {
       if (busy) {controller.abort();generation++;busy=false;loading=false;status.textContent='Operación cancelada al salir de la conversación.';controls();}
       history.setAttribute('aria-busy', 'false');
+      announceAnswer('');
       study.suspend?.(); return;
     }
     study.resume?.();
@@ -105,6 +116,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
       const created=await (await request(client,'/api/tutor/sessions',{moduleCode:one('tutor-block').value},controller.signal)).json();
       if (current!==generation) return;
       session={...created,status:created.status || 'ACTIVA'}; session.title=titleFor(session); entries=[]; pending=undefined;
+      announceAnswer('');
       visits.add(session); history.replaceChildren(); one('tutor-chat-title').textContent=session.title;
       if (one('history-more')) one('history-more').hidden=true;
       await study.enter(session);
@@ -120,6 +132,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     const bubbles=prior && [...history.children].includes(prior.answer) ? prior : appendTurn(document,history,message);
     pending={...bubbles,message,requestId:prior?.requestId || randomUUID()}; controls();
     const requestId=pending.requestId; let markdown='';
+    announceAnswer('');
     history.setAttribute('aria-busy', 'true');
     renderTutorMarkdown(document,pending.body,''); status.textContent=retry ? 'Recuperando el envío sin iniciar otro turno…' : 'El tutor está respondiendo…';
     try {
@@ -127,7 +140,12 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
       if (current!==generation) return;
       const response=await request(client,`/api/tutor/sessions/${session.id}/messages`,{message,requestId},controller.signal);
       await readReply(response,token=>{if (current===generation) {markdown+=token;renderTutorMarkdown(document,bubbles.body,markdown);}});
-      if (current===generation) {pending=undefined;one('tutor-message').value='';status.textContent='Respuesta completada.';}
+      if (current===generation) {
+        pending=undefined;
+        one('tutor-message').value='';
+        status.textContent='Respuesta completada.';
+        announceAnswer(markdown);
+      }
     } catch (error) {
       if (current===generation) {
         if ([400,401,403,404].includes(error.status)) {pending=undefined;status.textContent=error.message;}
@@ -143,8 +161,10 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
             const terminal=latest.find(e=>e.requestId===requestId && e.status!=='EN_CURSO');
             if (pending && terminal) {
               pending=undefined;
-              status.textContent=['ERROR','CANCELADO'].includes(terminal.status)
+              const interrupted = ['ERROR','CANCELADO'].includes(terminal.status);
+              status.textContent=interrupted
                 ? 'El envío anterior ha terminado. Puedes enviar una pregunta nueva.' : 'Respuesta recuperada del historial.';
+              if (!interrupted && terminal.response) announceAnswer(terminal.response);
             }
             busy=false;
           }
@@ -170,6 +190,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
   one('tutor-new')?.addEventListener('click',()=>{
     if (busy || !allowed()) return;
     session=null;pending=undefined;entries=[];history.replaceChildren();study.enter(null);visits.select(undefined);
+    announceAnswer('');
     if (one('history-more')) one('history-more').hidden=true;
     status.textContent='Elige un bloque para empezar una conversación.';controls();
   });
