@@ -66,6 +66,18 @@ class PasswordResetServiceTest {
     }
 
     @Test
+    void assistedDeliveryUsesTheSelectedPersistentIdentity() {
+        assertThat(resets.issue(4L)).isEmpty();
+        when(users.findByIdForUpdate(4L)).thenReturn(Optional.of(account));
+        when(limits.tryConsume("password-reset:account:4", 3, PasswordResetService.VALIDITY)).thenReturn(true);
+        var delivery = resets.issue(4L).orElseThrow();
+        assertThat(delivery.email()).isEqualTo(EMAIL);
+        assertThat(delivery.token()).matches("[A-Za-z0-9_-]{43}");
+        account.setActive(false);
+        assertThat(resets.issue(4L)).isEmpty();
+    }
+
+    @Test
     void confirmsOnlyAfterCheckingExpiryUnderTheUserLock() throws Exception {
         String raw = "A".repeat(43);
         String hash = digest(raw);
