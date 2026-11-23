@@ -1,4 +1,4 @@
-import { lineTangent } from './tangents.mjs';
+import { lineTangent, secantTrajectory } from './tangents.mjs';
 
 /**
  * @brief Parser aritmético acotado para UC-28. Solo números, x y funciones explícitas.
@@ -136,7 +136,8 @@ export function curve(source, min, max, samples = 256, tangentX) {
     }
     points.push({ x, y, derivative, connected });
   }
-  return { points, area, tangent: tangentX === undefined ? undefined : lineTangent(f, tangentX, min, max) };
+  const tangent = tangentX === undefined ? undefined : lineTangent(f, tangentX, min, max);
+  return { points, area, tangent, secantAt: tangent && secantTrajectory(f, tangent, min, max) };
 }
 
 /** @brief Expresa dominio, recorrido y magnitudes de una curva sin depender del color o del lienzo. */

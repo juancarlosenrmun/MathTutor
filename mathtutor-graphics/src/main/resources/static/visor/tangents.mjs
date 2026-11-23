@@ -59,6 +59,42 @@ export function lineTangent(evaluate, x, min, max) {
 }
 
 /**
+ * @brief Prepara el acercamiento de un segundo punto a la tangencia dentro de un tramo continuo.
+ * @param evaluate Función analizada con cotas por intervalo.
+ * @param tangent Tangente validada por la estimación bilateral.
+ * @param min Extremo inferior dibujado.
+ * @param max Extremo superior dibujado.
+ * @return Función del progreso normalizado, si existe una secante representable.
+ */
+export function secantTrajectory(evaluate, tangent, min, max) {
+  const { x, value, lines } = tangent;
+  const [left, right] = extent(x, min, max);
+  const offsets = [left - x, right - x].sort((a, b) => Math.abs(b) - Math.abs(a));
+  let start;
+  for (const offset of offsets) {
+    for (let step = 0; step < 16; step++) {
+      const candidate = x + offset / 2 ** step;
+      if (candidate === x) break;
+      const bounds = evaluate.bounds(Math.min(x, candidate), Math.max(x, candidate));
+      if (bounds.every(bound => Number.isFinite(bound) && Math.abs(bound) <= 1000)) {
+        start = candidate - x;
+        break;
+      }
+    }
+    if (start !== undefined) break;
+  }
+  if (start === undefined) return undefined;
+
+  return progress => {
+    const second = x + start * (1 - progress);
+    if (second === x) return tangent;
+    const height = evaluate(second);
+    const slope = (height - value) / (second - x);
+    return { slope, point: [second, height, 0], lines: lines.map(([u]) => [u, value + slope * (u - x), 0]) };
+  };
+}
+
+/**
  * @brief Aproxima el plano por sus dos parciales y comprueba también las direcciones diagonales.
  * @param evaluate Función de dos variables ya analizada.
  * @param point Coordenadas x e y del punto de apoyo.
