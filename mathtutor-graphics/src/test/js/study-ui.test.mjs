@@ -151,6 +151,7 @@ test('Enter envía una vez mientras se valida una gráfica y respeta composició
   press({});
   await sending;
   assert.equal(f.nodes['tutor-send'].disabled, false);
+  await new Promise(resolve => setImmediate(resolve));
   assert.ok(releasePlot);
   assert.equal(f.viewer.graph, undefined);
   composer.value = '¿Qué significa el dominio?';
@@ -166,7 +167,8 @@ test('el chat abre el visor solo al recibir una gráfica válida y lo cierra al 
   const f = fixture();
   await f.open();
   assert.equal(f.nodes['tutor-viewer-slot'].hidden, true);
-  assert.equal(f.nodes['tutor-viewer-toggle'].hidden, true);
+  assert.equal(f.nodes['tutor-viewer-toggle'].hidden, false);
+  assert.equal(f.nodes['tutor-viewer-toggle'].disabled, true);
   f.nodes['tutor-message'].value = '¿Qué es una función?';
   await f.submit('tutor-form');
   assert.equal(f.nodes['tutor-viewer-slot'].hidden, true);
@@ -182,10 +184,15 @@ test('el chat abre el visor solo al recibir una gráfica válida y lo cierra al 
   await f.click('tutor-viewer-toggle');
   assert.equal(f.nodes['tutor-viewer-slot'].hidden, false);
   const requests = f.state.calls.filter(([path]) => path.endsWith('/graphics')).length;
+  assert.equal(f.nodes['viewer-tangent-controls'].hidden, true);
+  f.nodes['tutor-message'].value = 'Dibuja el plano tangente a z=x^2+y^2';
+  await f.submit('tutor-form');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.nodes['viewer-tangent-controls'].hidden, false);
   f.nodes['viewer-tangent-y'].value = '1';
   f.nodes['viewer-tangent-y'].listeners.input();
   assert.ok(Math.abs(f.viewer.mesh.tangent.dy - 2) < 1e-6);
-  assert.equal(f.state.calls.filter(([path]) => path.endsWith('/graphics')).length, requests);
+  assert.equal(f.state.calls.filter(([path]) => path.endsWith('/graphics')).length, requests + 1);
   await f.click('tutor-new');
   assert.equal(f.nodes['tutor-viewer-slot'].hidden, true);
   assert.equal(f.viewer.mesh, null);

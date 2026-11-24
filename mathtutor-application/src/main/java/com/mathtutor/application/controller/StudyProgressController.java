@@ -33,6 +33,13 @@ public class StudyProgressController {
     }
     @GetMapping("/progress") public List<ConversationStore.Session> progress(@AuthenticationPrincipal AuthenticatedUser user,
             @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) { return store.sessions(user.id(),page,size); }
+    @DeleteMapping("/sessions/{id}")
+    @PreAuthorize("hasRole('ALUMNO')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@AuthenticationPrincipal AuthenticatedUser user, @PathVariable Long id) {
+        store.delete(user.id(), id);
+    }
+
     @GetMapping("/sessions/{id}/history") public List<ConversationStore.Entry> history(@AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable Long id,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) { return store.history(user.id(),id,page,size); }
     @GetMapping("/sessions/{id}/exercises") public List<RunView> runs(@AuthenticationPrincipal AuthenticatedUser user,
@@ -64,7 +71,7 @@ public class StudyProgressController {
     @ExceptionHandler({ConversationUnavailableException.class,SessionUnavailableException.class}) @ResponseStatus(HttpStatus.NOT_FOUND)
     public String unavailable() { return "Sesión no disponible"; }
     @ExceptionHandler(ConversationConflictException.class) @ResponseStatus(HttpStatus.CONFLICT)
-    public String conflict() { return "Hay un turno en curso. Consulta el historial antes de reintentar."; }
+    public String conflict() { return "Termina el turno o el ejercicio en curso antes de continuar."; }
     public record Selection(Long exerciseId,String operation,String expression) {}
     public record GraphicEvent(String type,GraphicSpec spec) {}
     public record RunView(Long id,Long exerciseId,String statement,String topic,String state,double progress,int verifiedSteps) {

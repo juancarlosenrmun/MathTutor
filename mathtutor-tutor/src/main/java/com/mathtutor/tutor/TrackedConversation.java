@@ -10,6 +10,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** @brief UC-18/20/25. Coordina la política, la reserva y la escritura fuera de la llamada al LLM. */
 @Service
 public class TrackedConversation {
+    private static final java.util.regex.Pattern EXERCISE_START = java.util.regex.Pattern.compile(
+            "^(?:¿?\\s*(?:calcula|determina|resuelve|halla|demuestra|comprueba|estudia|deriva|simplifica|define|enuncia)\\b"
+                    + "|¿?\\s*f\\s*\\([^)]*\\)\\s*=.+\\b(?:es continua|es derivable)\\b"
+                    + "|¿?\\s*es (?:continua|derivable)\\b.*=)");
     private final ConversationStore store;
     private final TutorConversation conversation;
     private final ExerciseVerification verification;
@@ -44,7 +48,12 @@ public class TrackedConversation {
             boolean recognized = current == null && run != null;
             boolean requestingHelp = run != null && TutorConversation.needsHelp(message);
             boolean noResult = TutorConversation.isClosing(message) || TutorConversation.confirmsCheck(message);
-            var diagnosis=verification.verify(message, recognized || requestingHelp || noResult ? null : run);
+            boolean switching = run != null && !recognized && !noResult && !requestingHelp
+                    && startsExercise(message) && conversation.isNewExercise(user, session, run, message);
+            var diagnosis = run != null && run.reference() == null && TutorConversation.isClosing(message)
+                    ? new ExerciseVerification.Diagnosis("NO_APLICA", com.mathtutor.common.dto.ErrorType.NINGUNO,
+                            "Cierre indicado por el alumno", run.verifiedSteps(), true)
+                    : verification.verify(message, recognized || requestingHelp || noResult || switching ? null : run);
             var action = action(run, diagnosis);
             var recent = store.context(user, session);
             var history = boundedHistory(recent);
@@ -54,10 +63,17 @@ public class TrackedConversation {
             } else if (run == null) {
                 String previousTopic = history.isEmpty() ? null : recent.getLast().topic();
                 prepared = conversation.prepare(user, session, message, history, "", previousTopic);
+                if (!prepared.rejected() && prepared.topic() != null && startsExercise(message)) {
+                    store.attachFree(user, session, request, message, prepared.topic());
+                }
+            } else if (switching) {
+                prepared = new TutorConversation.Prepared(Flux.just(
+                        "Primero termina el ejercicio en curso. Después podemos empezar otro en este mismo chat."),
+                        run.topic(), true);
             } else {
                 prepared = conversation.prepareExercise(user, session, message, history, run, diagnosis, action);
             }
-            boolean attempted = run != null && !recognized && !requestingHelp && !noResult && isAttempt(message, run, diagnosis);
+            boolean attempted = run != null && !switching && !recognized && !requestingHelp && !noResult && isAttempt(message, run, diagnosis);
             java.util.function.Consumer<String> finish=status -> {
                 if (saved.get()) return;
                 var usage=prepared.usage().get();
@@ -85,6 +101,10 @@ public class TrackedConversation {
             store.finish(user,session,request,new ConversationStore.Result("",null,com.mathtutor.common.dto.ErrorType.OTRO,"ERROR",0,null,null,0,false));
             throw error;
         }
+    }
+
+    private static boolean startsExercise(String message) {
+        return EXERCISE_START.matcher(TheoreticalHints.normalize(message)).find();
     }
 
     /** @brief Para las etapas de razonamiento, repetir el enunciado no acredita práctica. */

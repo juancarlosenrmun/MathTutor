@@ -27,14 +27,6 @@ public class ExerciseStatistics {
         this.nearSolution = nearSolution;
     }
 
-    /** @brief Persiste los abandonos vencidos bajo el bloqueo de la sesión. */
-    public void closeInactive(long sessionId, Instant now) {
-        jdbc.update("""
-                UPDATE exercise_runs SET state = 'ABANDONADO', ended_at = last_activity_at + ? * interval '1 second'
-                WHERE session_id = ? AND state = 'COMENZADO' AND last_activity_at < ?
-                """, inactivity.toSeconds(), sessionId, Timestamp.from(now.minus(inactivity)));
-    }
-
     /** @brief El límite exacto sigue siendo activo. */
     public boolean expired(Instant lastActivity, Instant now) {
         return lastActivity.isBefore(now.minus(inactivity));

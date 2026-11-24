@@ -104,6 +104,26 @@ class SprintFourIntegrationTest {
         mvc.perform(get("/api/tutor/sessions/"+session+"/history").with(actor("ALUMNO"))).andExpect(status().isNotFound());
         assertThat(store.sessions(owner,0,100)).hasSize(1);
     }
+    @Test void studentCanDeleteOnlyTheirOwnConversationAndItsExercises() throws Exception {
+        store.select(user, session, null, "Deriva x^2", "2*x");
+        var request = UUID.randomUUID();
+        store.reserve(user, session, request, "2*x");
+        String path = "/api/tutor/sessions/" + session;
+        mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isConflict());
+        store.finish(user, session, request, new ConversationStore.Result("Correcto", null,
+                ErrorType.NINGUNO, "COMPLETADO", 0, null, null, 0, true));
+        mvc.perform(delete(path).with(actor("ALUMNO"))).andExpect(status().isForbidden());
+        mvc.perform(delete(path).with(actor("PROFESOR")).with(csrfCookie())).andExpect(status().isForbidden());
+        Long owner = user;
+        user = users.save(User.builder().email(UUID.randomUUID()+"@test.es").passwordHash("h")
+                .active(true).role(User.Role.ALUMNO).build()).getId();
+        mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isNotFound());
+        user = owner;
+        mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isNoContent());
+        mvc.perform(get(path + "/history").with(actor("ALUMNO"))).andExpect(status().isNotFound());
+        assertThat(store.sessions(user, 0, 20)).isEmpty();
+    }
+
     @Test void bankCatalogueIsOwnedPaginatedAndNeverExposesSolutions() throws Exception {
         mvc.perform(get("/api/tutor/sessions/"+session+"/bank?size=1").with(actor("ALUMNO")))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))
@@ -200,7 +220,7 @@ class SprintFourIntegrationTest {
         assertThat(store.current(user, session).attempts()).isZero();
         verifyNoInteractions(cas);
     }
-    @Test void acknowledgesTheEndOfAFreeContinuityExerciseWithoutInventingVerifiedProgress() throws Exception {
+    @Test void recordsFreeContinuityCompletionAndStartsAnotherExerciseInTheSameChat() throws Exception {
         var functions = modules.findAll().stream().filter(module -> module.getCode().equals("funciones"))
                 .findFirst().orElseThrow();
         session = sessions.save(TutorSession.builder().user(users.getReferenceById(user)).module(functions)
@@ -214,11 +234,21 @@ class SprintFourIntegrationTest {
         }
         assertThat(streamOverHttp("messages", "{\"message\":\"ya las he comprobado y se cumple\"}"))
                 .contains("límite existe", "valor de la función", "DONE");
+        var active = store.current(user, session);
+        assertThat(active).isNotNull();
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "f(x)=x^3 es continua?"))))
+                .contains("Primero termina", "DONE");
+        assertThat(store.current(user, session).id()).isEqualTo(active.id());
         assertThat(streamOverHttp("messages", "{\"message\":\"ejercicio completado\"}"))
                 .contains("Damos por terminado", "DONE");
         assertThat(store.context(user, session).getLast().topic()).isEqualTo("funciones-continuidad");
-        assertThat(store.runs(user, session, 0, 20)).isEmpty();
-        verify(llm, times(3)).stream(any(), any());
+        var finished = store.runs(user, session, 0, 20).getFirst();
+        assertThat(finished.state()).isEqualTo("COMPLETADO");
+        assertThat(finished.topic()).isEqualTo("funciones-continuidad");
+        assertThat(finished.verifiedSteps()).isZero();
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "f(x)=x^3 es continua?"))))
+                .contains("DONE");
+        assertThat(store.current(user, session).id()).isNotEqualTo(finished.id());
         verifyNoInteractions(cas);
     }
 

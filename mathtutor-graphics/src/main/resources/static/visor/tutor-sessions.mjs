@@ -31,6 +31,7 @@ export function mountSessions(document,client,{isBusy,onOpen,titleFor}) {
   one('sessions-more')?.addEventListener('click',()=>{if (!isBusy()) return load(true);});
   one('sessions-refresh')?.addEventListener('click',()=>{if (!isBusy()) return load();});
   return {load,select(id){selected=id;render();},add(visit){visits=[visit,...visits.filter(v=>v.id!==visit.id)];selected=visit.id;render();},
+    remove(id){generation++;controller?.abort();loading=false;visits=visits.filter(v=>v.id!==id);selected=undefined;render();},
     clear(){generation++;controller?.abort();loading=false;visits=[];selected=undefined;render();
       if (one('sessions-more')) one('sessions-more').hidden=true;
       if (one('sessions-status')) one('sessions-status').textContent='Tus conversaciones se guardan en tu cuenta.';}};

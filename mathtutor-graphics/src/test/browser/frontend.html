@@ -12,6 +12,11 @@ try {
     window.testState = { role: 'ALUMNO', status: 200, calls: [], sessions: [], turns: [], runs: [] };
     window.fetch = async (path, options) => {
       testState.calls.push([path, options]);
+      if (options?.method === 'DELETE' && path.includes('/api/tutor/sessions/')) {
+        testState.sessions = testState.sessions.filter(session => session.id !== Number(path.split('/').pop()));
+        testState.turns = [];
+        return {ok:true,status:204};
+      }
       if (path.endsWith('/modules')) return {ok:true,json:async()=>[
         {code:'funciones',name:'Funciones'},{code:'derivadas-integrales',name:'Derivadas e integrales'},{code:'metodos-3d',name:'Métodos 3D'}]};
       const json = data => ({ok:true,json:async()=>data});
@@ -20,7 +25,8 @@ try {
       if (path.endsWith('/progression')) return json({type:'PROCEDIMENTAL', statement:'Calcula e_1 ' + String.fromCharCode(92) + 'times e_2.'});
       if (path.includes('/progress')) return json(testState.sessions);
       if (path.includes('/history')) return json(testState.turns);
-      if (path.includes('/bank')) return json([{id:7,statement:'Deriva x^2',difficulty:1}]);
+      if (path.includes('/bank')) return json([{id:7,statement:'Deriva x^2',difficulty:1},
+        {id:8,statement:'Determina el dominio de ' + String.fromCharCode(92) + 'sqrt{x}.',type:'INTERPRETACION'}]);
       if (path.includes('/exercises')) {
         if (options.method === 'POST') testState.runs=[{id:1,statement:'Derivar x^2',state:'COMENZADO',progress:0}];
         return json(options.method === 'POST' ? testState.runs[0] : testState.runs);
@@ -124,6 +130,12 @@ try {
   assert(!bank.hidden, 'No aparecen los ejercicios sugeridos del módulo');
   bank.querySelector('summary').click();
   assert(bank.open, 'No se puede desplegar el banco');
+  const suggested = doc.querySelector('#exercise-bank-select');
+  suggested.value = '8';
+  suggested.dispatchEvent(new Event('change'));
+  assert(bank.querySelector('math msqrt'), 'El banco muestra la raíz LaTeX como texto');
+  suggested.value = '7';
+  suggested.dispatchEvent(new Event('change'));
   doc.querySelector('#exercise-bank-use').click();
   assert(doc.activeElement === doc.querySelector('#tutor-message'), 'El ejercicio no lleva al borrador');
   assert(doc.activeElement.value === 'Deriva x^2', 'El enunciado no llega al borrador');
@@ -175,6 +187,11 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   composer.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', cancelable:true}));
   await settle();
   assert(!slot.hidden, 'Una curva validada no abre el visor');
+  assert(doc.querySelector('#viewer-tangent-controls').hidden, 'Una curva simple muestra controles de tangencia');
+  composer.value = 'Dibuja la recta tangente a f(x) = x^2';
+  composer.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', cancelable:true}));
+  await settle();
+  assert(!doc.querySelector('#viewer-tangent-controls').hidden, 'Falta el control de la recta tangente');
   const viewerTangent = doc.querySelector('#viewer-tangent-x');
   assert(viewerTangent.type === 'range' && viewerTangent.min === '-2' && viewerTangent.max === '2', 'La barra no sigue el dominio');
   assert(doc.querySelector('#viewer-tangent-x-value')?.textContent === '0', 'La barra no muestra la coordenada inicial');
@@ -240,17 +257,27 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   contrast.click();
   assert(contrast.checked, 'No se pudo activar el contraste desde el laboratorio');
   await go('tutor');
-  assert(slot.contains(contrast) && contrast.checked && slot.hidden, 'El tutor muestra la gráfica del laboratorio o pierde el contraste');
+  assert(slot.contains(contrast) && contrast.checked && !slot.hidden, 'El tutor no recupera su propia gráfica y el contraste');
+  assert(getComputedStyle(doc.querySelector('.viewer-selection')).display === 'none', 'El selector del laboratorio se muestra en el tutor');
   const message = doc.querySelector('#tutor-message');
   message.value = 'Dibuja f(x) = x^2';
   doc.querySelector('#tutor-form').requestSubmit(); await settle();
   assert(!slot.hidden, 'El chat no muestra la función del ejercicio');
-  contrast.click();
-  assert(!contrast.checked, 'No se pudo desactivar el contraste desde el tutor');
+  assert(getComputedStyle(contrast.parentElement).display === 'none', 'El tutor muestra opciones del laboratorio');
+  win.confirm = () => true;
+  doc.querySelector('#tutor-delete').click(); await settle();
+  assert(slot.hidden && doc.querySelector('#tutor-topic-picker').hidden === false, 'Eliminar no reinicia el chat');
+  assert(win.testState.calls.some(([path, options]) => path.includes('/api/tutor/sessions/') && options?.method === 'DELETE'
+    && options.headers['X-XSRF-TOKEN'] === 'csrf'), 'Eliminar no envía un DELETE protegido');
+  doc.querySelector('#tutor-topics button').click(); await settle();
   await go('espacio');
   for (const [role, label] of [['ALUMNO', 'Alumno'], ['PROFESOR', 'Profesor'], ['ADMIN', 'Administrador']]) {
     win.testState.role = role; await win.testApp.updateRole();
     assert(doc.querySelector('#workspace-role').textContent === label, 'Espacio con rol obsoleto');
+    if (role === 'PROFESOR') {
+      assert(!doc.querySelector('#admin-panel').hidden, 'El profesor no ve las sesiones del alumnado');
+      assert(doc.querySelector('[data-admin-action]').closest('[data-permission]').hidden, 'El profesor ve gestión de cuentas');
+    }
   }
   assert(doc.querySelector('[data-view="espacio"] a[href="#/tutor"]'), 'No se puede abrir el tutor');
   await go('cuenta');

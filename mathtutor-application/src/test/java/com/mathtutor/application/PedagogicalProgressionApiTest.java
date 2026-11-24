@@ -85,11 +85,14 @@ class PedagogicalProgressionApiTest {
         String theoryReply = "El valor de la función coincide con el límite en ese punto.";
         noteFor(theoryReply, "funciones-continuidad", "El valor y el límite determinan la continuidad de una función.");
         reply(owner, session, theoryReply);
+        advance(owner, session).andExpect(jsonPath("$.type").value("TEORICO"));
+        reply(owner, session, "Ejercicio completado");
 
         advance(owner, session).andExpect(jsonPath("$.type").value("INTERPRETACION"));
         String interpretation = "Solo admite números reales no negativos.";
         noteFor(interpretation, "numeros-reales-complejos", "Una raíz cuadrada real requiere un radicando mayor o igual a cero.");
         reply(owner, session, interpretation);
+        reply(owner, session, "Ejercicio completado");
         advance(owner, session).andExpect(status().isNoContent());
     }
 
@@ -103,13 +106,13 @@ class PedagogicalProgressionApiTest {
         jdbc.update("UPDATE tutor_sessions SET status = 'CERRADA' WHERE id = ?", original);
         long resumed = sessions.start(owner.getId(), "derivadas-integrales").id();
         advance(owner, resumed).andExpect(jsonPath("$.type").value("TEORICO"));
-        jdbc.update("UPDATE exercise_runs SET attempts = 1 WHERE id = ?", activeRun(resumed));
+        reply(owner, resumed, "Ejercicio completado");
         advance(owner, resumed).andExpect(jsonPath("$.type").value("INTERPRETACION"));
         long otherModule = sessions.start(owner.getId(), "metodos-3d").id();
         advance(owner, otherModule).andExpect(jsonPath("$.type").value("PROCEDIMENTAL"));
         jdbc.update("UPDATE exercise_runs SET state = 'COMPLETADO' WHERE id = ?", activeRun(otherModule));
         advance(owner, otherModule).andExpect(jsonPath("$.type").value("TEORICO"));
-        jdbc.update("UPDATE exercise_runs SET attempts = 1 WHERE id = ?", activeRun(otherModule));
+        reply(owner, otherModule, "Ejercicio completado");
         advance(owner, otherModule).andExpect(jsonPath("$.type").value("INTERPRETACION"));
         advance(other, resumed).andExpect(status().isNotFound());
         advance(owner, original).andExpect(status().isNotFound());

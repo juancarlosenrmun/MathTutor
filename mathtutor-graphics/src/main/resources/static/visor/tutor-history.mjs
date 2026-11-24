@@ -7,7 +7,7 @@ export function appendTurn(document,history,message,response='') {
   const label=document.createElement('span'),body=document.createElement('div');
   label.className='tutor-answer-label'; label.textContent='Tutor:'; body.className='tutor-answer-body';
   answer.append(label,body); renderTutorMarkdown(document,body,response);
-  history.append(question); history.append(answer); return {body,answer};
+  history.append(question); history.append(answer); return {question,body,answer};
 }
 export function renderTurns(document,history,entries) {
   history.replaceChildren();

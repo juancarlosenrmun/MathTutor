@@ -76,6 +76,18 @@ export function renderMathText(document, target, text) {
   inline(document, target, text, true);
 }
 
+/** Admite enunciados del banco escritos antes de usar delimitadores LaTeX. */
+export function renderExerciseText(document, target, statement) {
+  const legacy = /\\sqrt\{[^{}]+\}|\bf\([a-z]\)(?:=[\w^+*/()-]+)?|\b[\dxyz]+\^[\dxyz]+|\b\d+[+-]\d+[ix]\b|\b\d*x[+-]\d+\b|\([-\d]+(?:,[-\d]+)+\)|\b\d+x\b/g;
+  const delimited = new RegExp(delimitedMath.source, 'g');
+  let cursor = 0, text = '';
+  for (const match of statement.matchAll(delimited)) {
+    text += statement.slice(cursor, match.index).replace(legacy, value => '$' + value + '$') + match[0];
+    cursor = match.index + match[0].length;
+  }
+  renderMathText(document, target, text + statement.slice(cursor).replace(legacy, value => '$' + value + '$'));
+}
+
 /** Representa la notación matemática del alumno y conserva el resto como texto. */
 export function renderStudentMessage(document, target, message) {
   renderMathText(document, target, 'Tú: ' + message);

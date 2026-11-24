@@ -33,7 +33,8 @@ public class TutorConversation {
             "(?:no (?:lo )?se|no sabria|ni idea|no tengo (?:ni )?idea"
                     + "|(?:no|aun no) (?:lo )?(?:entiendo|comprendo|veo)|no se como seguir)");
     private static final Pattern CLOSING = Pattern.compile(
-            "(?:ejercicio (?:completado|terminado|resuelto)|(?:ya )?(?:termine|complete|he terminado|he completado) el ejercicio)");
+            "(?:ejercicio (?:completado|terminado|resuelto)|(?:ya )?(?:termine|complete|he terminado|he completado|he resuelto) el ejercicio"
+                    + "|(?:ya )?lo he (?:terminado|completado|resuelto)|(?:podemos )?pasar al siguiente ejercicio)");
     private static final Pattern CHECKED_STEP = Pattern.compile(
             "(?:(?:ya )?(?:(?:lo|los|las) )?(?:he )?(?:comprobado|verificado|revisado)(?: y se cumplen?)?"
                     + "|(?:ya )?se cumplen?)");
@@ -116,7 +117,7 @@ public class TutorConversation {
             return closeExercise(topic, true, run.reference() != null);
         }
         if (diagnosis.completed()) {
-            return new Prepared(Flux.just("Tu resultado ha sido verificado. ¿Qué regla justifica el último paso?"),
+            return new Prepared(Flux.just("Tu resultado ha sido verificado y el ejercicio queda completado. Puedes empezar otro en este chat."),
                     run.topic(), false);
         }
         if (action.shouldRevealSolution()) {
@@ -147,8 +148,7 @@ public class TutorConversation {
         String normalized = TheoreticalHints.normalize(message);
         String phrase = shortPhrase(normalized);
         if (CLOSING.matcher(phrase).matches()) {
-            boolean hasContext = !history.isEmpty() && SyllabusTopics.contains(session.moduleCode(), previousTopic);
-            return closeExercise(hasContext ? previousTopic : null, hasContext, false);
+            return closeExercise(null, false, false);
         }
         boolean needsHelp = NEEDS_HELP.matcher(phrase).matches();
         if (exerciseTopic == null && !exercise.isBlank()) {
@@ -263,6 +263,13 @@ public class TutorConversation {
         return NEEDS_HELP.matcher(shortPhrase(TheoreticalHints.normalize(message))).matches();
     }
 
+    boolean isNewExercise(Long userId, Long sessionId, ConversationStore.Run run, String message) {
+        if (run.statement().strip().equalsIgnoreCase(message.strip())
+                || ExerciseVerification.symbolicAnswer(message)) return false;
+        var module = sessions.active(userId, sessionId).moduleCode();
+        return !SyllabusTopics.hasOtherSubject(module, TheoreticalHints.normalize(message));
+    }
+
     static boolean isClosing(String message) {
         return CLOSING.matcher(shortPhrase(TheoreticalHints.normalize(message))).matches();
     }
@@ -276,7 +283,7 @@ public class TutorConversation {
         if (pendingVerification) {
             reply = "Envía tu resultado final como expresión para que pueda verificarlo y marcar el ejercicio como completado.";
         } else if (hasContext) {
-            reply = "Damos por terminado este ejercicio en el chat. Cuando quieras, podemos trabajar otro del módulo.";
+            reply = "Damos por terminado este ejercicio. Puedes empezar otro en este mismo chat.";
         } else {
             reply = "Puedes indicar que has terminado después de trabajar un ejercicio en esta conversación.";
         }

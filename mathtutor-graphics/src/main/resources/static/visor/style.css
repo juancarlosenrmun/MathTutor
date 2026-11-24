@@ -1117,3 +1117,6 @@ input[type="range"] { width: 100%; min-width: 0; accent-color: var(--accent); }
 .workspace > .account-details { margin-top: 1.25rem; }
 .viewer-panel > .field-help { padding-inline: 1.25rem; }
 .animation-toolbar { flex-wrap: wrap; justify-content: flex-start; }
+
+.tutor-viewer-slot :is(.viewer-selection, .camera-toolbar, .viewer-option, #animation-status) { display: none; }
+.viewer-toggle:disabled { cursor: default; opacity: .65; }
