@@ -17,6 +17,7 @@ try {
       const json = data => ({ok:true,json:async()=>data});
       const stream = events => ({ok:true,body:new ReadableStream({start(c){
         c.enqueue(new TextEncoder().encode(events.map(e=>'data:'+JSON.stringify(e)+String.fromCharCode(10,10)).join('')));c.close();}})});
+      if (path.endsWith('/progression')) return json({type:'PROCEDIMENTAL', statement:'Calcula e_1 ' + String.fromCharCode(92) + 'times e_2.'});
       if (path.includes('/progress')) return json(testState.sessions);
       if (path.includes('/history')) return json(testState.turns);
       if (path.includes('/bank')) return json([{id:7,statement:'Deriva x^2',difficulty:1}]);
@@ -153,6 +154,11 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   };
   mathRendered();
   assert(doc.querySelector('#tutor-status').textContent.includes('completada'), 'Falta fin de turno');
+  doc.querySelector('#tutor-practice').click();
+  await settle();
+  const practice = doc.querySelector('#tutor-practice-prompt');
+  assert(practice.querySelectorAll('math msub').length === 2, 'La práctica no representa los subíndices');
+  assert(practice.querySelector('math mo')?.textContent === '×', 'La práctica no representa el producto vectorial');
   assert(!doc.querySelector('#tutor-study, #exercise-progress, #exercise-runs, #tutor-diagnosis, .turn-metadata'), 'Se exponen indicadores internos');
   const messageCall = win.testState.calls.find(([path]) => path.endsWith('/messages'));
   assert(typeof JSON.parse(messageCall[1].body).requestId === 'string', 'El turno no incluye UUID');

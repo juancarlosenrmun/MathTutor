@@ -70,9 +70,15 @@ function inline(document, parent, source, student = false) {
   parent.append(tail);
 }
 
+/** Representa fórmulas en texto plano, sin convertir el resto en Markdown. */
+export function renderMathText(document, target, text) {
+  target.replaceChildren();
+  inline(document, target, text, true);
+}
+
 /** Representa la notación matemática del alumno y conserva el resto como texto. */
 export function renderStudentMessage(document, target, message) {
-  inline(document, target, 'Tú: ' + message, true);
+  renderMathText(document, target, 'Tú: ' + message);
 }
 
 /** Renderiza Markdown frecuente del tutor, también durante el streaming. */

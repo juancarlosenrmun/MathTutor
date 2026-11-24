@@ -1,4 +1,4 @@
-import { renderTutorMarkdown } from './tutor-markdown.mjs';
+import { renderMathText, renderTutorMarkdown } from './tutor-markdown.mjs';
 import { request, collection, readEvents } from './tutor-api.mjs';
 import { appendTurn, renderTurns } from './tutor-history.mjs';
 import { mountSessions } from './tutor-sessions.mjs';
@@ -218,7 +218,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
       }
       const level = PRACTICE_LEVELS.get(practice.type);
       if (!level || typeof practice.statement !== 'string') throw new Error('Práctica guiada no disponible.');
-      practicePrompt.textContent = `Práctica ${level}. ${practice.statement}`;
+      renderMathText(document, practicePrompt, `Práctica ${level}. ${practice.statement}`);
       practicePrompt.hidden = false;
       one('tutor-message').focus();
     } catch (error) {

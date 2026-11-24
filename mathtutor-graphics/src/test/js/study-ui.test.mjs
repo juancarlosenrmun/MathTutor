@@ -103,7 +103,7 @@ test('la práctica guiada presenta la etapa y el enunciado sin enviar un turno',
   f.nodes['tutor-message'].value = 'Mi borrador';
   await f.click('tutor-practice');
   assert.equal(f.nodes['tutor-practice-prompt'].hidden, false);
-  assert.equal(f.nodes['tutor-practice-prompt'].textContent,
+  assert.equal(f.nodes['tutor-practice-prompt'].children[0].textContent,
     'Práctica conceptual. Explica el significado del límite.');
   assert.equal(f.nodes['tutor-message'].value, 'Mi borrador');
   assert.equal(f.state.calls.filter(([path]) => path.endsWith('/messages')).length, 0);
