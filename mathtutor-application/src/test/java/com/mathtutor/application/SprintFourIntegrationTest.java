@@ -200,6 +200,41 @@ class SprintFourIntegrationTest {
         assertThat(store.current(user, session).attempts()).isZero();
         verifyNoInteractions(cas);
     }
+    @Test void acknowledgesTheEndOfAFreeContinuityExerciseWithoutInventingVerifiedProgress() throws Exception {
+        var functions = modules.findAll().stream().filter(module -> module.getCode().equals("funciones"))
+                .findFirst().orElseThrow();
+        session = sessions.save(TutorSession.builder().user(users.getReferenceById(user)).module(functions)
+                .status(TutorSession.SessionStatus.ACTIVA).build()).getId();
+        when(retriever.retrieve(anyString(), anyString(), any())).thenReturn(List.of());
+        var json = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (String step : List.of("¿Qué es la continuidad de una función?", "f(x)=x^2+x es continua?",
+                "Todas las funciones polinomicas son contninuas, entonces x^2+x es continua tambien, no?")) {
+            assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", step))))
+                    .as(step).contains("Pista", "DONE");
+        }
+        assertThat(streamOverHttp("messages", "{\"message\":\"ya las he comprobado y se cumple\"}"))
+                .contains("límite existe", "valor de la función", "DONE");
+        assertThat(streamOverHttp("messages", "{\"message\":\"ejercicio completado\"}"))
+                .contains("Damos por terminado", "DONE");
+        assertThat(store.context(user, session).getLast().topic()).isEqualTo("funciones-continuidad");
+        assertThat(store.runs(user, session, 0, 20)).isEmpty();
+        verify(llm, times(3)).stream(any(), any());
+        verifyNoInteractions(cas);
+    }
+
+    @Test void aCompletionRequestKeepsTheProceduralExerciseOpenUntilItsResultIsVerified() {
+        var run = store.select(user, session, null, "DERIVADA: x^2", "2*x");
+        assertThat(streamOverHttp("messages", "{\"message\":\"ejercicio completado\"}"))
+                .contains("Envía tu resultado final", "DONE");
+        assertThat(store.current(user, session).id()).isEqualTo(run.id());
+        assertThat(store.current(user, session).attempts()).isZero();
+        verifyNoInteractions(cas, llm);
+        when(cas.compare("2*x", "2*x")).thenReturn(CasEngine.Comparison.EQUIVALENT);
+        assertThat(streamOverHttp("messages", "{\"message\":\"2*x\"}"))
+                .contains("Tu resultado ha sido verificado", "DONE");
+        assertThat(store.current(user, session)).isNull();
+        assertThat(store.runs(user, session, 0, 20).getFirst().state()).isEqualTo("COMPLETADO");
+    }
     @Test void providerOutageStreamsAndPersistsNotesWithoutPartialGeneratedText() {
         when(llm.stream(any(), any())).thenReturn(Flux.just("delta privado")
                 .concatWith(Flux.error(new IllegalStateException("fallo interno"))));

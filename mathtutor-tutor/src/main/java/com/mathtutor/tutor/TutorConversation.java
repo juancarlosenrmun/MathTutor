@@ -32,6 +32,11 @@ public class TutorConversation {
     private static final Pattern NEEDS_HELP = Pattern.compile(
             "(?:no (?:lo )?se|no sabria|ni idea|no tengo (?:ni )?idea"
                     + "|(?:no|aun no) (?:lo )?(?:entiendo|comprendo|veo)|no se como seguir)");
+    private static final Pattern CLOSING = Pattern.compile(
+            "(?:ejercicio (?:completado|terminado|resuelto)|(?:ya )?(?:termine|complete|he terminado|he completado) el ejercicio)");
+    private static final Pattern CHECKED_STEP = Pattern.compile(
+            "(?:(?:ya )?(?:(?:lo|los|las) )?(?:he )?(?:comprobado|verificado|revisado)(?: y se cumplen?)?"
+                    + "|(?:ya )?se cumplen?)");
     private static final Pattern FOLLOW_UP = Pattern.compile(
             "(?:si|no|claro|vale|de acuerdo|entiendo|exacto|y ahora|y entonces|por que|como (?:asi|sigo|continuo)"
                     + "|se como seguir"
@@ -104,6 +109,12 @@ public class TutorConversation {
     private Prepared prepareExercise(Long userId, Long sessionId, String message, List<String> history,
                                      ConversationStore.Run run, ExerciseVerification.Diagnosis diagnosis,
                                      PedagogicalAction action, boolean recognized) {
+        if (isClosing(message)) {
+            var session = sessions.active(userId, sessionId);
+            String topic = run.topic() != null ? run.topic()
+                    : SyllabusTopics.find(session.moduleCode(), TheoreticalHints.normalize(run.statement())).orElse(null);
+            return closeExercise(topic, true, run.reference() != null);
+        }
         if (diagnosis.completed()) {
             return new Prepared(Flux.just("Tu resultado ha sido verificado. ¿Qué regla justifica el último paso?"),
                     run.topic(), false);
@@ -135,12 +146,24 @@ public class TutorConversation {
         }
         String normalized = TheoreticalHints.normalize(message);
         String phrase = shortPhrase(normalized);
+        if (CLOSING.matcher(phrase).matches()) {
+            boolean hasContext = !history.isEmpty() && SyllabusTopics.contains(session.moduleCode(), previousTopic);
+            return closeExercise(hasContext ? previousTopic : null, hasContext, false);
+        }
         boolean needsHelp = NEEDS_HELP.matcher(phrase).matches();
         if (exerciseTopic == null && !exercise.isBlank()) {
             exerciseTopic = SyllabusTopics.find(session.moduleCode(), TheoreticalHints.normalize(exercise)).orElse(null);
         }
         String recentTopic = exerciseTopic != null ? exerciseTopic : previousTopic;
-        boolean continuation = SyllabusTopics.contains(session.moduleCode(), recentTopic)
+        boolean hasRecentTopic = SyllabusTopics.contains(session.moduleCode(), recentTopic);
+        if (hasRecentTopic && CHECKED_STEP.matcher(phrase).matches()) {
+            String reply = "funciones-continuidad".equals(recentTopic)
+                    ? "Si el límite existe y coincide con el valor de la función en ese punto, has comprobado la continuidad. "
+                        + "¿Qué expresión obtuviste en ambos cálculos?"
+                    : "¿Qué condición has comprobado y qué resultado obtuviste?";
+            return new Prepared(Flux.just(reply), recentTopic, false);
+        }
+        boolean continuation = hasRecentTopic
                 && (needsHelp || FOLLOW_UP.matcher(phrase).matches()
                     || ((REASONING_STEP.matcher(phrase).find() || ExerciseVerification.symbolicAnswer(phrase))
                         && !SyllabusTopics.hasOtherSubject(session.moduleCode(), normalized)));
@@ -238,6 +261,26 @@ public class TutorConversation {
 
     static boolean needsHelp(String message) {
         return NEEDS_HELP.matcher(shortPhrase(TheoreticalHints.normalize(message))).matches();
+    }
+
+    static boolean isClosing(String message) {
+        return CLOSING.matcher(shortPhrase(TheoreticalHints.normalize(message))).matches();
+    }
+
+    static boolean confirmsCheck(String message) {
+        return CHECKED_STEP.matcher(shortPhrase(TheoreticalHints.normalize(message))).matches();
+    }
+
+    private Prepared closeExercise(@Nullable String topic, boolean hasContext, boolean pendingVerification) {
+        String reply;
+        if (pendingVerification) {
+            reply = "Envía tu resultado final como expresión para que pueda verificarlo y marcar el ejercicio como completado.";
+        } else if (hasContext) {
+            reply = "Damos por terminado este ejercicio en el chat. Cuando quieras, podemos trabajar otro del módulo.";
+        } else {
+            reply = "Puedes indicar que has terminado después de trabajar un ejercicio en esta conversación.";
+        }
+        return new Prepared(Flux.just(reply), topic, false);
     }
 
     private static String shortPhrase(String normalized) {

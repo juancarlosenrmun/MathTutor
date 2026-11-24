@@ -75,6 +75,13 @@ class TutorConversationTest {
         assertThat(turn.rejected()).isTrue();
         verifyNoInteractions(llm);
     }
+
+    @Test void aClosingRequestWithoutAnExerciseExplainsWhenItApplies() {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
+        StepVerifier.create(conversation.reply(7L, 1L, "Ejercicio completado."))
+                .expectNextMatches(text -> text.contains("después de trabajar un ejercicio")).verifyComplete();
+        verifyNoInteractions(retriever, llm, cas);
+    }
     @ParameterizedTest
     @org.junit.jupiter.params.provider.CsvSource(value = {
             "funciones|Demuestra que componer dos funciones continuas conserva la continuidad.|qué función se aplica primero",
