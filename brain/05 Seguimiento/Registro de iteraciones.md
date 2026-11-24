@@ -1,3 +1,11 @@
+## 2026-11-24 12:50 · Sprint 10 · Conversaciones largas y controles del chat
+
+- **Petición**. Mantener el ejercicio y sus temas relacionados durante el diálogo, enviar con Enter, retirar el formulario manual y estabilizar la cifra del punto de tangencia.
+- **Implementación**. Inicio y turnos recientes acotados, selección idempotente del ejercicio, filtro de intentos simbólicos y pistas que distinguen continuidad y derivabilidad. Enter envía. El visor se genera desde el diálogo y su validación se ejecuta aparte. La coordenada conserva su espacio al moverse.
+- **Caja blanca**. 1 caso Java nuevo de respaldo contextual y regresiones ampliadas de historial y diagnóstico. Gradle pasó con 1.187 pruebas Java y 128 Node. JaCoCo del tutor 99,07 % de líneas y 92,98 % de ramas. V8 94,89 % y 89,59 %.
+- **Caja negra**. 1 prueba HTTP de 13 turnos y 1 recorrido Node nuevo de teclado y gráfica diferida. Chromium verificó Enter, Mayús + Enter y la anchura estable de la barra. Google AI Studio completó 13 turnos y rechazó una consulta ajena al temario. En el turno 7 se mantuvo el contexto con ayuda local y el proveedor respondió de nuevo en el 8.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
 ## 2026-11-24 12:00 · Sprint 10 · Notación vectorial y ayuda en Métodos 3D
 
 - **Petición**. Corregir la representación de `e_1 \times e_2` y el rechazo de «no lo se» durante el ejercicio.

@@ -42,13 +42,23 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 
 ## Fix del tutor y el visor
 
-- [x] Ejercicios inéditos, seguimiento del diálogo y peticiones de ayuda, notación vectorial y visor con deslizadores implementados.
-- [x] Caja blanca del flujo sin coincidencias, filtro de temario, tema del turno anterior, ayuda sin consumir intentos, MathML y movimiento del punto sin otra petición.
-- [x] Caja negra en Chrome con Google AI Studio, seguimiento en Funciones y Métodos 3D, notación vectorial, curva y superficie. Confirmado el rechazo de una consulta ajena al módulo.
+- [x] Ejercicios inéditos, seguimiento de ejercicios largos, peticiones de ayuda, notación vectorial, envío por Enter y visor con deslizadores estables implementados.
+- [x] Caja blanca del flujo sin coincidencias, filtro de temario, tema del turno anterior, conservación del enunciado, ayuda sin consumir intentos, MathML y movimiento del punto sin otra petición.
+- [x] Caja negra en Chrome con Google AI Studio, seguimiento en los tres módulos, incluido un ejercicio de 13 turnos, notación vectorial, curva y superficie. Confirmado el rechazo de una consulta ajena al módulo.
 - [x] Cobertura JaCoCo y V8 en umbral y verificación Gradle en verde.
 - [ ] CI remota e integración del fix en `DEV`.
 
 ## Notas de iteración
+
+### 2026-11-24 12:50 · Conversaciones largas y controles del chat
+
+- [[Casos de uso#UC-20|UC-20]]. El tutor conserva los dos primeros turnos y hasta diez turnos recientes con extractos acotados. Mantiene el ejercicio activo al repetir su selección y distingue el razonamiento en prosa de un intento simbólico.
+- La conversación enlaza los límites laterales, la continuidad y la derivabilidad. El paso auxiliar de continuidad mantiene su foco hasta pasar al cociente incremental. Una caída del proveedor conserva una pista local sobre el ejercicio cuando hay una regla pertinente.
+- El chat envía con Enter y permite saltos de línea con Mayús + Enter. Se retiró el formulario manual de dibujo. La gráfica se genera desde el diálogo y su validación se ejecuta aparte del envío.
+- [[Casos de uso#UC-31|UC-31]]. La coordenada se muestra en un espacio fijo, con hasta tres decimales. Los valores próximos a cero se muestran como cero y el texto se escribe solo cuando cambia.
+- Caja blanca con 1 caso nuevo de respaldo contextual y regresiones ampliadas de historial y verificación. Caja negra con 1 prueba HTTP de 13 turnos y 1 recorrido Node nuevo de teclado y validación gráfica en paralelo. En Google AI Studio se completaron 13 turnos y se rechazó la pregunta ajena. En el turno 7 se usó una pista local y el proveedor respondió de nuevo en el 8.
+- Gradle pasó con 1.187 pruebas Java y 128 Node. JaCoCo del tutor 99,07 % de líneas y 92,98 % de ramas. V8 94,89 % y 89,59 %. Contrato Chromium y accesibilidad en Chrome verificados.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Pendientes CI remota, integración en `DEV` y las mediciones de EN-06 ya anotadas. Véase [[Registro de iteraciones]].
 
 ### 2026-11-24 12:00 · Notación vectorial y peticiones de ayuda en Métodos 3D
 
