@@ -32,36 +32,42 @@ public class ExerciseStatistics {
         return lastActivity.isBefore(now.minus(inactivity));
     }
 
-    /** @brief Aplica la inactividad a sesiones aunque carezcan de un turno posterior. */
+    /** @brief Clasifica el estado de la práctica y su avance observable por separado. */
     public List<Summary> summarize(String module, Instant now) {
         return jdbc.query("""
                 WITH attempts AS (
-                    SELECT m.code AS module, t.code AS topic,
-                        CASE WHEN r.state = 'COMENZADO' AND r.last_activity_at < ? THEN 'ABANDONADO'
-                             ELSE r.state END AS state,
+                    SELECT m.code AS module, COALESCE(t.code, '') AS topic,
+                        CASE WHEN r.state = 'COMPLETADO' THEN 'COMPLETADO'
+                             WHEN r.state <> 'COMENZADO' OR s.status <> 'ACTIVA'
+                                  OR r.last_activity_at < ? THEN 'A_MEDIAS'
+                             WHEN r.attempts > 0 OR r.verified_steps > 0 OR r.progress > 0 THEN 'EN_CURSO'
+                             ELSE 'COMENZADO' END AS state,
                         CASE WHEN r.reference_solution IS NOT NULL THEN r.progress
-                             WHEN r.current_level = 'REVELACION' THEN 1.0
-                             WHEN r.current_level = 'EJEMPLO_ANALOGO' THEN 2.0 / 3
-                             WHEN r.current_level = 'PROCEDIMENTAL' THEN 1.0 / 3
-                             ELSE 0.0 END AS progress
+                             WHEN r.attempts = 0 THEN 0.0 END AS progress
                     FROM exercise_runs r JOIN tutor_sessions s ON s.id = r.session_id
                     JOIN modules m ON m.id = s.module_id LEFT JOIN topics t ON t.id = r.topic_id
-                    WHERE CAST(? AS text) IS NULL OR m.code = ?
+                ), retained AS (
+                    SELECT module, topic, COUNT(*) AS total,
+                        COUNT(*) FILTER (WHERE state = 'COMENZADO') AS started,
+                        COUNT(*) FILTER (WHERE state = 'EN_CURSO') AS active,
+                        COUNT(*) FILTER (WHERE state = 'COMPLETADO') AS completed,
+                        COUNT(*) FILTER (WHERE state = 'A_MEDIAS') AS unfinished,
+                        COUNT(*) FILTER (WHERE state <> 'COMPLETADO' AND progress < ?) AS early,
+                        COUNT(*) FILTER (WHERE state <> 'COMPLETADO' AND progress >= ?) AS near_solution,
+                        COUNT(*) FILTER (WHERE state <> 'COMPLETADO' AND progress IS NULL) AS unmeasured
+                    FROM attempts GROUP BY module, topic
                 )
-                SELECT module, topic, COUNT(*) AS started,
-                    COUNT(*) FILTER (WHERE state = 'COMENZADO') AS active,
-                    COUNT(*) FILTER (WHERE state = 'COMPLETADO') AS completed,
-                    COUNT(*) FILTER (WHERE state = 'ABANDONADO') AS abandoned,
-                    COUNT(*) FILTER (WHERE state = 'ABANDONADO' AND progress >= ?) AS near_solution
-                FROM attempts GROUP BY module, topic ORDER BY module, topic NULLS LAST
-                """, (row, index) -> {
-            long abandoned = row.getLong("abandoned");
-            long near = row.getLong("near_solution");
-            return new Summary(row.getString("module"), row.getString("topic"), row.getLong("started"),
-                    row.getLong("active"), row.getLong("completed"), abandoned, abandoned - near, near);
-        }, Timestamp.from(now.minus(inactivity)), module, module, nearSolution);
+                SELECT module, NULLIF(topic, '') AS topic, COALESCE(total, 0) + COALESCE(abandoned, 0) AS total,
+                    started, active, completed, unfinished, abandoned, early, near_solution, unmeasured
+                FROM retained FULL JOIN exercise_deletion_counts USING (module, topic)
+                WHERE CAST(? AS text) IS NULL OR module = ?
+                ORDER BY module, NULLIF(topic, '') NULLS LAST
+                """, (row, index) -> new Summary(row.getString("module"), row.getString("topic"), row.getLong("total"),
+                row.getLong("started"), row.getLong("active"), row.getLong("completed"), row.getLong("unfinished"),
+                row.getLong("abandoned"), row.getLong("early"), row.getLong("near_solution"), row.getLong("unmeasured")),
+                Timestamp.from(now.minus(inactivity)), nearSolution, nearSolution, module, module);
     }
 
-    public record Summary(String module, String topic, long started, long active, long completed, long abandoned,
-                          long abandonedEarly, long abandonedNearSolution) {}
+    public record Summary(String module, String topic, long total, long started, long active, long completed,
+                          long unfinished, long abandoned, long early, long nearSolution, long unmeasured) {}
 }

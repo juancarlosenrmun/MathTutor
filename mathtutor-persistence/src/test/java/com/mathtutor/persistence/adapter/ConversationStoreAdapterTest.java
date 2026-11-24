@@ -93,7 +93,7 @@ class ConversationStoreAdapterTest {
         var run = runs.findById(original).orElseThrow();
         run.setLastActivityAt(java.time.Instant.now().minus(java.time.Duration.ofHours(1)));
         runs.flush();
-        assertThat(store.runs(user, s.getId(), 0, 10).getFirst().state()).isEqualTo("ABANDONADO");
+        assertThat(store.runs(user, s.getId(), 0, 10).getFirst().state()).isEqualTo("A_MEDIAS");
         assertThatThrownBy(() -> store.select(user, s.getId(), null, "Deriva x^3", "3*x^2"))
                 .isInstanceOf(ConversationConflictException.class);
         var request = UUID.randomUUID();

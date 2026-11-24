@@ -214,8 +214,15 @@ public class ConversationStoreAdapter implements ConversationStore {
                 .sorted(Comparator.comparingInt(CanonicalStep::getPosition))
                 .flatMap(step -> step.getTypicalErrors().stream().sorted(Comparator.comparing(TypicalError::getCode)))
                 .map(TypicalError::getSeedHint).filter(Objects::nonNull).distinct().toList();
-        String state = r.getState() == ExerciseRun.RunState.COMENZADO
-                && statistics.expired(r.getLastActivityAt(), Instant.now()) ? "ABANDONADO" : r.getState().name();
+        String state = r.getState().name();
+        if (r.getState() == ExerciseRun.RunState.ABANDONADO || r.getState() == ExerciseRun.RunState.COMENZADO
+                && (r.getSession().getStatus() != TutorSession.SessionStatus.ACTIVA
+                    || statistics.expired(r.getLastActivityAt(), Instant.now()))) {
+            state = "A_MEDIAS";
+        } else if (r.getState() == ExerciseRun.RunState.COMENZADO
+                && (r.getAttempts() > 0 || r.getVerifiedSteps() > 0 || r.getProgress() > 0)) {
+            state = "EN_CURSO";
+        }
         return new Run(r.getId(),e==null ? null : e.getId(),r.getStatementLatex(),r.getReferenceSolution(),r.getTopic()==null ? null : r.getTopic().getCode(),state,r.getProgress(),r.getVerifiedSteps(),steps,r.getAttempts(),
                 e == null ? r.getReferenceSolution() : e.getReferenceSolutionLatex(), hints);
     }

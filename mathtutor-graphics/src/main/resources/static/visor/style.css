@@ -1120,3 +1120,10 @@ input[type="range"] { width: 100%; min-width: 0; accent-color: var(--accent); }
 
 .tutor-viewer-slot :is(.viewer-selection, .camera-toolbar, .viewer-option, #animation-status) { display: none; }
 .viewer-toggle:disabled { cursor: default; opacity: .65; }
+
+#teacher-table .stats-total { background: #eef1f6; color: #253855; font-weight: 700; }
+#teacher-table .stats-activity { background: #ecf4ff; color: #204984; }
+#teacher-table .stats-completed { background: #eaf7ef; color: #185738; }
+#teacher-table .stats-deleted { background: #fff2e3; color: #744719; }
+#teacher-table .stats-progress { background: #f3ecfb; color: #563572; }
+#teacher-table td[class^="stats-"] { text-align: right; font-variant-numeric: tabular-nums; }

@@ -50,7 +50,7 @@ class DevDatabaseMigrationIntegrationTest {
 
     @Test
     void startsWithAllExistingMappingsValidatedAfterFlyway() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("15");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("16");
         assertThat(jdbc.queryForObject("""
                 SELECT is_nullable FROM information_schema.columns
                 WHERE table_name = 'exercise_runs' AND column_name = 'last_activity_at'

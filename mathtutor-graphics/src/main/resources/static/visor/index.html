@@ -462,13 +462,29 @@
           <h2 id="teacher-title">Estadísticas de ejercicios</h2>
           <button type="button" id="teacher-load" class="button secondary">Consultar estadísticas</button>
           <p id="teacher-status" role="status"></p>
-          <div id="teacher-table" class="statistics-scroll" tabindex="0" role="region" aria-label="Tabla de estadísticas" hidden>
+          <div id="teacher-table" class="statistics-scroll" tabindex="0" role="region" aria-label="Tabla de estadísticas" aria-describedby="teacher-progress-help" hidden>
+            <p id="teacher-progress-help" class="field-help">«Comenzados» indica que aún no hay un intento registrado. El avance se muestra para los ejercicios pendientes de conversaciones guardadas.</p>
             <table>
               <caption>Ejercicios por módulo y tema</caption>
-              <thead><tr><th scope="col">Módulo</th><th scope="col">Tema</th>
-                <th scope="col">Comenzados</th><th scope="col">En curso</th><th scope="col">Completados</th>
-                <th scope="col">Abandonados</th><th scope="col">Al inicio</th><th scope="col">Cerca de la solución</th>
-              </tr></thead>
+              <colgroup span="3"></colgroup><colgroup span="5"></colgroup><colgroup span="3"></colgroup>
+              <thead>
+                <tr>
+                  <th scope="col" rowspan="2">Módulo</th><th scope="col" rowspan="2">Tema</th>
+                  <th scope="col" rowspan="2" class="stats-total">Total</th>
+                  <th scope="colgroup" colspan="5" class="stats-activity">Estado</th>
+                  <th scope="colgroup" colspan="3" class="stats-progress">Avance de los ejercicios pendientes</th>
+                </tr>
+                <tr>
+                  <th scope="col" class="stats-activity">Comenzados</th>
+                  <th scope="col" class="stats-activity">En curso</th>
+                  <th scope="col" class="stats-completed">Completados</th>
+                  <th scope="col" class="stats-activity">A medias</th>
+                  <th scope="col" class="stats-deleted">Abandonados al borrar el chat</th>
+                  <th scope="col" class="stats-progress">Al inicio</th>
+                  <th scope="col" class="stats-progress">Cerca de la solución</th>
+                  <th scope="col" class="stats-progress">Avance sin medir</th>
+                </tr>
+              </thead>
               <tbody id="teacher-results"></tbody>
             </table>
           </div>

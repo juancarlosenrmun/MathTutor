@@ -119,7 +119,13 @@ class SprintFourIntegrationTest {
                 .active(true).role(User.Role.ALUMNO).build()).getId();
         mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isNotFound());
         user = owner;
+        store.select(user, session, null, "Deriva x^3", "3*x^2");
         mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isNoContent());
+        mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isNotFound());
+        var sql = new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+        assertThat(sql.queryForObject("SELECT SUM(abandoned) FROM exercise_deletion_counts", Long.class)).isEqualTo(1L);
+        mvc.perform(get("/api/teacher/statistics").with(actor("PROFESOR")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$[*].abandoned", org.hamcrest.Matchers.hasItem(1)));
         mvc.perform(get(path + "/history").with(actor("ALUMNO"))).andExpect(status().isNotFound());
         assertThat(store.sessions(user, 0, 20)).isEmpty();
     }

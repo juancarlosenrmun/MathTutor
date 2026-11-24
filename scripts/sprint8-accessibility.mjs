@@ -37,8 +37,8 @@ async function fixture(page, role = 'ALUMNO') {
       '/api/auth/refresh': { data: profile },
       '/api/privacy/export': { profile },
       '/api/admin/users': [{ id: 2, role: 'ALUMNO', active: true, email: 'alumno@example.test' }],
-      '/api/teacher/statistics': [{ module: 'funciones', topic: null, started: 3, active: 1, completed: 1,
-        abandoned: 1, abandonedEarly: 0, abandonedNearSolution: 1 }],
+      '/api/teacher/statistics': [{ module: 'funciones', topic: null, total: 5, started: 1, active: 1, completed: 1, unfinished: 1,
+        abandoned: 1, early: 1, nearSolution: 2, unmeasured: 0 }],
       '/api/tutor/modules': [{ code: 'funciones', name: 'Funciones' }],
       '/api/tutor/sessions': { id: 4, moduleCode: 'funciones', status: 'ACTIVA' },
     }[path] ?? [];
@@ -120,6 +120,13 @@ async function verifyAccount(browser, base, name) {
   assert.equal(await admin.locator('#admin-user').inputValue(), '2');
   await admin.getByRole('button', { name: 'Consultar estadísticas' }).click();
   await admin.getByRole('cell', { name: 'Sin tema' }).waitFor();
+  const stats = admin.locator('#teacher-table');
+  assert.deepEqual(await stats.locator('tbody td').allTextContents(),
+    ['funciones', 'Sin tema', '5', '1', '1', '1', '1', '1', '1', '2', '0']);
+  assert.equal(await stats.getByRole('columnheader', { name: 'Total', exact: true }).count(), 1);
+  const colors = await stats.locator('tbody td:is(.stats-total, .stats-activity, .stats-completed, .stats-deleted, .stats-progress)')
+    .evaluateAll(cells => cells.map(cell => getComputedStyle(cell).backgroundColor));
+  assert.equal(new Set(colors).size, 5);
   assert.equal(await admin.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await audit(admin, 'administración y estadísticas');
   await admin.locator('#admin-role').selectOption('PROFESOR');
