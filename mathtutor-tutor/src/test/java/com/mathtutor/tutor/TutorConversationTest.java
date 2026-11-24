@@ -49,6 +49,13 @@ class TutorConversationTest {
                 .verifyComplete();
         verifyNoInteractions(llm);
     }
+    @Test void aGenericFunctionMentionDoesNotAdmitAnIntegralInTheFunctionsModule() {
+        active(); when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of());
+        var turn = conversation.prepare(7L, 1L, "Calcula la integral de la función x^5+2", List.of(), "");
+        assertThat(turn.rejected()).isTrue();
+        StepVerifier.create(turn.response()).expectNextMatches(text -> text.contains("dentro del temario")).verifyComplete();
+        verifyNoInteractions(llm);
+    }
     @ParameterizedTest
     @org.junit.jupiter.params.provider.CsvSource(value = {
             "funciones|Demuestra que componer dos funciones continuas conserva la continuidad.|qué función se aplica primero",
@@ -117,6 +124,27 @@ class TutorConversationTest {
                 .expectNext("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.")
                 .verifyComplete();
         verifyNoInteractions(llm);
+    }
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource(value = {
+            "funciones|funciones-continuidad|Estudia la continuidad de f(x)=x^2+7",
+            "funciones|funciones-continuidad|f(x)=x^3+5*x",
+            "funciones|funciones-continuidad|Resuelve x^2-5=0",
+            "derivadas-integrales|calculo-integral|Calcula la integral de x^5+3*x",
+            "metodos-3d|matrices|Calcula el determinante de la matriz [[3,7],[2,5]]"
+    }, delimiter = '|')
+    void newExercisesOnTheSyllabusReachTheLlmWithoutAnIndexedMatch(String module, String topic, String message) {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, module, "ACTIVA"));
+        when(llm.stream(any(), any())).thenReturn(Flux.just("¿Qué regla aplicarías primero?"));
+        var turn = conversation.prepare(7L, 1L, message, List.of(), "");
+        assertThat(turn.rejected()).isFalse();
+        assertThat(turn.topic()).isEqualTo(topic);
+        StepVerifier.create(turn.response()).expectNext("¿Qué regla aplicarías primero?").verifyComplete();
+        var prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(llm).stream(prompt.capture(), any());
+        assertThat(prompt.getValue().userPrompt()).isEqualTo(message);
+        assertThat(prompt.getValue().contextChunks()).isEmpty();
+        verifyNoInteractions(cas);
     }
     @Test void validStudentExpressionAddsDeterministicFormToPrompt() {
         active(); when(cas.parse("x^2")).thenReturn(new CasEngine.Expr("x^2", "Power(x,2)", "Power(x,2)"));
