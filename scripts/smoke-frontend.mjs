@@ -99,11 +99,13 @@ try {
   }
   await evaluate(`(() => {
     const doc=document.querySelector('iframe').contentDocument;
-    doc.querySelector('#graphic-form').closest('details').open=true;
-    doc.querySelector('#graphic-form').requestSubmit();
+    doc.querySelector('#tutor-message').value='Dibuja f(x) = x^2';
+    doc.querySelector('#tutor-form').requestSubmit();
   })()`);
-  await delay(50);
-  await evaluate(`document.querySelector('iframe').contentDocument.querySelector('#graphic-form').closest('details').open=false`);
+  for (let attempt=0;attempt<100;attempt++) {
+    if (await evaluate(`document.querySelector('iframe').contentDocument.querySelector('#tutor-viewer-slot').hidden===false`)) break;
+    await delay(30);
+  }
   for (const [name,width,height] of [['tutor-s4',1440,1200],['tutor-s4-movil',390,1400]]) {
     await command('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<700});
     await delay(50);

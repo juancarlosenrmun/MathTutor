@@ -592,25 +592,12 @@
               <form id="tutor-form">
                 <label for="tutor-message">Tu pregunta</label>
                 <textarea id="tutor-message" required maxlength="4000" rows="3" aria-describedby="tutor-message-help tutor-practice-prompt" placeholder="Escribe tu pregunta de Matemáticas…"></textarea>
-                <p id="tutor-message-help" class="field-help">Pregunta por un concepto, empieza un ejercicio con «Deriva x^2» o pide una gráfica con «Dibuja f(x) = x^2».</p>
+                <p id="tutor-message-help" class="field-help">Enter envía el mensaje. Mayús + Enter añade una línea. Puedes pedir una gráfica con «Dibuja f(x) = x^2».</p>
                 <button id="tutor-send" class="button" type="submit">Enviar pregunta</button>
               </form>
               <button id="tutor-cancel" class="button secondary" type="button" disabled>Detener respuesta</button>
                <button id="tutor-retry" class="button secondary" type="button" hidden>Recuperar envío pendiente</button>
-              <details class="study-panel"><summary>Dibujar una gráfica</summary>
-                <form id="graphic-form"><fieldset id="graphic-fields"><legend>Función y dominio</legend>
-                  <label for="graphic-type">Tipo de gráfica</label><select id="graphic-type"><option value="CURVA_2D">Curva 2D</option><option value="SUPERFICIE">Superficie 3D</option><option value="RECTA_TANGENTE">Recta tangente</option><option value="PLANO_TANGENTE">Plano tangente</option></select>
-                  <label for="graphic-function">Función</label><input id="graphic-function" maxlength="200" required aria-describedby="graphic-help" />
-                  <div class="study-domain"><div><label for="graphic-min">Desde</label><input id="graphic-min" type="number" value="-2" min="-10000" max="10000" step="any" required /></div>
-                  <div><label for="graphic-max">Hasta</label><input id="graphic-max" type="number" value="2" min="-10000" max="10000" step="any" required /></div></div>
-                  <label for="graphic-steps">Divisiones</label><input id="graphic-steps" type="number" value="32" min="2" max="200" step="1" required />
-                  <div id="graphic-tangent-x-field" hidden><label for="graphic-tangent-x">Tangencia inicial en x</label><div class="tangent-range"><input id="graphic-tangent-x" type="range" min="-2" max="2" step="any" value="0" disabled /><output id="graphic-tangent-x-value" for="graphic-tangent-x" aria-hidden="true"></output></div></div>
-                  <div id="graphic-tangent-y-field" hidden><label for="graphic-tangent-y">Tangencia inicial en y</label><input id="graphic-tangent-y" type="range" min="-2" max="2" step="any" value="0" disabled /></div>
-                  <p id="graphic-help" class="field-help">Usa x para curvas, x e y para superficies, y operaciones como x^2 o sin(x). En superficies, el intervalo se aplica a ambos ejes; máximo 128 divisiones y dominio entre −100 y 100.</p>
-                  <button class="button secondary" type="submit">Comprobar y dibujar</button>
-                </fieldset></form>
-                <p id="graphic-result" role="status" class="field-help"></p>
-              </details>
+              <p id="tutor-graphic-status" role="status" class="field-help" hidden></p>
             </div>
             <p class="field-help">Las respuestas se muestran a medida que llegan. Contrasta los resultados: el tutor puede cometer errores.</p>
           </div>

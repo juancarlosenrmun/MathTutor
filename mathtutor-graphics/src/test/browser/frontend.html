@@ -160,10 +160,14 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   frame.style.width='1440px'; await settle();
   const chat=doc.querySelector('.tutor-conversation');
   assert(slot.hidden && slot.getBoundingClientRect().width === 0, 'El chat de texto abre el visor vacío');
-  const graphicDetails=doc.querySelector('#graphic-form').closest('details');
-  graphicDetails.open=true;
-  doc.querySelector('#graphic-function').value='x^2';
-  doc.querySelector('#graphic-form').requestSubmit();await settle();
+  assert(!doc.querySelector('#graphic-form'), 'Sigue disponible el formulario manual de dibujo');
+  const composer = doc.querySelector('#tutor-message');
+  composer.value = 'Dibuja f(x) = x^2';
+  composer.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', shiftKey:true, cancelable:true}));
+  await settle();
+  assert(slot.hidden, 'Mayús + Enter envía el mensaje');
+  composer.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', cancelable:true}));
+  await settle();
   assert(!slot.hidden, 'Una curva validada no abre el visor');
   const viewerTangent = doc.querySelector('#viewer-tangent-x');
   assert(viewerTangent.type === 'range' && viewerTangent.min === '-2' && viewerTangent.max === '2', 'La barra no sigue el dominio');
@@ -172,6 +176,14 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   viewerTangent.dispatchEvent(new Event('input'));
   assert(doc.querySelector('#viewer-tangent-x-value').textContent === '1', 'La coordenada visible no sigue el arrastre');
   assert(doc.querySelector('#viewer-tangent-result').textContent.includes('Pendiente aproximada: 2'), 'La recta no se mueve durante el arrastre');
+  const readout = doc.querySelector('#viewer-tangent-x-value');
+  const trackWidth = viewerTangent.getBoundingClientRect().width;
+  for (const x of ['-0.00005', '-0.125', '1.9999', '0']) {
+    viewerTangent.value = x;
+    viewerTangent.dispatchEvent(new Event('input'));
+    assert(viewerTangent.getBoundingClientRect().width === trackWidth, 'La barra cambia de anchura según el número');
+    if (x === '-0.00005') assert(readout.textContent === '0', 'El valor alterna entre cero y menos cero');
+  }
   const widthBefore=chat.getBoundingClientRect().width;
   const toggle=doc.querySelector('#tutor-viewer-toggle');
   toggle.click(); await settle();
@@ -184,8 +196,6 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   doc.querySelector('#tutor-form').dispatchEvent(new Event('submit',{cancelable:true})); await settle();
   assert(win.testState.calls.some(([path,options]) => path.endsWith('/exercises')
     && options.method === 'POST' && JSON.parse(options.body).exerciseId === 7), 'No se inicia el ejercicio elegido');
-  doc.querySelector('#graphic-form').dispatchEvent(new Event('submit', {cancelable:true}));await settle();
-  assert(doc.querySelector('#graphic-result').textContent.includes('f(x)'), 'La gráfica no se interpreta');
   for (const width of [1440,1024,768,375,320]) {
     frame.style.width=width+'px';await settle();
     assert(doc.documentElement.scrollWidth<=doc.documentElement.clientWidth+1,'Desbordamiento de herramientas S4 a '+width);

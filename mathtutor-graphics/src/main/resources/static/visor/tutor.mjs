@@ -165,7 +165,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
         one('tutor-message').value='';
         status.textContent='Respuesta completada.';
         announceAnswer(markdown);
-        await study.fromReply?.(message, markdown, controller.signal);
+        void study.fromReply?.(message, markdown);
       }
     } catch (error) {
       if (current===generation) {
@@ -195,6 +195,11 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     }
   }
   one('tutor-form').addEventListener('submit',event=>{event.preventDefault();return send();});
+  one('tutor-message').addEventListener('keydown', event => {
+    if (event.key !== 'Enter' || event.isComposing || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
+    event.preventDefault();
+    if (!event.repeat && writable() && !busy && !pending) one('tutor-form').requestSubmit();
+  });
   /** @brief Activa una práctica del módulo y anuncia el enunciado sin enviar un turno de chat. */
   practiceButton?.addEventListener('click', async () => {
     if (!practicePrompt || !writable() || busy || pending) return;

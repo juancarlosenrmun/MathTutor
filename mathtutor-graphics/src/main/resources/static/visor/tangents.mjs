@@ -15,8 +15,12 @@ export function configureTangencyRange(field, min, max, point = 0) {
 
 /** Muestra la coordenada y permite refrescarla también al cambiar el dominio. */
 export function bindTangencyValue(field, output) {
+  const formatter = new Intl.NumberFormat('es-ES', {maximumFractionDigits: 3, useGrouping: false});
   const update = () => {
-    if (output) output.textContent = Number(field.value).toLocaleString('es-ES', {maximumFractionDigits: 6});
+    if (!output) return;
+    const value = Number(field.value);
+    const formatted = formatter.format(Math.abs(value) < 0.0005 ? 0 : value);
+    if (output.textContent !== formatted) output.textContent = formatted;
   };
   field?.addEventListener('input', update);
   return update;
