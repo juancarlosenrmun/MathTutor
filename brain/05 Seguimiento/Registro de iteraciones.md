@@ -1,3 +1,10 @@
+## 2026-11-24 17:07 · Sprint 04 · Resumen del historial conversacional
+
+- **Petición**. Resumir los turnos anteriores y acompañar el resumen con los turnos recientes para conversaciones largas.
+- **Implementación**. [[Casos de uso#UC-20|UC-20]] envía seis turnos recientes y hasta seis extractos previos. El resumen prioriza el inicio y los pasos verificados, y se calcula en Java para la misma llamada al LLM. El diseño se registró en DOC (`fd24820`).
+- **Pruebas y cobertura**. Dos comprobaciones de caja blanca (una nueva y otra ampliada) y un recorrido HTTP/SSE ampliado de 13 turnos. `check jacocoAggregateReport` en verde con 1.207 Java y cero omisiones. JaCoCo del tutor 99,21 % de líneas y 93,50 % de ramas, política pedagógica 100 % en ambas. Persistencia 92,48 % y 80,93 %. PostgreSQL/pgvector verificado.
+- **Pendiente**. Medición de tokens con el proveedor real, CI remota e integración en DEV. Checklist **46/50**, incremento **4/5**, estado `en curso`. Véase [[Sprint 04]].
+
 ## 2026-11-24 16:51 · Sprint 04 · Respuestas al ejemplo de continuidad
 
 - **Petición**. Diagnosticar y corregir el rechazo de dos respuestas válidas a un ejemplo que había planteado el propio tutor.

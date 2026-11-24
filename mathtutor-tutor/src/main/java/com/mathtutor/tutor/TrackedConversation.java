@@ -10,6 +10,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** @brief UC-18/20/25. Coordina la política, la reserva y la escritura fuera de la llamada al LLM. */
 @Service
 public class TrackedConversation {
+    private static final int RECENT_TURNS = 6;
+    private static final int OPENING_TURNS = 2;
+    private static final int SUMMARY_TURNS = 6;
     private static final java.util.regex.Pattern EXERCISE_START = java.util.regex.Pattern.compile(
             "^(?:¿?\\s*(?:calcula|determina|resuelve|halla|demuestra|comprueba|estudia|deriva|simplifica|define|enuncia)\\b"
                     + "|¿?\\s*f\\s*\\([^)]*\\)\\s*=.+\\b(?:es continua|es derivable)\\b"
@@ -138,19 +141,44 @@ public class TrackedConversation {
         boolean eligible = run.reference() != null && diagnosis.verdict().equals("INCORRECTO");
         return policy.decide(eligible, diagnosis.diagnosis(), run.attempts());
     }
-    /** Conserva el inicio y los últimos pasos, incluso si alguna respuesta fue extensa. */
+    /** Conserva los intercambios recientes y comprime los turnos anteriores en un resumen extractivo. */
     static List<String> boundedHistory(List<ConversationStore.Entry> entries) {
+        int firstRecent = Math.max(0, entries.size() - RECENT_TURNS);
         var result = new ArrayList<String>();
-        for (int i = 0; i < entries.size(); i++) {
-            if (i >= 2 && i < entries.size() - 10) continue;
-            var entry = entries.get(i);
-            result.add("Alumno: " + excerpt(entry.message()) + "\nTutor: " + excerpt(entry.response()));
+        if (firstRecent > 0) {
+            result.add(summarize(entries.subList(0, firstRecent)));
+        }
+        for (var entry : entries.subList(firstRecent, entries.size())) {
+            result.add("Alumno: " + excerpt(entry.message(), 400, 245)
+                    + "\nTutor: " + excerpt(entry.response(), 400, 245));
         }
         return List.copyOf(result);
     }
 
-    private static String excerpt(String text) {
-        if (text.length() <= 650) return text;
-        return text.substring(0, 400) + "\n[…]\n" + text.substring(text.length() - 245);
+    private static String summarize(List<ConversationStore.Entry> earlier) {
+        int openingCount = Math.min(OPENING_TURNS, earlier.size());
+        var opening = earlier.subList(0, openingCount);
+        var selected = earlier.subList(openingCount, earlier.size()).reversed().stream()
+                .sorted(Comparator.comparing(turn -> !"CORRECTO".equals(turn.verdict())))
+                .limit(SUMMARY_TURNS - openingCount)
+                .sorted(Comparator.comparing(ConversationStore.Entry::at).thenComparing(ConversationStore.Entry::id))
+                .toList();
+        var summary = new StringBuilder("Resumen de turnos anteriores (extractos):");
+        for (var turn : opening) appendSummaryTurn(summary, turn);
+        for (var turn : selected) appendSummaryTurn(summary, turn);
+        return summary.toString();
+    }
+
+    private static void appendSummaryTurn(StringBuilder summary, ConversationStore.Entry turn) {
+        summary.append("\n- Alumno: ").append(excerpt(turn.message(), 105, 40))
+                .append("\n  Tutor: ").append(excerpt(turn.response(), 60, 85));
+    }
+
+    private static String excerpt(String text, int head, int tail) {
+        if (text.length() <= head + tail + 5) return text;
+        int startTail = text.length() - tail;
+        if (Character.isHighSurrogate(text.charAt(head - 1))) head--;
+        if (Character.isLowSurrogate(text.charAt(startTail))) startTail++;
+        return text.substring(0, head) + "\n[…]\n" + text.substring(startTail);
     }
 }

@@ -90,7 +90,28 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 - [x] Cobertura en umbral (JaCoCo y V8)
 - [ ] CI verde e integración de `s04-entrenamiento-tutor` en DEV
 
+## Resumen del historial conversacional
+
+- [x] Resumen acotado y últimos turnos en el contexto del LLM
+- [x] Caja blanca de longitud, selección y conversaciones cortas
+- [x] Caja negra de conversación larga por HTTP/SSE
+- [x] Cobertura JaCoCo en umbral
+- [ ] CI verde e integración en DEV
+
 ## Notas de iteración
+
+### 2026-11-24 17:07 · Resumen del historial conversacional
+
+- [[Casos de uso#UC-20|UC-20]]. El backend presenta al modelo los seis turnos recientes y hasta seis extractos de turnos anteriores, con prioridad para los primeros intercambios y los pasos verificados. La lectura está acotada a los últimos 24 turnos completados y al inicio de la sesión. El resumen se prepara para la misma llamada de generación.
+- El límite de texto del historial baja de unos 15.800 a menos de 10.000 caracteres. La estimación corresponde a caracteres del historial. Pendiente la medición del consumo de tokens con el proveedor real.
+- Dos comprobaciones de caja blanca, una nueva y otra ampliada, y una regresión de caja negra de 13 turnos por HTTP/SSE. Pasaron 1.207 pruebas Java sin omisiones. JaCoCo del tutor: 99,21 % de líneas y 93,50 % de ramas. Persistencia: 92,48 % y 80,93 %. Política pedagógica: 100 % en ambas. PostgreSQL/pgvector verificado.
+- Diseño registrado en DOC (`fd24820`). Pendientes CI remota e integración en DEV. Checklist del resumen **4/5**, total del sprint **46/50**, estado `en curso`.
+
+### Plan del resumen conversacional
+
+1. Ampliar la lectura acotada de turnos completados para recuperar los necesarios antes de la ventana reciente de [[Casos de uso#UC-20|UC-20]].
+2. Preparar un resumen extractivo en Java que conserve el comienzo y dé prioridad a pasos verificados. Adjuntar los seis turnos más recientes y el estado del ejercicio a la única llamada al LLM.
+3. Verificar la longitud y el orden del contexto y reproducir por HTTP/SSE una conversación larga con un paso anterior a la ventana reciente.
 
 ### 2026-11-24 16:51 · El tutor retoma el valor pedido en su ejemplo
 

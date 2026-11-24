@@ -248,6 +248,7 @@ public class TutorConversation {
                 + "como f(x) = x^2 o z = x^2 + y^2, usando * para multiplicar.";
         if (!history.isEmpty()) {
             constraints += " Conserva el enunciado y lo ya comprobado. Retoma el último paso pendiente sin volver al principio. "
+                    + "Si hay un resumen, úsalo para recuperar pasos anteriores y da prioridad a las correcciones más recientes. "
                     + "Distingue el objetivo del ejercicio del paso que se está discutiendo. "
                     + "Si el alumno está comprobando la continuidad, interpreta sus límites como límites de la función "
                     + "hasta que el diálogo pase al cociente incremental. "

@@ -52,14 +52,24 @@ class TrackedConversationTest {
         verify(store).finish(eq(1L),eq(2L),eq(request),argThat(r -> r.status().equals("ERROR")));
     }
     @Test void boundsHistoryByTurnsAndCharacters() {
-        var entries=new ArrayList<ConversationStore.Entry>();
-        for (int i=0;i<20;i++) entries.add(entry("COMPLETADO"));
-        assertThat(TrackedConversation.boundedHistory(entries)).hasSize(12);
-        entries.add(new ConversationStore.Entry(9L,request,"x".repeat(16000),"",null,null,null,null,0,null,null,"COMPLETADO",Instant.EPOCH,null));
+        var entries = new ArrayList<ConversationStore.Entry>();
+        for (int i = 0; i < 20; i++) {
+            entries.add(new ConversationStore.Entry((long) i, request, "Paso " + i + " " + "x".repeat(4000),
+                    "Pista " + i + " " + "y".repeat(4000), "funciones", null, null, null, 0, null, null,
+                    "COMPLETADO", Instant.EPOCH, null, i == 3 ? "CORRECTO" : "NO_APLICA"));
+        }
         var bounded = TrackedConversation.boundedHistory(entries);
-        assertThat(bounded).hasSize(12);
-        assertThat(bounded.stream().mapToInt(String::length).sum()).isLessThan(16000);
-        assertThat(bounded.getLast()).startsWith("Alumno: xxxx").endsWith("Tutor: ");
+        assertThat(bounded).hasSize(7);
+        assertThat(bounded.getFirst()).startsWith("Resumen de turnos anteriores")
+                .contains("Paso 0", "Paso 3").doesNotContain("Paso 14", "Paso 19");
+        assertThat(bounded.getLast()).startsWith("Alumno: Paso 19").contains("\nTutor: Pista 19");
+        assertThat(String.join("\n", bounded)).hasSizeLessThan(10_000);
+    }
+
+    @Test void keepsShortConversationsAsDirectExchanges() {
+        var completed = entry("COMPLETADO");
+        assertThat(TrackedConversation.boundedHistory(Collections.nCopies(6, completed)))
+                .hasSize(6).containsOnly("Alumno: hola\nTutor: guardado");
     }
     @Test void rejectsInvalidInputBeforeReserving() {
         for (String message:new String[]{null,""," ","x".repeat(4001)})
