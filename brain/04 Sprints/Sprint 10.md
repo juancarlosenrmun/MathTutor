@@ -50,6 +50,13 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 
 ## Notas de iteración
 
+### 2026-11-24 15:32 · Estados y avance de los ejercicios
+
+- [[Casos de uso#UC-10|UC-10]]. La tabla docente muestra el total y separa los estados comenzado, en curso, completado, a medias y abandonado al borrar el chat. Los ejercicios pendientes conservados se clasifican por avance medible. La tabla usa colores para distinguir total, actividad, completados, abandono y avance.
+- [[Casos de uso#UC-11|UC-11]]. El borrado explícito del chat conserva un recuento agregado por módulo y tema de sus ejercicios sin completar. Los estados antiguos de abandono se presentan como a medias. Los chats eliminados antes de este cambio no se reconstruyen.
+- Se ampliaron 1 prueba de persistencia y 3 de API e integración, más 1 recorrido Chrome con accesibilidad. Gradle en verde con 1193 pruebas Java y 129 Node. JaCoCo de persistencia 93,43 % de líneas y 82,47 % de ramas. V8 93,84 % de líneas y 88,46 % de ramas.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Siguen pendientes la CI remota y la integración en `DEV`.
+
 ### 2026-11-24 15:12 · Relleno del plano tangente
 
 - [[Casos de uso#UC-31|UC-31]]. El plano tangente dibuja un relleno rosa translúcido bajo el contorno y las diagonales. El relleno usa las mismas esquinas y se desplaza con el punto de tangencia en el tutor y el laboratorio.
