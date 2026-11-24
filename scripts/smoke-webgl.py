@@ -15,6 +15,8 @@ EVIDENCE = ROOT / "mathtutor-graphics/build/reports/client-browser"
 
 
 class Handler(SimpleHTTPRequestHandler):
+    extensions_map = {**SimpleHTTPRequestHandler.extensions_map, ".mjs": "text/javascript"}
+
     def do_GET(self):
         if self.path == "/api/csrf-token":
             self.send_response(200)
@@ -44,6 +46,7 @@ class Handler(SimpleHTTPRequestHandler):
 def run_native(name, expected_major, origin):
     """Ejecuta las mismas aserciones de píxeles con Firefox o Safari oficiales."""
     from selenium import webdriver
+    from selenium.common.exceptions import TimeoutException
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
 
@@ -70,9 +73,31 @@ def run_native(name, expected_major, origin):
         status = WebDriverWait(browser, 30).until(result)
         if status != "passed":
             raise AssertionError(browser.find_element(By.ID, "status").text)
-        browser.get(origin + "/visor/index.html#/laboratorio")
-        WebDriverWait(browser, 15).until(
-            lambda driver: "Visor listo." in driver.find_element(By.ID, "graphic-status").text)
+        browser.get(origin + "/visor/index.html")
+        # Abre la ruta desde el documento cargado, como hace el enlace del menú.
+        browser.execute_script(
+            """document.querySelector('[data-nav="laboratorio"]').click();""")
+        try:
+            WebDriverWait(browser, 15).until(lambda driver: driver.execute_script("""
+                const lab = document.querySelector('[data-view="laboratorio"]');
+                const canvas = lab?.querySelector('canvas');
+                const status = lab?.querySelector('#graphic-status');
+                return location.hash === '#/laboratorio' && lab?.hidden === false
+                    && canvas?.clientWidth > 0 && canvas.clientHeight > 0
+                    && status?.textContent.includes('Visor listo.');
+            """))
+        except TimeoutException as error:
+            details = browser.execute_script("""
+                const lab = document.querySelector('[data-view="laboratorio"]');
+                const canvas = lab?.querySelector('canvas');
+                return {
+                    ruta: location.hash,
+                    laboratorioOculto: lab?.hidden,
+                    dimensionesVisibles: [canvas?.clientWidth, canvas?.clientHeight],
+                    estado: document.querySelector('#graphic-status')?.textContent.trim()
+                };
+            """)
+            raise AssertionError(f"El laboratorio no inició en {name} {version}: {details}") from error
         print("WebGL 2 nativo correcto en las pruebas de píxeles y en el laboratorio")
 
 
