@@ -42,13 +42,21 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 
 ## Fix del tutor y el visor
 
-- [x] Ejercicios inéditos, seguimiento de ejercicios largos, peticiones de ayuda, notación vectorial, envío por Enter y visor con deslizadores estables implementados.
-- [x] Caja blanca del flujo sin coincidencias, filtro de temario, tema del turno anterior, conservación del enunciado, ayuda sin consumir intentos, MathML y movimiento del punto sin otra petición.
+- [x] Ejercicios inéditos, seguimiento y cierre de ejercicios, peticiones de ayuda, notación vectorial en el chat y la práctica guiada, envío por Enter y visor con deslizadores estables implementados.
+- [x] Caja blanca del flujo sin coincidencias, filtro de temario, tema del turno anterior, conservación del enunciado, cierre sin acreditar intentos, ayuda, MathML y movimiento del punto sin otra petición.
 - [x] Caja negra en Chrome con Google AI Studio, seguimiento en los tres módulos, incluido un ejercicio de 13 turnos, notación vectorial, curva y superficie. Confirmado el rechazo de una consulta ajena al módulo.
 - [x] Cobertura JaCoCo y V8 en umbral y verificación Gradle en verde.
 - [ ] CI remota e integración del fix en `DEV`.
 
 ## Notas de iteración
+
+### 2026-11-24 13:07 · Cierre de ejercicios y fórmulas en la práctica guiada
+
+- [[Casos de uso#UC-20|UC-20]]. «Ya las he comprobado y se cumple» retoma el tema activo y, para continuidad, pide contrastar el límite y el valor de la función. «Ejercicio completado» cierra el ejercicio libre en el diálogo. Ambos mensajes se resuelven localmente y conservan el tema.
+- [[Casos de uso#UC-17|UC-17]]. Si queda un ejercicio procedimental activo, el tutor pide el resultado final. Solo la comprobación simbólica marca el ejercicio como completado. Indicar que se ha comprobado o terminado un ejercicio no añade intentos.
+- [[Casos de uso#UC-24|UC-24]]. El enunciado de la práctica guiada usa el renderizador MathML del chat. Se verificaron los dos subíndices y el signo × de `e_1 \times e_2` en Chrome con la práctica real de Métodos 3D.
+- 1 caso Java de caja blanca y 2 regresiones HTTP nuevas. Chromium amplió la prueba de fórmulas en práctica guiada y la API con Google AI Studio reprodujo los cinco turnos de continuidad. Gradle pasó con 1.190 pruebas Java y 128 Node. JaCoCo del tutor 99,11 % de líneas y 92,64 % de ramas. V8 94,90 % y 89,60 %.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Pendientes CI remota e integración en `DEV`. Véase [[Registro de iteraciones]].
 
 ### 2026-11-24 12:50 · Conversaciones largas y controles del chat
 

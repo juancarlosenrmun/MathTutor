@@ -1,3 +1,11 @@
+## 2026-11-24 13:07 · Sprint 10 · Cierre de ejercicios y fórmulas en práctica guiada
+
+- **Petición**. Admitir la comprobación de continuidad y el mensaje «ejercicio completado». Representar el producto vectorial de la práctica guiada de Métodos 3D.
+- **Implementación**. El tutor retoma el tema, reconoce el cierre libre y, si existe una referencia simbólica pendiente, solicita el resultado. El enunciado guiado usa MathML.
+- **Caja blanca**. 1 caso nuevo para un cierre sin contexto. Gradle pasó con 1.190 pruebas Java y 128 Node. JaCoCo del tutor 99,11 % de líneas y 92,64 % de ramas. V8 94,90 % y 89,60 %.
+- **Caja negra**. 2 pruebas HTTP nuevas para cierre libre y verificación procedimental. Chromium verificó los subíndices y el operador ×. Chrome comprobó la práctica real y Google AI Studio reprodujo los cinco turnos de continuidad.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
 ## 2026-11-24 12:50 · Sprint 10 · Conversaciones largas y controles del chat
 
 - **Petición**. Mantener el ejercicio y sus temas relacionados durante el diálogo, enviar con Enter, retirar el formulario manual y estabilizar la cifra del punto de tangencia.
