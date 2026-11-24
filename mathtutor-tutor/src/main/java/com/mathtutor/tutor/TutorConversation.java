@@ -14,6 +14,7 @@ import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -52,6 +53,14 @@ public class TutorConversation {
                     + "|^(?:(?:me (?:sale|queda|da)|obtengo) )?(?:menos )?infinito$"
                     + "|^por la (?:izquierda|derecha)\\b(?:$|.*(?:[0-9=]|\\b(?:cero|infinito|limites?)\\b))"
                     + "|\\b(?:ambos lados|los dos (?:lados|resultados)|coinciden los dos|cociente|limites? laterales?)\\b");
+    private static final String NUMBER = "[+−-]?\\d+(?:[.,]\\d+)?";
+    private static final String FUNCTION_AT_POINT = "\\b([a-z][a-z0-9_]{0,15})\\s*\\(\\s*(" + NUMBER + ")\\s*\\)";
+    private static final Pattern ASKED_POINT = Pattern.compile(FUNCTION_AT_POINT);
+    private static final Pattern FUNCTION_VALUE_REPLY = Pattern.compile(
+            "(?:(?:si|no)\\s*[,.:]?\\s+)?"
+                    + "(?:(?:uso|usamos|se usa|tomo|tomamos) (?:el|la) (?:primer[oa]?|segund[oa]|tercer[oa]?) "
+                    + "(?:intervalo|tramo|expresion|rama)(?: y |,\\s*))?"
+                    + FUNCTION_AT_POINT + "\\s*(?:=\\s*|(?:es igual(?: a)?|vale)\\s+)" + NUMBER);
     private final TutorSessions sessions;
     private final LlmGateway llm;
     private final RagRetriever retriever;
@@ -169,8 +178,9 @@ public class TutorConversation {
             return new Prepared(Flux.just(reply), recentTopic, false);
         }
         boolean followUp = FOLLOW_UP.matcher(phrase).matches();
+        boolean evaluatedValue = hasRecentTopic && answersFunctionEvaluation(phrase, history);
         boolean continuation = hasRecentTopic
-                && (needsHelp || followUp
+                && (needsHelp || followUp || evaluatedValue
                     || ((REASONING_STEP.matcher(phrase).find() || ExerciseVerification.resultExpression(phrase) != null)
                         && !SyllabusTopics.hasOtherSubject(session.moduleCode(), normalized)));
         boolean theoretical = !continuation && action == null && exercise.isBlank()
@@ -199,7 +209,7 @@ public class TutorConversation {
             chunks = retrieve(message, session.moduleCode(), searchTopic);
         } catch (RuntimeException retrievalFailure) {
             if (localHint != null) return new Prepared(Flux.just(localHint), exerciseTopic, false);
-            if (continuation && followUp) {
+            if (continuation && (followUp || evaluatedValue)) {
                 return new Prepared(Flux.just("¿A qué paso de este ejercicio te refieres? Escribe qué has obtenido."), recentTopic, false);
             }
             return prepareLocalNotes(message, session.moduleCode(), searchTopic, reference, fallback);
@@ -310,6 +320,33 @@ public class TutorConversation {
 
     private static String shortPhrase(String normalized) {
         return normalized.replaceFirst("^[¿¡]\\s*", "").replaceFirst("[?!.]+$", "").strip();
+    }
+
+    /** Reconoce la evaluación del mismo punto planteado por el tutor en la pregunta más reciente. */
+    private static boolean answersFunctionEvaluation(String phrase, List<String> history) {
+        if (history.isEmpty()) return false;
+        var answer = FUNCTION_VALUE_REPLY.matcher(withoutMathDelimiters(phrase));
+        if (!answer.matches()) return false;
+        String lastTurn = history.getLast();
+        int tutorStart = lastTurn.lastIndexOf("\nTutor: ");
+        int questionStart = lastTurn.lastIndexOf('¿');
+        if (tutorStart < 0 || questionStart < tutorStart) return false;
+        var asked = ASKED_POINT.matcher(withoutMathDelimiters(
+                TheoreticalHints.normalize(lastTurn.substring(questionStart))));
+        while (asked.find()) {
+            if (answer.group(1).equals(asked.group(1))
+                    && decimal(answer.group(2)).compareTo(decimal(asked.group(2))) == 0) return true;
+        }
+        return false;
+    }
+
+    private static String withoutMathDelimiters(String text) {
+        return text.replace("$", "").replace("\\(", "").replace("\\)", "")
+                .replace("\\left", "").replace("\\right", "");
+    }
+
+    private static BigDecimal decimal(String number) {
+        return new BigDecimal(number.replace(',', '.').replace('−', '-'));
     }
 
     /** @brief Ajusta la recuperación al tema identificado, además del módulo de la sesión. */

@@ -1,3 +1,10 @@
+## 2026-11-24 16:51 · Sprint 04 · Respuestas al ejemplo de continuidad
+
+- **Petición**. Diagnosticar y corregir el rechazo de dos respuestas válidas a un ejemplo que había planteado el propio tutor.
+- **Implementación**. [[Casos de uso#UC-20|UC-20]] conserva el tema si la respuesta evalúa la misma función en el mismo punto que la pregunta del tutor. El ejemplo sigue siendo parte de la conversación y sus respuestas no crean una ejecución de ejercicio. Se comprobó el rechazo de una petición ajena añadida a una evaluación matemática.
+- **Pruebas y cobertura**. Tres casos de caja blanca, una regresión HTTP/SSE de caja negra en rojo y luego en verde. 1.206 Java sin fallos u omisiones. JaCoCo del tutor 99,18 % de líneas y 93,75 % de ramas, política pedagógica 100 % en ambas.
+- **Pendiente**. CI remota e integración en DEV. Checklist **42/45**, ampliación **4/5**, estado `en curso`. Véase [[Sprint 04]].
+
 ## 2026-11-24 16:38 · Sprint 04 · Conversaciones simuladas y avance
 
 - **Petición**. Crear una rama para entrenar al tutor con conversaciones sintéticas que incluyan respuestas claras, ambiguas, erróneas y fuera de contexto. Verificar el estado del ejercicio y su efecto en la estadística.

@@ -76,6 +76,20 @@ class TutorConversationTest {
         verifyNoInteractions(llm);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"No, $g(-1,5)$ vale $-3$.", "g(-1.50) = -3", "Uso el segundo tramo y g(-1,5) es igual a -3"})
+    void evaluatedFunctionValueUsesThePointAskedByTheTutor(String message) {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
+        when(llm.stream(any(), any())).thenReturn(Flux.just("¿Cuál es el siguiente paso?"));
+        var history = List.of("Alumno: ¿Es continua?\nTutor: ¿Cuánto vale $g(-1.5)$?");
+        var turn = conversation.prepare(7L, 1L, message, history, "", "funciones-continuidad");
+        assertThat(turn.rejected()).isFalse();
+        assertThat(turn.topic()).isEqualTo("funciones-continuidad");
+        StepVerifier.create(turn.response()).expectNext("¿Cuál es el siguiente paso?").verifyComplete();
+        verify(retriever).retrieve(message, "funciones", "funciones-continuidad");
+        verify(llm).stream(any(), any());
+    }
+
     @Test void aShortAnswerKeepsItsContextWhenEmbeddingRetrievalFails() {
         active();
         String message = "La de la derecha.";

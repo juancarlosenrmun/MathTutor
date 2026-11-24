@@ -92,6 +92,13 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 
 ## Notas de iteración
 
+### 2026-11-24 16:51 · El tutor retoma el valor pedido en su ejemplo
+
+- [[Casos de uso#UC-20|UC-20]]. Reproducido el rechazo de «Sí, f(2) = 5» tras una pregunta de continuidad. «Usamos el segundo intervalo y f(2) es igual 5» también perdía el contexto cuando la búsqueda de apuntes quedaba vacía. La clasificación recupera ahora el tema si la respuesta da un valor para la misma función y punto de la última pregunta del tutor.
+- [[Casos de uso#UC-11|UC-11]] y [[Casos de uso#UC-25|UC-25]]. La prueba HTTP comprobó que ambos turnos guardan el tema, que el ejemplo conversacional no crea un ejercicio y que sigue rechazándose una petición ajena añadida a la respuesta.
+- Tres casos de caja blanca y uno de caja negra. `check jacocoAggregateReport` en verde con 1.206 Java, sin fallos ni omisiones. JaCoCo del tutor 99,18 % de líneas y 93,75 % de ramas. Política pedagógica al 100 % en ambas. Integraciones PostgreSQL/pgvector verificadas con generador simulado.
+- Pendientes CI remota e integración. Checklist de la ampliación **4/5**, total **42/45**, estado `en curso`.
+
 ### 2026-11-24 16:38 · Conversaciones simuladas y avance
 
 - Rama `s04-entrenamiento-tutor`, creada desde DEV actualizada. [[Casos de uso#UC-20|UC-20]] recupera el ejercicio ante respuestas breves como «La de la derecha» y pide concreción si fallan los embeddings. [[Casos de uso#UC-17|UC-17]] verifica expresiones afirmadas como «Me sale 6*x» y distingue las frases condicionales. [[Casos de uso#UC-25|UC-25]] evita sumar intentos por aclaraciones reconocidas o por turnos rechazados.

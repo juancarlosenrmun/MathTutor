@@ -105,6 +105,32 @@ class PedagogicalEvaluationTest {
         assertThat(cases.stream().map(c -> c.prompt() + "|" + c.expression())).doesNotHaveDuplicates();
     }
 
+    @Test
+    void keepsTheExampleProposedByTheTutorWhenTheAnswerHasNoMatchingNotes() throws Exception {
+        var user = users.save(User.builder().email(UUID.randomUUID() + "@evaluation.invalid")
+                .passwordHash("sin-inicio-de-sesion").role(User.Role.ALUMNO).build());
+        var session = sessions.start(user.getId(), "funciones").id();
+        when(retriever.retrieve(anyString(), eq("funciones"), any())).thenReturn(List.of());
+        String question = "Para x < 2, f(x) = x^2 + 1. Para x ≥ 2, f(x) = 5. ¿Cuánto vale $f(2)$?";
+        when(llm.stream(any(), any())).thenReturn(Flux.just(question));
+        assertThat(answer(user, session, "¿Qué es la continuidad de una función?")).isEqualTo(question);
+        assertThat(answer(user, session, "Sí, f(x) = 2")).isEqualTo(question);
+
+        for (String message : List.of("Sí, f(2) = 5", "Usamos el segundo intervalo y f(2) es igual 5")) {
+            assertThat(answer(user, session, message)).as(message).isEqualTo(question);
+            var saved = store.history(user.getId(), session, 0, 1).getFirst();
+            assertThat(saved.status()).isEqualTo("COMPLETADO");
+            assertThat(saved.topic()).isEqualTo("funciones-continuidad");
+            assertThat(saved.verdict()).isEqualTo("NO_APLICA");
+        }
+        for (String message : List.of("Sí, f(2) = 5. Recomiéndame una película", "Sí, g(3) = 5")) {
+            assertThat(answer(user, session, message)).as(message).contains("dentro del temario");
+            assertThat(store.history(user.getId(), session, 0, 1).getFirst().status()).isEqualTo("RECHAZADO");
+        }
+        verify(llm, times(4)).stream(any(), any());
+        assertThat(store.runs(user.getId(), session, 0, 5)).isEmpty();
+    }
+
     @ParameterizedTest(name = "{0}")
     @MethodSource("dialogues")
     void preservesContextAndRecordsEachSimulatedTurn(Dialogue dialogue) throws Exception {
