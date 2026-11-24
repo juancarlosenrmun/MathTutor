@@ -54,9 +54,12 @@ class TrackedConversationTest {
     @Test void boundsHistoryByTurnsAndCharacters() {
         var entries=new ArrayList<ConversationStore.Entry>();
         for (int i=0;i<20;i++) entries.add(entry("COMPLETADO"));
-        assertThat(TrackedConversation.boundedHistory(entries)).hasSize(10);
+        assertThat(TrackedConversation.boundedHistory(entries)).hasSize(12);
         entries.add(new ConversationStore.Entry(9L,request,"x".repeat(16000),"",null,null,null,null,0,null,null,"COMPLETADO",Instant.EPOCH,null));
-        assertThat(TrackedConversation.boundedHistory(entries)).isEmpty();
+        var bounded = TrackedConversation.boundedHistory(entries);
+        assertThat(bounded).hasSize(12);
+        assertThat(bounded.stream().mapToInt(String::length).sum()).isLessThan(16000);
+        assertThat(bounded.getLast()).startsWith("Alumno: xxxx").endsWith("Tutor: ");
     }
     @Test void rejectsInvalidInputBeforeReserving() {
         for (String message:new String[]{null,""," ","x".repeat(4001)})

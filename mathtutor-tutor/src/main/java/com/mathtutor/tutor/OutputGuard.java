@@ -121,7 +121,7 @@ final class OutputGuard {
     }
 
     /** @brief Mantiene los fragmentos de prosa fuera del simplificador del CAS. */
-    private static boolean symbolic(String text) {
+    static boolean symbolic(String text) {
         return WORD.matcher(text).results()
                 .allMatch(word -> SYMBOLIC_WORDS.contains(word.group().toLowerCase(Locale.ROOT)));
     }

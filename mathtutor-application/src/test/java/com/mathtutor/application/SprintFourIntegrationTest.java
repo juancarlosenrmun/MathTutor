@@ -167,6 +167,39 @@ class SprintFourIntegrationTest {
         assertThat(store.current(user, session).attempts()).isZero();
         verify(cas, never()).compare(eq("no lo se"), anyString());
     }
+    @Test void keepsTheExerciseAndItsStartingPointBeyondTheRecentHistoryWindow() throws Exception {
+        var calculus = modules.findAll().stream().filter(module -> module.getCode().equals("derivadas-integrales"))
+                .findFirst().orElseThrow();
+        session = sessions.save(TutorSession.builder().user(users.getReferenceById(user)).module(calculus)
+                .status(TutorSession.SessionStatus.ACTIVA).build()).getId();
+        var run = store.select(user, session, null, "DERIVADA: abs(x)", "sign(x)");
+        when(retriever.retrieve(anyString(), anyString(), any())).thenReturn(List.of());
+        when(cas.compare(anyString(), eq("sign(x)"))).thenReturn(CasEngine.Comparison.DIFFERENT);
+        when(llm.stream(any(), any())).thenAnswer(call -> {
+            java.util.function.Consumer<LlmGateway.Usage> usage = call.getArgument(1);
+            usage.accept(new LlmGateway.Usage(200, 50));
+            return Flux.just("Pista");
+        });
+        var json = new com.fasterxml.jackson.databind.ObjectMapper();
+        var steps = List.of("Quiero estudiar la derivabilidad de abs(x) en el origen", "¿Y la continuidad?",
+                "Por la izquierda me sale cero", "Por la derecha también obtengo cero", "Entonces coinciden los dos",
+                "¿Cómo sigo?", "No lo sé", "Primero sustituyo el valor en la función", "Me queda un cociente",
+                "Ahora comparo ambos lados", "¿Por qué?", "El límite lateral cambia de signo", "¿Es correcto?");
+        for (String step : steps) {
+            assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", step))))
+                    .as(step).contains("Pista", "DONE");
+        }
+        assertThat(streamOverHttp("messages", "{\"message\":\"¿Quién ganó el partido?\"}"))
+                .contains("dentro del temario");
+        var prompts = org.mockito.ArgumentCaptor.forClass(Prompt.class);
+        verify(llm, times(steps.size())).stream(prompts.capture(), any());
+        assertThat(prompts.getValue().contextChunks()).anyMatch(chunk -> chunk.contains(steps.getFirst()));
+        assertThat(prompts.getValue().contextChunks()).anyMatch(chunk -> chunk.contains(run.statement()));
+        assertThat(prompts.getAllValues().get(2).constraints()).contains("Distingue el objetivo", "límites de la función");
+        assertThat(store.select(user, session, null, run.statement(), "sign(x)").id()).isEqualTo(run.id());
+        assertThat(store.current(user, session).attempts()).isZero();
+        verifyNoInteractions(cas);
+    }
     @Test void providerOutageStreamsAndPersistsNotesWithoutPartialGeneratedText() {
         when(llm.stream(any(), any())).thenReturn(Flux.just("delta privado")
                 .concatWith(Flux.error(new IllegalStateException("fallo interno"))));

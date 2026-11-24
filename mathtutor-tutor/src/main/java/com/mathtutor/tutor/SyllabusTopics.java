@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 final class SyllabusTopics {
     private static final Pattern CONTINUITY = Pattern.compile("\\b(?:continu\\w*|discontinu\\w*|polinomi\\w*)\\b");
     private static final Pattern DIFFERENTIABLE = Pattern.compile("\\bderivables?\\b");
+    private static final Pattern RELATED_CONTINUITY = Pattern.compile("\\b(?:continuidad|discontinu\\w*|limites?)\\b");
     private static final String BASIS_VECTOR = "e_(?:\\{[123]}|[123])";
     private static final Pattern BASIS_PRODUCT = Pattern.compile(
             "\\b" + BASIS_VECTOR + "\\s*(?:\\\\times|×)\\s*" + BASIS_VECTOR + "(?!\\w)");
@@ -21,7 +22,8 @@ final class SyllabusTopics {
             "derivadas-integrales", List.of(
                     topic("calculo-integral", "integr(?:al\\w*|ar|a|acion)|primitiva[rs]?"),
                     topic("calculo-diferencial", "deriv\\w*|tangente[rs]?|regla de la cadena|criterio de l.hopital"
-                            + "|taylor|optimiz\\w*|maxim\\w*|minim\\w*")),
+                            + "|taylor|optimiz\\w*|maxim\\w*|minim\\w*|continuidad|discontinu\\w*|limites?"
+                            + "|cociente incremental")),
             "metodos-3d", List.of(
                     topic("diagonalizacion", "diagonaliz\\w*|autovalor\\w*|autovector\\w*|(?:valor|vector)(?:es)? propi\\w*"),
                     topic("espacios-vectoriales", "subespacio\\w*|espacio\\w* vectorial\\w*"
@@ -41,12 +43,20 @@ final class SyllabusTopics {
             // La derivabilidad puede ser una propiedad mencionada al razonar sobre la continuidad.
             String calculus = CONTINUITY.matcher(normalized).find()
                     ? DIFFERENTIABLE.matcher(normalized).replaceAll("") : normalized;
-            if (match("derivadas-integrales", calculus).isPresent()
+            if (match("derivadas-integrales", RELATED_CONTINUITY.matcher(calculus).replaceAll("")).isPresent()
                     || match("metodos-3d", normalized).filter(topic -> !topic.equals("geometria")).isPresent()) {
                 return Optional.empty();
             }
         }
         return match(module, normalized);
+    }
+
+    static boolean hasOtherSubject(String module, String normalized) {
+        return (!module.equals("metodos-3d") && match("metodos-3d", normalized)
+                .filter(topic -> !topic.equals("geometria")).isPresent())
+                || (module.equals("metodos-3d") && match("derivadas-integrales", normalized).isPresent())
+                || (module.equals("funciones") && match("derivadas-integrales", normalized).isPresent()
+                    && find(module, normalized).isEmpty());
     }
 
     static boolean contains(String module, String topicCode) {

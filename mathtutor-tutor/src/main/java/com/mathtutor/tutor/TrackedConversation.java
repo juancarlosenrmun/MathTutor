@@ -115,15 +115,19 @@ public class TrackedConversation {
         boolean eligible = run.reference() != null && diagnosis.verdict().equals("INCORRECTO");
         return policy.decide(eligible, diagnosis.diagnosis(), run.attempts());
     }
-    /** Últimos diez turnos completos; límite adicional de caracteres sin resumir con IA. */
+    /** Conserva el inicio y los últimos pasos, incluso si alguna respuesta fue extensa. */
     static List<String> boundedHistory(List<ConversationStore.Entry> entries) {
-        var result=new LinkedList<String>(); int remaining=16000;
-        for (int i=entries.size()-1;i>=Math.max(0,entries.size()-10);i--) {
-            var e=entries.get(i);
-            var text="Alumno: "+e.message()+"\nTutor: "+e.response();
-            if (text.length()>remaining) break;
-            result.addFirst(text); remaining-=text.length();
+        var result = new ArrayList<String>();
+        for (int i = 0; i < entries.size(); i++) {
+            if (i >= 2 && i < entries.size() - 10) continue;
+            var entry = entries.get(i);
+            result.add("Alumno: " + excerpt(entry.message()) + "\nTutor: " + excerpt(entry.response()));
         }
         return List.copyOf(result);
+    }
+
+    private static String excerpt(String text) {
+        if (text.length() <= 650) return text;
+        return text.substring(0, 400) + "\n[…]\n" + text.substring(text.length() - 245);
     }
 }

@@ -89,7 +89,14 @@ public class ConversationStoreAdapter implements ConversationStore {
     @Override public List<Entry> context(Long user, Long session) {
         owned(user,session);
         var recent=new ArrayList<>(turns.findBySessionIdAndStatus(session,"COMPLETADO",page(0,10,"createdAt")).stream().map(this::entry).toList());
-        Collections.reverse(recent); return recent;
+        Collections.reverse(recent);
+        if (recent.size() == 10) {
+            var beginning = turns.findBySessionIdAndStatus(session, "COMPLETADO",
+                    PageRequest.of(0, 2, Sort.by(Sort.Direction.ASC, "createdAt", "id")));
+            var recentIds = recent.stream().map(Entry::id).collect(java.util.stream.Collectors.toSet());
+            recent.addAll(0, beginning.stream().filter(turn -> !recentIds.contains(turn.getId())).map(this::entry).toList());
+        }
+        return recent;
     }
     @Override public List<Entry> history(Long user, Long session,int page,int size) {
         owned(user,session); return turns.findBySessionId(session,page(page,size,"createdAt")).stream().map(this::entry).toList();
@@ -137,7 +144,17 @@ public class ConversationStoreAdapter implements ConversationStore {
         if (e!=null && !Objects.equals(e.getModule().getId(),s.getModule().getId())) throw new IllegalArgumentException("Ejercicio de otro módulo");
         Instant now = Instant.now();
         statistics.closeInactive(session, now);
-        activeRun(session).ifPresent(old -> { old.setState(ExerciseRun.RunState.ABANDONADO); old.setEndedAt(now); });
+        var active = activeRun(session).orElse(null);
+        if (active != null) {
+            Long activeExercise = active.getExercise() == null ? null : active.getExercise().getId();
+            if (Objects.equals(activeExercise, exerciseId)
+                    && (e != null || Objects.equals(active.getStatementLatex(), statement)
+                        && Objects.equals(active.getReferenceSolution(), reference))) {
+                return run(active);
+            }
+            active.setState(ExerciseRun.RunState.ABANDONADO);
+            active.setEndedAt(now);
+        }
         return run(createRun(s, e, statement, reference));
     }
 

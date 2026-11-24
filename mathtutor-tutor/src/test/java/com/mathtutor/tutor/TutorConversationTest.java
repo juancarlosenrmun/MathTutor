@@ -284,6 +284,19 @@ class TutorConversationTest {
         verify(llm).stream(any(), any());
     }
 
+    @Test void aProviderFailureKeepsTheHintOnTheActiveDerivabilityExercise() {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "derivadas-integrales", "ACTIVA"));
+        when(llm.stream(any(), any())).thenReturn(Flux.error(new IllegalStateException("proveedor")));
+        var run = new Run(1L, null, "DERIVADA: abs(x)", "sign(x)", null, "COMENZADO", 0, 0, List.of());
+        var diagnosis = new ExerciseVerification.Diagnosis("NO_APLICA", ErrorType.OTRO, "Razonamiento", 0, false);
+        var action = PedagogicalAction.conceptual("¿Qué propiedad aplicarías?");
+        StepVerifier.create(conversation.prepareExercise(7L, 1L, "Me queda un cociente", List.of(), run, diagnosis, action).response())
+                .expectNextMatches(text -> text.contains("Modo solo apuntes")
+                        && text.contains("cociente incremental") && text.contains("por separado"))
+                .verifyComplete();
+        verify(llm).stream(any(), any());
+    }
+
     @Test void totalDeadlineDiscardsDeltasEvenWhenTheProviderKeepsSending() {
         active();
         var cancelled = new java.util.concurrent.atomic.AtomicBoolean();
