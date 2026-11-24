@@ -1,3 +1,10 @@
+## 2026-11-24 09:54 · Sprint 10 · Reintento de Safari nativo
+
+- **Petición**. Revisar el fallo en el job de Safari `xcode-27` de la PR #26.
+- **Actuación**. En Safari 27.0.1 pasaron GLSL y píxeles. La espera del estado «Visor listo» en el laboratorio agotó el plazo en el primer intento. Relancé el job sobre el mismo commit `676840c` y el segundo intento pasó las tres comprobaciones. El timeout no se reprodujo. Véase el [job de Safari 27](https://github.com/juancarlosenrmun/MathTutor/actions/runs/45357889731/job/138327198694).
+- **Pruebas y cobertura**. Cero casos de caja blanca nuevos. Un recorrido de caja negra repetido en Safari 27. La CI general y Safari en `macos-26` también pasaron. Se conserva la cobertura de la iteración anterior.
+- **Pendiente**. Integración en DEV y mediciones de EN-06 en GPU integrada y con proveedor real. Checklist **11/15**, estado `en curso`. Véase [[Sprint 10]].
+
 ## 2026-11-24 09:37 · Sprint 10 · Postprocesamiento y pruebas de rendimiento
 
 - **Petición**. Crear y activar `Sprint-10`, leer la bóveda y ejecutar find-skills. Implementar el sprint con comentarios Doxygen, pruebas de caja blanca y negra, commits pequeños sin cofirmas y PR hacia DEV. Al retomar, verificar `git status` y `git log`.

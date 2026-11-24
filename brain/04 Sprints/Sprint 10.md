@@ -35,7 +35,7 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
-- [ ] Build y CI en verde
+- [x] Build y CI en verde
 - [x] Cobertura en umbral verificada
 - [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
@@ -49,4 +49,5 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 - `python scripts/smoke-webgl.py --performance` requiere Chrome o Chromium con aceleración y Playwright resoluble desde Node. Se puede indicar su instalación con `MATHTUTOR_BROWSER_DEPS`. El escenario de 100.000 triángulos mide preparación de escena y FPS con y sin contraste, e identifica el adaptador en `mathtutor-graphics/build/reports/client-browser/performance.json`.
 - La RTX 4060 disponible superó 120 FPS en ambos modos. La escena quedó lista en 269 ms con render directo y 191 ms con contraste. Queda pendiente repetir la medición con una GPU integrada y medir RNF-01 con el proveedor LLM real.
 - Diagramas en la [rama Sprint-10-docs](https://github.com/juancarlosenrmun/MathTutor/tree/Sprint-10-docs).
-- Checklist local **10/15**. La integración de los dos elementos, la CI de la PR y el cierre de la velocidad del sprint quedan pendientes.
+- Checklist **11/15**. La [PR #26](https://github.com/juancarlosenrmun/MathTutor/pull/26) queda pendiente de integración y de cierre de la velocidad del sprint.
+- Safari 27.0.1 en `xcode-27` superó GLSL y píxeles en el primer intento, pero agotó la espera del estado «Visor listo» en el laboratorio. La misma prueba pasó al relanzar el job sobre `676840c`. También pasaron Safari en `macos-26` y el build general. Véase el [segundo intento de Safari](https://github.com/juancarlosenrmun/MathTutor/actions/runs/45357889731/attempts/2).
