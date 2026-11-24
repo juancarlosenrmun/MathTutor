@@ -1034,6 +1034,8 @@ canvas:focus-visible {
 #viewer-tangent-controls[hidden] { display: none; }
 #viewer-tangent-controls legend { font-weight: 600; }
 input[type="range"] { width: 100%; min-width: 0; accent-color: var(--accent); }
+.tangent-range { display: flex; align-items: center; gap: .6rem; }
+.tangent-range output { min-width: 3ch; text-align: end; font-variant-numeric: tabular-nums; }
 .study-panel :is(h3,p) { overflow-wrap: anywhere; }
 .study-panel [hidden] { display: none; }
 #tutor-retry, #history-more { margin-block: .5rem; }

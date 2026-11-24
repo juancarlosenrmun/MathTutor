@@ -13,6 +13,15 @@ export function configureTangencyRange(field, min, max, point = 0) {
   field.disabled = false;
 }
 
+/** Muestra la coordenada y permite refrescarla también al cambiar el dominio. */
+export function bindTangencyValue(field, output) {
+  const update = () => {
+    if (output) output.textContent = Number(field.value).toLocaleString('es-ES', {maximumFractionDigits: 6});
+  };
+  field?.addEventListener('input', update);
+  return update;
+}
+
 function checkPoint(value, min, max) {
   if (!Number.isFinite(value) || value < min || value > max) {
     throw new Error('El punto de tangencia debe estar dentro del dominio.');

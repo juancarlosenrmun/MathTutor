@@ -1,6 +1,6 @@
 import { request, collection, readEvents } from './tutor-api.mjs';
 import { drawSpecification, specificationFromChat } from './graphic-spec.mjs';
-import { configureTangencyRange } from './tangents.mjs';
+import { bindTangencyValue, configureTangencyRange } from './tangents.mjs';
 
 /** Estado interno del ejercicio y controles del visor de la conversación. */
 export function mountStudy(document,client,viewer,onGraph) {
@@ -11,6 +11,8 @@ export function mountStudy(document,client,viewer,onGraph) {
   const tangentX = one('graphic-tangent-x'), tangentY = one('graphic-tangent-y');
   const liveControls = one('viewer-tangent-controls');
   const liveX = one('viewer-tangent-x'), liveY = one('viewer-tangent-y');
+  const showInitialX = bindTangencyValue(tangentX, one('graphic-tangent-x-value'));
+  const showLiveX = bindTangencyValue(liveX, one('viewer-tangent-x-value'));
   const graphicResult = one('graphic-result');
   const viewerResult = one('viewer-tangent-result') ?? graphicResult;
   const bankPanel = one('exercise-bank');
@@ -47,6 +49,7 @@ export function mountStudy(document,client,viewer,onGraph) {
     for (const field of [tangentX, tangentY]) {
       if (field) field.value = '0';
     }
+    showInitialX();
     graphicResult.textContent='';
     viewerResult.textContent='';
     clearGraph();
@@ -85,6 +88,7 @@ export function mountStudy(document,client,viewer,onGraph) {
       if (!liveControls) return;
       configureTangencyRange(liveX, min, max, x);
       configureTangencyRange(liveY, min, max, y);
+      showLiveX();
       one('viewer-tangent-y-field').hidden = y === undefined;
       moveTangency = move;
       liveControls.hidden = false;
@@ -120,6 +124,7 @@ export function mountStudy(document,client,viewer,onGraph) {
     for (const field of [tangentX, tangentY]) {
       if (field && !field.disabled) configureTangencyRange(field, min, max, Number(field.value));
     }
+    showInitialX();
   }
   one('graphic-min').addEventListener('input', updateInitialTangency);
   one('graphic-max').addEventListener('input', updateInitialTangency);

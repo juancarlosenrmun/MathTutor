@@ -167,8 +167,10 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   assert(!slot.hidden, 'Una curva validada no abre el visor');
   const viewerTangent = doc.querySelector('#viewer-tangent-x');
   assert(viewerTangent.type === 'range' && viewerTangent.min === '-2' && viewerTangent.max === '2', 'La barra no sigue el dominio');
+  assert(doc.querySelector('#viewer-tangent-x-value')?.textContent === '0', 'La barra no muestra la coordenada inicial');
   viewerTangent.value = '1';
   viewerTangent.dispatchEvent(new Event('input'));
+  assert(doc.querySelector('#viewer-tangent-x-value').textContent === '1', 'La coordenada visible no sigue el arrastre');
   assert(doc.querySelector('#viewer-tangent-result').textContent.includes('Pendiente aproximada: 2'), 'La recta no se mueve durante el arrastre');
   const widthBefore=chat.getBoundingClientRect().width;
   const toggle=doc.querySelector('#tutor-viewer-toggle');
@@ -205,6 +207,10 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   assert(doc.querySelector('.lab-layout > .viewer-panel'), 'El visor no vuelve al laboratorio');
   doc.querySelector('#curve-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
   assert(doc.querySelector('#curve-result').textContent.includes('0,666'), 'Falta integral 2D');
+  const curveTangent = doc.querySelector('#curve-tangent-x');
+  curveTangent.value = '-0.5';
+  curveTangent.dispatchEvent(new Event('input'));
+  assert(doc.querySelector('#curve-tangent-x-value')?.textContent === '-0,5', 'La barra del laboratorio no muestra la coordenada localizada');
   const surface = doc.querySelector('#surface-form');
   surface.closest('details').querySelector('summary').click();
   surface.requestSubmit();

@@ -358,7 +358,7 @@
                 <input id="curve-function" value="x^2" required maxlength="200" aria-describedby="curve-help" /></div>
                 <div><label for="curve-min">Desde x =</label><input id="curve-min" type="number" value="-1" min="-10000" max="10000" step="any" required /></div>
                 <div><label for="curve-max">Hasta x =</label><input id="curve-max" type="number" value="1" min="-10000" max="10000" step="any" required /></div>
-                <div><label for="curve-tangent-x">Punto de tangencia en x</label><input id="curve-tangent-x" type="range" step="any" disabled /></div>
+                <div><label for="curve-tangent-x">Punto de tangencia en x</label><div class="tangent-range"><input id="curve-tangent-x" type="range" step="any" disabled /><output id="curve-tangent-x-value" for="curve-tangent-x" aria-hidden="true"></output></div></div>
                 <button id="curve-draw" class="button" type="submit">Dibujar función, derivada y área</button>
               </form>
               <p id="curve-help" class="field-help">Usa x, números, + − * / ^, sin, cos, tan, exp, log, sqrt o abs. Ejemplos: x^2, sin(x), 1/x. La integral usa los extremos indicados.</p>
@@ -604,7 +604,7 @@
                   <div class="study-domain"><div><label for="graphic-min">Desde</label><input id="graphic-min" type="number" value="-2" min="-10000" max="10000" step="any" required /></div>
                   <div><label for="graphic-max">Hasta</label><input id="graphic-max" type="number" value="2" min="-10000" max="10000" step="any" required /></div></div>
                   <label for="graphic-steps">Divisiones</label><input id="graphic-steps" type="number" value="32" min="2" max="200" step="1" required />
-                  <div id="graphic-tangent-x-field" hidden><label for="graphic-tangent-x">Tangencia inicial en x</label><input id="graphic-tangent-x" type="range" min="-2" max="2" step="any" value="0" disabled /></div>
+                  <div id="graphic-tangent-x-field" hidden><label for="graphic-tangent-x">Tangencia inicial en x</label><div class="tangent-range"><input id="graphic-tangent-x" type="range" min="-2" max="2" step="any" value="0" disabled /><output id="graphic-tangent-x-value" for="graphic-tangent-x" aria-hidden="true"></output></div></div>
                   <div id="graphic-tangent-y-field" hidden><label for="graphic-tangent-y">Tangencia inicial en y</label><input id="graphic-tangent-y" type="range" min="-2" max="2" step="any" value="0" disabled /></div>
                   <p id="graphic-help" class="field-help">Usa x para curvas, x e y para superficies, y operaciones como x^2 o sin(x). En superficies, el intervalo se aplica a ambos ejes; máximo 128 divisiones y dominio entre −100 y 100.</p>
                   <button class="button secondary" type="submit">Comprobar y dibujar</button>
@@ -618,7 +618,7 @@
             <div class="tutor-viewer-intro"><h2>Visor de la conversación</h2>
               <fieldset id="viewer-tangent-controls" class="study-domain" hidden>
                 <legend>Mover el punto de tangencia</legend>
-                <div><label for="viewer-tangent-x">Tangencia en x</label><input id="viewer-tangent-x" type="range" step="any" /></div>
+                <div><label for="viewer-tangent-x">Tangencia en x</label><div class="tangent-range"><input id="viewer-tangent-x" type="range" step="any" /><output id="viewer-tangent-x-value" for="viewer-tangent-x" aria-hidden="true"></output></div></div>
                 <div id="viewer-tangent-y-field" hidden><label for="viewer-tangent-y">Tangencia en y</label><input id="viewer-tangent-y" type="range" step="any" /></div>
               </fieldset>
               <p id="viewer-tangent-result" class="field-help"></p>

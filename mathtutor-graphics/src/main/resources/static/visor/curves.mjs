@@ -1,4 +1,4 @@
-import { configureTangencyRange, lineTangent, secantTrajectory } from './tangents.mjs';
+import { bindTangencyValue, configureTangencyRange, lineTangent, secantTrajectory } from './tangents.mjs';
 
 /**
  * @brief Parser aritmético acotado para UC-28. Solo números, x y funciones explícitas.
@@ -161,6 +161,7 @@ export function mountCurveControls(document, viewer) {
   const one = id => document.querySelector('#' + id);
   const form = one('curve-form');
   const tangentX = one('curve-tangent-x');
+  const showValue = bindTangencyValue(tangentX, one('curve-tangent-x-value'));
   let plotted;
   tangentX?.addEventListener('input', () => {
     if (!plotted) return;
@@ -181,7 +182,10 @@ export function mountCurveControls(document, viewer) {
       const min = Number(one('curve-min').value), max = Number(one('curve-max').value);
       const graph = curve(source, min, max);
       plotted = {source, graph};
-      if (tangentX) configureTangencyRange(tangentX, min, max);
+      if (tangentX) {
+        configureTangencyRange(tangentX, min, max);
+        showValue();
+      }
       viewer?.setGraph(graph);
       one('curve-result').textContent = describeCurve(source, graph);
     } catch (error) { one('curve-result').textContent = error.message; }
