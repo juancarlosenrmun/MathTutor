@@ -40,12 +40,17 @@ public class TutorConversation {
                     + "|(?:ya )?se cumplen?)");
     private static final Pattern FOLLOW_UP = Pattern.compile(
             "(?:si|no|claro|vale|de acuerdo|entiendo|exacto|y ahora|y entonces|por que|como (?:asi|sigo|continuo)"
+                    + "|creo que (?:si|no)|depende|eso|(?:el|lo) mismo|(?:la|las|los) dos|ambos"
+                    + "|(?:el|la) (?:primer[oa]|segund[oa]|de la (?:derecha|izquierda))"
                     + "|se como seguir"
                     + "|puedes explicarlo(?: de nuevo| mejor)?|(?:dame|ponme|muestrame) (?:otro|un) ejemplo"
                     + "|(?:si,? )?(?:por favor|con un ejemplo)|(?:es|esta) correct[oa]|esta bien"
                     + "|y en (?:el (?:origen|cero)|(?:x\\s*=\\s*)?[+-]?\\d+(?:[.,]\\d+)?))");
     private static final Pattern REASONING_STEP = Pattern.compile(
-            "^(?:por la (?:izquierda|derecha)|me (?:sale|queda|da)|(?:primero |ahora )?(?:sustituyo|factorizo|comparo|simplifico))\\b"
+            "^(?:primero |ahora )?(?:sustituyo|factorizo|comparo|simplifico)\\b"
+                    + "|^(?:multiplico|sumo|resto|divido)\\b.*\\b(?:componentes?|coordenadas?|terminos?|factores?)\\b"
+                    + "|^(?:(?:me (?:sale|queda|da)|obtengo) )?(?:menos )?infinito$"
+                    + "|^por la (?:izquierda|derecha)\\b(?:$|.*(?:[0-9=]|\\b(?:cero|infinito|limites?)\\b))"
                     + "|\\b(?:ambos lados|los dos (?:lados|resultados)|coinciden los dos|cociente|limites? laterales?)\\b");
     private final TutorSessions sessions;
     private final LlmGateway llm;
@@ -163,9 +168,10 @@ public class TutorConversation {
                     : "¿Qué condición has comprobado y qué resultado obtuviste?";
             return new Prepared(Flux.just(reply), recentTopic, false);
         }
+        boolean followUp = FOLLOW_UP.matcher(phrase).matches();
         boolean continuation = hasRecentTopic
-                && (needsHelp || FOLLOW_UP.matcher(phrase).matches()
-                    || ((REASONING_STEP.matcher(phrase).find() || ExerciseVerification.symbolicAnswer(phrase))
+                && (needsHelp || followUp
+                    || ((REASONING_STEP.matcher(phrase).find() || ExerciseVerification.resultExpression(phrase) != null)
                         && !SyllabusTopics.hasOtherSubject(session.moduleCode(), normalized)));
         boolean theoretical = !continuation && action == null && exercise.isBlank()
                 && TheoreticalHints.requestsReasoning(normalized);
@@ -192,6 +198,10 @@ public class TutorConversation {
         try {
             chunks = retrieve(message, session.moduleCode(), searchTopic);
         } catch (RuntimeException retrievalFailure) {
+            if (localHint != null) return new Prepared(Flux.just(localHint), exerciseTopic, false);
+            if (continuation && followUp) {
+                return new Prepared(Flux.just("¿A qué paso de este ejercicio te refieres? Escribe qué has obtenido."), recentTopic, false);
+            }
             return prepareLocalNotes(message, session.moduleCode(), searchTopic, reference, fallback);
         }
         String topic = chunks.isEmpty() ? null : chunks.getFirst().topicCode();
@@ -237,6 +247,10 @@ public class TutorConversation {
             constraints += " Ofrece una pista más concreta que la anterior. Explica cómo empezar con uno de los datos "
                     + "del ejercicio o con un ejemplo análogo y haz una pregunta breve sobre ese paso.";
         }
+        if (continuation && followUp) {
+            constraints += " Interpreta la respuesta breve a partir de la última pregunta del tutor. Si puede referirse "
+                    + "a varios pasos, pide una aclaración concreta. No la tomes como prueba de que el ejercicio está resuelto.";
+        }
         if (chunks.isEmpty()) {
             constraints += " Responde sobre el tema " + topic
                     + " sin atribuir la explicación a los apuntes. Si la consulta queda fuera del bloque, indícalo.";
@@ -261,6 +275,10 @@ public class TutorConversation {
 
     static boolean needsHelp(String message) {
         return NEEDS_HELP.matcher(shortPhrase(TheoreticalHints.normalize(message))).matches();
+    }
+
+    static boolean isFollowUp(String message) {
+        return FOLLOW_UP.matcher(shortPhrase(TheoreticalHints.normalize(message))).matches();
     }
 
     boolean isNewExercise(Long userId, Long sessionId, ConversationStore.Run run, String message) {

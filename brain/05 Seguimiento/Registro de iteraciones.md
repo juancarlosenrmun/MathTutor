@@ -1,3 +1,10 @@
+## 2026-11-24 16:38 · Sprint 04 · Conversaciones simuladas y avance
+
+- **Petición**. Crear una rama para entrenar al tutor con conversaciones sintéticas que incluyan respuestas claras, ambiguas, erróneas y fuera de contexto. Verificar el estado del ejercicio y su efecto en la estadística.
+- **Implementación**. Rama `s04-entrenamiento-tutor` desde DEV. Se instalaron por separado `dataset-curation` y `promptfoo-evals` en Codex. Se añadieron seis diálogos en español de los tres bloques. El tutor retoma las respuestas breves con contexto, verifica expresiones introducidas con frases como «Me sale…» y conserva intentos y avance en aclaraciones y rechazos. La prueba de estadística comprobó el avance parcial, el cierre y la repetición idempotente.
+- **Pruebas y cobertura**. Tres nuevas de caja blanca y seis de caja negra, con 29 turnos HTTP/SSE, CAS y PostgreSQL/pgvector reales y generador simulado. `check jacocoAggregateReport` pasó con 1.202 Java y 129 Node. JaCoCo del tutor 99,16 % de líneas y 94,39 % de ramas, política pedagógica 100 % en ambas. V8 93,84 % de líneas y 88,46 % de ramas.
+- **Pendiente**. Evaluación con proveedor real, ampliación del corpus para ajuste de pesos, CI remota e integración en DEV. Checklist **42/45**, ampliación **4/5**, estado `en curso`. Véase [[Sprint 04]].
+
 ## 2026-11-24 15:32 · Sprint 10 · Estados y avance de los ejercicios
 
 - [[Casos de uso#UC-10|UC-10]]. La tabla docente muestra el total y separa los estados comenzado, en curso, completado, a medias y abandonado al borrar el chat. Los ejercicios pendientes conservados se clasifican por avance medible. La tabla usa colores para distinguir total, actividad, completados, abandono y avance.

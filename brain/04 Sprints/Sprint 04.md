@@ -82,7 +82,34 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 - [x] Verificación Java y cobertura JaCoCo/V8 en umbral
 - [ ] CI verde e integración de `fix/tutor-visor-sidebar` en DEV
 
+## Conversaciones simuladas y avance del ejercicio
+
+- [x] Implementación del seguimiento contextual y la verificación de respuestas declaradas en lenguaje natural
+- [x] Pruebas de caja blanca de clasificación y recuperación de contexto
+- [x] Pruebas de caja negra de conversación, persistencia y estadística de avance
+- [x] Cobertura en umbral (JaCoCo y V8)
+- [ ] CI verde e integración de `s04-entrenamiento-tutor` en DEV
+
 ## Notas de iteración
+
+### 2026-11-24 16:38 · Conversaciones simuladas y avance
+
+- Rama `s04-entrenamiento-tutor`, creada desde DEV actualizada. [[Casos de uso#UC-20|UC-20]] recupera el ejercicio ante respuestas breves como «La de la derecha» y pide concreción si fallan los embeddings. [[Casos de uso#UC-17|UC-17]] verifica expresiones afirmadas como «Me sale 6*x» y distingue las frases condicionales. [[Casos de uso#UC-25|UC-25]] evita sumar intentos por aclaraciones reconocidas o por turnos rechazados.
+- La prueba de [[Casos de uso#UC-11|UC-11]] comprobó el estado público tras cada turno y la estadística docente: un paso verificado dejó el avance en 50 %, un error lo conservó y el resultado final verificado cerró el ejercicio al 100 %. Repetir el envío con el mismo UUID conserva el recuento.
+- Gradle ejecutó 1.202 pruebas Java y 129 Node en verde, incluidas tres pruebas nuevas de caja blanca y seis recorridos HTTP/SSE de caja negra (29 turnos). Integraciones PostgreSQL/pgvector sin omisiones. JaCoCo del tutor: 99,16 % de líneas y 94,39 % de ramas. Política pedagógica: 100 % en ambas. V8: 93,84 % y 88,46 %.
+- Pendientes: evaluación con un proveedor real, ampliación del corpus para ajuste de pesos, CI remota e integración en DEV. Checklist de esta ampliación **4/5**, total **42/45** y estado `en curso`.
+
+### Plan de la rama de entrenamiento conversacional
+
+1. Simular diálogos completos en español con ejercicios de los tres bloques. Etiquetar cada turno y reservar conversaciones completas para verificar el cambio sin usarlas como ejemplos del tutor.
+2. Ejecutar las simulaciones contra el servicio HTTP/SSE con CAS y PostgreSQL/pgvector reales. Usar un generador simulado y comprobar el veredicto, los intentos y el avance después de cada mensaje.
+3. Corregir las regresiones reproducidas en [[Casos de uso#UC-20|UC-20]] y [[Casos de uso#UC-17|UC-17]]. Mantener en el backend el registro de estado y avance de [[Casos de uso#UC-25|UC-25]] y su lectura en [[Casos de uso#UC-11|UC-11]]. Las comprobaciones cruzadas de rechazo aprovechan [[Casos de uso#UC-21|UC-21]] sin ampliar el filtro ni la cuota.
+
+#### Corpus conversacional
+
+`mathtutor-application/src/test/resources/tutor-conversations.jsonl` contiene seis conversaciones sintéticas en español, redactadas para esta iteración. Hay tres conversaciones de desarrollo y tres de validación, con 29 turnos del alumno en total: 11 claros, seis ambiguos, cuatro erróneos, cinco fuera de contexto y tres de cierre. Los identificadores y enunciados de las conversaciones son distintos. Cada fila contiene `messages` con roles `user` y `assistant` y `expected` con las expectativas de estado, veredicto, intentos y avance. Las respuestas de referencia ilustran la guía socrática. La prueba envía únicamente los mensajes del alumno y comprueba el contrato de la aplicación sin usar el texto de referencia para simular la respuesta.
+
+El corpus utiliza mensajes con roles y queda pendiente elegir el modelo, su plantilla de chat y la configuración de entrenamiento. Para comparar modelos se conservan los diálogos de validación completos y se mide por separado el rechazo incorrecto, el rechazo de desvíos y la concordancia del avance. Este corpus inicial contiene únicamente datos sintéticos.
 
 ### 2026-11-18 00:46 · Arranque local con IA y README
 

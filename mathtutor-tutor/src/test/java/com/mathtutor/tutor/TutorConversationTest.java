@@ -76,6 +76,22 @@ class TutorConversationTest {
         verifyNoInteractions(llm);
     }
 
+    @Test void aShortAnswerKeepsItsContextWhenEmbeddingRetrievalFails() {
+        active();
+        String message = "La de la derecha.";
+        when(retriever.retrieve(message, "funciones", null)).thenReturn(List.of());
+        when(retriever.retrieve(message, "funciones", "funciones-continuidad"))
+                .thenThrow(new IllegalStateException("embeddings"));
+        var history = List.of("Alumno: Compruebo los límites\nTutor: ¿Por cuál quieres empezar?");
+        var withoutContext = conversation.prepare(7L, 1L, message, List.of(), "");
+        assertThat(withoutContext.rejected()).isTrue();
+        var withContext = conversation.prepare(7L, 1L, message, history, "", "funciones-continuidad");
+        assertThat(withContext.rejected()).isFalse();
+        assertThat(withContext.topic()).isEqualTo("funciones-continuidad");
+        StepVerifier.create(withContext.response()).expectNextMatches(text -> text.contains("qué paso")).verifyComplete();
+        verifyNoInteractions(llm, budget);
+    }
+
     @Test void aClosingRequestWithoutAnExerciseExplainsWhenItApplies() {
         when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
         StepVerifier.create(conversation.reply(7L, 1L, "Ejercicio completado."))
