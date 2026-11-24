@@ -17,6 +17,8 @@ En [[Casos de uso#UC-34|UC-34]], el visor dibuja en el búfer de pantalla cuando
 
 [[Casos de uso#EN-06|EN-06]] mide por HTTP los eventos del tutor y observa el pool y PostgreSQL con 30 generaciones simultáneas. El escenario WebGL usa la superficie y el visor reales desde una página de prueba. Véase [[Sprint 10]].
 
+`SecurityConfig` comparte las reglas de autorización entre las dos cadenas. La cadena prioritaria de los POST SSE de mensajes y gráficas escribe las cabeceras antes de iniciar el flujo. La configuración de caché explícita de los demás controladores se conserva.
+
 ## Ampliación frontend Sprint 04
 
 ```mermaid
