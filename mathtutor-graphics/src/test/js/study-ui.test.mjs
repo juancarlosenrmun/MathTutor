@@ -11,7 +11,7 @@ function fixture() {
     'graphic-function','graphic-form','graphic-type','graphic-min','graphic-max','graphic-steps',
     'graphic-tangent-x','graphic-tangent-y','graphic-tangent-x-field','graphic-tangent-y-field',
     'sessions-more','sessions-refresh','sessions-status','history-more','tutor-retry',
-    'tutor-practice','tutor-practice-prompt'];
+    'tutor-practice','tutor-practice-prompt','exercise-bank','exercise-bank-select','exercise-bank-use'];
   const nodes=Object.fromEntries(ids.map(id=>[id,element({children:[]})]));
   const doc={querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:tagName=>element({tagName,children:[]})};
   Object.assign(nodes['tutor-block'],{value:'funciones'});
@@ -75,6 +75,22 @@ test('el ejercicio del banco se selecciona desde el chat sin publicar progreso',
   f.nodes['tutor-message'].value='Deriva x^2';await f.submit('tutor-form');
   assert.deepEqual(JSON.parse(f.state.calls.find(([p,o])=>p.endsWith('/exercises')&&o.method==='POST')[1].body),{exerciseId:7});
   assert.equal(f.state.calls.filter(([p,o])=>p.includes('/exercises')&&o.method!=='POST').length,0);
+});
+
+test('elegir un ejercicio prepara el borrador y solo lo inicia al enviar', async () => {
+  const f = fixture();
+  f.state.bank.push({id: 8, statement: 'Deriva x^2'});
+  await f.open();
+  assert.equal(f.nodes['exercise-bank'].hidden, false);
+  f.nodes['exercise-bank-select'].value = '8';
+  await f.click('exercise-bank-use');
+  assert.equal(f.nodes['tutor-message'].value, 'Deriva x^2');
+  assert.equal(f.state.calls.filter(([path]) => path.endsWith('/messages')).length, 0);
+  await f.submit('tutor-form');
+  const exercise = f.state.calls.find(([path]) => path.endsWith('/exercises'));
+  assert.deepEqual(JSON.parse(exercise[1].body), {exerciseId: 8});
+  await f.click('tutor-new');
+  assert.equal(f.nodes['exercise-bank'].hidden, true);
 });
 
 test('la práctica guiada presenta la etapa y el enunciado sin enviar un turno', async () => {

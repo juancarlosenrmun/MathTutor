@@ -16,12 +16,15 @@ test('rutas públicas, enlaces directos, desconocidos y cuenta protegida', () =>
   assert.equal(viewFor('', false), 'inicio');
 });
 
-test('el espacio de cada rol ofrece únicamente las capacidades actuales de S1', () => {
-  for (const [role, label] of [['ALUMNO', 'Alumno'], ['PROFESOR', 'Profesor'], ['ADMIN', 'Administrador']]) {
+test('el espacio de cada rol describe sus herramientas', () => {
+  for (const [role, label, capability] of [
+    ['ALUMNO', 'Alumno', /práctica/],
+    ['PROFESOR', 'Profesor', /estadísticas agregadas/],
+    ['ADMIN', 'Administrador', /perfiles.*sesiones.*uso por tema/],
+  ]) {
     const workspace = workspaceFor(role);
     assert.equal(workspace.label, label);
-    assert.match(workspace.description, /laboratorio/);
-    assert.doesNotMatch(workspace.description, /chat|historial|estadísticas|gestionar usuarios/i);
+    assert.match(workspace.description, capability);
   }
   assert.equal(workspaceFor('DESCONOCIDO').label, 'Sin rol asignado');
 });

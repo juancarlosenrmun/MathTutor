@@ -8,10 +8,16 @@ export function mountStudy(document,client,viewer) {
   if (!form) return {enter:async()=>{},setBusy(){}};
   const graphicType = one('graphic-type');
   const tangentX = one('graphic-tangent-x'), tangentY = one('graphic-tangent-y');
+  const bankPanel = one('exercise-bank');
+  const bankSelect = one('exercise-bank-select');
+  const bankUse = one('exercise-bank-use');
+  let selectedExercise;
   let session, generation=0, controller, busy=false, chatBusy=false, bank=[], ownsGraph=false;
   const active=()=>Boolean(client.token) && ['ALUMNO','PROFESOR'].includes(client.profile?.role) && session?.status!=='CERRADA';
   function controls() {
     one('graphic-fields').disabled=!session || !active() || busy || chatBusy;
+    if (bankPanel) bankPanel.hidden = !session || !active() || !bank.length;
+    if (bankUse) bankUse.disabled = busy || chatBusy;
   }
   async function perform(action,readOnly=false,errorTarget=one('graphic-result')) {
     if (!session || busy || (chatBusy && !readOnly)) return;
@@ -22,6 +28,8 @@ export function mountStudy(document,client,viewer) {
   }
   async function enter(next) {
     generation++; controller?.abort(); controller=new AbortController(); session=next; busy=false; bank=[];
+    selectedExercise = undefined;
+    bankSelect?.replaceChildren();
     one('graphic-function').value='x^2';
     for (const field of [tangentX, tangentY]) {
       if (field) field.value = '0';
@@ -29,12 +37,28 @@ export function mountStudy(document,client,viewer) {
     one('graphic-result').textContent='Solicita una gráfica para consultar su descripción y explorarla en el visor.';
     if (ownsGraph) { viewer.clear(); ownsGraph=false; }
     controls();
-    if (!session) return;
+    if (!session || !active()) return;
     await perform(async current=>{
       const result=await collection(client,`/api/tutor/sessions/${session.id}/bank?page=0&size=20`,controller.signal);
-      if (current===generation) bank=result;
+      if (current!==generation) return;
+      bank = result;
+      if (!bankSelect) return;
+      for (const exercise of bank) {
+        const option = document.createElement('option');
+        option.value = String(exercise.id);
+        option.textContent = exercise.statement;
+        bankSelect.append(option);
+      }
     },true);
   }
+  bankUse?.addEventListener('click', () => {
+    if (!session || !active() || busy || chatBusy) return;
+    selectedExercise = bank.find(exercise => String(exercise.id) === bankSelect.value);
+    if (!selectedExercise) return;
+    const message = one('tutor-message');
+    message.value = selectedExercise.statement;
+    message.focus();
+  });
   form.addEventListener('submit',event=>{
     event.preventDefault(); if (!active()) return;
     return perform(async current=>{
@@ -72,7 +96,9 @@ export function mountStudy(document,client,viewer) {
   async function fromMessage(message) {
     if (!active() || !session) return;
     const match=message.trim().match(/^(?:deriva(?:r)?|simplifica(?:r)?)\s*:?\s+([x0-9+*^(). /-]{1,200})$/i);
-    const exercise=bank.find(e=>e.statement.trim().toLocaleLowerCase('es')===message.trim().toLocaleLowerCase('es'));
+    const exercise = selectedExercise?.statement === message ? selectedExercise :
+      bank.find(e => e.statement.trim().toLocaleLowerCase('es') === message.trim().toLocaleLowerCase('es'));
+    selectedExercise = undefined;
     if (!match && !exercise) return;
     const body=exercise ? {exerciseId:exercise.id} : {operation:/^deriv/i.test(message.trim()) ? 'DERIVADA' : 'SIMPLIFICAR',expression:match[1]};
     await request(client,`/api/tutor/sessions/${session.id}/exercises`,body,controller.signal);

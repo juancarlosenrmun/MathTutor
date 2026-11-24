@@ -25,11 +25,11 @@ export function permissionDescription(role) {
 export function workspaceFor(role) {
   return {
     ALUMNO: { label: 'Alumno', title: 'Tu espacio de aprendizaje.',
-      description: 'Elige un bloque para conversar con el tutor o explora funciones, derivadas e integrales en el laboratorio.' },
+      description: 'Abre una conversación, retoma la práctica de un módulo o explora el laboratorio.' },
     PROFESOR: { label: 'Profesor', title: 'Tu espacio docente.',
-      description: 'Conversa con el tutor, explora el laboratorio y consulta los permisos de tu cuenta de profesor.' },
+      description: 'Accede al tutor y al laboratorio o consulta las estadísticas agregadas de ejercicios.' },
     ADMIN: { label: 'Administrador', title: 'Tu espacio de administración.',
-      description: 'Consulta tu cuenta y tus permisos actuales. También puedes explorar el laboratorio.' },
+      description: 'Gestiona perfiles, consulta sus sesiones y revisa el uso por tema.' },
   }[role] || { label: 'Sin rol asignado', title: 'Tu espacio.',
     description: 'Consulta tu cuenta para comprobar tus permisos actuales.' };
 }
