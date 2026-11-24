@@ -408,14 +408,15 @@
             <a class="text-link" href="#/cuenta">Ver tu cuenta <span aria-hidden="true">↗</span></a>
           </section>
         </div>
-        <section id="admin-panel" data-permission="ADMIN" hidden class="account-details" aria-labelledby="admin-title">
+        <section id="admin-panel" data-permission="ADMIN PROFESOR" hidden class="account-details" aria-labelledby="admin-title">
           <h2 id="admin-title">Gestionar perfiles</h2>
-          <button type="button" id="admin-load" class="button secondary">Cargar perfiles</button>
+          <button type="button" id="admin-load" class="button secondary">Cargar alumnos</button>
           <p id="admin-status" role="status"></p>
           <fieldset id="admin-actions" disabled>
             <legend>Acciones sobre el perfil</legend>
             <label for="admin-user">Perfil</label>
             <select id="admin-user"></select>
+            <div data-permission="ADMIN" hidden>
             <label for="admin-role">Nuevo rol</label>
             <select id="admin-role">
               <option value="ALUMNO">Alumno</option><option value="PROFESOR">Profesor</option>
@@ -425,6 +426,7 @@
             <button type="button" data-admin-action="password-reset" class="button secondary">Enviar enlace de recuperación</button>
             <button type="button" data-admin-action="deactivate" class="button secondary">Desactivar</button>
             <button type="button" data-admin-action="anonymize" class="button secondary">Anonimizar</button>
+            </div>
             <button type="button" id="admin-sessions-load" class="button secondary" disabled>Consultar sesiones</button>
           </fieldset>
           <button type="button" id="admin-previous" class="button secondary" disabled>Anterior</button>
@@ -434,14 +436,14 @@
             <table>
               <caption>Sesiones del perfil seleccionado</caption>
               <thead><tr><th scope="col">Sesión</th><th scope="col">Módulo</th><th scope="col">Estado</th>
-                <th scope="col">Inicio</th><th scope="col">Última actividad</th></tr></thead>
+                <th scope="col">Inicio</th><th scope="col">Última actividad</th><th scope="col">Ejercicios completados</th></tr></thead>
               <tbody id="admin-sessions-results"></tbody>
             </table>
           </div>
           <button type="button" id="admin-sessions-previous" class="button secondary" disabled>Sesiones anteriores</button>
           <button type="button" id="admin-sessions-next" class="button secondary" disabled>Sesiones siguientes</button>
         </section>
-        <section data-permission="ADMIN" hidden class="account-details" aria-labelledby="admin-topics-title">
+        <section data-permission="ADMIN PROFESOR" hidden class="account-details" aria-labelledby="admin-topics-title">
           <h2 id="admin-topics-title">Uso por tema</h2>
           <button type="button" id="admin-topics-load" class="button secondary">Consultar uso</button>
           <p id="admin-topics-status" role="status"></p>

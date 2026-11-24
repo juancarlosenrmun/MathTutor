@@ -21,12 +21,16 @@ export function mountAdministration(document, host, client) {
     item => [item.module, item.topic, item.sessions, item.turns], 'Todavía no hay uso registrado por tema.');
   const sessionUsage = mountUsageTable(document, client, 'sessions',
     item => [item.id, item.module ?? 'Sin módulo', item.status === 'ACTIVA' ? 'Activa' : 'Cerrada',
-      sessionDate.format(new Date(item.startedAt)), sessionDate.format(new Date(item.lastActivityAt))],
+      sessionDate.format(new Date(item.startedAt)), sessionDate.format(new Date(item.lastActivityAt)), item.completedExercises ?? 0],
     'No hay sesiones en esta página.');
   let page = 0, generation = 0, identity, profiles = [];
+  const isAdmin = () => client.profile?.role === 'ADMIN';
+  const usersPath = () => isAdmin() ? '/api/admin/users' : '/api/teacher/statistics/students';
 
   function sync(view) {
-    const current = view === 'espacio' && client.profile?.role === 'ADMIN' ? client.profile.email : null;
+    const profile = client.profile;
+    const current = view === 'espacio' && ['ADMIN', 'PROFESOR'].includes(profile?.role)
+      ? profile.role + ':' + profile.email : null;
     if (current === identity) return;
     identity = current;
     generation++;
@@ -36,7 +40,10 @@ export function mountAdministration(document, host, client) {
     actions.disabled = previous.disabled = next.disabled = true;
     loadButton.disabled = false;
     status.textContent = '';
-    topicUsage.reset(current ? '/api/admin/usage/topics' : null);
+    const title = one('#admin-title');
+    if (title) title.textContent = isAdmin() ? 'Gestionar perfiles' : 'Sesiones del alumnado';
+    loadButton.textContent = isAdmin() ? 'Cargar perfiles' : 'Cargar alumnos';
+    topicUsage.reset(current ? (isAdmin() ? '/api/admin/usage/topics' : '/api/teacher/statistics/usage/topics') : null);
     sessionUsage.reset();
   }
 
@@ -45,7 +52,7 @@ export function mountAdministration(document, host, client) {
     sessionUsage.reset();
     actions.disabled = loadButton.disabled = previous.disabled = next.disabled = true;
     try {
-      const response = await client.request(`/api/admin/users?page=${targetPage}&size=${PAGE_SIZE}`);
+      const response = await client.request(`${usersPath()}?page=${targetPage}&size=${PAGE_SIZE}`);
       const list = await response.json();
       if (current !== generation) return;
       profiles = list.filter(profile => profile.id !== client.profile.id);
@@ -71,8 +78,8 @@ export function mountAdministration(document, host, client) {
 
   function setRole() {
     const profile = profiles.find(item => String(item.id) === user.value);
-    if (profile) role.value = profile.role;
-    sessionUsage.reset(profile ? `/api/admin/users/${profile.id}/sessions` : null);
+    if (profile && isAdmin()) role.value = profile.role;
+    sessionUsage.reset(profile ? `${usersPath()}/${profile.id}/sessions` : null);
     for (const button of document.querySelectorAll('[data-admin-action]')) {
       button.disabled = !profile || (!profile.active && button.dataset.adminAction !== 'anonymize');
     }
@@ -85,7 +92,7 @@ export function mountAdministration(document, host, client) {
   for (const button of document.querySelectorAll('[data-admin-action]')) {
     button.addEventListener('click', async () => {
       const action = button.dataset.adminAction;
-      if (!user.value || !host.confirm(confirmations[action])) return;
+      if (!isAdmin() || !user.value || !host.confirm(confirmations[action])) return;
       const current = generation;
       actions.disabled = true;
       try {

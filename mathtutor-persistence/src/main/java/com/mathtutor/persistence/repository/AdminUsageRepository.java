@@ -32,17 +32,19 @@ public class AdminUsageRepository {
     /** @brief Consulta metadatos de sesiones del perfil en orden estable, incluidas las antiguas sin módulo. */
     public List<SessionUsage> sessions(long userId, long offset, int limit) {
         return jdbc.query("""
-                SELECT s.id, m.code AS module, s.status, s.started_at, s.last_activity_at
+                SELECT s.id, m.code AS module, s.status, s.started_at, s.last_activity_at,
+                       (SELECT COUNT(*) FROM exercise_runs r WHERE r.session_id = s.id AND r.state = 'COMPLETADO')
+                           AS completed_exercises
                 FROM tutor_sessions s LEFT JOIN modules m ON m.id = s.module_id
                 WHERE s.user_id = ?
                 ORDER BY s.started_at DESC, s.id DESC
                 LIMIT ? OFFSET ?
                 """, (row, index) -> new SessionUsage(row.getLong("id"), row.getString("module"),
                 row.getString("status"), row.getTimestamp("started_at").toInstant(),
-                row.getTimestamp("last_activity_at").toInstant()), userId, limit, offset);
+                row.getTimestamp("last_activity_at").toInstant(), row.getLong("completed_exercises")), userId, limit, offset);
     }
 
     public record TopicUsage(String module, String topic, long sessions, long turns) {}
 
-    public record SessionUsage(long id, String module, String status, Instant startedAt, Instant lastActivityAt) {}
+    public record SessionUsage(long id, String module, String status, Instant startedAt, Instant lastActivityAt, long completedExercises) {}
 }

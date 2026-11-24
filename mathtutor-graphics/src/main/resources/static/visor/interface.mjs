@@ -18,7 +18,7 @@ export function viewFor(hash, signedIn) {
 
 export function permissionDescription(role) {
   return { ALUMNO: 'Acceso a tus contenidos y recursos propios.',
-    PROFESOR: 'Permisos de profesor: contenido y estadísticas agregadas.',
+    PROFESOR: 'Permisos de profesor: contenido, sesiones y estadísticas del alumnado.',
     ADMIN: 'Permisos de administración del centro.' }[role] || 'Sin permisos asignados. Contacta con tu centro.';
 }
 
@@ -27,7 +27,7 @@ export function workspaceFor(role) {
     ALUMNO: { label: 'Alumno', title: 'Tu espacio de aprendizaje.',
       description: 'Abre una conversación, retoma la práctica de un módulo o explora el laboratorio.' },
     PROFESOR: { label: 'Profesor', title: 'Tu espacio docente.',
-      description: 'Accede al tutor y al laboratorio o consulta las estadísticas agregadas de ejercicios.' },
+      description: 'Accede al tutor y al laboratorio o consulta las sesiones y estadísticas del alumnado.' },
     ADMIN: { label: 'Administrador', title: 'Tu espacio de administración.',
       description: 'Gestiona perfiles, consulta sus sesiones y revisa el uso por tema.' },
   }[role] || { label: 'Sin rol asignado', title: 'Tu espacio.',
