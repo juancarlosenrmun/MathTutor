@@ -42,13 +42,21 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 
 ## Fix del tutor y el visor
 
-- [x] Ejercicios inéditos del módulo, visor contraído y deslizadores de tangencia implementados.
-- [x] Caja blanca del flujo sin coincidencias, filtro de temario y movimiento del punto sin otra petición.
-- [x] Caja negra en Chrome con Google AI Studio, curva y superficie. Confirmado el rechazo de una consulta ajena al módulo.
+- [x] Ejercicios inéditos del módulo, continuidad del diálogo, visor contraído y deslizadores con la coordenada de tangencia implementados.
+- [x] Caja blanca del flujo sin coincidencias, filtro de temario, tema del turno anterior y movimiento del punto sin otra petición.
+- [x] Caja negra en Chrome con Google AI Studio, seguimiento de una conversación, curva y superficie. Confirmado el rechazo de una consulta ajena al módulo.
 - [x] Cobertura JaCoCo y V8 en umbral y verificación Gradle en verde.
 - [ ] CI remota e integración del fix en `DEV`.
 
 ## Notas de iteración
+
+### 2026-11-24 11:28 · Seguimiento del diálogo y coordenada de tangencia
+
+- [[Casos de uso#UC-20|UC-20]] admite la derivabilidad como propiedad al discutir la continuidad y usa el tema del último turno completado para respuestas breves reconocibles. El tema debe pertenecer al módulo de la sesión. El prompt pide retomar la intervención del alumno.
+- [[Casos de uso#UC-31|UC-31]] muestra la coordenada x con formato español junto a la barra del tutor y del laboratorio y la actualiza al moverla.
+- 4 casos unitarios nuevos, 1 prueba HTTP de conversación y 1 recorrido Chromium ampliado. Google AI Studio respondió a los cuatro turnos probados en la misma conversación, incluido «¿Por qué?». También se verificó el rechazo de una pregunta ajena.
+- Gradle pasó con 1.181 pruebas Java y 127 Node. JaCoCo del tutor 99,20 % de líneas y 94,84 % de ramas. V8 94,95 % y 89,47 %. Chrome y las comprobaciones de accesibilidad pasaron.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Quedan pendientes CI remota, integración en `DEV` y las mediciones de EN-06 ya anotadas. Véase [[Registro de iteraciones]].
 
 ### 2026-11-24 10:57 · Fix del tutor y el visor
 

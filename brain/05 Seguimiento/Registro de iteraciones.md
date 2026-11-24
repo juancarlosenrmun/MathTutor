@@ -1,3 +1,11 @@
+## 2026-11-24 11:28 · Sprint 10 · Seguimiento del diálogo y coordenada de tangencia
+
+- **Petición**. Corregir el rechazo de «Una fucnión polinomica siempre es continua y derivable» tras hablar de continuidad y mostrar el valor de la barra de la recta tangente.
+- **Implementación**. El tutor reconoce la mención de derivabilidad dentro de un razonamiento de continuidad y conserva el tema en seguimientos breves. La coordenada x se actualiza al mover la barra.
+- **Caja blanca**. 4 casos nuevos de seguimiento, reutilización del tema y aislamiento por módulo. Gradle pasó con 1.181 pruebas Java y 127 Node. JaCoCo del tutor 99,20 % de líneas y 94,84 % de ramas. V8 94,95 % y 89,47 %.
+- **Caja negra**. 1 regresión HTTP y 1 recorrido Chromium ampliado. Se probó el diálogo de cuatro turnos con Google AI Studio, una pregunta ajena y la lectura de la coordenada inicial y durante el arrastre en Chrome.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
 ## 2026-11-24 10:57 · Sprint 10 · Fix del tutor y el visor
 
 - **Petición**. Crear una rama desde `DEV`, recuperar las respuestas a ejercicios nuevos del módulo y actualizar el visor del tutor y del laboratorio.
