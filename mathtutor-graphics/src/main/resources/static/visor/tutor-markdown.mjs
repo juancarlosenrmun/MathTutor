@@ -1,5 +1,13 @@
 import katex from './vendor/katex/katex.mjs';
 
+const delimitedMath = /(?<![\\$])\$\$[\s\S]+?(?<!\\)\$\$|(?<![\\$])\$(?!\$)(?:\\[^\n]|[^$\\\n])+?(?<!\\)\$(?!\$)|\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\]/;
+const basis = /e_(?:\{[123]\}|[123])/;
+const vectorMath = new RegExp(`(?<![\\w\\\\])${basis.source}(?:[ \\t]*(?:\\\\times|×)[ \\t]*${basis.source})?(?!\\w)`);
+const code = /`[^`\n]+`/;
+const markdownTokens = /\*\*[^*\n]+\*\*|\*[^*\n]+\*|\[[^\]\n]+\]\([^\s)]+\)/;
+const studentTokens = new RegExp([code, delimitedMath, vectorMath].map(pattern => pattern.source).join('|'), 'g');
+const tutorTokens = new RegExp(`${studentTokens.source}|${markdownTokens.source}`, 'g');
+
 function math(document, token) {
   const display = token.startsWith('$$') || token.startsWith('\\[');
   const delimiterSize = token.startsWith('$') && !display ? 1 : 2;
@@ -21,8 +29,8 @@ function math(document, token) {
 }
 
 // Construye nodos DOM sin interpretar HTML procedente del tutor.
-function inline(document, parent, source) {
-  const tokens = /(`[^`\n]+`|(?<![\\$])\$\$[\s\S]+?(?<!\\)\$\$|(?<![\\$])\$(?!\$)(?:\\[^\n]|[^$\\\n])+?(?<!\\)\$(?!\$)|\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\]|\*\*[^*\n]+\*\*|\*[^*\n]+\*|\[[^\]\n]+\]\([^\s)]+\))/g;
+function inline(document, parent, source, student = false) {
+  const tokens = student ? studentTokens : tutorTokens;
   let cursor = 0;
   for (const match of source.matchAll(tokens)) {
     if (match.index > cursor) {
@@ -33,9 +41,12 @@ function inline(document, parent, source) {
     const token = match[0];
     let node;
     if (token.startsWith('`')) {
-      node = document.createElement('code'); node.textContent = token.slice(1, -1);
+      node = document.createElement(student ? 'span' : 'code');
+      node.textContent = student ? token : token.slice(1, -1);
     } else if (token.startsWith('$') || token.startsWith('\\(') || token.startsWith('\\[')) {
       node = math(document, token);
+    } else if (token.startsWith('e_')) {
+      node = math(document, '$' + token.replace('×', '\\times ') + '$');
     } else if (token.startsWith('**')) {
       node = document.createElement('strong'); inline(document, node, token.slice(2, -2));
     } else if (token.startsWith('*')) {
@@ -57,6 +68,11 @@ function inline(document, parent, source) {
   const tail = document.createElement('span');
   tail.textContent = source.slice(cursor);
   parent.append(tail);
+}
+
+/** Representa la notación matemática del alumno y conserva el resto como texto. */
+export function renderStudentMessage(document, target, message) {
+  inline(document, target, 'Tú: ' + message, true);
 }
 
 /** Renderiza Markdown frecuente del tutor, también durante el streaming. */
