@@ -1,3 +1,11 @@
+## 2026-11-24 10:57 · Sprint 10 · Fix del tutor y el visor
+
+- **Petición**. Crear una rama desde `DEV`, recuperar las respuestas a ejercicios nuevos del módulo y actualizar el visor del tutor y del laboratorio.
+- **Implementación**. Se aplicó la excepción solicitada a RF-03 para los temas reconocidos. El visor se abre al validar la función de la conversación. La recta y el plano tangentes siguen los deslizadores en directo.
+- **Caja blanca**. 6 casos Java nuevos para enunciados inéditos, temas coincidentes y exclusión fuera de módulo. `check jacocoAggregateReport` pasó con 1.176 pruebas Java y 127 Node. JaCoCo del tutor 99,18 % de líneas y 94,36 % de ramas. V8 94,92 % y 89,52 %.
+- **Caja negra**. 1 recorrido Node nuevo de apertura, ocultación, deslizamiento y limpieza de sesión. Chromium verificó el contrato y Chrome con Google AI Studio comprobó 3 recorridos reales de ecuación inédita, curva y superficie. Una consulta ajena al módulo se rechazó en la comprobación HTTP con el proveedor configurado.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
 ## 2026-11-24 10:18 · Sprints 05–10 · Frontend final
 
 - **Petición**. Crear y activar `Frontend` desde `DEV`, ejecutar `find-skills` para frontend e integrar las capacidades de los sprints 5 a 10 en el rediseño.

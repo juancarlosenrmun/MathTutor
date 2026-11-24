@@ -40,7 +40,23 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 - [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
+## Fix del tutor y el visor
+
+- [x] Ejercicios inéditos del módulo, visor contraído y deslizadores de tangencia implementados.
+- [x] Caja blanca del flujo sin coincidencias, filtro de temario y movimiento del punto sin otra petición.
+- [x] Caja negra en Chrome con Google AI Studio, curva y superficie. Confirmado el rechazo de una consulta ajena al módulo.
+- [x] Cobertura JaCoCo y V8 en umbral y verificación Gradle en verde.
+- [ ] CI remota e integración del fix en `DEV`.
+
 ## Notas de iteración
+
+### 2026-11-24 10:57 · Fix del tutor y el visor
+
+- La rama `fix/tutor-chat-visor` sale de `DEV`. Se registra en este sprint por los cambios de EN-06 en el streaming del tutor y de UC-34 en el visor compartido.
+- Ajuste solicitado a RF-03 ([[Casos de uso#UC-15|UC-15]]). Un ejercicio de un tema reconocible del módulo puede recibir una pista aunque el índice no recupere coincidencias. El umbral RAG se conserva y se llama al generador una sola vez por turno. El CAS ya distingue las expresiones aisladas de los enunciados con fórmulas.
+- [[Casos de uso#UC-35|UC-35]] valida la función del enunciado o el ejemplo generado antes de desplegar el visor. [[Casos de uso#UC-31|UC-31]] mueve la recta o el plano al arrastrar los deslizadores de su dominio sin repetir la validación ni cargar otra malla. El visor vuelve a contraerse al cambiar de conversación.
+- Se añadieron 6 casos Java y 1 recorrido Node. Pasaron 1.176 pruebas Java, 127 Node, Chromium y Chrome con Google AI Studio. Se comprobó una ecuación inédita y la apertura de una curva y una superficie con sus controles. JaCoCo del tutor 99,18 % de líneas y 94,36 % de ramas. V8 94,92 % y 89,52 %.
+- Checklist del fix **4/5** y del sprint **17/20**. Pendientes la CI remota y la integración del fix, además de las mediciones de EN-06 en GPU integrada y del p95 con el proveedor real. Véase [[Registro de iteraciones]].
 
 ### 2026-11-24 10:18 · Revisión final del frontend
 

@@ -1,5 +1,7 @@
 # Progreso global
 
+Sprint 10 · fix del tutor y el visor (2026-11-24 10:57). Fix **4/5**, checklist **17/20** y estado **en curso**. Gradle, JaCoCo, V8 y Chrome con Google AI Studio verificados. Pendientes CI remota e integración en `DEV`. Véase [[Sprint 10]].
+
 Sprint 01 · README local con IA (2026-11-18 12:13): actualizado en `config-docs` (`29dce2b`), con preparación inicial y arranque diario para Windows/Linux/macOS. Comandos cotejados con `config`; sin cambios de código ni nuevas pruebas. Checklist **22/25**, configuración **4/5**, estado **en curso**; pendiente integración. Véase [[Sprint 01]].
 
 Sprint 01 · configuración local portable (2026-11-18 11:18): **en curso**, configuración **4/5**, checklist **22/25**. PostgreSQL/JWT por dispositivo en `.env`, generación de secretos e inicio `localAi`. 994 Java, 91 Node y contrato Compose correctos; cobertura en umbral. Pendiente CI e integración de `config` en DEV y `config-docs` en DOC. Véase [[Sprint 01]].
@@ -44,6 +46,6 @@ Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlos
 | [[Sprint 07\|S7]] | Hito: todos los Must completados; evaluación y selección por intersección | 31 | 3/3 elementos (31/31 pts), checklist 20/20 | completado ([PR #23](https://github.com/juancarlosenrmun/MathTutor/pull/23)) |
 | [[Sprint 08\|S8]] | Should restantes y administración | 32 | 6/6 elementos (32/32 pts), checklist 35/35 | completado ([PR #24](https://github.com/juancarlosenrmun/MathTutor/pull/24)) |
 | [[Sprint 09\|S9]] | Could (1) | 29 | 6/6 elementos (29/29 pts), checklist 35/35 | completado ([PR #25](https://github.com/juancarlosenrmun/MathTutor/pull/25)) |
-| [[Sprint 10\|S10]] | Contingencia y Could (2) | 21 | 1/2 elementos cerrados (13/21 pts), ambos integrados, checklist 13/15 | en curso ([PR #26](https://github.com/juancarlosenrmun/MathTutor/pull/26), mediciones de EN-06 pendientes) |
+| [[Sprint 10\|S10]] | Contingencia y Could (2) | 21 | 1/2 elementos cerrados (13/21 pts), ambos integrados, fix tutor y visor 4/5, checklist 17/20 | en curso ([PR #26](https://github.com/juancarlosenrmun/MathTutor/pull/26), mediciones de EN-06 y CI e integración del fix pendientes) |
 
 La revisión final del frontend se verificó localmente en `Frontend`. Su CI e integración en `DEV` están pendientes. Véase [[Registro de iteraciones]].
