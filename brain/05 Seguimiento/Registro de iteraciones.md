@@ -1,3 +1,11 @@
+## 2026-11-24 15:07 · Sprint 10 · Visor de conversación, cierre y seguimiento docente
+
+- [[Casos de uso#UC-17|UC-17]], [[Casos de uso#UC-20|UC-20]] y [[Casos de uso#UC-24|UC-24]]. El CAS cierra los ejercicios procedimentales al verificar el resultado. El alumno puede cerrar un ejercicio sin referencia simbólica con el botón o con «Ejercicio completado». El cierre se guarda y habilita otro ejercicio en la sesión. La práctica guiada espera el cierre y la sesión puede retomar un ejercicio inactivo.
+- [[Casos de uso#UC-35|UC-35]]. «Mostrar visor» está disponible cuando se valida la gráfica. El visor se abre al recibirla y se recupera desde el historial reciente de la conversación. El tutor muestra los deslizadores solo para rectas y planos tangentes. Las fórmulas de los ejercicios sugeridos se presentan en MathML.
+- [[Casos de uso#UC-11|UC-11]]. El alumno puede borrar una conversación propia, con sus mensajes y ejercicios, tras confirmar. [[Casos de uso#UC-10|UC-10]]. Profesor y administrador pueden consultar sesiones y recuentos de ejercicios completados. La lectura individual se audita y las acciones de cuenta siguen reservadas al administrador.
+- 1 prueba nueva de persistencia y 2 pruebas HTTP nuevas. Se ampliaron las regresiones de continuidad, itinerario guiado, renderizado, visor y permisos. Gradle en verde con 1.193 pruebas Java y 128 Node. JaCoCo del tutor 99,13 % de líneas y 93,57 % de ramas. V8 93,90 % y 88,30 %. Chrome verificó el recorrido de interfaz, WebGL y accesibilidad.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Pendientes CI remota y la integración en `DEV`. Véase [[Sprint 10]].
+
 ## 2026-11-24 13:07 · Sprint 10 · Cierre de ejercicios y fórmulas en práctica guiada
 
 - **Petición**. Admitir la comprobación de continuidad y el mensaje «ejercicio completado». Representar el producto vectorial de la práctica guiada de Métodos 3D.
