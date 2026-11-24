@@ -1,3 +1,13 @@
+## 2026-11-24 09:37 · Sprint 10 · Postprocesamiento y pruebas de rendimiento
+
+- **Petición**. Crear y activar `Sprint-10`, leer la bóveda y ejecutar find-skills. Implementar el sprint con comentarios Doxygen, pruebas de caja blanca y negra, commits pequeños sin cofirmas y PR hacia DEV. Al retomar, verificar `git status` y `git log`.
+- **Implementado**. Contraste WebGL con escena a textura y guías superpuestas. Medición de latencia HTTP/SSE, generación simultánea de 30 conversaciones y benchmark WebGL de 100.000 triángulos. Corrección necesaria de la escritura concurrente de cabeceras en los dos POST SSE. Instaladas por separado `threejs-3d-graphics` y `k6`. Diagramas en `Sprint-10-docs`.
+- **Caja blanca**. Cuatro pruebas Node sobre composición, recursos y control de contraste. Dos casos Java sobre el p95 y las cabeceras antes de iniciar SSE. La regresión de cabeceras falló en rojo con la configuración previa y pasó con el ajuste.
+- **Caja negra**. Dos recorridos Chromium para píxeles, redimensionado y control en laboratorio y tutor. Un escenario de 30 conversaciones por HTTP y dos escenarios gráficos con y sin contraste. Los contratos HTTP existentes verifican también las cabeceras SSE y la caché REST.
+- **Medición**. Primer TOKEN p95 de 232 ms y máximo de 238 ms. DONE p95 de 246 ms. Cero conexiones JDBC activas y cero transacciones abiertas durante la generación simulada. En RTX 4060, 121 y 120,8 FPS, con escenas listas en 269 y 191 ms sin y con contraste, respectivamente.
+- **Verificación**. Gradle en verde. Pasaron 1170 pruebas Java, 125 Node y 20 Python. JaCoCo en umbral en ocho módulos, con 95,61 % de líneas y 89,38 % de ramas en el agregado y 100 % en política pedagógica. Cliente V8 con 95,34 % de líneas y 90,58 % de ramas. Doxygen generado. TLS y ZAP pasivo verificados, sin alertas altas ni críticas.
+- **Pendiente**. CI e integración en DEV, medición RNF-01 con un proveedor real y RNF-02 en GPU integrada. Checklist **10/15**, estado `en curso`. Véase [[Sprint 10]].
+
 ## 2026-11-23 22:34 · Sprint 09 · Administración, práctica guiada, resiliencia y animaciones
 
 - **Petición**. Crear `Sprint-9` desde `DEV`, instalar skills por separado, implementar el sprint con comentarios Doxygen, probarlo y abrir una PR con commits pequeños sin cofirmas.

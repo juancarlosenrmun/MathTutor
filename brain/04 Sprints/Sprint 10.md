@@ -2,7 +2,7 @@
 sprint: S10
 objetivo: Contingencia y Could (2)
 puntos: 21
-estado: pendiente
+estado: en curso
 ---
 # Sprint 10 · Contingencia y Could (2)
 
@@ -20,24 +20,33 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 ## Checklist de implementación
 
 ### UC-34 · Aplicar post-procesamiento
-- [ ] Implementación
-- [ ] Pruebas de caja blanca
-- [ ] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Implementación
+- [x] Pruebas de caja blanca
+- [x] Pruebas de caja negra
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ### EN-06 · Pruebas de rendimiento y carga
-- [ ] Implementación
-- [ ] Pruebas de caja blanca
-- [ ] Pruebas de caja negra
-- [ ] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
+- [x] Implementación
+- [x] Pruebas de caja blanca
+- [x] Pruebas de caja negra
+- [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
 - [ ] Integrado en la rama principal
 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
 - [ ] Build y CI en verde
-- [ ] Cobertura en umbral verificada
+- [x] Cobertura en umbral verificada
 - [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
-- [ ] [[Progreso global]] actualizado
+- [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+- UC-34 añade el control **Realzar contraste** al visor del laboratorio y del tutor. El render a textura aplica el efecto a la escena y conserva las guías y el marcador en su propia capa.
+- EN-06 mide HTTP/SSE sobre PostgreSQL con `./gradlew :mathtutor-application:test --tests '*TutorLoadTest'`. Las 30 conversaciones entran en el generador simulado antes de liberar su respuesta. Se observan Hikari y `pg_stat_activity` durante la espera.
+- La verificación del 24 de noviembre obtuvo primer TOKEN p95 de 232 ms y máximo de 238 ms, DONE p95 de 246 ms, cero conexiones JDBC activas y cero transacciones abiertas durante la generación.
+- Corrección necesaria para EN-06. La cadena de seguridad de los dos POST SSE escribe sus cabeceras antes de iniciar el flujo. Esto evita cierres prematuros observados durante las regresiones. Véase la [incidencia de Spring Security](https://github.com/spring-projects/spring-security/issues/15510).
+- `python scripts/smoke-webgl.py --performance` requiere Chrome o Chromium con aceleración y Playwright resoluble desde Node. Se puede indicar su instalación con `MATHTUTOR_BROWSER_DEPS`. El escenario de 100.000 triángulos mide preparación de escena y FPS con y sin contraste, e identifica el adaptador en `mathtutor-graphics/build/reports/client-browser/performance.json`.
+- La RTX 4060 disponible superó 120 FPS en ambos modos. La escena quedó lista en 269 ms con render directo y 191 ms con contraste. Queda pendiente repetir la medición con una GPU integrada y medir RNF-01 con el proveedor LLM real.
+- Diagramas en la [rama Sprint-10-docs](https://github.com/juancarlosenrmun/MathTutor/tree/Sprint-10-docs).
+- Checklist local **10/15**. La integración de los dos elementos, la CI de la PR y el cierre de la velocidad del sprint quedan pendientes.
