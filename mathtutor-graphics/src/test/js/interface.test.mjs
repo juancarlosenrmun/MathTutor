@@ -46,17 +46,19 @@ test('login y registro reales, limpieza de contraseña, estado ocupado y logout'
   }
 });
 
-test('el espacio autenticado refleja cambios de rol sin crear rutas de sprints futuros', async () => {
+test('el espacio autenticado refleja las herramientas del rol actualizado', async () => {
   const f = fixture(); f.host.location.hash = '#/espacio'; f.state.restore = true;
   const app = mountInterface(f.doc, f.host, () => {}); await app.ready;
   assert.equal(f.views.find(view => !view.hidden).dataset.view, 'espacio');
   assert.equal(f.doc.title, 'Tu espacio · MathTutor');
   assert.equal(f.nodes['#workspace-role'].textContent, 'Alumno');
   assert.match(f.nodes['#workspace-title'].textContent, /aprendizaje/);
-  for (const [role, label] of [['PROFESOR', 'Profesor'], ['ADMIN', 'Administrador']]) {
+  for (const [role, label, capability] of [
+    ['PROFESOR', 'Profesor', /estadísticas/], ['ADMIN', 'Administrador', /sesiones/],
+  ]) {
     f.state.role = role; await app.updateRole();
     assert.equal(f.nodes['#workspace-role'].textContent, label);
-    assert.match(f.nodes['#workspace-description'].textContent, /laboratorio/);
+    assert.match(f.nodes['#workspace-description'].textContent, capability);
   }
   f.state.status = 401; await app.updateRole();
   assert.equal(f.views.find(view => !view.hidden).dataset.view, 'acceso');

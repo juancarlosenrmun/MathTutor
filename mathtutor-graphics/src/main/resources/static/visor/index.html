@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f6f7f2" />
+    <meta name="theme-color" content="#f5f7fb" />
     <meta
       name="description"
       content="Conversa con el tutor de Matemáticas y explora funciones, derivadas y áreas en el laboratorio."
@@ -16,7 +16,7 @@
     <a class="skip-link" href="#main">Saltar al contenido</a>
     <header class="site-header">
       <a class="brand" href="#/inicio"
-        ><span class="brand-symbol" aria-hidden="true">m.</span>MathTutor</a
+        ><span class="brand-symbol" aria-hidden="true">∑</span>MathTutor</a
       >
       <nav aria-label="Navegación principal">
         <a href="#/inicio" data-nav="inicio">Inicio</a
@@ -45,13 +45,10 @@
       <section data-view="inicio" class="home">
         <div class="hero">
           <div class="hero-copy">
-            <p class="overline">
-              <span class="status-dot" aria-hidden="true"></span> Tu tutor de matemáticas
-            </p>
-            <h1>Aprender<br />matemáticas,<br />paso a paso.</h1>
+            <h1>Matemáticas<br />en práctica</h1>
             <p class="lead">
-              Elige un bloque y conversa con el tutor. Explora funciones,
-              derivadas y áreas para entender las matemáticas desde otra perspectiva.
+              Avanza con pistas paso a paso. Practica con el tutor y explora
+              curvas, superficies y tangentes en el laboratorio interactivo.
             </p>
             <div class="hero-actions">
               <a class="button" href="#/registro" data-guest
@@ -60,9 +57,6 @@
                 >Ir a tu espacio <span aria-hidden="true">↗</span></a
               ><a class="text-link" href="#/laboratorio">Explorar el laboratorio</a>
             </div>
-            <p class="subtle hero-note">
-              A tu ritmo. Con espacio para descubrir.
-            </p>
           </div>
           <figure class="coordinate-art" aria-labelledby="art-caption">
             <svg
@@ -77,11 +71,11 @@
                   height="22"
                   patternUnits="userSpaceOnUse"
                 >
-                  <circle cx="1" cy="1" r="1" fill="#d3dbd1" />
+                  <circle cx="1" cy="1" r="1" fill="#324563" />
                 </pattern>
               </defs>
               <rect width="520" height="440" fill="url(#dots)" />
-              <g fill="none" stroke="#c0cdc0" stroke-width="1">
+              <g fill="none" stroke="#647899" stroke-width="1">
                 <path d="M90 278 260 180 430 278 260 376Z" />
                 <path
                   d="m132 254 170 98m-128-122 170 98m-128-122 170 98M132 302l170-98m-128 122 170-98m-128 122 170-98"
@@ -92,50 +86,41 @@
                 <path d="M101 186 417 368" stroke="#49795c" />
                 <path d="M260 376V61" stroke="#53768a" />
               </g>
-              <g fill="none" stroke="#285b43" stroke-width="1.4">
+              <g fill="none" stroke="#a4caff" stroke-width="1.4">
                 <path d="m181 229 79-46 79 46v91l-79 46-79-46Z" />
                 <path d="m181 229 79 46 79-46m-79 46v91" />
                 <path
                   d="m181 229 79-46 79 46-79 46Z"
-                  fill="#dce8d8"
+                  fill="#567eb6"
                   fill-opacity=".65"
                 />
               </g>
-              <circle cx="260" cy="275" r="5" fill="#285b43" />
+              <circle cx="260" cy="275" r="5" fill="#c8dfff" />
               <g font-family="Georgia,serif" font-size="20">
-                <text x="431" y="186" fill="#985345">x</text>
-                <text x="425" y="382" fill="#366648">y</text>
-                <text x="272" y="65" fill="#456579">z</text>
-                <text x="269" y="299" fill="#68736c" font-size="15">O</text>
+                <text x="431" y="186" fill="#ff9c96">x</text>
+                <text x="425" y="382" fill="#91e4ba">y</text>
+                <text x="272" y="65" fill="#a4caff">z</text>
+                <text x="269" y="299" fill="#c8dfff" font-size="15">O</text>
               </g>
             </svg>
             <figcaption id="art-caption">
-              <span>Una idea. Tres dimensiones.</span
+              <span>Sistema de coordenadas</span
               ><span class="subtle">x, y, z</span>
             </figcaption>
           </figure>
         </div>
         <div class="home-bottom">
-          <p>Tu razonamiento,<br /><strong>en el centro.</strong></p>
           <div>
-            <h2>Cambia tu punto de vista</h2>
-            <p>
-              Gira los ejes, acércate y recorre el espacio. El laboratorio es un
-              lugar para empezar a explorar.
-            </p>
-            <a class="text-link" href="#/laboratorio"
-              >Abrir el visor 3D <span aria-hidden="true">↗</span></a
-            >
+            <h2>Tutor paso a paso</h2>
+            <p>Pregunta por un concepto o comparte tu razonamiento para recibir una pista.</p>
           </div>
           <div>
-            <h2>Un espacio propio</h2>
-            <p>
-              Accede con tu cuenta y consulta tu sesión y tus permisos en un
-              mismo lugar.
-            </p>
-            <a class="text-link" href="#/acceso"
-              >Entrar en tu cuenta <span aria-hidden="true">↗</span></a
-            >
+            <h2>Práctica guiada</h2>
+            <p>Elige un ejercicio del módulo o continúa con el itinerario de práctica.</p>
+          </div>
+          <div>
+            <h2>Laboratorio interactivo</h2>
+            <p>Selecciona puntos de una superficie y observa cómo una secante se acerca a la tangente.</p>
           </div>
         </div>
       </section>
@@ -201,7 +186,7 @@
         </div>
       </section>
       <section data-view="recuperar" class="auth-layout" hidden>
-        <div class="auth-card">
+        <div class="form-panel recovery-panel">
           <h2>Recuperar contraseña</h2>
           <form data-reset="request">
             <label for="reset-email">Correo electrónico</label>
@@ -213,7 +198,7 @@
         </div>
       </section>
       <section data-view="restablecer" class="auth-layout" hidden>
-        <div class="auth-card">
+        <div class="form-panel recovery-panel">
           <h2>Elegir una nueva contraseña</h2>
           <form data-reset="confirm">
             <label for="reset-password">Nueva contraseña</label>
@@ -309,42 +294,17 @@
       <section data-view="laboratorio" class="lab" hidden>
         <div class="page-heading">
           <div>
-            <p class="overline">Laboratorio de matemáticas</p>
-            <h1>De la función a la gráfica.</h1>
-            <p class="subtle">Compara f(x), su derivada y la integral en un mismo intervalo.</p>
+            <h1>Laboratorio interactivo</h1>
+            <p class="subtle">Dibuja curvas, superficies y sus tangentes. Selecciona puntos o cambia la perspectiva del visor.</p>
           </div>
           <a class="text-link" href="#/tutor" data-student hidden>Conversar con el tutor</a>
         </div>
-        <form id="curve-form" class="curve-controls" aria-label="Gráficas 2D">
-          <div><label for="curve-function">Función f(x)</label>
-          <input id="curve-function" value="x^2" required maxlength="200" aria-describedby="curve-help" /></div>
-          <div><label for="curve-min">Desde x =</label><input id="curve-min" type="number" value="-1" min="-10000" max="10000" step="any" required /></div>
-          <div><label for="curve-max">Hasta x =</label><input id="curve-max" type="number" value="1" min="-10000" max="10000" step="any" required /></div>
-          <div><label for="curve-tangent-x">Tangente en x (opcional)</label><input id="curve-tangent-x" type="number" step="any" /></div>
-          <button id="curve-draw" class="button" type="submit">Dibujar función, derivada y área</button>
-        </form>
-        <p id="curve-help" class="field-help">Usa x, números, + − * / ^, sin, cos, tan, exp, log, sqrt o abs. Ejemplos: x^2, sin(x), 1/x. La integral usa los extremos indicados.</p>
-        <p id="curve-result" role="status">Introduce una función para ver su gráfica 2D y sus aproximaciones numéricas.</p>
-        <form id="surface-form" class="curve-controls" aria-label="Superficies 3D">
-          <div><label for="surface-function">Superficie z=f(x,y)</label><input id="surface-function" value="x^2+y^2" required maxlength="150" /></div>
-          <div><label for="surface-x-min">x desde</label><input id="surface-x-min" type="number" value="-1" step="any" required /></div>
-          <div><label for="surface-x-max">x hasta</label><input id="surface-x-max" type="number" value="1" step="any" required /></div>
-          <div><label for="surface-y-min">y desde</label><input id="surface-y-min" type="number" value="-1" step="any" required /></div>
-          <div><label for="surface-y-max">y hasta</label><input id="surface-y-max" type="number" value="1" step="any" required /></div>
-          <div><label for="surface-tangent-x">Tangencia x (opcional)</label><input id="surface-tangent-x" type="number" step="any" /></div>
-          <div><label for="surface-tangent-y">Tangencia y (opcional)</label><input id="surface-tangent-y" type="number" step="any" /></div>
-          <div><label for="surface-resolution">Detalle de la malla</label><select id="surface-resolution" aria-describedby="surface-help"><option value="16">Bajo (16 × 16)</option><option value="32" selected>Medio (32 × 32)</option><option value="64">Alto (64 × 64)</option></select></div>
-          <button id="surface-draw" class="button" type="submit">Dibujar superficie</button>
-        </form>
-        <p id="surface-help" class="field-help">Usa x e y, por ejemplo x^2+y^2. Las zonas donde la función no está definida quedan sin dibujar.</p>
-        <p id="surface-result" role="status">Introduce una expresión con x e y para explorar una superficie.</p>
         <div class="lab-layout">
           <section class="viewer-panel" aria-labelledby="viewer-title">
             <div class="viewer-toolbar">
               <h2 id="viewer-title">Funciones y coordenadas</h2>
-              <span class="viewer-tag">Vista interactiva</span>
             </div>
-            <div>
+            <div class="viewer-selection">
               <label for="selection-mode">Objeto para seleccionar</label>
               <select id="selection-mode">
                 <option value="surface">Superficie 3D</option>
@@ -389,80 +349,62 @@
               Preparando visor…
             </p>
           </section>
-          <aside class="lab-guide">
-            <p class="overline">Encuentra tu perspectiva</p>
-            <h2>El espacio,<br />en tus manos.</h2>
-            <p>
-              Prueba a girar la cámara. Cada eje sigue ahí, aunque lo veas de
-              otra forma.
-            </p>
-            <details open>
-              <summary>Cómo moverte</summary>
-              <dl id="instructions">
-                <dt>Girar</dt>
-                <dd>Arrastra o usa las flechas.</dd>
-                <dt>Acercar y alejar</dt>
-                <dd>Rueda del ratón o teclas + y −.</dd>
-                <dt>Desplazar</dt>
-                <dd>Mayús + arrastre o flechas.</dd>
-                <dt>Volver al origen</dt>
-                <dd>Botón Restablecer o tecla Inicio.</dd>
-              </dl>
+          <aside class="lab-guide" aria-labelledby="lab-controls-title">
+            <h2 id="lab-controls-title">Configurar gráfica</h2>
+            <details class="lab-tool" open>
+              <summary>Curvas y tangentes</summary>
+              <form id="curve-form" class="curve-controls" aria-label="Gráficas 2D">
+                <div><label for="curve-function">Función f(x)</label>
+                <input id="curve-function" value="x^2" required maxlength="200" aria-describedby="curve-help" /></div>
+                <div><label for="curve-min">Desde x =</label><input id="curve-min" type="number" value="-1" min="-10000" max="10000" step="any" required /></div>
+                <div><label for="curve-max">Hasta x =</label><input id="curve-max" type="number" value="1" min="-10000" max="10000" step="any" required /></div>
+                <div><label for="curve-tangent-x">Tangente en x (opcional)</label><input id="curve-tangent-x" type="number" step="any" /></div>
+                <button id="curve-draw" class="button" type="submit">Dibujar función, derivada y área</button>
+              </form>
+              <p id="curve-help" class="field-help">Usa x, números, + − * / ^, sin, cos, tan, exp, log, sqrt o abs. Ejemplos: x^2, sin(x), 1/x. La integral usa los extremos indicados.</p>
+              <p id="curve-result" role="status">Introduce una función para ver su gráfica 2D y sus aproximaciones numéricas.</p>
             </details>
-            <p class="field-help">
-              En pantallas táctiles, arrastra para girar y usa los botones para
-              el zoom.
-            </p>
-            <div class="lab-tip">
-              <span aria-hidden="true">↗</span>
-              <p>Elige un eje y observa cómo cambia al mover la cámara.</p>
-            </div>
+            <details class="lab-tool">
+              <summary>Superficies y planos tangentes</summary>
+              <form id="surface-form" class="curve-controls" aria-label="Superficies 3D">
+                <div><label for="surface-function">Superficie z=f(x,y)</label><input id="surface-function" value="x^2+y^2" required maxlength="150" /></div>
+                <div><label for="surface-x-min">x desde</label><input id="surface-x-min" type="number" value="-1" step="any" required /></div>
+                <div><label for="surface-x-max">x hasta</label><input id="surface-x-max" type="number" value="1" step="any" required /></div>
+                <div><label for="surface-y-min">y desde</label><input id="surface-y-min" type="number" value="-1" step="any" required /></div>
+                <div><label for="surface-y-max">y hasta</label><input id="surface-y-max" type="number" value="1" step="any" required /></div>
+                <div><label for="surface-tangent-x">Tangencia x (opcional)</label><input id="surface-tangent-x" type="number" step="any" /></div>
+                <div><label for="surface-tangent-y">Tangencia y (opcional)</label><input id="surface-tangent-y" type="number" step="any" /></div>
+                <div><label for="surface-resolution">Detalle de la malla</label><select id="surface-resolution" aria-describedby="surface-help"><option value="16">Bajo (16 × 16)</option><option value="32" selected>Medio (32 × 32)</option><option value="64">Alto (64 × 64)</option></select></div>
+                <button id="surface-draw" class="button" type="submit">Dibujar superficie</button>
+              </form>
+              <p id="surface-help" class="field-help">Usa x e y, por ejemplo x^2+y^2. Las zonas donde la función no está definida quedan sin dibujar.</p>
+              <p id="surface-result" role="status">Introduce una expresión con x e y para explorar una superficie.</p>
+            </details>
           </aside>
         </div>
       </section>
       <section data-view="espacio" class="workspace" hidden>
         <div class="page-heading">
           <div>
-            <p class="overline">Bienvenido a MathTutor</p>
-            <h1 id="workspace-title">Tu espacio de aprendizaje.</h1>
+            <h1 id="workspace-title">Tu espacio</h1>
             <p id="workspace-description" class="subtle"></p>
           </div>
           <span id="workspace-role" class="badge" role="status">Alumno</span>
         </div>
         <div class="workspace-grid">
           <section class="workspace-account" data-student hidden aria-labelledby="workspace-tutor-title">
-            <p class="overline">Tutor de Matemáticas</p>
-            <h2 id="workspace-tutor-title">Haz tu<br />pregunta.</h2>
-            <p>Elige funciones, derivadas e integrales o métodos 3D y conversa a tu ritmo.</p>
+            <h2 id="workspace-tutor-title">Tutor y práctica</h2>
+            <p>Continúa una conversación, elige un ejercicio o solicita la siguiente práctica guiada.</p>
             <a class="button" href="#/tutor">Abrir el tutor <span aria-hidden="true">↗</span></a>
           </section>
           <section class="workspace-lab" aria-labelledby="workspace-lab-title">
-            <div class="workspace-lab-copy">
-              <p class="overline">Laboratorio de matemáticas</p>
-              <h2 id="workspace-lab-title">Cambia de<br />perspectiva.</h2>
-              <p>Dibuja una función, compárala con su derivada y calcula la integral en el intervalo que elijas.</p>
-              <a class="button" href="#/laboratorio">Abrir el laboratorio <span aria-hidden="true">↗</span></a>
-            </div>
-            <svg viewBox="0 0 260 260" aria-hidden="true" class="workspace-axes">
-              <g fill="none" stroke="#c0cdc0" stroke-width="1">
-                <path d="m30 158 100-58 100 58-100 58Z" />
-                <path d="m63 139 100 58m-67-77 100 58m-133 0 100-58m-67 77 100-58" />
-              </g>
-              <g fill="none" stroke-width="1.8">
-                <path d="M31 215 229 101" stroke="#a55e50" />
-                <path d="m31 101 198 114" stroke="#49795c" />
-                <path d="M130 216V35" stroke="#53768a" />
-              </g>
-              <circle cx="130" cy="158" r="4" fill="#285b43" />
-              <g font-family="Georgia,serif" font-size="16" fill="#626e65">
-                <text x="235" y="101">x</text><text x="234" y="225">y</text><text x="140" y="37">z</text>
-              </g>
-            </svg>
+            <h2 id="workspace-lab-title">Laboratorio</h2>
+            <p>Traza curvas y superficies, explora puntos de tangencia y anima la secante.</p>
+            <a class="button" href="#/laboratorio">Abrir el laboratorio <span aria-hidden="true">↗</span></a>
           </section>
           <section class="workspace-account" aria-labelledby="workspace-account-title">
-            <p class="overline">Tu cuenta</p>
-            <h2 id="workspace-account-title">Todo en<br />su sitio.</h2>
-            <p>Consulta el correo de tu cuenta, tu rol y los permisos de tu sesión. Desde allí también puedes cerrar sesión.</p>
+            <h2 id="workspace-account-title">Cuenta y privacidad</h2>
+            <p>Consulta tus permisos, descarga tus datos o gestiona tu sesión.</p>
             <a class="text-link" href="#/cuenta">Ver tu cuenta <span aria-hidden="true">↗</span></a>
           </section>
         </div>
@@ -529,7 +471,6 @@
             </table>
           </div>
         </section>
-        <p class="workspace-note">Cada idea necesita su tiempo. Empieza explorando y encuentra tu forma de entender.</p>
       </section>
       <section data-view="cuenta" class="account" hidden>
         <div class="page-heading">
@@ -604,15 +545,13 @@
       <section data-view="tutor" class="tutor-page" hidden aria-labelledby="tutor-title">
         <div class="page-heading">
           <div>
-            <p class="overline">Aprende a tu ritmo</p>
-            <h1 id="tutor-title">¿Qué quieres entender?</h1>
-            <p class="subtle">Elige un bloque y comparte tu pregunta con el tutor.</p>
+            <h1 id="tutor-title">Tutor de matemáticas</h1>
+            <p class="subtle">Trabaja con pistas, comparte tu siguiente paso y consulta los apuntes del módulo.</p>
           </div>
           <a class="text-link" href="#/laboratorio">Explorar una función</a>
         </div>
         <div class="tutor-layout">
           <aside class="tutor-guide" aria-label="Conversaciones">
-            <div class="tutor-sidebar-header"><span class="tutor-sidebar-brand">Tu cuaderno</span><p>Un lugar para cada pregunta.</p></div>
             <button id="tutor-new" class="button full" type="button"><span aria-hidden="true">+</span> Nueva conversación</button>
             <div class="tutor-history-heading"><h2>Conversaciones</h2><button id="sessions-refresh" type="button" aria-label="Actualizar historial" title="Actualizar historial">↻</button></div>
             <nav id="tutor-sessions" aria-label="Conversaciones guardadas"></nav>
@@ -627,7 +566,6 @@
           </aside>
           <div class="tutor-conversation">
             <div id="tutor-topic-picker" class="tutor-topic-picker">
-              <p class="overline">Elige un bloque</p>
               <h2>¿Qué tema vamos a trabajar?</h2>
               <p>Selecciona un módulo para empezar una conversación.</p>
               <div id="tutor-topics" class="tutor-topics" aria-label="Módulos disponibles"></div>
@@ -638,12 +576,18 @@
              <button id="history-more" class="button secondary small" type="button" hidden>Cargar mensajes anteriores</button>
             <div id="tutor-history" class="tutor-history" tabindex="0" role="log" aria-live="off" aria-label="Conversación"></div>
             <div id="tutor-composer" hidden>
-              <div class="tutor-starters" aria-label="Ideas para empezar">
-                <span>Ideas para empezar</span>
+              <div class="tutor-starters" aria-label="Recursos de estudio">
+                <span>Recursos de estudio</span>
                 <button type="button" data-prompt="notes">Pregunta de ejemplo del módulo</button>
                 <button type="button" data-prompt="x^2+2*x=0">Escribir una expresión</button>
                 <button id="tutor-practice" type="button">Siguiente práctica guiada</button>
               </div>
+              <details id="exercise-bank" class="study-panel" hidden>
+                <summary>Ejercicios sugeridos del módulo</summary>
+                <label for="exercise-bank-select">Enunciado</label>
+                <select id="exercise-bank-select"></select>
+                <button id="exercise-bank-use" class="button secondary small" type="button">Usar como pregunta</button>
+              </details>
               <p id="tutor-practice-prompt" role="status" hidden></p>
               <form id="tutor-form">
                 <label for="tutor-message">Tu pregunta</label>
@@ -651,13 +595,13 @@
                 <p id="tutor-message-help" class="field-help">Pregunta por un concepto o escribe «Deriva x^2» o «Simplifica x+x» para empezar un ejercicio automáticamente. Revisa el borrador antes de enviarlo.</p>
                 <button id="tutor-send" class="button" type="submit">Enviar pregunta</button>
               </form>
-              <button id="tutor-cancel" class="button secondary" type="button" disabled>Cancelar respuesta</button>
+              <button id="tutor-cancel" class="button secondary" type="button" disabled>Detener respuesta</button>
                <button id="tutor-retry" class="button secondary" type="button" hidden>Recuperar envío pendiente</button>
             </div>
             <p class="field-help">Las respuestas se muestran a medida que llegan. Contrasta los resultados: el tutor puede cometer errores.</p>
           </div>
           <aside id="tutor-viewer-slot" class="tutor-viewer-slot" aria-label="Visor interactivo">
-            <div class="tutor-viewer-intro"><p class="overline">Laboratorio</p><h2>Explora lo que conversas.</h2><p>Escribe una función para que se compruebe antes de dibujarla.</p>
+            <div class="tutor-viewer-intro"><h2>Visor de la conversación</h2><p>Escribe una función para que se compruebe antes de dibujarla.</p>
               <details class="study-panel"><summary>Dibujar una gráfica</summary>
                 <form id="graphic-form"><fieldset id="graphic-fields"><legend>Función y dominio</legend>
                   <label for="graphic-type">Tipo de gráfica</label><select id="graphic-type"><option value="CURVA_2D">Curva 2D</option><option value="SUPERFICIE">Superficie 3D</option><option value="RECTA_TANGENTE">Recta tangente</option><option value="PLANO_TANGENTE">Plano tangente</option></select>

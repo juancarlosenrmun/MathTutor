@@ -48,6 +48,7 @@ async function animate(browser, base) {
   await clock.runFor(2200);
   await page.getByText(/La secante ha alcanzado/).waitFor();
   assert.deepEqual(await canvas.screenshot(), tangent);
+  await page.locator('summary').filter({ hasText: 'Superficies y planos tangentes' }).click();
   await page.getByRole('button', { name: 'Dibujar superficie' }).click();
   const surface = await canvas.screenshot();
   await camera.press('Enter');

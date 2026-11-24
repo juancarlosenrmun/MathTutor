@@ -76,6 +76,7 @@ async function verifyAccessibleViewer(browser, base, name) {
   assert.equal(await page.evaluate(() => document.activeElement.id), 'main');
   await page.getByRole('button', { name: 'Dibujar función, derivada y área' }).press('Enter');
   assert.match(await page.locator('#curve-result').textContent(), /Integral aproximada/);
+  await page.locator('summary').filter({ hasText: 'Superficies y planos tangentes' }).press('Enter');
   await page.getByRole('button', { name: 'Dibujar superficie' }).press('Enter');
   assert.match(await page.locator('#surface-result').textContent(), /Valores de z muestreados/);
   const webgl = await page.evaluate(() => Boolean(document.querySelector('canvas').getContext('webgl2')));
@@ -102,6 +103,7 @@ async function verifyAccessibleViewer(browser, base, name) {
   const fallback = await browser.newPage();
   await disableWebGl(fallback);
   await fallback.goto(base + '#/laboratorio');
+  await fallback.locator('summary').filter({ hasText: 'Superficies y planos tangentes' }).press('Enter');
   await fallback.getByRole('button', { name: 'Dibujar superficie' }).press('Enter');
   assert.match(await fallback.locator('#surface-result').textContent(), /Valores de z muestreados/);
   await fallback.close();
@@ -112,6 +114,7 @@ async function verifyAccount(browser, base, name) {
   const admin = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const requests = await fixture(admin, 'ADMIN');
   await admin.goto(base + '#/espacio');
+  await admin.locator('#privacy-reject').click();
   await admin.getByRole('button', { name: 'Cargar perfiles' }).click();
   await admin.locator('#admin-user option[value="2"]').waitFor({ state: 'attached' });
   assert.equal(await admin.locator('#admin-user').inputValue(), '2');
