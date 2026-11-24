@@ -80,6 +80,22 @@ try {
     }
     if (highlights < 30 || gl.getError() !== gl.NO_ERROR) throw new Error('Marcador WebGL ausente en ' + value);
   }
+  const background = pixels[0];
+  if (!viewer.setContrast(true)) throw new Error('No se ha podido activar el contraste');
+  readTangentPixels();
+  if (pixels[0] >= background) throw new Error('La composición no modifica el fondo');
+  let selectionVisible = false;
+  for (let i = 0; i < pixels.length; i += 4) {
+    if (pixels[i] === 255 && pixels[i + 1] === 240 && pixels[i + 2] === 115) selectionVisible = true;
+  }
+  if (!selectionVisible) throw new Error('El contraste ha alterado la capa de selección');
+  canvas.style.width = '320px';
+  viewer.render();
+  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  if (pixels[0] >= background || gl.getError() !== gl.NO_ERROR) throw new Error('Contraste perdido al redimensionar');
+  viewer.setContrast(false);
+  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  if (pixels[0] !== background) throw new Error('No se restablece la vista directa');
   viewer.dispose();
   document.body.dataset.result = 'passed';
   document.body.dataset.drawn = drawn;

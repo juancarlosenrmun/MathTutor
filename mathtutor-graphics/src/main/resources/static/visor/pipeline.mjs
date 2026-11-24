@@ -1,3 +1,6 @@
+import { linkProgram } from './shader-program.mjs';
+import { PostProcessing } from './post-processing.mjs';
+
 const vertexSource = `#version 300 es
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 colorOrNormal;
@@ -36,19 +39,8 @@ void main() {
 export class ShaderPipeline {
   constructor(gl) {
     this.gl = gl;
-    const shaders = [];
     try {
-      for (const [type, source] of [[gl.VERTEX_SHADER, vertexSource], [gl.FRAGMENT_SHADER, fragmentSource]]) {
-        const shader = gl.createShader(type);
-        shaders.push(shader);
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error('No se pudo compilar el shader');
-      }
-      this.program = gl.createProgram();
-      for (const shader of shaders) gl.attachShader(this.program, shader);
-      gl.linkProgram(this.program);
-      if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) throw new Error('No se pudo enlazar el programa gráfico');
+      this.program = linkProgram(gl, vertexSource, fragmentSource);
       this.matrixLocation = gl.getUniformLocation(this.program, 'viewProjection');
       this.materialLocation = gl.getUniformLocation(this.program, 'surfaceMaterial');
       this.vao = gl.createVertexArray();
@@ -70,8 +62,6 @@ export class ShaderPipeline {
     } catch (error) {
       this.dispose();
       throw error;
-    } finally {
-      for (const shader of shaders) gl.deleteShader(shader);
     }
   }
 
@@ -135,8 +125,24 @@ export class ShaderPipeline {
       new Float32Array(vertices));
   }
 
+  /** @brief Activa el contraste bajo demanda. Devuelve false si el shader no se puede usar. */
+  setContrast(enabled) {
+    if (!enabled) {
+      this.postProcessing?.dispose();
+      this.postProcessing = null;
+      return true;
+    }
+    try {
+      this.postProcessing ??= new PostProcessing(this.gl);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   draw(matrix, width, height) {
     const gl = this.gl;
+    const compose = this.postProcessing?.begin(width, height);
     gl.viewport(0, 0, width, height);
     gl.enable(gl.DEPTH_TEST);
     gl.clearColor(0.035, 0.065, 0.1, 1);
@@ -153,7 +159,12 @@ export class ShaderPipeline {
       gl.drawArrays(gl.TRIANGLES, 6, this.surfaceCount);
       gl.uniform1i(this.materialLocation, 0);
     }
+    if (compose) this.postProcessing.compose();
     if (this.tangentCount || this.selectionIndex != null) {
+      if (compose) {
+        gl.useProgram(this.program);
+        gl.bindVertexArray(this.vao);
+      }
       gl.disable(gl.DEPTH_TEST);
       if (this.tangentCount) gl.drawArrays(gl.LINES, this.tangentStart, this.tangentCount);
       if (this.selectionIndex != null) gl.drawArrays(gl.POINTS, this.selectionIndex, 1);
@@ -163,6 +174,7 @@ export class ShaderPipeline {
   }
 
   dispose() {
+    this.postProcessing?.dispose();
     this.gl.deleteBuffer(this.buffer);
     this.gl.deleteVertexArray(this.vao);
     this.gl.deleteProgram(this.program);

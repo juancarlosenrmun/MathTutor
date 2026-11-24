@@ -566,6 +566,20 @@ canvas:focus-visible {
 .camera-toolbar button:hover {
   background: var(--green-light);
 }
+.viewer-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  margin: 0 22px;
+}
+.viewer-option input {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
 .animation-toolbar {
   flex-wrap: wrap;
   justify-content: flex-start;

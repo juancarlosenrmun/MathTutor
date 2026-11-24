@@ -10,12 +10,15 @@ import com.mathtutor.tutor.*;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,6 +26,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.*;
@@ -60,6 +65,7 @@ class SprintFourIntegrationTest {
     @Autowired javax.sql.DataSource dataSource;
     @Autowired TokenBudget budget;
     @Autowired TokenServiceAdapter tokens;
+    @Autowired @Qualifier("streamingSecurityFilterChain") SecurityFilterChain streamingSecurity;
     @LocalServerPort int port;
     @MockBean LlmGateway llm;
     @MockBean RagRetriever retriever;
@@ -190,6 +196,22 @@ class SprintFourIntegrationTest {
         verifyNoInteractions(llm, retriever, cas);
     }
 
+    @Test void writesSecurityHeadersBeforeTheSseHandlerCanStart() throws Exception {
+        var filter = streamingSecurity.getFilters().stream().filter(HeaderWriterFilter.class::isInstance).findFirst().orElseThrow();
+        var servletContext = mvc.getDispatcherServlet().getServletContext();
+        var request = new MockHttpServletRequest(servletContext, "POST", "/api/tutor/sessions/1/messages");
+        assertThat(streamingSecurity.matches(request)).isTrue();
+        assertThat(streamingSecurity.matches(new MockHttpServletRequest(servletContext, "POST",
+                "/api/tutor/sessions/1/close"))).isFalse();
+        request.setSecure(true);
+        filter.doFilter(request, new MockHttpServletResponse(), (incoming, outgoing) -> {
+            var response = (jakarta.servlet.http.HttpServletResponse) outgoing;
+            assertThat(response.getHeader("Referrer-Policy")).isEqualTo("no-referrer");
+            assertThat(response.getHeader("Content-Security-Policy")).contains("object-src 'none'");
+            assertThat(response.getHeader("Strict-Transport-Security")).isNotBlank();
+        });
+    }
+
     @Test void quotaIsAtomicAcrossSessionsAndReconcilesProviderUsage() throws Exception {
         try (var executor = java.util.concurrent.Executors.newFixedThreadPool(2)) {
             var both = new java.util.concurrent.CyclicBarrier(2);
@@ -226,6 +248,7 @@ class SprintFourIntegrationTest {
                 .cookie("XSRF-TOKEN", value).header("X-XSRF-TOKEN", value)
                 .headers(headers -> headers.setBearerAuth(token)).bodyValue(body).exchange()
                 .expectStatus().isOk().expectHeader().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM)
+                .expectHeader().valueEquals("Referrer-Policy", "no-referrer")
                 .expectBody().returnResult().getResponseBody();
         return new String(response, StandardCharsets.UTF_8);
     }

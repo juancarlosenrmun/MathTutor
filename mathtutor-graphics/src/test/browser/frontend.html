@@ -187,6 +187,14 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   assert(doc.querySelector('.lab-layout > .viewer-panel'), 'El visor no vuelve al laboratorio');
   doc.querySelector('#curve-form').dispatchEvent(new Event('submit', {cancelable:true})); await settle();
   assert(doc.querySelector('#curve-result').textContent.includes('0,666'), 'Falta integral 2D');
+  const contrast = doc.querySelector('#graphic-contrast');
+  assert(!contrast.disabled && !contrast.checked, 'El contraste debe ser opcional');
+  contrast.click();
+  assert(contrast.checked, 'No se pudo activar el contraste desde el laboratorio');
+  await go('tutor');
+  assert(doc.querySelector('#tutor-viewer-slot').contains(contrast) && contrast.checked, 'El tutor no conserva el contraste del visor');
+  contrast.click();
+  assert(!contrast.checked, 'No se pudo desactivar el contraste desde el tutor');
   await go('espacio');
   for (const [role, label] of [['ALUMNO', 'Alumno'], ['PROFESOR', 'Profesor'], ['ADMIN', 'Administrador']]) {
     win.testState.role = role; await win.testApp.updateRole();

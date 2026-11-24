@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<title>Medición de rendimiento WebGL2</title>
+<canvas style="display:block;width:960px;height:540px"></canvas>
+<p id="status"></p>
+<pre id="results"></pre>
+<script type="module">
+import { surface } from '/visor/surfaces.mjs';
+import { WebGLViewer } from '/visor/viewer.mjs';
+
+const canvas = document.querySelector('canvas');
+const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+
+/** @brief Mide una escena nueva y 120 fotogramas con una malla de referencia de 100.000 triángulos. */
+async function measure(contrast) {
+  await nextFrame();
+  const start = performance.now();
+  const viewer = new WebGLViewer(canvas, document.querySelector('#status'));
+  try {
+    if (contrast && !viewer.setContrast(true)) throw new Error('Contraste no disponible');
+    const bounds = [-2, 2, -2, 2];
+    const triangles = [];
+    for (let strip = 0; strip < 5; strip++) {
+      const lower = bounds[2] + strip * 0.8;
+      const upper = bounds[2] + (strip + 1) * 0.8;
+      const mesh = surface('sin(x)*cos(y)', bounds[0], bounds[1], lower, upper, 100);
+      triangles.push(...mesh.triangles);
+    }
+    if (triangles.length !== 100000) throw new Error('Tamaño inesperado de la malla');
+    viewer.setSurface({ bounds, triangles });
+    const gl = viewer.gl;
+    gl.finish();
+    await nextFrame();
+    const sceneMs = performance.now() - start;
+
+    const frameCount = 120;
+    const from = performance.now();
+    for (let frame = 0; frame < frameCount; frame++) {
+      await nextFrame();
+      viewer.camera.orbit(0.01, 0);
+      viewer.render();
+    }
+    gl.finish();
+    const fps = frameCount * 1000 / (performance.now() - from);
+    if (gl.getError() !== gl.NO_ERROR) throw new Error('Error WebGL mientras se medía la escena');
+    const debug = gl.getExtension('WEBGL_debug_renderer_info');
+    return {
+      contrast, triangles: triangles.length, sceneMs, fps,
+      width: canvas.width, height: canvas.height,
+      renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+    };
+  } finally {
+    viewer.dispose();
+  }
+}
+
+const report = {};
+try {
+  report.scenarios = [await measure(false), await measure(true)];
+  report.thresholdsMet = report.scenarios.every(({ fps, sceneMs }) => fps >= 30 && sceneMs <= 1000);
+  document.body.dataset.result = report.thresholdsMet ? 'passed' : 'failed';
+} catch (error) {
+  report.error = error.message;
+  document.body.dataset.result = 'failed';
+}
+document.querySelector('#results').textContent = JSON.stringify(report);
+</script>
+</html>

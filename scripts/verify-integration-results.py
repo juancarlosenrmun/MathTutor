@@ -13,6 +13,7 @@ REQUIRED = {
     "com.mathtutor.application.controller.TutorApiIntegrationTest",
     "com.mathtutor.application.NoteStartupIntegrationTest",
     "com.mathtutor.application.PedagogicalEvaluationTest",
+    "com.mathtutor.application.TutorLoadTest",
 }
 
 

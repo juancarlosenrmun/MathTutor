@@ -10,9 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,10 +28,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import java.util.List;
 
@@ -64,8 +71,24 @@ public class SecurityConfig {
         log.info("Seguridad inicializada: CSRF protege todos los métodos no seguros");
     }
 
+    /** @brief Prepara las cabeceras de las rutas SSE antes de que el emisor pueda escribir. */
     @Bean
+    @Order(1)
+    public SecurityFilterChain streamingSecurityFilterChain(HttpSecurity http, HandlerMappingIntrospector mvc) throws Exception {
+        var matcher = new MvcRequestMatcher.Builder(mvc);
+        http.securityMatcher(new OrRequestMatcher(
+                matcher.pattern(HttpMethod.POST, "/api/tutor/sessions/{id}/messages"),
+                matcher.pattern(HttpMethod.POST, "/api/tutor/sessions/{id}/graphics")));
+        return configure(http, true);
+    }
+
+    @Bean
+    @Order(2)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return configure(http, false);
+    }
+
+    private SecurityFilterChain configure(HttpSecurity http, boolean streaming) throws Exception {
         // Usar CsrfTokenRequestAttributeHandler (sin XOR) para que el token en el request attribute
         // coincida con el de la cookie (necesario para double-submit cookie pattern)
         CsrfTokenRequestAttributeHandler csrfTokenRequestHandler = new CsrfTokenRequestAttributeHandler();
@@ -75,12 +98,22 @@ public class SecurityConfig {
                         .csrfTokenRepository(csrfTokenRepository())
                         .csrfTokenRequestHandler(csrfTokenRequestHandler)
                 )
-                .headers(headers -> headers
-                        .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-                                + "img-src 'self' data:; object-src 'none'; base-uri 'none'; "
-                                + "form-action 'self'; frame-ancestors 'none'"))
-                        .referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.NO_REFERRER)))
+                .headers(headers -> {
+                    headers.contentSecurityPolicy(csp -> csp.policyDirectives(
+                                    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+                                    + "img-src 'self' data:; object-src 'none'; base-uri 'none'; "
+                                    + "form-action 'self'; frame-ancestors 'none'"))
+                            .referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.NO_REFERRER));
+                    if (streaming) {
+                        headers.addObjectPostProcessor(new ObjectPostProcessor<HeaderWriterFilter>() {
+                            @Override
+                            public <O extends HeaderWriterFilter> O postProcess(O filter) {
+                                filter.setShouldWriteHeadersEagerly(true);
+                                return filter;
+                            }
+                        });
+                    }
+                })
                 // CORS configurado
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // Sesión stateless
