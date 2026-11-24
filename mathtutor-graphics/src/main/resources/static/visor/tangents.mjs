@@ -5,6 +5,27 @@
 
 const undefinedTangent = 'No se puede estimar una tangente en ese punto.';
 
+/** Sincroniza el recorrido del control con el dominio actualmente dibujado. */
+export function configureTangencyRange(field, min, max, point = 0) {
+  field.min = String(min);
+  field.max = String(max);
+  field.value = String(Math.max(min, Math.min(max, point)));
+  field.disabled = false;
+}
+
+/** Muestra la coordenada y permite refrescarla también al cambiar el dominio. */
+export function bindTangencyValue(field, output) {
+  const formatter = new Intl.NumberFormat('es-ES', {maximumFractionDigits: 3, useGrouping: false});
+  const update = () => {
+    if (!output) return;
+    const value = Number(field.value);
+    const formatted = formatter.format(Math.abs(value) < 0.0005 ? 0 : value);
+    if (output.textContent !== formatted) output.textContent = formatted;
+  };
+  field?.addEventListener('input', update);
+  return update;
+}
+
 function checkPoint(value, min, max) {
   if (!Number.isFinite(value) || value < min || value > max) {
     throw new Error('El punto de tangencia debe estar dentro del dominio.');
@@ -116,10 +137,9 @@ export function planeTangent(evaluate, point, bounds) {
   }
   const [a, b] = extent(x, xMin, xMax);
   const [c, d] = extent(y, yMin, yMax);
-  const corners = [[a, c], [b, c], [b, d], [a, d]];
-  const lines = [0, 1, 1, 2, 2, 3, 3, 0, 0, 2, 1, 3].map(i => {
-    const [u, v] = corners[i];
-    return [u, v, value + dx * (u - x) + dy * (v - y)];
-  });
-  return { point, value, dx, dy, lines };
+  const corners = [[a, c], [b, c], [b, d], [a, d]].map(([u, v]) =>
+    [u, v, value + dx * (u - x) + dy * (v - y)]);
+  const lines = [0, 1, 1, 2, 2, 3, 3, 0, 0, 2, 1, 3].map(i => corners[i]);
+  const fill = [0, 1, 2, 0, 2, 3].map(i => corners[i]);
+  return { point, value, dx, dy, lines, fill };
 }

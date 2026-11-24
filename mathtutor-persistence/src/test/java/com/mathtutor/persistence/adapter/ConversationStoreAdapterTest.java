@@ -25,6 +25,7 @@ class ConversationStoreAdapterTest {
     @Autowired TutorSessionRepository sessions;
     @Autowired ExerciseRepository exercises;
     @Autowired ConversationTurnRepository turns;
+    @Autowired ExerciseRunRepository runs;
 
     TutorSession session() {
         var user = users.save(User.builder().email(UUID.randomUUID()+"@test.es").passwordHash("h").active(true).role(User.Role.ALUMNO).build());
@@ -70,14 +71,38 @@ class ConversationStoreAdapterTest {
                 .statementLatex("Deriva").referenceSolutionLatex("2*x").type(Exercise.ExerciseType.PROCEDIMENTAL).difficulty(1).build());
         var selected=store.select(user,s.getId(),exercise.getId(),null,null);
         assertThat(selected.reference()).isEqualTo("2*x");
-        store.select(user,s.getId(),null,"libre","x");
-        assertThat(store.runs(user,s.getId(),0,10)).anyMatch(r -> r.state().equals("ABANDONADO"));
+        assertThatThrownBy(() -> store.select(user,s.getId(),null,"libre","x"))
+                .isInstanceOf(ConversationConflictException.class);
+        assertThat(store.current(user, s.getId()).id()).isEqualTo(selected.id());
         exercise.setModule(other.getModule()); exercises.flush();
         assertThatThrownBy(() -> store.select(user,s.getId(),exercise.getId(),null,null)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> store.select(user,s.getId(),-1L,null,null)).isInstanceOf(IllegalArgumentException.class);
-        exercise.setModule(s.getModule()); exercise.setType(Exercise.ExerciseType.TEORICO); exercises.flush();
+        exercise.setModule(s.getModule());
+        var request = UUID.randomUUID();
+        store.reserve(user, s.getId(), request, "2*x");
+        store.finish(user, s.getId(), request, new ConversationStore.Result(
+                "Correcto", null, ErrorType.NINGUNO, "COMPLETADO", 1, null, null, 0, true));
+        exercise.setType(Exercise.ExerciseType.TEORICO);
+        exercises.flush();
         assertThat(store.select(user,s.getId(),exercise.getId(),null,null).reference()).isNull();
     }
+    @Test void anInactiveExerciseCanResumeButStillBlocksStartingAnotherInTheSameChat() {
+        var s = session();
+        long user = s.getUser().getId();
+        long original = store.select(user, s.getId(), null, "Deriva x^2", "2*x").id();
+        var run = runs.findById(original).orElseThrow();
+        run.setLastActivityAt(java.time.Instant.now().minus(java.time.Duration.ofHours(1)));
+        runs.flush();
+        assertThat(store.runs(user, s.getId(), 0, 10).getFirst().state()).isEqualTo("A_MEDIAS");
+        assertThatThrownBy(() -> store.select(user, s.getId(), null, "Deriva x^3", "3*x^2"))
+                .isInstanceOf(ConversationConflictException.class);
+        var request = UUID.randomUUID();
+        assertThat(store.reserve(user, s.getId(), request, "2*x").runId()).isEqualTo(original);
+        store.finish(user, s.getId(), request, new ConversationStore.Result(
+                "Correcto", null, ErrorType.NINGUNO, "COMPLETADO", 1, null, null, 0, true));
+        assertThat(store.select(user, s.getId(), null, "Deriva x^3", "3*x^2").id()).isNotEqualTo(original);
+    }
+
     @Test void expiredReservationCannotOverwriteANewerTurn() {
         var s=session(); Long user=s.getUser().getId(); UUID old=UUID.randomUUID(),next=UUID.randomUUID();
         store.reserve(user,s.getId(),old,"antiguo");

@@ -7,15 +7,13 @@ const frames=events=>({ok:true,body:new ReadableStream({start(c){c.enqueue(new T
 function fixture() {
   const ids=['tutor-form','tutor-select-form','tutor-block','tutor-message','tutor-send','tutor-start','tutor-cancel',
     'tutor-status','tutor-history','tutor-composer','tutor-new','tutor-sessions','tutor-topics','tutor-topic-picker',
-    'tutor-chat-title','tutor-viewer-slot','graphic-fields','graphic-result',
-    'graphic-function','graphic-form','graphic-type','graphic-min','graphic-max','graphic-steps',
-    'graphic-tangent-x','graphic-tangent-y','graphic-tangent-x-field','graphic-tangent-y-field',
+    'tutor-chat-title','tutor-viewer-slot','tutor-viewer-toggle','tutor-graphic-status',
+    'viewer-tangent-controls','viewer-tangent-x','viewer-tangent-y','viewer-tangent-y-field','viewer-tangent-result',
     'sessions-more','sessions-refresh','sessions-status','history-more','tutor-retry',
     'tutor-practice','tutor-practice-prompt','exercise-bank','exercise-bank-select','exercise-bank-use'];
   const nodes=Object.fromEntries(ids.map(id=>[id,element({children:[]})]));
   const doc={querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:tagName=>element({tagName,children:[]})};
   Object.assign(nodes['tutor-block'],{value:'funciones'});
-  nodes['graphic-type'].value='CURVA_2D'; nodes['graphic-min'].value='-1'; nodes['graphic-max'].value='1'; nodes['graphic-steps'].value='32';
   const state={sessions:[{id:1,module:'funciones',status:'ACTIVA'}],turns:[],runs:[],bank:[{id:7,statement:'Deriva x^2',difficulty:1}],calls:[]};
   const client={token:'jwt',profile:{email:'a@test.es',role:'ALUMNO'},fetch:async(path,options)=>{
     state.calls.push([path,options]); const page=Number(new URL(path,'http://local').searchParams.get('page') || 0);
@@ -35,11 +33,16 @@ function fixture() {
     if(path.endsWith('/messages')) {
       if(state.failMessage) {state.failMessage=false;return {ok:false,status:503};}
       const body=JSON.parse(options.body); state.turns=[{id:1,...body,response:'Piensa',status:'COMPLETADO',verdict:'CORRECTO',diagnosis:'NINGUNO',topic:'derivadas'}];
-      return frames([{type:'TOKEN',content:'Piensa'},{type:'DONE'}]);
+      return frames([{type:'TOKEN',content:state.answer ?? 'Piensa'},{type:'DONE'}]);
     }
     throw Error('Ruta no prevista: '+path);
   }};
-  const viewer={setGraph(graph){this.graph=graph;},setSurface(mesh){this.mesh=mesh;},clear(){this.graph=null;this.mesh=null;this.cleared=true;}};
+  const viewer={
+    setGraph(graph){this.graph=graph;},
+    setSurface(mesh){this.mesh=mesh;},
+    updateTangency(model){if (model.points) this.setGraph(model); else this.setSurface(model);},
+    clear(){this.graph=null;this.mesh=null;this.cleared=true;},
+  };
   let sequence=0;
   const ui=mountTutor(doc,client,{viewer,randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`});
   const click=id=>nodes[id].listeners.click();
@@ -100,7 +103,7 @@ test('la práctica guiada presenta la etapa y el enunciado sin enviar un turno',
   f.nodes['tutor-message'].value = 'Mi borrador';
   await f.click('tutor-practice');
   assert.equal(f.nodes['tutor-practice-prompt'].hidden, false);
-  assert.equal(f.nodes['tutor-practice-prompt'].textContent,
+  assert.equal(f.nodes['tutor-practice-prompt'].children[0].textContent,
     'Práctica conceptual. Explica el significado del límite.');
   assert.equal(f.nodes['tutor-message'].value, 'Mi borrador');
   assert.equal(f.state.calls.filter(([path]) => path.endsWith('/messages')).length, 0);
@@ -112,44 +115,93 @@ test('la práctica guiada presenta la etapa y el enunciado sin enviar un turno',
   assert.equal(f.nodes['tutor-practice-prompt'].hidden, true);
 });
 
-test('gráficas validadas se dibujan y se borran al perder la identidad',async()=>{
-  const f=fixture();await f.open();f.nodes['graphic-function'].value='x^2';await f.submit('graphic-form');
-  assert.ok(f.viewer.graph); assert.match(f.nodes['graphic-result'].textContent,/f\(x\)/);
-  f.nodes['graphic-type'].value='SUPERFICIE';f.nodes['graphic-type'].listeners.change();f.nodes['graphic-function'].value='x*y';await f.submit('graphic-form');
-  assert.ok(f.viewer.mesh); assert.equal(f.nodes['graphic-steps'].max,'128');
-  f.nodes['graphic-function'].value='alert(1)';await f.submit('graphic-form');
-  assert.match(f.nodes['graphic-result'].textContent,/inválida/);
-  f.client.token=null;await f.ui.sync('tutor');
-  assert.equal(f.viewer.cleared,true);assert.equal(f.nodes['tutor-history'].children.length,0);assert.equal(f.nodes['tutor-history'].children.length,0);
-});
-
-test('el plano tangente del tutor se redibuja para las coordenadas enviadas', async () => {
+test('el chat dibuja curvas y superficies y limpia al perder la identidad', async () => {
   const f = fixture();
   await f.open();
-  f.nodes['graphic-type'].value = 'PLANO_TANGENTE';
-  f.nodes['graphic-type'].listeners.change();
-  assert.equal(f.nodes['graphic-tangent-y'].required, true);
-  assert.equal(f.nodes['graphic-tangent-y-field'].hidden, false);
-  f.nodes['graphic-function'].value = 'x^2+y^2';
-  f.nodes['graphic-tangent-x'].valueAsNumber = 0;
-  f.nodes['graphic-tangent-y'].valueAsNumber = -0.5;
-  await f.submit('graphic-form');
-  assert.match(f.nodes['graphic-result'].textContent, /Plano tangente/);
-  assert.ok(Math.abs(f.viewer.mesh.tangent.dy + 1) < 1e-6);
-
-  f.nodes['graphic-tangent-y'].valueAsNumber = 0.5;
-  await f.submit('graphic-form');
-  const graphics = f.state.calls.filter(([path]) => path.endsWith('/graphics'));
-  assert.deepEqual(JSON.parse(graphics.at(-1)[1].body).points, [{x: 0, y: 0.5, z: 0}]);
-  assert.ok(Math.abs(f.viewer.mesh.tangent.dy - 1) < 1e-6);
-  f.nodes['graphic-type'].value = 'RECTA_TANGENTE';
-  f.nodes['graphic-type'].listeners.change();
-  assert.equal(f.nodes['graphic-tangent-y'].disabled, true);
+  f.nodes['tutor-message'].value = 'Dibuja f(x) = x^2';
+  await f.submit('tutor-form');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(f.viewer.graph);
+  assert.match(f.nodes['viewer-tangent-result'].textContent, /f\(x\)/);
+  f.nodes['tutor-message'].value = 'Dibuja z = x*y';
+  await f.submit('tutor-form');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(f.viewer.mesh);
+  f.client.token = null;
+  await f.ui.sync('tutor');
+  assert.equal(f.viewer.cleared, true);
+  assert.equal(f.nodes['tutor-history'].children.length, 0);
 });
+
+test('Enter envía una vez mientras se valida una gráfica y respeta composición y modificadores', async () => {
+  const f = fixture();
+  await f.open();
+  const original = f.client.fetch;
+  let releasePlot;
+  f.client.fetch = (path, options) => path.endsWith('/graphics')
+    ? new Promise(resolve => { releasePlot = () => resolve(original(path, options)); })
+    : original(path, options);
+  let sending;
+  f.nodes['tutor-form'].requestSubmit = () => { sending = f.submit('tutor-form'); };
+  const composer = f.nodes['tutor-message'];
+  const press = options => composer.listeners.keydown({key:'Enter', preventDefault(){}, ...options});
+  composer.value = 'Dibuja f(x) = x^2';
+  for (const options of [{shiftKey:true}, {isComposing:true}, {repeat:true}]) press(options);
+  assert.equal(sending, undefined);
+  press({});
+  await sending;
+  assert.equal(f.nodes['tutor-send'].disabled, false);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(releasePlot);
+  assert.equal(f.viewer.graph, undefined);
+  composer.value = '¿Qué significa el dominio?';
+  press({});
+  await sending;
+  assert.equal(f.state.calls.filter(([path]) => path.endsWith('/messages')).length, 2);
+  releasePlot();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(f.viewer.graph);
+});
+
+test('el chat abre el visor solo al recibir una gráfica válida y lo cierra al cambiar de conversación', async () => {
+  const f = fixture();
+  await f.open();
+  assert.equal(f.nodes['tutor-viewer-slot'].hidden, true);
+  assert.equal(f.nodes['tutor-viewer-toggle'].hidden, false);
+  assert.equal(f.nodes['tutor-viewer-toggle'].disabled, true);
+  f.nodes['tutor-message'].value = '¿Qué es una función?';
+  await f.submit('tutor-form');
+  assert.equal(f.nodes['tutor-viewer-slot'].hidden, true);
+  f.nodes['tutor-message'].value = 'Propónme un ejercicio de superficies';
+  f.state.answer = 'Explora la superficie `z = x^2 + y^2`.';
+  await f.submit('tutor-form');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.ok(f.viewer.mesh);
+  assert.equal(f.nodes['tutor-viewer-slot'].hidden, false);
+  assert.equal(f.nodes['tutor-viewer-toggle'].hidden, false);
+  await f.click('tutor-viewer-toggle');
+  assert.equal(f.nodes['tutor-viewer-slot'].hidden, true);
+  await f.click('tutor-viewer-toggle');
+  assert.equal(f.nodes['tutor-viewer-slot'].hidden, false);
+  const requests = f.state.calls.filter(([path]) => path.endsWith('/graphics')).length;
+  assert.equal(f.nodes['viewer-tangent-controls'].hidden, true);
+  f.nodes['tutor-message'].value = 'Dibuja el plano tangente a z=x^2+y^2';
+  await f.submit('tutor-form');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.nodes['viewer-tangent-controls'].hidden, false);
+  f.nodes['viewer-tangent-y'].value = '1';
+  f.nodes['viewer-tangent-y'].listeners.input();
+  assert.ok(Math.abs(f.viewer.mesh.tangent.dy - 2) < 1e-6);
+  assert.equal(f.state.calls.filter(([path]) => path.endsWith('/graphics')).length, requests + 1);
+  await f.click('tutor-new');
+  assert.equal(f.nodes['tutor-viewer-slot'].hidden, true);
+  assert.equal(f.viewer.mesh, null);
+});
+
 test('una sesión cerrada admite consulta pero nunca mensajes, ejercicios ni gráficas',async()=>{
   const f=fixture();f.state.sessions[0].status='CERRADA';await f.open();
-  assert.equal(f.nodes['tutor-composer'].hidden,true);assert.equal(f.nodes['graphic-fields'].disabled,true);
-  await f.submit('graphic-form');f.nodes['tutor-message'].value='hola';await f.submit('tutor-form');
+  assert.equal(f.nodes['tutor-composer'].hidden,true);
+  f.nodes['tutor-message'].value='Dibuja f(x) = x^2';await f.submit('tutor-form');
   assert.equal(f.state.calls.filter(([,o])=>o.method==='POST').length,0);
 });
 test('paginación de sesiones y turnos se mantiene disponible',async()=>{
@@ -178,8 +230,11 @@ test('un rechazo previo al turno explica cómo corregirlo sin ofrecer recuperar 
 test('un flujo gráfico interrumpido nunca dibuja una especificación parcial',async()=>{
   const f=fixture();await f.open();const original=f.client.fetch;
   f.client.fetch=(path,options)=>path.endsWith('/graphics') ? Promise.resolve(frames([{type:'GRAPHIC_SPEC',spec:{}}])) : original(path,options);
-  await f.submit('graphic-form');assert.equal(f.viewer.graph,undefined);
-  assert.match(f.nodes['graphic-result'].textContent,/interrumpió/);
+  f.nodes['tutor-message'].value='Dibuja f(x) = x^2';
+  await f.submit('tutor-form');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.viewer.graph,undefined);
+  assert.match(f.nodes['tutor-graphic-status'].textContent,/interrumpió/);
 });
 test('fallar al abrir otra conversación desactiva el panel anterior y evita mezclar sesiones',async()=>{
   const f=fixture();f.state.sessions.push({id:2,module:'funciones',status:'ACTIVA'});await f.open();
@@ -188,7 +243,6 @@ test('fallar al abrir otra conversación desactiva el panel anterior y evita mez
   await f.nodes['tutor-sessions'].children[1].listeners.click();
   const before=f.state.calls.filter(([p,o])=>p.endsWith('/exercises')&&o.method==='POST').length;
   f.nodes['tutor-message'].value='Deriva x^2';await f.submit('tutor-form');
-  assert.equal(f.nodes['graphic-fields'].disabled,true);
   assert.equal(f.state.calls.filter(([p,o])=>p.endsWith('/exercises')&&o.method==='POST').length,before);
   assert.equal(f.nodes['tutor-composer'].hidden,true);
 });

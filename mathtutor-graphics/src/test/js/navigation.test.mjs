@@ -19,7 +19,7 @@ test('rutas públicas, enlaces directos, desconocidos y cuenta protegida', () =>
 test('el espacio de cada rol describe sus herramientas', () => {
   for (const [role, label, capability] of [
     ['ALUMNO', 'Alumno', /práctica/],
-    ['PROFESOR', 'Profesor', /estadísticas agregadas/],
+    ['PROFESOR', 'Profesor', /estadísticas del alumnado/],
     ['ADMIN', 'Administrador', /perfiles.*sesiones.*uso por tema/],
   ]) {
     const workspace = workspaceFor(role);
@@ -31,7 +31,7 @@ test('el espacio de cada rol describe sus herramientas', () => {
 
 test('permisos por rol sin ofrecer capacidades futuras ni elevar privilegios', () => {
   assert.match(permissionDescription('ALUMNO'), /propios/);
-  assert.match(permissionDescription('PROFESOR'), /agregadas/);
+  assert.match(permissionDescription('PROFESOR'), /sesiones y estadísticas del alumnado/);
   assert.match(permissionDescription('ADMIN'), /administración/);
   assert.match(permissionDescription('DESCONOCIDO'), /Sin permisos/);
 });

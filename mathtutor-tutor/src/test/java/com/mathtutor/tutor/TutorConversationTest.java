@@ -49,6 +49,39 @@ class TutorConversationTest {
                 .verifyComplete();
         verifyNoInteractions(llm);
     }
+    @Test void aGenericFunctionMentionDoesNotAdmitAnIntegralInTheFunctionsModule() {
+        active(); when(retriever.retrieve(anyString(), eq("funciones"), isNull())).thenReturn(List.of());
+        var turn = conversation.prepare(7L, 1L, "Calcula la integral de la función x^5+2", List.of(), "");
+        assertThat(turn.rejected()).isTrue();
+        StepVerifier.create(turn.response()).expectNextMatches(text -> text.contains("dentro del temario")).verifyComplete();
+        verifyNoInteractions(llm);
+    }
+    @ParameterizedTest
+    @ValueSource(strings = {"Sí, por favor.", "¿Y en x=2?", "No lo entiendo", "no lo se", "¡No lo sé!"})
+    void shortFollowUpsReuseThePreviousTopic(String message) {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
+        when(llm.stream(any(), any())).thenReturn(Flux.just("¿Qué dice la definición?"));
+        var history = List.of("Alumno: Explícame la continuidad\nTutor: ¿Quieres ver un ejemplo?");
+        var turn = conversation.prepare(7L, 1L, message, history, "", "funciones-continuidad");
+        assertThat(turn.topic()).isEqualTo("funciones-continuidad");
+        StepVerifier.create(turn.response()).expectNext("¿Qué dice la definición?").verifyComplete();
+        verify(retriever).retrieve(message, "funciones", "funciones-continuidad");
+        verify(llm).stream(any(), any());
+    }
+
+    @Test void anUnanchoredFollowUpDoesNotUseAnotherModuleAsContext() {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
+        var turn = conversation.prepare(7L, 1L, "¿Por qué?", List.of("Turno previo"), "", "calculo-diferencial");
+        assertThat(turn.rejected()).isTrue();
+        verifyNoInteractions(llm);
+    }
+
+    @Test void aClosingRequestWithoutAnExerciseExplainsWhenItApplies() {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
+        StepVerifier.create(conversation.reply(7L, 1L, "Ejercicio completado."))
+                .expectNextMatches(text -> text.contains("después de trabajar un ejercicio")).verifyComplete();
+        verifyNoInteractions(retriever, llm, cas);
+    }
     @ParameterizedTest
     @org.junit.jupiter.params.provider.CsvSource(value = {
             "funciones|Demuestra que componer dos funciones continuas conserva la continuidad.|qué función se aplica primero",
@@ -117,6 +150,28 @@ class TutorConversationTest {
                 .expectNext("No encuentro este tema en los apuntes del módulo. Reformula tu pregunta dentro del temario.")
                 .verifyComplete();
         verifyNoInteractions(llm);
+    }
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource(value = {
+            "funciones|funciones-continuidad|Estudia la continuidad de f(x)=x^2+7",
+            "funciones|funciones-continuidad|f(x)=x^3+5*x",
+            "funciones|funciones-continuidad|Resuelve x^2-5=0",
+            "derivadas-integrales|calculo-integral|Calcula la integral de x^5+3*x",
+            "metodos-3d|matrices|Calcula el determinante de la matriz [[3,7],[2,5]]",
+            "metodos-3d|geometria|Calcula e_{2} × e_{1}"
+    }, delimiter = '|')
+    void newExercisesOnTheSyllabusReachTheLlmWithoutAnIndexedMatch(String module, String topic, String message) {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, module, "ACTIVA"));
+        when(llm.stream(any(), any())).thenReturn(Flux.just("¿Qué regla aplicarías primero?"));
+        var turn = conversation.prepare(7L, 1L, message, List.of(), "");
+        assertThat(turn.rejected()).isFalse();
+        assertThat(turn.topic()).isEqualTo(topic);
+        StepVerifier.create(turn.response()).expectNext("¿Qué regla aplicarías primero?").verifyComplete();
+        var prompt = ArgumentCaptor.forClass(Prompt.class);
+        verify(llm).stream(prompt.capture(), any());
+        assertThat(prompt.getValue().userPrompt()).isEqualTo(message);
+        assertThat(prompt.getValue().contextChunks()).isEmpty();
+        verifyNoInteractions(cas);
     }
     @Test void validStudentExpressionAddsDeterministicFormToPrompt() {
         active(); when(cas.parse("x^2")).thenReturn(new CasEngine.Expr("x^2", "Power(x,2)", "Power(x,2)"));
@@ -233,6 +288,19 @@ class TutorConversationTest {
                 .thenAwait(java.time.Duration.ofSeconds(8))
                 .expectNextMatches(text -> text.contains("Modo solo apuntes")).verifyComplete();
         assertThat(cancelled).isTrue();
+        verify(llm).stream(any(), any());
+    }
+
+    @Test void aProviderFailureKeepsTheHintOnTheActiveDerivabilityExercise() {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "derivadas-integrales", "ACTIVA"));
+        when(llm.stream(any(), any())).thenReturn(Flux.error(new IllegalStateException("proveedor")));
+        var run = new Run(1L, null, "DERIVADA: abs(x)", "sign(x)", null, "COMENZADO", 0, 0, List.of());
+        var diagnosis = new ExerciseVerification.Diagnosis("NO_APLICA", ErrorType.OTRO, "Razonamiento", 0, false);
+        var action = PedagogicalAction.conceptual("¿Qué propiedad aplicarías?");
+        StepVerifier.create(conversation.prepareExercise(7L, 1L, "Me queda un cociente", List.of(), run, diagnosis, action).response())
+                .expectNextMatches(text -> text.contains("Modo solo apuntes")
+                        && text.contains("cociente incremental") && text.contains("por separado"))
+                .verifyComplete();
         verify(llm).stream(any(), any());
     }
 

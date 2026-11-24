@@ -25,7 +25,7 @@ test('UC-30 carga las normales de la malla y aísla el material de la tangente',
   assert.deepEqual(gl.calls.filter(([name]) => ['uniform1i', 'drawArrays'].includes(name))
     .map(([name, , value]) => [name, value]), [
     ['uniform1i', 0], ['drawArrays', 0], ['uniform1i', 1], ['drawArrays', 6],
-    ['uniform1i', 0], ['drawArrays', 30],
+    ['uniform1i', 0], ['drawArrays', 30], ['drawArrays', 36],
   ]);
 });
 
@@ -90,7 +90,7 @@ test('UC-34 compone la textura antes de dibujar guías y reutiliza el framebuffe
   draw();
   assert.deepEqual(gl.calls.filter(([name]) => name === 'drawArrays').map(call => call.slice(1)), [
     [gl.LINES, 0, 6], [gl.TRIANGLES, 6, 24], [gl.TRIANGLES, 0, 3],
-    [gl.LINES, 30, 12], [gl.POINTS, 42, 1],
+    [gl.TRIANGLES, 30, 6], [gl.LINES, 36, 12], [gl.POINTS, 48, 1],
   ]);
   draw();
   assert.equal(gl.buffers.filter(([name]) => name === 'texImage2D').length, 1);

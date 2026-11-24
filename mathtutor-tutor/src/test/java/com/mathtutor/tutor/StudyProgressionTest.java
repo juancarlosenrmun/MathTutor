@@ -32,16 +32,17 @@ class StudyProgressionTest {
     }
 
     @Test
-    void activatesTheNextStageWhenThePreviousProseExerciseIsStillOpen() {
+    void rejectsReplacingAnExerciseOutsideTheGuidedPath() {
         when(store.progression(1L, 2L)).thenReturn(new Progression(active(4L), List.of(next), Set.of()));
-        assertThat(service.advance(1L, 2L)).isPresent();
-        verify(store).select(1L, 2L, 3L, null, null);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.advance(1L, 2L))
+                .isInstanceOf(com.mathtutor.common.dto.ConversationConflictException.class);
+        verify(store, never()).select(any(), any(), any(), any(), any());
     }
 
     @Test
-    void leavesTheActiveExerciseUntouchedWhenTheSequenceIsComplete() {
+    void keepsTheActiveExerciseEvenIfTheStageWasCompletedPreviously() {
         when(store.progression(1L, 2L)).thenReturn(new Progression(active(3L), List.of(next), Set.of("TEORICO")));
-        assertThat(service.advance(1L, 2L)).isEmpty();
+        assertThat(service.advance(1L, 2L)).contains(new StudyProgression.Practice("Enunciado", "TEORICO"));
         verify(store, never()).select(any(), any(), any(), any(), any());
     }
 

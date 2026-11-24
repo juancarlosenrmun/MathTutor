@@ -1,4 +1,4 @@
-import { lineTangent, secantTrajectory } from './tangents.mjs';
+import { bindTangencyValue, configureTangencyRange, lineTangent, secantTrajectory } from './tangents.mjs';
 
 /**
  * @brief Parser aritmético acotado para UC-28. Solo números, x y funciones explícitas.
@@ -136,8 +136,11 @@ export function curve(source, min, max, samples = 256, tangentX) {
     }
     points.push({ x, y, derivative, connected });
   }
-  const tangent = tangentX === undefined ? undefined : lineTangent(f, tangentX, min, max);
-  return { points, area, tangent, secantAt: tangent && secantTrajectory(f, tangent, min, max) };
+  const graph = {points, area, tangentAt(x) {
+    const tangent = lineTangent(f, x, min, max);
+    return {...graph, tangent, secantAt: secantTrajectory(f, tangent, min, max)};
+  }};
+  return tangentX === undefined ? graph : graph.tangentAt(tangentX);
 }
 
 /** @brief Expresa dominio, recorrido y magnitudes de una curva sin depender del color o del lienzo. */
@@ -158,15 +161,31 @@ export function mountCurveControls(document, viewer) {
   const one = id => document.querySelector('#' + id);
   const form = one('curve-form');
   const tangentX = one('curve-tangent-x');
-  if (tangentX) {
-    tangentX.addEventListener('change', () => form.requestSubmit());
-  }
+  const showValue = bindTangencyValue(tangentX, one('curve-tangent-x-value'));
+  let plotted;
+  tangentX?.addEventListener('input', () => {
+    if (!plotted) return;
+    const {source, graph} = plotted;
+    try {
+      const updated = graph.tangentAt(Number(tangentX.value));
+      viewer?.updateTangency(updated);
+      one('curve-result').textContent = describeCurve(source, updated);
+    } catch (error) {
+      viewer?.updateTangency(graph);
+      one('curve-result').textContent = error.message;
+    }
+  });
   form.addEventListener('submit', event => {
     event.preventDefault();
     try {
       const source = one('curve-function').value;
-      const x = tangentX?.value ? Number(tangentX.value) : undefined;
-      const graph = curve(source, Number(one('curve-min').value), Number(one('curve-max').value), 256, x);
+      const min = Number(one('curve-min').value), max = Number(one('curve-max').value);
+      const graph = curve(source, min, max);
+      plotted = {source, graph};
+      if (tangentX) {
+        configureTangencyRange(tangentX, min, max);
+        showValue();
+      }
       viewer?.setGraph(graph);
       one('curve-result').textContent = describeCurve(source, graph);
     } catch (error) { one('curve-result').textContent = error.message; }

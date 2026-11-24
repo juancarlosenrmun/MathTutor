@@ -193,13 +193,13 @@ test('el visor se pliega y el ejercicio no tiene selecci?n manual', () => {
   assert.doesNotMatch(html, /Empezar ejercicio|id="exercise-kind"|id="exercise-form"/);
 });
 
-test('el visor se oculta lateralmente y se puede recuperar sin perder la conversacion',async()=>{
+test('una conversación sin gráfica mantiene el visor contraído',async()=>{
   const f=fixture();await f.ui.sync('tutor');await f.submit('tutor-select-form');
   f.nodes['tutor-viewer-toggle'].listeners.click();
   assert.equal(f.nodes['tutor-viewer-slot'].hidden,true);
   assert.equal(f.nodes['tutor-viewer-toggle'].attributes['aria-expanded'],'false');
   f.nodes['tutor-viewer-toggle'].listeners.click();
-  assert.equal(f.nodes['tutor-viewer-slot'].hidden,false);
-  assert.equal(f.nodes['tutor-viewer-toggle'].attributes['aria-expanded'],'true');
+  assert.equal(f.nodes['tutor-viewer-slot'].hidden,true);
+  assert.equal(f.nodes['tutor-viewer-toggle'].attributes['aria-expanded'],'false');
   assert.equal(f.nodes['tutor-composer'].hidden,false);
 });

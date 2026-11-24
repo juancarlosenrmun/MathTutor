@@ -58,6 +58,24 @@ public class PersonalDataStore {
         jdbc.update("UPDATE audit_logs SET target_id = NULL WHERE target_type IN ('USER', 'User') AND target_id = ?", userId);
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void eraseSession(long sessionId) {
+        jdbc.update("""
+                INSERT INTO exercise_deletion_counts (module, topic, abandoned)
+                SELECT m.code, COALESCE(t.code, ''), COUNT(*)
+                FROM exercise_runs r JOIN tutor_sessions s ON s.id = r.session_id
+                JOIN modules m ON m.id = s.module_id LEFT JOIN topics t ON t.id = r.topic_id
+                WHERE r.session_id = ? AND r.state <> 'COMPLETADO'
+                GROUP BY m.code, COALESCE(t.code, '')
+                ON CONFLICT (module, topic) DO UPDATE
+                SET abandoned = exercise_deletion_counts.abandoned + EXCLUDED.abandoned
+                """, sessionId);
+        jdbc.update("DELETE FROM conversation_turns WHERE session_id = ?", sessionId);
+        jdbc.update("DELETE FROM turns WHERE exercise_run_id IN (SELECT id FROM exercise_runs WHERE session_id = ?)", sessionId);
+        jdbc.update("DELETE FROM exercise_runs WHERE session_id = ?", sessionId);
+        jdbc.update("DELETE FROM tutor_sessions WHERE id = ?", sessionId);
+    }
+
     /** @brief Serializa cambios que pueden afectar al conjunto de administradores activos. */
     @Transactional(propagation = Propagation.MANDATORY)
     public void lockAccountChanges() {

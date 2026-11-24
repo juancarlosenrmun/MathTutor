@@ -101,6 +101,32 @@ class AdminUsageApiTest {
         assertThat(audits(admin, other)).isZero();
     }
 
+    @Test
+    void teacherReadsStudentStatisticsWithoutAccountManagement() throws Exception {
+        User teacher = account(User.Role.PROFESOR);
+        User student = account(User.Role.ALUMNO);
+        long session = session(student, "funciones");
+        jdbc.update("""
+                INSERT INTO exercise_runs (session_id, statement_latex, state, progress, current_level, attempts, verified_steps, started_at, last_activity_at)
+                VALUES (?, 'Ejercicio', 'COMPLETADO', 1, 'CONCEPTUAL', 0, 0, now(), now())
+                """, session);
+        String base = "/api/teacher/statistics/students";
+        mvc.perform(get(base).with(actor(teacher))).andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id", org.hamcrest.Matchers.hasItem(student.getId().intValue())))
+                .andExpect(jsonPath("$[*].id", org.hamcrest.Matchers.not(org.hamcrest.Matchers.hasItem(teacher.getId().intValue()))));
+        mvc.perform(get(base + "/" + student.getId() + "/sessions").with(actor(teacher)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.items[0].id").value(session))
+                .andExpect(jsonPath("$.items[0].completedExercises").value(1));
+        mvc.perform(get(base + "/" + teacher.getId() + "/sessions").with(actor(teacher)))
+                .andExpect(status().isNotFound());
+        mvc.perform(get(base).with(actor(student))).andExpect(status().isForbidden());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .put("/api/admin/users/" + student.getId() + "/deactivate").with(actor(teacher))
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
+                .andExpect(status().isForbidden());
+        assertThat(audits(teacher, student)).isEqualTo(1);
+    }
+
     private User account(User.Role role) {
         return users.save(User.builder().email(UUID.randomUUID() + "@test.es").passwordHash("oculto").role(role).build());
     }

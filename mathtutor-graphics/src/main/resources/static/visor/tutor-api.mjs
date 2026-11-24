@@ -1,17 +1,18 @@
 /** Transporte del tutor: credenciales en memoria, CSRF y descarte tras cambio de identidad. */
-export async function request(client, path, body, signal) {
+export async function request(client, path, body, signal, method = body === undefined ? 'GET' : 'POST') {
   const token = client.token;
   if (!token) throw new Error('Tu sesión ha terminado. Inicia sesión de nuevo.');
   const headers = { Authorization: `Bearer ${token}` };
-  if (body !== undefined) {
+  if (method !== 'GET') {
     const csrf = await client.fetch('/api/csrf-token', {credentials:'same-origin', signal});
     if (!csrf.ok) throw new Error('No se pudo preparar la petición.');
     const value = (await csrf.json()).csrfToken;
     if (typeof value !== 'string' || !value) throw new Error('No se pudo preparar la petición.');
-    headers['X-XSRF-TOKEN'] = value; headers['Content-Type'] = 'application/json';
+    headers['X-XSRF-TOKEN'] = value;
+    if (body !== undefined) headers['Content-Type'] = 'application/json';
   }
   if (token !== client.token) throw new Error('La sesión ha cambiado.');
-  const response = await client.fetch(path, {method:body === undefined ? 'GET' : 'POST', headers,
+  const response = await client.fetch(path, {method, headers,
     credentials:'same-origin', signal, ...(body === undefined ? {} : {body:JSON.stringify(body)})});
   if (token !== client.token) throw new Error('La sesión ha cambiado.');
   if (!response.ok) {

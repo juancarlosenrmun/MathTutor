@@ -149,6 +149,19 @@ export class WebGLViewer {
     this.onAnimationChange?.();
   }
 
+  /** Mueve la tangente conservando la geometría y la perspectiva. */
+  updateTangency(model) {
+    if (model.points && model.points !== this.graph?.points) { this.setGraph(model); return; }
+    if (model.triangles && model.triangles !== this.surface?.triangles) { this.setSurface(model); return; }
+    this.stopAnimation();
+    this.selection = null;
+    if (model.points) this.graph = model;
+    else this.surface = model;
+    if (!this.lost) this.pipeline.updateTangent(model.tangent);
+    this.render();
+    this.onAnimationChange?.();
+  }
+
   /** @brief Indica qué recorrido corresponde a la geometría que se está mostrando. */
   canAnimate(kind) {
     if (this.lost || !this.host.requestAnimationFrame) return false;

@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByAnonymizedAtIsNull(Pageable page);
 
+    List<User> findByRoleAndAnonymizedAtIsNull(User.Role role, Pageable page);
+
     @Query("SELECT u FROM User u WHERE u.email = :email AND u.active = true")
     Optional<User> findActiveByEmail(@Param("email") String email);
 

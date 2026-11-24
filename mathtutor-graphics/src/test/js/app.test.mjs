@@ -76,6 +76,8 @@ test('la página habilita la secante solo cuando puede reproducirse y devuelve e
   f.host.location.hash = '#/laboratorio';
   f.host.listeners.hashchange();
   f.nodes['#curve-form'].listeners.submit({ preventDefault() {} });
+  assert.equal(secant.disabled, true);
+  f.nodes['#curve-tangent-x'].listeners.input();
   assert.equal(secant.disabled, false);
   secant.listeners.click();
   assert.match(f.nodes['#animation-status'].textContent, /Secante en movimiento/);

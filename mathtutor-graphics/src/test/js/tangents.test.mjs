@@ -53,3 +53,31 @@ test('una especificación válida dibuja una tangente diferenciada en WebGL', ()
     assert.ok(gl.calls.some(call => call[0] === 'drawArrays' && call[1] === 11 && call[3] === geometryCount));
   }
 });
+
+test('el relleno del plano sigue el punto y desaparece al quitar la tangente', () => {
+  const gl = fakeGl();
+  const pipeline = new ShaderPipeline(gl);
+  const mesh = surface('x^2+y^2', -2, 2, -2, 2, 16, [0, 0]);
+  const draw = () => {
+    gl.calls.length = 0;
+    pipeline.draw(new Float32Array(16), 400, 300);
+    return gl.calls.filter(([call, mode]) => call === 'drawArrays' && mode === gl.TRIANGLES);
+  };
+  pipeline.setSurface(mesh);
+  assert.equal(draw().at(-1)[3], 6);
+  const fill = gl.calls.findIndex(([call, mode,, count]) => call === 'drawArrays' && mode === gl.TRIANGLES && count === 6);
+  assert.ok(gl.calls.slice(0, fill).some(([call, mode]) => call === 'enable' && mode === gl.BLEND));
+  assert.ok(gl.calls.slice(fill + 1).some(([call, mode]) => call === 'disable' && mode === gl.BLEND));
+
+  const moved = mesh.tangentAt([1, -0.5]).tangent;
+  pipeline.updateTangent(moved);
+  const vertices = gl.calls.findLast(([call]) => call === 'bufferSubData').at(-1);
+  assert.equal(vertices.length, (12 + 6) * 6);
+  for (let i = 0; i < 36; i += 6) {
+    const [x, y, z] = vertices.subarray(i, i + 3);
+    close(z, moved.value + moved.dx * (x - 1) + moved.dy * (y + 0.5));
+  }
+  assert.equal(draw().at(-1)[3], 6);
+  pipeline.updateTangent(null);
+  assert.equal(draw().length, 1);
+});

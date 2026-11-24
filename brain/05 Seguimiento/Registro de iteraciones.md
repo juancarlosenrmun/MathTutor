@@ -1,3 +1,64 @@
+## 2026-11-24 15:32 · Sprint 10 · Estados y avance de los ejercicios
+
+- [[Casos de uso#UC-10|UC-10]]. La tabla docente muestra el total y separa los estados comenzado, en curso, completado, a medias y abandonado al borrar el chat. Los ejercicios pendientes conservados se clasifican por avance medible. La tabla usa colores para distinguir total, actividad, completados, abandono y avance.
+- [[Casos de uso#UC-11|UC-11]]. El borrado explícito del chat conserva un recuento agregado por módulo y tema de sus ejercicios sin completar. Los estados antiguos de abandono se presentan como a medias. Los chats eliminados antes de este cambio no se reconstruyen.
+- Se ampliaron 1 prueba de persistencia y 3 de API e integración, más 1 recorrido Chrome con accesibilidad. Gradle en verde con 1193 pruebas Java y 129 Node. JaCoCo de persistencia 93,43 % de líneas y 82,47 % de ramas. V8 93,84 % de líneas y 88,46 % de ramas.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Siguen pendientes la CI remota y la integración en `DEV`. Véase [[Sprint 10]].
+
+## 2026-11-24 15:12 · Sprint 10 · Relleno del plano tangente
+
+- [[Casos de uso#UC-31|UC-31]]. El plano tangente dibuja un relleno rosa translúcido bajo el contorno y las diagonales. El relleno usa las mismas esquinas y se desplaza con el punto de tangencia en el tutor y el laboratorio.
+- Caja blanca: 1 prueba nueva de geometría, transparencia y movimiento. Gradle ejecutó 129 pruebas Node en verde, con V8 al 94,08 % de líneas y 88,40 % de ramas. Caja negra: 1 comprobación de píxeles nueva en Chrome con WebGL2 confirma que se siguen viendo los colores de la superficie a través del plano.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Pendientes CI remota e integración en `DEV`. Véase [[Sprint 10]].
+
+## 2026-11-24 15:07 · Sprint 10 · Visor de conversación, cierre y seguimiento docente
+
+- [[Casos de uso#UC-17|UC-17]], [[Casos de uso#UC-20|UC-20]] y [[Casos de uso#UC-24|UC-24]]. El CAS cierra los ejercicios procedimentales al verificar el resultado. El alumno puede cerrar un ejercicio sin referencia simbólica con el botón o con «Ejercicio completado». El cierre se guarda y habilita otro ejercicio en la sesión. La práctica guiada espera el cierre y la sesión puede retomar un ejercicio inactivo.
+- [[Casos de uso#UC-35|UC-35]]. «Mostrar visor» está disponible cuando se valida la gráfica. El visor se abre al recibirla y se recupera desde el historial reciente de la conversación. El tutor muestra los deslizadores solo para rectas y planos tangentes. Las fórmulas de los ejercicios sugeridos se presentan en MathML.
+- [[Casos de uso#UC-11|UC-11]]. El alumno puede borrar una conversación propia, con sus mensajes y ejercicios, tras confirmar. [[Casos de uso#UC-10|UC-10]]. Profesor y administrador pueden consultar sesiones y recuentos de ejercicios completados. La lectura individual se audita y las acciones de cuenta siguen reservadas al administrador.
+- 1 prueba nueva de persistencia y 2 pruebas HTTP nuevas. Se ampliaron las regresiones de continuidad, itinerario guiado, renderizado, visor y permisos. Gradle en verde con 1.193 pruebas Java y 128 Node. JaCoCo del tutor 99,13 % de líneas y 93,57 % de ramas. V8 93,90 % y 88,30 %. Chrome verificó el recorrido de interfaz, WebGL y accesibilidad.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Pendientes CI remota y la integración en `DEV`. Véase [[Sprint 10]].
+
+## 2026-11-24 13:07 · Sprint 10 · Cierre de ejercicios y fórmulas en práctica guiada
+
+- **Petición**. Admitir la comprobación de continuidad y el mensaje «ejercicio completado». Representar el producto vectorial de la práctica guiada de Métodos 3D.
+- **Implementación**. El tutor retoma el tema, reconoce el cierre libre y, si existe una referencia simbólica pendiente, solicita el resultado. El enunciado guiado usa MathML.
+- **Caja blanca**. 1 caso nuevo para un cierre sin contexto. Gradle pasó con 1.190 pruebas Java y 128 Node. JaCoCo del tutor 99,11 % de líneas y 92,64 % de ramas. V8 94,90 % y 89,60 %.
+- **Caja negra**. 2 pruebas HTTP nuevas para cierre libre y verificación procedimental. Chromium verificó los subíndices y el operador ×. Chrome comprobó la práctica real y Google AI Studio reprodujo los cinco turnos de continuidad.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
+## 2026-11-24 12:50 · Sprint 10 · Conversaciones largas y controles del chat
+
+- **Petición**. Mantener el ejercicio y sus temas relacionados durante el diálogo, enviar con Enter, retirar el formulario manual y estabilizar la cifra del punto de tangencia.
+- **Implementación**. Inicio y turnos recientes acotados, selección idempotente del ejercicio, filtro de intentos simbólicos y pistas que distinguen continuidad y derivabilidad. Enter envía. El visor se genera desde el diálogo y su validación se ejecuta aparte. La coordenada conserva su espacio al moverse.
+- **Caja blanca**. 1 caso Java nuevo de respaldo contextual y regresiones ampliadas de historial y diagnóstico. Gradle pasó con 1.187 pruebas Java y 128 Node. JaCoCo del tutor 99,07 % de líneas y 92,98 % de ramas. V8 94,89 % y 89,59 %.
+- **Caja negra**. 1 prueba HTTP de 13 turnos y 1 recorrido Node nuevo de teclado y gráfica diferida. Chromium verificó Enter, Mayús + Enter y la anchura estable de la barra. Google AI Studio completó 13 turnos y rechazó una consulta ajena al temario. En el turno 7 se mantuvo el contexto con ayuda local y el proveedor respondió de nuevo en el 8.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
+## 2026-11-24 12:00 · Sprint 10 · Notación vectorial y ayuda en Métodos 3D
+
+- **Petición**. Corregir la representación de `e_1 \times e_2` y el rechazo de «no lo se» durante el ejercicio.
+- **Implementación**. MathML para los vectores canónicos y su producto en el envío y el historial. Petición de ayuda dentro del ejercicio activo sin consumir intentos, con una pista que se apoya en el turno anterior.
+- **Caja blanca**. 3 casos Java nuevos. Gradle pasó con 1.185 pruebas Java y 128 Node. JaCoCo del tutor 99,22 % de líneas y 95,07 % de ramas. V8 94,99 % y 89,44 %.
+- **Caja negra**. 1 regresión HTTP y 1 caso Node de representación nuevos. Chrome con Google AI Studio reprodujo la conversación y verificó la fórmula y la pista.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
+## 2026-11-24 11:28 · Sprint 10 · Seguimiento del diálogo y coordenada de tangencia
+
+- **Petición**. Corregir el rechazo de «Una fucnión polinomica siempre es continua y derivable» tras hablar de continuidad y mostrar el valor de la barra de la recta tangente.
+- **Implementación**. El tutor reconoce la mención de derivabilidad dentro de un razonamiento de continuidad y conserva el tema en seguimientos breves. La coordenada x se actualiza al mover la barra.
+- **Caja blanca**. 4 casos nuevos de seguimiento, reutilización del tema y aislamiento por módulo. Gradle pasó con 1.181 pruebas Java y 127 Node. JaCoCo del tutor 99,20 % de líneas y 94,84 % de ramas. V8 94,95 % y 89,47 %.
+- **Caja negra**. 1 regresión HTTP y 1 recorrido Chromium ampliado. Se probó el diálogo de cuatro turnos con Google AI Studio, una pregunta ajena y la lectura de la coordenada inicial y durante el arrastre en Chrome.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
+## 2026-11-24 10:57 · Sprint 10 · Fix del tutor y el visor
+
+- **Petición**. Crear una rama desde `DEV`, recuperar las respuestas a ejercicios nuevos del módulo y actualizar el visor del tutor y del laboratorio.
+- **Implementación**. Se aplicó la excepción solicitada a RF-03 para los temas reconocidos. El visor se abre al validar la función de la conversación. La recta y el plano tangentes siguen los deslizadores en directo.
+- **Caja blanca**. 6 casos Java nuevos para enunciados inéditos, temas coincidentes y exclusión fuera de módulo. `check jacocoAggregateReport` pasó con 1.176 pruebas Java y 127 Node. JaCoCo del tutor 99,18 % de líneas y 94,36 % de ramas. V8 94,92 % y 89,52 %.
+- **Caja negra**. 1 recorrido Node nuevo de apertura, ocultación, deslizamiento y limpieza de sesión. Chromium verificó el contrato y Chrome con Google AI Studio comprobó 3 recorridos reales de ecuación inédita, curva y superficie. Una consulta ajena al módulo se rechazó en la comprobación HTTP con el proveedor configurado.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
 ## 2026-11-24 10:18 · Sprints 05–10 · Frontend final
 
 - **Petición**. Crear y activar `Frontend` desde `DEV`, ejecutar `find-skills` para frontend e integrar las capacidades de los sprints 5 a 10 en el rediseño.

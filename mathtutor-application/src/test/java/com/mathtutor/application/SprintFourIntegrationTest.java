@@ -104,6 +104,32 @@ class SprintFourIntegrationTest {
         mvc.perform(get("/api/tutor/sessions/"+session+"/history").with(actor("ALUMNO"))).andExpect(status().isNotFound());
         assertThat(store.sessions(owner,0,100)).hasSize(1);
     }
+    @Test void studentCanDeleteOnlyTheirOwnConversationAndItsExercises() throws Exception {
+        store.select(user, session, null, "Deriva x^2", "2*x");
+        var request = UUID.randomUUID();
+        store.reserve(user, session, request, "2*x");
+        String path = "/api/tutor/sessions/" + session;
+        mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isConflict());
+        store.finish(user, session, request, new ConversationStore.Result("Correcto", null,
+                ErrorType.NINGUNO, "COMPLETADO", 0, null, null, 0, true));
+        mvc.perform(delete(path).with(actor("ALUMNO"))).andExpect(status().isForbidden());
+        mvc.perform(delete(path).with(actor("PROFESOR")).with(csrfCookie())).andExpect(status().isForbidden());
+        Long owner = user;
+        user = users.save(User.builder().email(UUID.randomUUID()+"@test.es").passwordHash("h")
+                .active(true).role(User.Role.ALUMNO).build()).getId();
+        mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isNotFound());
+        user = owner;
+        store.select(user, session, null, "Deriva x^3", "3*x^2");
+        mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isNoContent());
+        mvc.perform(delete(path).with(actor("ALUMNO")).with(csrfCookie())).andExpect(status().isNotFound());
+        var sql = new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+        assertThat(sql.queryForObject("SELECT SUM(abandoned) FROM exercise_deletion_counts", Long.class)).isEqualTo(1L);
+        mvc.perform(get("/api/teacher/statistics").with(actor("PROFESOR")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$[*].abandoned", org.hamcrest.Matchers.hasItem(1)));
+        mvc.perform(get(path + "/history").with(actor("ALUMNO"))).andExpect(status().isNotFound());
+        assertThat(store.sessions(user, 0, 20)).isEmpty();
+    }
+
     @Test void bankCatalogueIsOwnedPaginatedAndNeverExposesSolutions() throws Exception {
         mvc.perform(get("/api/tutor/sessions/"+session+"/bank?size=1").with(actor("ALUMNO")))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))
@@ -122,6 +148,128 @@ class SprintFourIntegrationTest {
         tracked.reply(user,session,UUID.randomUUID(),"otra pregunta").blockLast();
         var prompts=org.mockito.ArgumentCaptor.forClass(Prompt.class); verify(llm,times(2)).stream(prompts.capture(),any());
         assertThat(prompts.getAllValues().getLast().contextChunks()).anyMatch(s -> s.contains("HISTORIAL") && s.contains("concepto"));
+    }
+    @Test void followsTheStudentsReasoningAndShortRepliesInTheSameSession() throws Exception {
+        var functions = modules.findAll().stream().filter(module -> module.getCode().equals("funciones"))
+                .findFirst().orElseThrow();
+        session = sessions.save(TutorSession.builder().user(users.getReferenceById(user)).module(functions)
+                .status(TutorSession.SessionStatus.ACTIVA).build()).getId();
+        when(retriever.retrieve(anyString(), anyString(), any())).thenReturn(List.of());
+        var json = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (String message : List.of("¿Qué es la continuidad de una función?", "f(x) = x^2+2*x es continua ?",
+                "Una fucnión polinomica siempre es continua y derivable", "¿Por qué?")) {
+            assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", message))))
+                    .contains("Pista", "DONE");
+        }
+        for (String message : List.of("Calcula la derivada de la función x^2", "¿Quién ganó el partido?")) {
+            assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", message))))
+                    .contains("dentro del temario");
+        }
+        var prompts = org.mockito.ArgumentCaptor.forClass(Prompt.class);
+        verify(llm, times(4)).stream(prompts.capture(), any());
+        assertThat(prompts.getAllValues().get(2).contextChunks())
+                .anyMatch(chunk -> chunk.contains("f(x) = x^2+2*x es continua ?"));
+        assertThat(prompts.getAllValues().getLast().contextChunks())
+                .anyMatch(chunk -> chunk.contains("Una fucnión polinomica siempre es continua y derivable"));
+    }
+    @Test void keepsHelpingWhenTheStudentDoesNotKnowTheCrossProduct() throws Exception {
+        var methods = modules.findAll().stream().filter(module -> module.getCode().equals("metodos-3d"))
+                .findFirst().orElseThrow();
+        session = sessions.save(TutorSession.builder().user(users.getReferenceById(user)).module(methods)
+                .status(TutorSession.SessionStatus.ACTIVA).build()).getId();
+        when(retriever.retrieve(anyString(), anyString(), any())).thenReturn(List.of());
+        var json = new com.fasterxml.jackson.databind.ObjectMapper();
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "¿Qué es un espacio vectorial?"))))
+                .contains("Pista", "DONE");
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "Calcula e_1 \\times e_2"))))
+                .contains("regla de la mano derecha", "DONE");
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "no lo se"))))
+                .contains("Pista", "DONE");
+        var prompts = org.mockito.ArgumentCaptor.forClass(Prompt.class);
+        verify(llm, times(2)).stream(prompts.capture(), any());
+        assertThat(prompts.getValue().contextChunks()).anyMatch(chunk -> chunk.contains("e_1 \\times e_2"));
+        assertThat(prompts.getValue().constraints()).contains("pista más concreta");
+        assertThat(store.context(user, session).getLast().topic()).isEqualTo("geometria");
+        assertThat(store.current(user, session).attempts()).isZero();
+        verify(cas, never()).compare(eq("no lo se"), anyString());
+    }
+    @Test void keepsTheExerciseAndItsStartingPointBeyondTheRecentHistoryWindow() throws Exception {
+        var calculus = modules.findAll().stream().filter(module -> module.getCode().equals("derivadas-integrales"))
+                .findFirst().orElseThrow();
+        session = sessions.save(TutorSession.builder().user(users.getReferenceById(user)).module(calculus)
+                .status(TutorSession.SessionStatus.ACTIVA).build()).getId();
+        var run = store.select(user, session, null, "DERIVADA: abs(x)", "sign(x)");
+        when(retriever.retrieve(anyString(), anyString(), any())).thenReturn(List.of());
+        when(cas.compare(anyString(), eq("sign(x)"))).thenReturn(CasEngine.Comparison.DIFFERENT);
+        when(llm.stream(any(), any())).thenAnswer(call -> {
+            java.util.function.Consumer<LlmGateway.Usage> usage = call.getArgument(1);
+            usage.accept(new LlmGateway.Usage(200, 50));
+            return Flux.just("Pista");
+        });
+        var json = new com.fasterxml.jackson.databind.ObjectMapper();
+        var steps = List.of("Quiero estudiar la derivabilidad de abs(x) en el origen", "¿Y la continuidad?",
+                "Por la izquierda me sale cero", "Por la derecha también obtengo cero", "Entonces coinciden los dos",
+                "¿Cómo sigo?", "No lo sé", "Primero sustituyo el valor en la función", "Me queda un cociente",
+                "Ahora comparo ambos lados", "¿Por qué?", "El límite lateral cambia de signo", "¿Es correcto?");
+        for (String step : steps) {
+            assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", step))))
+                    .as(step).contains("Pista", "DONE");
+        }
+        assertThat(streamOverHttp("messages", "{\"message\":\"¿Quién ganó el partido?\"}"))
+                .contains("dentro del temario");
+        var prompts = org.mockito.ArgumentCaptor.forClass(Prompt.class);
+        verify(llm, times(steps.size())).stream(prompts.capture(), any());
+        assertThat(prompts.getValue().contextChunks()).anyMatch(chunk -> chunk.contains(steps.getFirst()));
+        assertThat(prompts.getValue().contextChunks()).anyMatch(chunk -> chunk.contains(run.statement()));
+        assertThat(prompts.getAllValues().get(2).constraints()).contains("Distingue el objetivo", "límites de la función");
+        assertThat(store.select(user, session, null, run.statement(), "sign(x)").id()).isEqualTo(run.id());
+        assertThat(store.current(user, session).attempts()).isZero();
+        verifyNoInteractions(cas);
+    }
+    @Test void recordsFreeContinuityCompletionAndStartsAnotherExerciseInTheSameChat() throws Exception {
+        var functions = modules.findAll().stream().filter(module -> module.getCode().equals("funciones"))
+                .findFirst().orElseThrow();
+        session = sessions.save(TutorSession.builder().user(users.getReferenceById(user)).module(functions)
+                .status(TutorSession.SessionStatus.ACTIVA).build()).getId();
+        when(retriever.retrieve(anyString(), anyString(), any())).thenReturn(List.of());
+        var json = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (String step : List.of("¿Qué es la continuidad de una función?", "f(x)=x^2+x es continua?",
+                "Todas las funciones polinomicas son contninuas, entonces x^2+x es continua tambien, no?")) {
+            assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", step))))
+                    .as(step).contains("Pista", "DONE");
+        }
+        assertThat(streamOverHttp("messages", "{\"message\":\"ya las he comprobado y se cumple\"}"))
+                .contains("límite existe", "valor de la función", "DONE");
+        var active = store.current(user, session);
+        assertThat(active).isNotNull();
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "f(x)=x^3 es continua?"))))
+                .contains("Primero termina", "DONE");
+        assertThat(store.current(user, session).id()).isEqualTo(active.id());
+        assertThat(streamOverHttp("messages", "{\"message\":\"ejercicio completado\"}"))
+                .contains("Damos por terminado", "DONE");
+        assertThat(store.context(user, session).getLast().topic()).isEqualTo("funciones-continuidad");
+        var finished = store.runs(user, session, 0, 20).getFirst();
+        assertThat(finished.state()).isEqualTo("COMPLETADO");
+        assertThat(finished.topic()).isEqualTo("funciones-continuidad");
+        assertThat(finished.verifiedSteps()).isZero();
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "f(x)=x^3 es continua?"))))
+                .contains("DONE");
+        assertThat(store.current(user, session).id()).isNotEqualTo(finished.id());
+        verifyNoInteractions(cas);
+    }
+
+    @Test void aCompletionRequestKeepsTheProceduralExerciseOpenUntilItsResultIsVerified() {
+        var run = store.select(user, session, null, "DERIVADA: x^2", "2*x");
+        assertThat(streamOverHttp("messages", "{\"message\":\"ejercicio completado\"}"))
+                .contains("Envía tu resultado final", "DONE");
+        assertThat(store.current(user, session).id()).isEqualTo(run.id());
+        assertThat(store.current(user, session).attempts()).isZero();
+        verifyNoInteractions(cas, llm);
+        when(cas.compare("2*x", "2*x")).thenReturn(CasEngine.Comparison.EQUIVALENT);
+        assertThat(streamOverHttp("messages", "{\"message\":\"2*x\"}"))
+                .contains("Tu resultado ha sido verificado", "DONE");
+        assertThat(store.current(user, session)).isNull();
+        assertThat(store.runs(user, session, 0, 20).getFirst().state()).isEqualTo("COMPLETADO");
     }
     @Test void providerOutageStreamsAndPersistsNotesWithoutPartialGeneratedText() {
         when(llm.stream(any(), any())).thenReturn(Flux.just("delta privado")

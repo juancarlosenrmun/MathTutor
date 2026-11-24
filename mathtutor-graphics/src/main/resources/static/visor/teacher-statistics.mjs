@@ -26,9 +26,16 @@ export function mountTeacherStatistics(document, client) {
       if (current !== generation) return;
       results.replaceChildren(...rows.map(summary => {
         const row = document.createElement('tr');
-        for (const value of [summary.module, summary.topic ?? 'Sin tema', summary.started, summary.active,
-          summary.completed, summary.abandoned, summary.abandonedEarly, summary.abandonedNearSolution]) {
+        const columns = [
+          [summary.module], [summary.topic ?? 'Sin tema'], [summary.total, 'stats-total'],
+          [summary.started, 'stats-activity'], [summary.active, 'stats-activity'],
+          [summary.completed, 'stats-completed'], [summary.unfinished, 'stats-activity'],
+          [summary.abandoned, 'stats-deleted'], [summary.early, 'stats-progress'],
+          [summary.nearSolution, 'stats-progress'], [summary.unmeasured, 'stats-progress'],
+        ];
+        for (const [value, style = ''] of columns) {
           const cell = document.createElement('td');
+          cell.className = style;
           cell.textContent = String(value);
           row.append(cell);
         }

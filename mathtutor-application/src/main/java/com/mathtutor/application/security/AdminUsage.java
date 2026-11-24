@@ -38,15 +38,35 @@ public class AdminUsage {
         return new ResultPage<>(usage.topics(request.getOffset(), size + 1), size);
     }
 
+    @Transactional(readOnly = true)
+    public List<Student> students(int page, int size) {
+        var pagination = request(page, size).withSort(org.springframework.data.domain.Sort.by("id"));
+        return users.findByRoleAndAnonymizedAtIsNull(User.Role.ALUMNO, pagination).stream()
+                .map(user -> new Student(user.getId(), user.getEmail(), user.isActive())).toList();
+    }
+
+    public record Student(long id, String email, boolean active) {}
+
     /** @brief Mantiene la lectura y su registro de auditoría en la misma transacción que protege el perfil. */
     @Transactional
     public ResultPage<AdminUsageRepository.SessionUsage> sessions(long adminId, long targetId, int page, int size) {
+        return sessions(adminId, targetId, page, size, false);
+    }
+
+    @Transactional
+    public ResultPage<AdminUsageRepository.SessionUsage> studentSessions(long teacherId, long studentId, int page, int size) {
+        return sessions(teacherId, studentId, page, size, true);
+    }
+
+    private ResultPage<AdminUsageRepository.SessionUsage> sessions(long actorId, long targetId, int page, int size,
+                                                                  boolean studentOnly) {
         var request = request(page, size);
         personalData.lockAccountChanges();
-        User administrator = users.findByIdForUpdate(adminId).filter(User::isActive)
-                .filter(user -> user.getRole() == User.Role.ADMIN)
+        User administrator = users.findByIdForUpdate(actorId).filter(User::isActive)
+                .filter(user -> user.getRole() == User.Role.ADMIN || studentOnly && user.getRole() == User.Role.PROFESOR)
                 .orElseThrow(() -> new AccessDeniedException("Se requieren permisos de administración."));
         users.findByIdForUpdate(targetId).filter(user -> user.getAnonymizedAt() == null)
+                .filter(user -> !studentOnly || user.getRole() == User.Role.ALUMNO)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Perfil no disponible."));
 
         var items = usage.sessions(targetId, request.getOffset(), size + 1);

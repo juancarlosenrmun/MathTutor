@@ -39,9 +39,8 @@ public interface ExerciseRunRepository extends JpaRepository<ExerciseRun, Long> 
     @Query("""
             SELECT DISTINCT e.type FROM ExerciseRun r JOIN r.exercise e JOIN r.session s
             WHERE s.user.id = :userId AND s.module.id = :moduleId
-              AND ((e.type = :procedural AND r.state = :completed)
-                   OR (e.type <> :procedural AND r.attempts > 0))
+              AND r.state = :completed
             """)
     Set<Exercise.ExerciseType> findPracticedTypes(Long userId, Long moduleId,
-            Exercise.ExerciseType procedural, ExerciseRun.RunState completed);
+            ExerciseRun.RunState completed);
 }

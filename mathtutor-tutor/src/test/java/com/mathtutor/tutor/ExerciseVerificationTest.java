@@ -23,9 +23,9 @@ class ExerciseVerificationTest {
         assertThat(result.hint()).doesNotContain("2*x");
     }
     @Test void advancesOnlyTheNextCanonicalStep() {
-        when(cas.compare("paso","2*x")).thenReturn(CasEngine.Comparison.DIFFERENT);
-        when(cas.compare("paso","2*x^1")).thenReturn(CasEngine.Comparison.EQUIVALENT);
-        assertThat(verifier.verify("paso",run(0)).verifiedSteps()).isEqualTo(1);
+        when(cas.compare("x+x","2*x")).thenReturn(CasEngine.Comparison.DIFFERENT);
+        when(cas.compare("x+x","2*x^1")).thenReturn(CasEngine.Comparison.EQUIVALENT);
+        assertThat(verifier.verify("x+x",run(0)).verifiedSteps()).isEqualTo(1);
     }
     @Test void uncertaintyAndTheoryNeverCertifyAnError() {
         assertThat(verifier.verify("x",null).verdict()).isEqualTo("NO_APLICA");
@@ -34,9 +34,9 @@ class ExerciseVerificationTest {
         assertThat(verifier.verify("x",new Run(1L,null,"teoría",null,null,"COMENZADO",0,0,List.of())).verdict()).isEqualTo("NO_APLICA");
     }
     @Test void repeatedPreviousStepDoesNotAdvance() {
-        when(cas.compare("anterior","2*x")).thenReturn(CasEngine.Comparison.DIFFERENT);
-        when(cas.compare("anterior","2*x^1")).thenReturn(CasEngine.Comparison.EQUIVALENT);
-        assertThat(verifier.verify("anterior",run(1)).verifiedSteps()).isEqualTo(1);
+        when(cas.compare("x+x","2*x")).thenReturn(CasEngine.Comparison.DIFFERENT);
+        when(cas.compare("x+x","2*x^1")).thenReturn(CasEngine.Comparison.EQUIVALENT);
+        assertThat(verifier.verify("x+x",run(1)).verifiedSteps()).isEqualTo(1);
     }
     @Test void classifiesOtherErrorsWithoutInventingSpecificRules() {
         when(cas.compare(anyString(),anyString())).thenReturn(CasEngine.Comparison.DIFFERENT);

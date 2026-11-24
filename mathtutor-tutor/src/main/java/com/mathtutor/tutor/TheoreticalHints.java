@@ -25,8 +25,10 @@ final class TheoreticalHints {
                     "¿Cómo escribirías una fracción equivalente aplicando el mismo factor arriba y abajo?"),
             rule("derivadas-integrales", "calculo-diferencial", "deriv", "creciente|decreciente|monoton",
                     "Si eliges dos puntos ordenados del intervalo, ¿qué diferencia de valores de la función estudiarías?"),
-            rule("derivadas-integrales", "calculo-diferencial", "valor absoluto", "deriv|continu",
-                    "¿Cómo escribirías los cocientes incrementales a izquierda y derecha del punto?"),
+            rule("derivadas-integrales", "calculo-diferencial", "valor absoluto|abs\\s*\\(|\\|[a-z]\\|", "deriv|continu",
+                    "Para la continuidad, compara los límites de la función con su valor en el punto. "
+                            + "Para la derivabilidad, escribe por separado el cociente incremental a izquierda y derecha. "
+                            + "¿Qué expresión necesitas en el paso actual?"),
             rule("derivadas-integrales", "calculo-diferencial", "derivada (?:nula|cero|se anula)", "extrem|maxim|minim",
                     "¿En qué dos intervalos junto al punto podrías examinar el signo de la derivada?"),
             rule("derivadas-integrales", "calculo-integral", "integr(?:al|ar|acion)", "impar|paridad",

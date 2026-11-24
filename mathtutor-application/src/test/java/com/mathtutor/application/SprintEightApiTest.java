@@ -141,7 +141,7 @@ class SprintEightApiTest {
     }
 
     @Test
-    void teacherSeesOnlyAggregateStatesAndAbandonmentPhases() throws Exception {
+    void teacherDistinguishesStatesAndVerifiedProgress() throws Exception {
         User teacher = account(User.Role.PROFESOR);
         User student = account(User.Role.ALUMNO);
         Long session = jdbc.queryForObject("""
@@ -151,19 +151,23 @@ class SprintEightApiTest {
         jdbc.update("""
                 INSERT INTO exercise_runs (session_id, statement_latex, state, progress, current_level, attempts,
                     started_at, last_activity_at, reference_solution)
-                SELECT ?, 'texto privado', state, progress, level, 0, now() - age, now() - age, solution
-                FROM (VALUES ('COMPLETADO', 1.0, 'CONCEPTUAL', interval '1 hour', 'CAS'),
-                    ('COMENZADO', 0.0, 'CONCEPTUAL', interval '29 minutes', 'CAS'),
-                    ('COMENZADO', 0.49, 'CONCEPTUAL', interval '31 minutes', 'CAS'),
-                    ('ABANDONADO', 0.5, 'CONCEPTUAL', interval '1 minute', 'CAS'),
-                    ('ABANDONADO', 0.0, 'EJEMPLO_ANALOGO', interval '1 minute', NULL))
-                    AS sample(state, progress, level, age, solution)
+                SELECT ?, 'texto privado', state, progress, level, attempts, now() - age, now() - age, solution
+                FROM (VALUES ('COMPLETADO', 1.0, 'CONCEPTUAL', interval '1 hour', 'CAS', 1),
+                    ('COMENZADO', 0.0, 'CONCEPTUAL', interval '1 minute', 'CAS', 0),
+                    ('COMENZADO', 0.5, 'CONCEPTUAL', interval '1 minute', 'CAS', 1),
+                    ('COMENZADO', 0.49, 'CONCEPTUAL', interval '31 minutes', 'CAS', 1),
+                    ('ABANDONADO', 0.5, 'CONCEPTUAL', interval '1 minute', 'CAS', 1),
+                    ('ABANDONADO', 0.0, 'EJEMPLO_ANALOGO', interval '1 minute', NULL, 1))
+                    AS sample(state, progress, level, age, solution, attempts)
                 """, session);
         mvc.perform(get("/api/teacher/statistics").with(actor(student))).andExpect(status().isForbidden());
         mvc.perform(get("/api/teacher/statistics?module=funciones").with(actor(teacher)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$[0].started").value(5))
-                .andExpect(jsonPath("$[0].completed").value(1)).andExpect(jsonPath("$[0].abandoned").value(3))
-                .andExpect(jsonPath("$[0].abandonedEarly").value(1)).andExpect(jsonPath("$[0].abandonedNearSolution").value(2))
+                .andExpect(status().isOk()).andExpect(jsonPath("$[0].total").value(6))
+                .andExpect(jsonPath("$[0].started").value(1))
+                .andExpect(jsonPath("$[0].completed").value(1)).andExpect(jsonPath("$[0].abandoned").value(0))
+                .andExpect(jsonPath("$[0].unfinished").value(3))
+                .andExpect(jsonPath("$[0].early").value(2)).andExpect(jsonPath("$[0].nearSolution").value(2))
+                .andExpect(jsonPath("$[0].unmeasured").value(1))
                 .andExpect(jsonPath("$[0].active").value(1))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("texto privado"))));
     }

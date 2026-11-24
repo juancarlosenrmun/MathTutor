@@ -37,8 +37,8 @@ async function animate(browser, base) {
   const secant = page.getByRole('button', { name: 'Animar secante a tangente' });
   const camera = page.getByRole('button', { name: 'Recorrer con la cámara' });
   assert.equal(await secant.isDisabled(), true);
-  await page.getByLabel('Tangente en x (opcional)').fill('0');
   await page.getByRole('button', { name: 'Dibujar función, derivada y área' }).click();
+  await page.locator('#curve-tangent-x').press('ArrowRight');
   assert.equal(await camera.isEnabled(), true);
   const tangent = await canvas.screenshot();
   await secant.press('Enter');
@@ -69,8 +69,8 @@ async function reduceMotion(browser, base) {
   const page = await laboratory(browser, base, 'reduce');
   await page.getByRole('button', { name: 'Recorrer con la cámara' }).click();
   await page.getByText('Perspectiva actualizada sin animación.').waitFor();
-  await page.getByLabel('Tangente en x (opcional)').fill('0');
   await page.getByRole('button', { name: 'Dibujar función, derivada y área' }).click();
+  await page.locator('#curve-tangent-x').press('ArrowRight');
   await page.getByRole('button', { name: 'Animar secante a tangente' }).click();
   await page.getByText('Tangente mostrada sin animación.').waitFor();
   assert.equal(await page.getByRole('button', { name: 'Detener animación' }).isDisabled(), true);

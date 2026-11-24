@@ -1,5 +1,6 @@
 package com.mathtutor.tutor;
 
+import com.mathtutor.common.dto.ConversationConflictException;
 import com.mathtutor.common.port.ConversationStore;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,11 +27,15 @@ public class StudyProgression {
     @Transactional
     public Optional<Practice> advance(Long user, Long session) {
         var progress = store.progression(user, session);
+        var active = progress.active();
+        if (active != null) {
+            return progress.candidates().stream()
+                    .filter(exercise -> exercise.id().equals(active.exerciseId()))
+                    .findFirst().map(exercise -> new Practice(exercise.statement(), exercise.type()))
+                    .map(Optional::of).orElseThrow(ConversationConflictException::new);
+        }
         return planner.next(progress.candidates(), progress.practicedTypes()).map(exercise -> {
-            var active = progress.active();
-            if (active == null || !exercise.id().equals(active.exerciseId())) {
-                store.select(user, session, exercise.id(), null, null);
-            }
+            store.select(user, session, exercise.id(), null, null);
             return new Practice(exercise.statement(), exercise.type());
         });
     }

@@ -18,14 +18,16 @@ import java.util.*;
 @Component @Transactional(readOnly = true)
 public class ConversationStoreAdapter implements ConversationStore {
     private final TutorSessionRepository sessions;
+    private final PersonalDataStore personalData;
     private final ConversationTurnRepository turns;
     private final ExerciseRunRepository runs;
     private final ExerciseRepository exercises;
     private final ExerciseStatistics statistics;
     private final ApplicationEventPublisher events;
     public ConversationStoreAdapter(TutorSessionRepository sessions, ConversationTurnRepository turns,
-                                    ExerciseRunRepository runs, ExerciseRepository exercises, ExerciseStatistics statistics,
+                                    ExerciseRunRepository runs, ExerciseRepository exercises, PersonalDataStore personalData, ExerciseStatistics statistics,
                                     ApplicationEventPublisher events) {
+        this.personalData = personalData;
         this.sessions=sessions; this.turns=turns; this.runs=runs; this.exercises=exercises;
         this.statistics = statistics;
         this.events = events;
@@ -46,6 +48,13 @@ public class ConversationStoreAdapter implements ConversationStore {
         }
         turns.flush();
     }
+    @Override @Transactional
+    public void delete(Long user, Long session) {
+        var owned = sessions.lockOwned(session, user).orElseThrow(ConversationUnavailableException::new);
+        available(session);
+        personalData.eraseSession(owned.getId());
+    }
+
     @Override @Transactional public Entry reserve(Long user, Long session, UUID request, String message) {
         var s=locked(user,session);
         var existing=turns.findBySessionIdAndRequestId(session,request);
@@ -58,7 +67,6 @@ public class ConversationStoreAdapter implements ConversationStore {
         available(session);
         var t=new ConversationTurn(); t.setSession(s); t.setRequestId(request); t.setMessage(message);
         t.setStatus("EN_CURSO"); t.setCreatedAt(Instant.now()); t.setHelpLevel("CONCEPTUAL");
-        statistics.closeInactive(session, t.getCreatedAt());
         t.setExerciseRun(activeRun(session).orElse(null));
         if (t.getExerciseRun() != null) t.getExerciseRun().setLastActivityAt(t.getCreatedAt());
         return entry(turns.saveAndFlush(t));
@@ -89,7 +97,14 @@ public class ConversationStoreAdapter implements ConversationStore {
     @Override public List<Entry> context(Long user, Long session) {
         owned(user,session);
         var recent=new ArrayList<>(turns.findBySessionIdAndStatus(session,"COMPLETADO",page(0,10,"createdAt")).stream().map(this::entry).toList());
-        Collections.reverse(recent); return recent;
+        Collections.reverse(recent);
+        if (recent.size() == 10) {
+            var beginning = turns.findBySessionIdAndStatus(session, "COMPLETADO",
+                    PageRequest.of(0, 2, Sort.by(Sort.Direction.ASC, "createdAt", "id")));
+            var recentIds = recent.stream().map(Entry::id).collect(java.util.stream.Collectors.toSet());
+            recent.addAll(0, beginning.stream().filter(turn -> !recentIds.contains(turn.getId())).map(this::entry).toList());
+        }
+        return recent;
     }
     @Override public List<Entry> history(Long user, Long session,int page,int size) {
         owned(user,session); return turns.findBySessionId(session,page(page,size,"createdAt")).stream().map(this::entry).toList();
@@ -102,8 +117,7 @@ public class ConversationStoreAdapter implements ConversationStore {
     }
     @Override public Run current(Long user,Long session) {
         owned(user,session);
-        return activeRun(session).filter(run -> !statistics.expired(run.getLastActivityAt(), Instant.now()))
-                .map(this::run).orElse(null);
+        return activeRun(session).map(this::run).orElse(null);
     }
     @Override public List<BankExercise> bank(Long user,Long session,int page,int size) {
         var s=owned(user,session);
@@ -120,7 +134,7 @@ public class ConversationStoreAdapter implements ConversationStore {
                 .flatMap(type -> exercises.findFirstByModuleAndTypeOrderByDifficultyAscExternalIdAsc(module, type).stream())
                 .map(this::bankExercise)
                 .toList();
-        var practiced = runs.findPracticedTypes(user, module.getId(), Exercise.ExerciseType.PROCEDIMENTAL,
+        var practiced = runs.findPracticedTypes(user, module.getId(),
                         ExerciseRun.RunState.COMPLETADO).stream()
                 .map(Enum::name).collect(java.util.stream.Collectors.toUnmodifiableSet());
         return new Progression(current(user, session), candidates, practiced);
@@ -135,9 +149,16 @@ public class ConversationStoreAdapter implements ConversationStore {
         var s=locked(user,session); available(session);
         var e=exerciseId==null ? null : exercises.findById(exerciseId).orElseThrow(() -> new IllegalArgumentException("Ejercicio no disponible"));
         if (e!=null && !Objects.equals(e.getModule().getId(),s.getModule().getId())) throw new IllegalArgumentException("Ejercicio de otro módulo");
-        Instant now = Instant.now();
-        statistics.closeInactive(session, now);
-        activeRun(session).ifPresent(old -> { old.setState(ExerciseRun.RunState.ABANDONADO); old.setEndedAt(now); });
+        var active = activeRun(session).orElse(null);
+        if (active != null) {
+            Long activeExercise = active.getExercise() == null ? null : active.getExercise().getId();
+            if (Objects.equals(activeExercise, exerciseId)
+                    && (e != null || Objects.equals(active.getStatementLatex(), statement)
+                        && Objects.equals(active.getReferenceSolution(), reference))) {
+                return run(active);
+            }
+            throw new ConversationConflictException();
+        }
         return run(createRun(s, e, statement, reference));
     }
 
@@ -154,6 +175,19 @@ public class ConversationStoreAdapter implements ConversationStore {
         var selected = createRun(s, exercise, null, null);
         turn.setExerciseRun(selected);
         return run(selected);
+    }
+
+    @Override @Transactional
+    public void attachFree(Long user, Long session, UUID request, String message, String topic) {
+        var owned = locked(user, session);
+        var turn = turns.findBySessionIdAndRequestId(session, request)
+                .filter(t -> "EN_CURSO".equals(t.getStatus()) && t.getExerciseRun() == null)
+                .orElseThrow(ConversationConflictException::new);
+        var subject = owned.getModule().getTopics().stream().filter(t -> t.getCode().equals(topic))
+                .findFirst().orElse(null);
+        var run = ExerciseRun.builder().session(owned).topic(subject).statementLatex(message)
+                .state(ExerciseRun.RunState.COMENZADO).currentLevel(ExerciseRun.HelpLevel.CONCEPTUAL).build();
+        turn.setExerciseRun(runs.save(run));
     }
 
     private ExerciseRun createRun(TutorSession s, Exercise e, String statement, String reference) {
@@ -180,8 +214,15 @@ public class ConversationStoreAdapter implements ConversationStore {
                 .sorted(Comparator.comparingInt(CanonicalStep::getPosition))
                 .flatMap(step -> step.getTypicalErrors().stream().sorted(Comparator.comparing(TypicalError::getCode)))
                 .map(TypicalError::getSeedHint).filter(Objects::nonNull).distinct().toList();
-        String state = r.getState() == ExerciseRun.RunState.COMENZADO
-                && statistics.expired(r.getLastActivityAt(), Instant.now()) ? "ABANDONADO" : r.getState().name();
+        String state = r.getState().name();
+        if (r.getState() == ExerciseRun.RunState.ABANDONADO || r.getState() == ExerciseRun.RunState.COMENZADO
+                && (r.getSession().getStatus() != TutorSession.SessionStatus.ACTIVA
+                    || statistics.expired(r.getLastActivityAt(), Instant.now()))) {
+            state = "A_MEDIAS";
+        } else if (r.getState() == ExerciseRun.RunState.COMENZADO
+                && (r.getAttempts() > 0 || r.getVerifiedSteps() > 0 || r.getProgress() > 0)) {
+            state = "EN_CURSO";
+        }
         return new Run(r.getId(),e==null ? null : e.getId(),r.getStatementLatex(),r.getReferenceSolution(),r.getTopic()==null ? null : r.getTopic().getCode(),state,r.getProgress(),r.getVerifiedSteps(),steps,r.getAttempts(),
                 e == null ? r.getReferenceSolution() : e.getReferenceSolutionLatex(), hints);
     }

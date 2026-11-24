@@ -26,7 +26,7 @@ class TrackedConversationTest {
         when(store.reserve(1L,2L,request,"hola")).thenReturn(entry("EN_CURSO"));
         when(store.context(1L,2L)).thenReturn(List.of());
         when(verification.verify("hola",null)).thenReturn(new ExerciseVerification.Diagnosis("NO_APLICA",ErrorType.OTRO,"Sin objetivo",0,false));
-        when(conversation.prepare(eq(1L),eq(2L),eq("hola"),anyList(),anyString())).thenReturn(new TutorConversation.Prepared(response,"tema",false));
+        when(conversation.prepare(eq(1L),eq(2L),eq("hola"),anyList(),anyString(),isNull())).thenReturn(new TutorConversation.Prepared(response,"tema",false));
     }
     @Test void savesCompleteResponseBeforeCompletion() {
         prepare(Flux.just("res","puesta"));
@@ -54,9 +54,12 @@ class TrackedConversationTest {
     @Test void boundsHistoryByTurnsAndCharacters() {
         var entries=new ArrayList<ConversationStore.Entry>();
         for (int i=0;i<20;i++) entries.add(entry("COMPLETADO"));
-        assertThat(TrackedConversation.boundedHistory(entries)).hasSize(10);
+        assertThat(TrackedConversation.boundedHistory(entries)).hasSize(12);
         entries.add(new ConversationStore.Entry(9L,request,"x".repeat(16000),"",null,null,null,null,0,null,null,"COMPLETADO",Instant.EPOCH,null));
-        assertThat(TrackedConversation.boundedHistory(entries)).isEmpty();
+        var bounded = TrackedConversation.boundedHistory(entries);
+        assertThat(bounded).hasSize(12);
+        assertThat(bounded.stream().mapToInt(String::length).sum()).isLessThan(16000);
+        assertThat(bounded.getLast()).startsWith("Alumno: xxxx").endsWith("Tutor: ");
     }
     @Test void rejectsInvalidInputBeforeReserving() {
         for (String message:new String[]{null,""," ","x".repeat(4001)})
@@ -73,7 +76,7 @@ class TrackedConversationTest {
     @Test void rejectedTurnsAndProviderMetricsArePreserved() {
         prepare(Flux.just("reformula"));
         var usage=new java.util.concurrent.atomic.AtomicReference<LlmGateway.Usage>(new LlmGateway.Usage(12,4));
-        when(conversation.prepare(eq(1L),eq(2L),eq("hola"),anyList(),anyString())).thenReturn(new TutorConversation.Prepared(Flux.just("reformula"),"tema",true,usage));
+        when(conversation.prepare(eq(1L),eq(2L),eq("hola"),anyList(),anyString(),isNull())).thenReturn(new TutorConversation.Prepared(Flux.just("reformula"),"tema",true,usage));
         tracked.reply(1L,2L,request,"hola").blockLast();
         verify(store).finish(eq(1L),eq(2L),eq(request),argThat(r -> r.status().equals("RECHAZADO") && r.tokensIn()==12 && r.tokensOut()==4));
     }

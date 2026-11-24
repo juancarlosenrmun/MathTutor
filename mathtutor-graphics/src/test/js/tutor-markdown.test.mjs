@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderTutorMarkdown } from '../../main/resources/static/visor/tutor-markdown.mjs';
+import { appendTurn, renderTurns } from '../../main/resources/static/visor/tutor-history.mjs';
 
 function documentFixture() {
   const createElement = tagName => ({
@@ -35,6 +36,22 @@ $$\lim_{x\to a}f(x) = f(a)$$`);
   assert.equal(nodes.some(node => node.tagName === 'math' && node.attributes.display === 'block'), true);
   // KaTeX conserva la fuente como anotación accesible; los delimitadores no forman parte de ella.
   assert.equal(nodes.some(node => node.tagName === '#text' && node.textContent.includes('$')), false);
+});
+
+test('el producto vectorial sin delimitadores se representa en el envío y en el historial', t => {
+  const {doc, target} = mathFixture(t);
+  const message = 'Calcula e_1 \\times e_2';
+  appendTurn(doc, target, message, 'Identifica primero los ejes de e_1 y e_2.');
+  const check = () => {
+    const expression = descendants(target.children[0]).find(node => node.tagName === 'math');
+    assert.ok(expression);
+    assert.equal(descendants(expression).filter(node => node.tagName === 'msub').length, 2);
+    assert.ok(descendants(expression).some(node => node.tagName === 'mo' && node.textContent === '×'));
+    assert.equal(descendants(target.children[1]).filter(node => node.tagName === 'math').length, 2);
+  };
+  check();
+  renderTurns(doc, target, [{message, response: 'Identifica primero los ejes de e_1 y e_2.'}]);
+  check();
 });
 
 test('admite delimitadores LaTeX alternativos, fracciones, raíces y bloques con saltos de línea', t => {

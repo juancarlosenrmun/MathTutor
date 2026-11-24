@@ -10,6 +10,7 @@ import java.util.UUID;
 /** Persistencia de S4. Cada operación termina su transacción antes de invocar al proveedor. */
 public interface ConversationStore {
     Entry reserve(Long userId, Long sessionId, UUID requestId, String message);
+    void delete(Long userId, Long sessionId);
     void finish(Long userId, Long sessionId, UUID requestId, Result result);
     List<Entry> context(Long userId, Long sessionId);
     List<Entry> history(Long userId, Long sessionId, int page, int size);
@@ -26,6 +27,8 @@ public interface ConversationStore {
 
     /** @brief Vincula un ejercicio reconocido al turno reservado cuando no hay objetivo activo. */
     Run attachRecognized(Long userId, Long sessionId, UUID requestId, Long exerciseId);
+
+    void attachFree(Long userId, Long sessionId, UUID requestId, String message, String topic);
 
     record BankExercise(Long id, String statement, String topic, String type, int difficulty, String externalId) {
         public BankExercise(Long id, String statement, String topic, String type, int difficulty) {
