@@ -2,7 +2,7 @@
 sprint: S5
 objetivo: Hito: tutor socrático completo con tangentes
 puntos: 29
-estado: en curso
+estado: completado
 ---
 # Sprint 05 · Hito: tutor socrático completo con tangentes
 
@@ -25,30 +25,36 @@ UC-18 exige UC-17 y UC-20. UC-19 en el mismo sprint (sin tutor sin control de fu
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-19 · Impedir la revelación de la solución
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-31 · Ver rectas y planos tangentes dinámicos
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos
+- [x] Todos los elementos completos
 - [x] Build y CI en verde
 - [x] Cobertura en umbral verificada
-- [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
+- [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+### 2026-11-24 10:18 · Revisión final del frontend
+
+- Base integrada en `DEV` mediante la [PR #21](https://github.com/juancarlosenrmun/MathTutor/pull/21), merge `a9be55a` y CI en verde.
+- Pistas socráticas, recta y plano tangente revisados en el tutor y el laboratorio.
+- Checklist del sprint **20/20**. La revisión de interfaz queda en `Frontend`, con CI e integración propias pendientes. Véase [[Registro de iteraciones]].
 
 - UC-18 aplica los niveles conceptual, procedimental, ejemplo análogo y revelación. Se muestra la referencia al siguiente intento incorrecto verificable tras tres intentos previos. La migración V10 corrige los contadores de ejercicios con referencia a partir de sus veredictos guardados.
 - UC-19 valida el texto completo antes del primer evento de contenido en SSE. Contrasta formas simbólicas con el CAS o pasajes resueltos de los apuntes y sustituye una posible fuga por una pregunta local. La detección de paráfrasis es heurística.

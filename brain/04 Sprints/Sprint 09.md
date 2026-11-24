@@ -2,7 +2,7 @@
 sprint: S9
 objetivo: Could (1)
 puntos: 29
-estado: en curso
+estado: completado
 ---
 # Sprint 09 · Could (1)
 
@@ -28,51 +28,57 @@ Carga por debajo de capacidad para absorber desviaciones.
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-24 · Aplicar la progresión pedagógica
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-26 · Degradar a modo solo apuntes si falla el LLM
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-33 · Ver animaciones (secante a tangente, cámara)
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### EN-03 · Logs estructurados y métricas de latencia y tokens
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### EN-08 · Independencia del proveedor LLM
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos
-- [ ] Build y CI en verde
+- [x] Todos los elementos completos
+- [x] Build y CI en verde
 - [x] Cobertura en umbral verificada
-- [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
+- [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+### 2026-11-24 10:18 · Revisión final del frontend
+
+- Base integrada en `DEV` mediante la [PR #25](https://github.com/juancarlosenrmun/MathTutor/pull/25), merge `ebfebdb` y CI en verde.
+- Práctica guiada y apuntes accesibles en el tutor. Uso por tema y sesiones visibles para administración. Animaciones verificadas con teclado y movimiento reducido.
+- Checklist del sprint **35/35**. La revisión de interfaz queda en `Frontend`, con CI e integración propias pendientes. Véase [[Registro de iteraciones]].
 
 ### 2026-11-23 22:34 · Verificación local del sprint
 

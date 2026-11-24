@@ -2,7 +2,7 @@
 sprint: S7
 objetivo: Hito: todos los Must completados; evaluación y selección por intersección
 puntos: 31
-estado: en curso
+estado: completado
 ---
 # Sprint 07 · Hito: todos los Must completados; evaluación y selección por intersección
 
@@ -25,30 +25,36 @@ EN-05 necesita tutor completo (S5) y banco (S6). UC-32 depende de UC-31. UC-02 r
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-32 · Seleccionar puntos por intersección rayo–superficie y recta–plano
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### EN-05 · Evaluación pedagógica por categorías A–D
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos
-- [ ] Build y CI en verde
+- [x] Todos los elementos completos
+- [x] Build y CI en verde
 - [x] Cobertura en umbral verificada
-- [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
+- [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+### 2026-11-24 10:18 · Revisión final del frontend
+
+- Base integrada en `DEV` mediante la [PR #23](https://github.com/juancarlosenrmun/MathTutor/pull/23), merge `6932f7c` y CI en verde.
+- Formularios de recuperación unificados con el acceso. Selección por intersección verificada por teclado.
+- Checklist del sprint **20/20**. La revisión de interfaz queda en `Frontend`, con CI e integración propias pendientes. Véase [[Registro de iteraciones]].
 
 - UC-02 reutiliza la tabla de tokens existentes. Verificados CSRF, respuesta uniforme, consumo concurrente, cambio de contraseña y revocación de renovaciones. El envío necesita SMTP y la URL HTTPS del visor.
 - UC-32 selecciona el triángulo visible o el plano tangente. Chromium comprueba los píxeles del marcador de ambos modos.
