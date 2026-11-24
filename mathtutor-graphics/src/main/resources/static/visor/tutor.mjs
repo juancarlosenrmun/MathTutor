@@ -30,11 +30,16 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     'derivadas-integrales':'¿Cómo se calcula la derivada de una función?', 'metodos-3d':'¿Qué es un espacio vectorial?'};
   const practiceButton = one('tutor-practice'), practicePrompt = one('tutor-practice-prompt');
   let session,identity,controller,generation=0,busy=false,loaded=false,loading=false,pending;
-  let modules=[],entries=[],historyPage=0,viewerOpen=true;
+  let modules=[],entries=[],historyPage=0,viewerOpen=false,hasGraph=false;
   const allowed=()=>Boolean(client.token) && ['ALUMNO','PROFESOR'].includes(client.profile?.role);
   const writable=()=>allowed() && session && session.status!=='CERRADA';
   const titleFor=visit=>visit.title || modules.find(m=>m.code===(visit.moduleCode || visit.module))?.name || 'Conversación de Matemáticas';
-  const study=mountStudy(document,client,viewer);
+  const study=mountStudy(document,client,viewer, ready => {
+    hasGraph=ready;
+    viewerOpen=ready;
+    controls();
+    if (ready) viewer?.render?.();
+  });
   const visits=mountSessions(document,client,{isBusy:()=>busy || !allowed(),onOpen:open,titleFor});
   function clearPractice() {
     if (practicePrompt) {
@@ -52,7 +57,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     if (one('tutor-chat-title')) one('tutor-chat-title').hidden=!session;
     if (one('tutor-viewer-slot')) one('tutor-viewer-slot').hidden=!session || !viewerOpen;
     if (one('tutor-viewer-toggle')) {
-      one('tutor-viewer-toggle').hidden=!session;
+      one('tutor-viewer-toggle').hidden=!session || !hasGraph;
       one('tutor-viewer-toggle').textContent=viewerOpen ? 'Ocultar visor \u2192' : '\u2190 Mostrar visor';
       one('tutor-viewer-toggle').setAttribute('aria-expanded',String(viewerOpen));
     }
@@ -160,6 +165,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
         one('tutor-message').value='';
         status.textContent='Respuesta completada.';
         announceAnswer(markdown);
+        await study.fromReply?.(message, markdown, controller.signal);
       }
     } catch (error) {
       if (current===generation) {
@@ -238,6 +244,7 @@ export function mountTutor(document,client,{viewer,randomUUID=()=>globalThis.cry
     status.textContent='Elige un bloque para empezar una conversación.';controls();
   });
   one('tutor-viewer-toggle')?.addEventListener('click',()=>{
+    if (!hasGraph) return;
     viewerOpen=!viewerOpen; controls();
     if (viewerOpen) viewer?.render?.();
   });

@@ -5,6 +5,14 @@
 
 const undefinedTangent = 'No se puede estimar una tangente en ese punto.';
 
+/** Sincroniza el recorrido del control con el dominio actualmente dibujado. */
+export function configureTangencyRange(field, min, max, point = 0) {
+  field.min = String(min);
+  field.max = String(max);
+  field.value = String(Math.max(min, Math.min(max, point)));
+  field.disabled = false;
+}
+
 function checkPoint(value, min, max) {
   if (!Number.isFinite(value) || value < min || value > max) {
     throw new Error('El punto de tangencia debe estar dentro del dominio.');

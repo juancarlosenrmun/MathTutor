@@ -85,7 +85,7 @@ export class ShaderPipeline {
       }
     }
     this.lineCount = lines.length / 6; this.areaCount = area.length / 6;
-    this.upload([...lines, ...area], graph.tangent, null, Boolean(graph.secantAt));
+    this.upload([...lines, ...area], graph.tangent, null, 2);
   }
 
   /** @brief Dibuja la triangulación y conserva las normales calculadas por la malla. */
@@ -97,29 +97,41 @@ export class ShaderPipeline {
     this.surfaceCount = vertices.length / 6;
     this.lineCount = 0;
     this.areaCount = 0;
-    this.upload(vertices, mesh.tangent, selection);
+    this.upload(vertices, mesh.tangent, selection, 12);
   }
 
   /** @brief Guarda al final del VBO las aristas de la tangente como guía superpuesta. */
-  upload(positions, tangent, selection, reservePoint = false) {
+  upload(positions, tangent, selection, overlayCapacity) {
     const overlay = tangent?.lines.flatMap(vertex => [...vertex, 1, 0.38, 0.72]) ?? [];
     this.tangentStart = 6 + positions.length / 6;
     this.tangentCount = overlay.length / 6;
     this.selectionIndex = selection ? this.tangentStart + this.tangentCount : null;
-    const buffer = new Float32Array(this.axes.length + positions.length + overlay.length + (selection || reservePoint ? 6 : 0));
+    const buffer = new Float32Array(this.axes.length + positions.length + (overlayCapacity + 1) * 6);
     buffer.set(this.axes);
     buffer.set(positions, this.axes.length);
     buffer.set(overlay, this.axes.length + positions.length);
-    if (selection) buffer.set([...selection, 1, 0.94, 0.45], buffer.length - 6);
+    if (selection) buffer.set([...selection, 1, 0.94, 0.45], this.selectionIndex * 6);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, buffer, this.gl.STATIC_DRAW);
   }
 
-  /** @brief Actualiza solo los dos vértices de la recta y su punto móvil reservado en el VBO. */
+  /** @brief Actualiza la recta o el plano tangente en el espacio reservado del VBO. */
+  updateTangent(tangent) {
+    if (!tangent) {
+      this.tangentCount = 0;
+      this.selectionIndex = null;
+      return;
+    }
+    this.tangentCount = tangent.lines.length;
+    this.updateSecant(tangent);
+  }
+
+  /** @brief Actualiza los vértices de la tangente o secante y, si existe, su punto móvil. */
   updateSecant(line) {
     const vertices = line.lines.flatMap(vertex => [...vertex, 1, 0.38, 0.72]);
-    if (line.point) vertices.push(...line.point, 1, 0.94, 0.45);
-    this.selectionIndex = line.point ? this.tangentStart + this.tangentCount : null;
+    const point = line.point?.length === 3 ? line.point : null;
+    if (point) vertices.push(...point, 1, 0.94, 0.45);
+    this.selectionIndex = point ? this.tangentStart + this.tangentCount : null;
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
     this.gl.bufferSubData(this.gl.ARRAY_BUFFER, this.tangentStart * 6 * Float32Array.BYTES_PER_ELEMENT,
       new Float32Array(vertices));

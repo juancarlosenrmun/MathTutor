@@ -1,5 +1,5 @@
 import { expression } from './curves.mjs';
-import { planeTangent } from './tangents.mjs';
+import { configureTangencyRange, planeTangent } from './tangents.mjs';
 
 /**
  * @brief Mallado determinista de z=f(x,y). Cada celda válida produce dos triángulos.
@@ -20,8 +20,6 @@ export function surface(source, xMin, xMax, yMin, yMax, divisions = 32, tangentP
   }
   const bounds = [xMin, xMax, yMin, yMax];
   const formulaAt = y => expression(source.replace(/\by\b/g, `(${y})`));
-  const tangent = tangentPoint === undefined ? undefined
-    : planeTangent((x, y) => formulaAt(y)(x), tangentPoint, bounds);
   const rows = [], formulas = [];
   for (let j = 0; j <= divisions; j++) {
     const y = yMin + (yMax-yMin)*j/divisions;
@@ -47,7 +45,10 @@ export function surface(source, xMin, xMax, yMin, yMax, divisions = 32, tangentP
     const a = rows[j][i], b = rows[j][i+1], c = rows[j+1][i], d = rows[j+1][i+1];
     if (a && b && c && d) { add(a,b,c); add(b,d,c); }
   }
-  return { triangles, bounds, tangent };
+  const mesh = {triangles, bounds, tangentAt(point) {
+    return {...mesh, tangent: planeTangent((x, y) => formulaAt(y)(x), point, bounds)};
+  }};
+  return tangentPoint === undefined ? mesh : mesh.tangentAt(tangentPoint);
 }
 
 /** @brief Describe el dominio, los valores representables y el plano tangente de una superficie. */
@@ -70,19 +71,33 @@ export function mountSurfaceControls(document, viewer) {
   const one = id => document.querySelector('#' + id);
   const form = one('surface-form');
   const tangentX = one('surface-tangent-x'), tangentY = one('surface-tangent-y');
-  for (const field of [tangentX, tangentY]) {
-    if (!field) continue;
-    field.addEventListener('change', () => form.requestSubmit());
-  }
+  let plotted;
+  const moveTangent = () => {
+    if (!plotted) return;
+    const {source, mesh} = plotted;
+    try {
+      const updated = mesh.tangentAt([Number(tangentX.value), Number(tangentY.value)]);
+      viewer?.updateTangency(updated);
+      one('surface-result').textContent = describeSurface(source, updated);
+    } catch (error) {
+      viewer?.updateTangency(mesh);
+      one('surface-result').textContent = error.message;
+    }
+  };
+  tangentX?.addEventListener('input', moveTangent);
+  tangentY?.addEventListener('input', moveTangent);
   form.addEventListener('submit', event => {
     event.preventDefault();
     try {
-      const point = tangentX?.value || tangentY?.value
-        ? [tangentX.valueAsNumber, tangentY.valueAsNumber] : undefined;
       const source = one('surface-function').value;
-      const mesh = surface(source, Number(one('surface-x-min').value),
-        Number(one('surface-x-max').value), Number(one('surface-y-min').value),
-        Number(one('surface-y-max').value), Number(one('surface-resolution').value), point);
+      const xMin = Number(one('surface-x-min').value), xMax = Number(one('surface-x-max').value);
+      const yMin = Number(one('surface-y-min').value), yMax = Number(one('surface-y-max').value);
+      const mesh = surface(source, xMin, xMax, yMin, yMax, Number(one('surface-resolution').value));
+      plotted = {source, mesh};
+      if (tangentX && tangentY) {
+        configureTangencyRange(tangentX, xMin, xMax);
+        configureTangencyRange(tangentY, yMin, yMax);
+      }
       viewer?.setSurface(mesh);
       one('surface-result').textContent = describeSurface(source, mesh);
     } catch (error) { one('surface-result').textContent = error.message; }

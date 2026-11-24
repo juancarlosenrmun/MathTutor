@@ -159,6 +159,17 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   const slot=doc.querySelector('#tutor-viewer-slot');
   frame.style.width='1440px'; await settle();
   const chat=doc.querySelector('.tutor-conversation');
+  assert(slot.hidden && slot.getBoundingClientRect().width === 0, 'El chat de texto abre el visor vacío');
+  const graphicDetails=doc.querySelector('#graphic-form').closest('details');
+  graphicDetails.open=true;
+  doc.querySelector('#graphic-function').value='x^2';
+  doc.querySelector('#graphic-form').requestSubmit();await settle();
+  assert(!slot.hidden, 'Una curva validada no abre el visor');
+  const viewerTangent = doc.querySelector('#viewer-tangent-x');
+  assert(viewerTangent.type === 'range' && viewerTangent.min === '-2' && viewerTangent.max === '2', 'La barra no sigue el dominio');
+  viewerTangent.value = '1';
+  viewerTangent.dispatchEvent(new Event('input'));
+  assert(doc.querySelector('#viewer-tangent-result').textContent.includes('Pendiente aproximada: 2'), 'La recta no se mueve durante el arrastre');
   const widthBefore=chat.getBoundingClientRect().width;
   const toggle=doc.querySelector('#tutor-viewer-toggle');
   toggle.click(); await settle();
@@ -171,7 +182,6 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   doc.querySelector('#tutor-form').dispatchEvent(new Event('submit',{cancelable:true})); await settle();
   assert(win.testState.calls.some(([path,options]) => path.endsWith('/exercises')
     && options.method === 'POST' && JSON.parse(options.body).exerciseId === 7), 'No se inicia el ejercicio elegido');
-  const graphicDetails=doc.querySelector('#graphic-form').closest('details');graphicDetails.open=true;
   doc.querySelector('#graphic-form').dispatchEvent(new Event('submit', {cancelable:true}));await settle();
   assert(doc.querySelector('#graphic-result').textContent.includes('f(x)'), 'La gráfica no se interpreta');
   for (const width of [1440,1024,768,375,320]) {
@@ -197,17 +207,22 @@ Por ejemplo, $\frac{x^2-1}{x-1}$ y $\sqrt{x^2+1}$ contienen fracciones y raíces
   assert(doc.querySelector('#curve-result').textContent.includes('0,666'), 'Falta integral 2D');
   const surface = doc.querySelector('#surface-form');
   surface.closest('details').querySelector('summary').click();
-  doc.querySelector('#surface-tangent-x').value = '0';
-  doc.querySelector('#surface-tangent-y').value = '0';
   surface.requestSubmit();
   await settle();
+  const surfaceTangent = doc.querySelector('#surface-tangent-y');
+  surfaceTangent.value = '1';
+  surfaceTangent.dispatchEvent(new Event('input'));
   assert(doc.querySelector('#surface-result').textContent.includes('Plano tangente'), 'No se dibuja el plano tangente');
   const contrast = doc.querySelector('#graphic-contrast');
   assert(!contrast.disabled && !contrast.checked, 'El contraste debe ser opcional');
   contrast.click();
   assert(contrast.checked, 'No se pudo activar el contraste desde el laboratorio');
   await go('tutor');
-  assert(doc.querySelector('#tutor-viewer-slot').contains(contrast) && contrast.checked, 'El tutor no conserva el contraste del visor');
+  assert(slot.contains(contrast) && contrast.checked && slot.hidden, 'El tutor muestra la gráfica del laboratorio o pierde el contraste');
+  const message = doc.querySelector('#tutor-message');
+  message.value = 'Dibuja f(x) = x^2';
+  doc.querySelector('#tutor-form').requestSubmit(); await settle();
+  assert(!slot.hidden, 'El chat no muestra la función del ejercicio');
   contrast.click();
   assert(!contrast.checked, 'No se pudo desactivar el contraste desde el tutor');
   await go('espacio');

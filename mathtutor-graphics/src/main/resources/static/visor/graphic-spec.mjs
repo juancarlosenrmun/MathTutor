@@ -1,8 +1,54 @@
-import { curve, describeCurve } from './curves.mjs';
+import { curve, describeCurve, expression } from './curves.mjs';
 import { surface, describeSurface } from './surfaces.mjs';
 
+const GRAPH_REQUEST = /\b(?:dibuj\w*|grafic\w*|represent\w*|traz\w*|visualiz\w*)\b/i;
+const EXAMPLE_REQUEST = /^(?:dame|ponme|proponme|genera|sugiere)\b[^.!?\n]*\b(?:ejercicio|ejemplo)\b/i;
+const FUNCTION_LABEL = /(?:\bf\s*\(\s*x\s*(?:,\s*(y)\s*)?\)|\b([yz]))\s*=\s*/i;
+const FORMULA_PREFIX = /^(?:(?:sin|cos|tan|sqrt|abs|exp|log|pi|e)\b|[\dxy+\-*/^(). \t])+/i;
+const EXERCISE_PREFIX = /^(?:deriva(?:r)?|grafica(?:r)?|dibuja(?:r)?|(?:calcula|halla|determina) la (?:derivada|integral) de)\s*:?\s+/i;
+
+/** Toma la función del enunciado o el ejemplo que el alumno pidió dibujar. */
+export function specificationFromChat(message, answer) {
+  const normalized = message.trim().normalize('NFD').replace(/\p{M}/gu, '');
+  const requested = GRAPH_REQUEST.test(normalized) || EXAMPLE_REQUEST.test(normalized);
+  const read = (source, unlabeled = false) => {
+    const label = FUNCTION_LABEL.exec(source);
+    if (!label && !unlabeled) return null;
+    const start = label ? label.index + label[0].length : 0;
+    const candidate = source.slice(start).trim().replace(/\.$/, '');
+    const prefix = FORMULA_PREFIX.exec(candidate)?.[0];
+    const fn = prefix?.trim().replace(/\.$/, '').toLowerCase();
+    if (!fn || fn.length > 150) return null;
+    if (!label && (prefix !== candidate || !/[xy]/.test(fn))) return null;
+    const isSurface = Boolean(label?.[1]) || label?.[2]?.toLowerCase() === 'z' || /\by\b/.test(fn);
+    try { expression(isSurface ? fn.replace(/\by\b/g, '(0)') : fn); }
+    catch { return null; }
+    return {type: isSurface ? 'SUPERFICIE' : 'CURVA_2D', function: fn,
+      domain: {min: -2, max: 2, steps: 32}, points: []};
+  };
+  const input = read(message) ?? read(message.replace(EXERCISE_PREFIX, ''), true);
+  if (input || !requested) return input;
+  for (const formula of answer.matchAll(/[\x60$]([^\x60$\r\n]+)[\x60$]/g)) {
+    const spec = read(formula[1]);
+    if (spec) return spec;
+  }
+  return null;
+}
+
+function moveTangent(viewer, model, point, describe) {
+  let updated;
+  try {
+    updated = model.tangentAt(point);
+  } catch (error) {
+    viewer?.updateTangency({...model, tangent: undefined, secantAt: undefined});
+    throw error;
+  }
+  viewer?.updateTangency(updated);
+  return describe(updated);
+}
+
 /** UC-35: solo datos validados; nunca eval, Function ni código procedente del servidor. */
-export function drawSpecification(viewer, spec) {
+export function drawSpecification(viewer, spec, liveTangency) {
   const d=spec?.domain;
   if (!spec || !['CURVA_2D','SUPERFICIE','RECTA_TANGENTE','PLANO_TANGENTE'].includes(spec.type) || typeof spec.function!=='string'
       || !spec.function.trim() || spec.function.length>200 || !d || !Number.isFinite(d.min) || !Number.isFinite(d.max)
@@ -20,6 +66,8 @@ export function drawSpecification(viewer, spec) {
   if (!isSurface) {
     const graph = curve(source, d.min, d.max, Math.max(16, d.steps), isLine ? point.x : undefined);
     viewer?.setGraph(graph);
+    liveTangency?.([d.min, d.max], isLine ? point.x : 0, undefined, x =>
+      moveTangent(viewer, graph, x, model => describeCurve(spec.function, model)));
     return describeCurve(spec.function, graph);
   }
   if (source.length > 150 || d.min < -100 || d.max > 100 || d.steps > 128) {
@@ -27,5 +75,7 @@ export function drawSpecification(viewer, spec) {
   }
   const mesh = surface(source, d.min, d.max, d.min, d.max, d.steps, isPlane ? [point.x, point.y] : undefined);
   viewer?.setSurface(mesh);
+  liveTangency?.([d.min, d.max], isPlane ? point.x : 0, isPlane ? point.y : 0, (x, y) =>
+    moveTangent(viewer, mesh, [x, y], model => describeSurface(spec.function, model)));
   return describeSurface(spec.function, mesh);
 }
