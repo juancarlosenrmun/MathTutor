@@ -57,6 +57,25 @@ class TutorConversationTest {
         verifyNoInteractions(llm);
     }
     @ParameterizedTest
+    @ValueSource(strings = {"Sí, por favor.", "¿Y en x=2?", "No lo entiendo"})
+    void shortFollowUpsReuseThePreviousTopic(String message) {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
+        when(llm.stream(any(), any())).thenReturn(Flux.just("¿Qué dice la definición?"));
+        var history = List.of("Alumno: Explícame la continuidad\nTutor: ¿Quieres ver un ejemplo?");
+        var turn = conversation.prepare(7L, 1L, message, history, "", "funciones-continuidad");
+        assertThat(turn.topic()).isEqualTo("funciones-continuidad");
+        StepVerifier.create(turn.response()).expectNext("¿Qué dice la definición?").verifyComplete();
+        verify(retriever).retrieve(message, "funciones", "funciones-continuidad");
+        verify(llm).stream(any(), any());
+    }
+
+    @Test void anUnanchoredFollowUpDoesNotUseAnotherModuleAsContext() {
+        when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
+        var turn = conversation.prepare(7L, 1L, "¿Por qué?", List.of("Turno previo"), "", "calculo-diferencial");
+        assertThat(turn.rejected()).isTrue();
+        verifyNoInteractions(llm);
+    }
+    @ParameterizedTest
     @org.junit.jupiter.params.provider.CsvSource(value = {
             "funciones|Demuestra que componer dos funciones continuas conserva la continuidad.|qué función se aplica primero",
             "funciones|¿Por qué el conjugado facilita la división de complejos?|una fracción equivalente",

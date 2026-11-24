@@ -44,12 +44,14 @@ public class TrackedConversation {
             boolean recognized = current == null && run != null;
             var diagnosis=verification.verify(message, recognized ? null : run);
             var action = action(run, diagnosis);
-            var history = boundedHistory(store.context(user, session));
+            var recent = store.context(user, session);
+            var history = boundedHistory(recent);
             TutorConversation.Prepared prepared;
             if (recognized) {
                 prepared = conversation.prepareRecognized(user, session, history, run, diagnosis, action);
             } else if (run == null) {
-                prepared = conversation.prepare(user, session, message, history, "");
+                String previousTopic = history.isEmpty() ? null : recent.getLast().topic();
+                prepared = conversation.prepare(user, session, message, history, "", previousTopic);
             } else {
                 prepared = conversation.prepareExercise(user, session, message, history, run, diagnosis, action);
             }

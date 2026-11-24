@@ -29,6 +29,12 @@ public class TutorConversation {
             Pattern.CASE_INSENSITIVE);
     private static final Pattern EXPRESSION_COMMAND = Pattern.compile(
             "^(?:resuelve|simplifica|factoriza|despeja|dibuja|grafica|representa|traza)\\s*:?\\s+(.+)$");
+    private static final Pattern FOLLOW_UP = Pattern.compile(
+            "(?:si|no|claro|vale|de acuerdo|entiendo|exacto|y ahora|y entonces|por que|como (?:asi|sigo|continuo)"
+                    + "|(?:no|aun no) (?:lo )?(?:entiendo|comprendo|veo)|(?:no )?se como seguir"
+                    + "|puedes explicarlo(?: de nuevo| mejor)?|(?:dame|ponme|muestrame) (?:otro|un) ejemplo"
+                    + "|(?:si,? )?(?:por favor|con un ejemplo)|(?:es|esta) correct[oa]|esta bien"
+                    + "|y en (?:el (?:origen|cero)|(?:x\\s*=\\s*)?[+-]?\\d+(?:[.,]\\d+)?))");
     private final TutorSessions sessions;
     private final LlmGateway llm;
     private final RagRetriever retriever;
@@ -63,7 +69,12 @@ public class TutorConversation {
     }
 
     public Prepared prepare(Long userId, Long sessionId, String message, List<String> history, String exercise) {
-        return prepare(userId, sessionId, message, history, exercise, null, null, null, false);
+        return prepare(userId, sessionId, message, history, exercise, null);
+    }
+
+    Prepared prepare(Long userId, Long sessionId, String message, List<String> history, String exercise,
+                     @Nullable String previousTopic) {
+        return prepare(userId, sessionId, message, history, exercise, null, null, null, false, previousTopic);
     }
 
     /** @brief Aplica la acción decidida en Java. La referencia autorizada se muestra desde el repositorio. */
@@ -99,12 +110,12 @@ public class TutorConversation {
             state += "; pistas semilla: " + String.join(" ", run.seedHints());
         }
         return prepare(userId, sessionId, message, history, state, action, run.bankReference(), run.topic(),
-                recognized || diagnosis.verdict().equals("INCORRECTO") || diagnosis.verdict().equals("CORRECTO"));
+                recognized || diagnosis.verdict().equals("INCORRECTO") || diagnosis.verdict().equals("CORRECTO"), null);
     }
 
     private Prepared prepare(Long userId, Long sessionId, String message, List<String> history, String exercise,
                              @Nullable PedagogicalAction action, @Nullable String reference, @Nullable String exerciseTopic,
-                             boolean allowLocalHint) {
+                             boolean allowLocalHint, @Nullable String previousTopic) {
         if (message == null || message.isBlank() || message.length() > 4000) {
             throw new IllegalArgumentException("Escribe un mensaje de 1 a 4000 caracteres");
         }
@@ -113,7 +124,11 @@ public class TutorConversation {
             return new Prepared(Flux.just(TutorInputGuard.REPLY), null, true);
         }
         String normalized = TheoreticalHints.normalize(message);
-        boolean theoretical = action == null && exercise.isBlank() && TheoreticalHints.requestsReasoning(normalized);
+        String recentTopic = exerciseTopic != null ? exerciseTopic : previousTopic;
+        boolean continuation = SyllabusTopics.contains(session.moduleCode(), recentTopic)
+                && FOLLOW_UP.matcher(normalized.replaceFirst("^[¿¡]\\s*", "").replaceFirst("[?!.]+$", "").strip()).matches();
+        boolean theoretical = !continuation && action == null && exercise.isBlank()
+                && TheoreticalHints.requestsReasoning(normalized);
         if (theoretical) {
             var hint = TheoreticalHints.find(normalized, session.moduleCode());
             if (hint.isPresent()) {
@@ -130,11 +145,12 @@ public class TutorConversation {
             studentPrompt = message + "\nForma simbólica: " + parsed.normalized();
         }
         String fallback = action == null ? "¿Qué definición de los apuntes relaciona los datos con tu pregunta?" : action.hint();
+        String searchTopic = continuation ? recentTopic : exerciseTopic;
         List<NoteChunk> chunks;
         try {
-            chunks = retrieve(message, session.moduleCode(), exerciseTopic);
+            chunks = retrieve(message, session.moduleCode(), searchTopic);
         } catch (RuntimeException retrievalFailure) {
-            return prepareLocalNotes(message, session.moduleCode(), exerciseTopic, reference, fallback);
+            return prepareLocalNotes(message, session.moduleCode(), searchTopic, reference, fallback);
         }
         String topic = chunks.isEmpty() ? null : chunks.getFirst().topicCode();
         if (chunks.isEmpty()) {
@@ -142,7 +158,7 @@ public class TutorConversation {
                 return new Prepared(Flux.just(action.hint()), exerciseTopic, false);
             }
             if (retriever != null) {
-                topic = SyllabusTopics.find(session.moduleCode(), normalized).orElse(null);
+                topic = continuation ? recentTopic : SyllabusTopics.find(session.moduleCode(), normalized).orElse(null);
                 if (topic == null && session.moduleCode().equals("funciones")
                         && (bareExpression || startsExpressionExercise(normalized))) {
                     topic = "funciones-continuidad";
@@ -166,6 +182,10 @@ public class TutorConversation {
                 + "Mantente dentro del bloque elegido. Si el alumno plantea un ejercicio, ofrece una pista y una pregunta sin resolverlo. "
                 + "Si pide una gráfica, escribe la función del enunciado o una función de ejemplo en código en línea, "
                 + "como f(x) = x^2 o z = x^2 + y^2, usando * para multiplicar.";
+        if (!history.isEmpty()) {
+            constraints += " Continúa el diálogo desde el último intercambio pertinente. "
+                    + "Si el alumno propone un razonamiento, confirma lo correcto y matiza lo necesario. Evita volver a saludar.";
+        }
         if (chunks.isEmpty()) {
             constraints += " Responde sobre el tema " + topic
                     + " sin atribuir la explicación a los apuntes. Si la consulta queda fuera del bloque, indícalo.";

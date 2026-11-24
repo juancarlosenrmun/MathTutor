@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 /** Reconoce temas del módulo para admitir ejercicios nuevos aunque el índice no encuentre un ejemplo parecido. */
 final class SyllabusTopics {
+    private static final Pattern CONTINUITY = Pattern.compile("\\b(?:continu\\w*|discontinu\\w*|polinomi\\w*)\\b");
+    private static final Pattern DIFFERENTIABLE = Pattern.compile("\\bderivables?\\b");
     private static final Map<String, List<Topic>> MODULES = Map.of(
             "funciones", List.of(
                     topic("numeros-reales-complejos", "complej\\w*|imaginari\\w*|conjugad\\w*|numeros? reales?"),
@@ -29,12 +31,20 @@ final class SyllabusTopics {
     private SyllabusTopics() {}
 
     static Optional<String> find(String module, String normalized) {
-        if (module.equals("funciones")
-                && (match("derivadas-integrales", normalized).isPresent()
-                    || match("metodos-3d", normalized).filter(topic -> !topic.equals("geometria")).isPresent())) {
-            return Optional.empty();
+        if (module.equals("funciones")) {
+            // La derivabilidad puede ser una propiedad mencionada al razonar sobre la continuidad.
+            String calculus = CONTINUITY.matcher(normalized).find()
+                    ? DIFFERENTIABLE.matcher(normalized).replaceAll("") : normalized;
+            if (match("derivadas-integrales", calculus).isPresent()
+                    || match("metodos-3d", normalized).filter(topic -> !topic.equals("geometria")).isPresent()) {
+                return Optional.empty();
+            }
         }
         return match(module, normalized);
+    }
+
+    static boolean contains(String module, String topicCode) {
+        return MODULES.getOrDefault(module, List.of()).stream().anyMatch(topic -> topic.code().equals(topicCode));
     }
 
     private static Optional<String> match(String module, String normalized) {

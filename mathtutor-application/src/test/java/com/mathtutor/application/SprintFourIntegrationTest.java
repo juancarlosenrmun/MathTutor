@@ -123,6 +123,29 @@ class SprintFourIntegrationTest {
         var prompts=org.mockito.ArgumentCaptor.forClass(Prompt.class); verify(llm,times(2)).stream(prompts.capture(),any());
         assertThat(prompts.getAllValues().getLast().contextChunks()).anyMatch(s -> s.contains("HISTORIAL") && s.contains("concepto"));
     }
+    @Test void followsTheStudentsReasoningAndShortRepliesInTheSameSession() throws Exception {
+        var functions = modules.findAll().stream().filter(module -> module.getCode().equals("funciones"))
+                .findFirst().orElseThrow();
+        session = sessions.save(TutorSession.builder().user(users.getReferenceById(user)).module(functions)
+                .status(TutorSession.SessionStatus.ACTIVA).build()).getId();
+        when(retriever.retrieve(anyString(), anyString(), any())).thenReturn(List.of());
+        var json = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (String message : List.of("¿Qué es la continuidad de una función?", "f(x) = x^2+2*x es continua ?",
+                "Una fucnión polinomica siempre es continua y derivable", "¿Por qué?")) {
+            assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", message))))
+                    .contains("Pista", "DONE");
+        }
+        for (String message : List.of("Calcula la derivada de la función x^2", "¿Quién ganó el partido?")) {
+            assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", message))))
+                    .contains("dentro del temario");
+        }
+        var prompts = org.mockito.ArgumentCaptor.forClass(Prompt.class);
+        verify(llm, times(4)).stream(prompts.capture(), any());
+        assertThat(prompts.getAllValues().get(2).contextChunks())
+                .anyMatch(chunk -> chunk.contains("f(x) = x^2+2*x es continua ?"));
+        assertThat(prompts.getAllValues().getLast().contextChunks())
+                .anyMatch(chunk -> chunk.contains("Una fucnión polinomica siempre es continua y derivable"));
+    }
     @Test void providerOutageStreamsAndPersistsNotesWithoutPartialGeneratedText() {
         when(llm.stream(any(), any())).thenReturn(Flux.just("delta privado")
                 .concatWith(Flux.error(new IllegalStateException("fallo interno"))));
