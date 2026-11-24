@@ -44,4 +44,20 @@ class ExerciseVerificationTest {
         var free=new Run(1L,null,"libre","x+1",null,"COMENZADO",0,0,List.of());
         assertThat(verifier.verify("x",free).verdict()).isEqualTo("INCORRECTO");
     }
+    @Test void verifiesAnExpressionPresentedAsTheResultInNaturalLanguage() {
+        when(cas.compare("2*x","2*x")).thenReturn(CasEngine.Comparison.EQUIVALENT);
+        var result = verifier.verify("Me sale 2*x.", run(0));
+        assertThat(result.verdict()).isEqualTo("CORRECTO");
+        assertThat(result.completed()).isTrue();
+        verify(cas).compare("2*x", "2*x");
+        when(cas.compare("0", "2*x")).thenReturn(CasEngine.Comparison.DIFFERENT);
+        assertThat(verifier.verify("Me da cero.", run(0)).verdict()).isEqualTo("INCORRECTO");
+    }
+
+    @Test void proseAndConditionalStatementsDoNotCertifyAnExercise() {
+        for (String message : List.of("Creo que sí", "Me sale una película", "No me sale 2*x", "Si me sale 2*x")) {
+            assertThat(verifier.verify(message, run(0)).verdict()).as(message).isEqualTo("NO_APLICA");
+        }
+        verifyNoInteractions(cas);
+    }
 }
