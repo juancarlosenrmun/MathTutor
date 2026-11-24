@@ -57,7 +57,7 @@ class TutorConversationTest {
         verifyNoInteractions(llm);
     }
     @ParameterizedTest
-    @ValueSource(strings = {"Sí, por favor.", "¿Y en x=2?", "No lo entiendo"})
+    @ValueSource(strings = {"Sí, por favor.", "¿Y en x=2?", "No lo entiendo", "no lo se", "¡No lo sé!"})
     void shortFollowUpsReuseThePreviousTopic(String message) {
         when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, "funciones", "ACTIVA"));
         when(llm.stream(any(), any())).thenReturn(Flux.just("¿Qué dice la definición?"));
@@ -150,7 +150,8 @@ class TutorConversationTest {
             "funciones|funciones-continuidad|f(x)=x^3+5*x",
             "funciones|funciones-continuidad|Resuelve x^2-5=0",
             "derivadas-integrales|calculo-integral|Calcula la integral de x^5+3*x",
-            "metodos-3d|matrices|Calcula el determinante de la matriz [[3,7],[2,5]]"
+            "metodos-3d|matrices|Calcula el determinante de la matriz [[3,7],[2,5]]",
+            "metodos-3d|geometria|Calcula e_{2} × e_{1}"
     }, delimiter = '|')
     void newExercisesOnTheSyllabusReachTheLlmWithoutAnIndexedMatch(String module, String topic, String message) {
         when(sessions.active(7L, 1L)).thenReturn(new TutorSessionInfo(1L, module, "ACTIVA"));

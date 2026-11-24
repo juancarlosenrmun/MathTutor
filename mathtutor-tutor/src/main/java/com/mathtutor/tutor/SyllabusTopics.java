@@ -9,6 +9,9 @@ import java.util.regex.Pattern;
 final class SyllabusTopics {
     private static final Pattern CONTINUITY = Pattern.compile("\\b(?:continu\\w*|discontinu\\w*|polinomi\\w*)\\b");
     private static final Pattern DIFFERENTIABLE = Pattern.compile("\\bderivables?\\b");
+    private static final String BASIS_VECTOR = "e_(?:\\{[123]}|[123])";
+    private static final Pattern BASIS_PRODUCT = Pattern.compile(
+            "\\b" + BASIS_VECTOR + "\\s*(?:\\\\times|×)\\s*" + BASIS_VECTOR + "(?!\\w)");
     private static final Map<String, List<Topic>> MODULES = Map.of(
             "funciones", List.of(
                     topic("numeros-reales-complejos", "complej\\w*|imaginari\\w*|conjugad\\w*|numeros? reales?"),
@@ -31,6 +34,9 @@ final class SyllabusTopics {
     private SyllabusTopics() {}
 
     static Optional<String> find(String module, String normalized) {
+        if (module.equals("metodos-3d") && BASIS_PRODUCT.matcher(normalized).find()) {
+            return Optional.of("geometria");
+        }
         if (module.equals("funciones")) {
             // La derivabilidad puede ser una propiedad mencionada al razonar sobre la continuidad.
             String calculus = CONTINUITY.matcher(normalized).find()

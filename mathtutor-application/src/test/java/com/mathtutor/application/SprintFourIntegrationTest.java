@@ -146,6 +146,27 @@ class SprintFourIntegrationTest {
         assertThat(prompts.getAllValues().getLast().contextChunks())
                 .anyMatch(chunk -> chunk.contains("Una fucnión polinomica siempre es continua y derivable"));
     }
+    @Test void keepsHelpingWhenTheStudentDoesNotKnowTheCrossProduct() throws Exception {
+        var methods = modules.findAll().stream().filter(module -> module.getCode().equals("metodos-3d"))
+                .findFirst().orElseThrow();
+        session = sessions.save(TutorSession.builder().user(users.getReferenceById(user)).module(methods)
+                .status(TutorSession.SessionStatus.ACTIVA).build()).getId();
+        when(retriever.retrieve(anyString(), anyString(), any())).thenReturn(List.of());
+        var json = new com.fasterxml.jackson.databind.ObjectMapper();
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "¿Qué es un espacio vectorial?"))))
+                .contains("Pista", "DONE");
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "Calcula e_1 \\times e_2"))))
+                .contains("regla de la mano derecha", "DONE");
+        assertThat(streamOverHttp("messages", json.writeValueAsString(Map.of("message", "no lo se"))))
+                .contains("Pista", "DONE");
+        var prompts = org.mockito.ArgumentCaptor.forClass(Prompt.class);
+        verify(llm, times(2)).stream(prompts.capture(), any());
+        assertThat(prompts.getValue().contextChunks()).anyMatch(chunk -> chunk.contains("e_1 \\times e_2"));
+        assertThat(prompts.getValue().constraints()).contains("pista más concreta");
+        assertThat(store.context(user, session).getLast().topic()).isEqualTo("geometria");
+        assertThat(store.current(user, session).attempts()).isZero();
+        verify(cas, never()).compare(eq("no lo se"), anyString());
+    }
     @Test void providerOutageStreamsAndPersistsNotesWithoutPartialGeneratedText() {
         when(llm.stream(any(), any())).thenReturn(Flux.just("delta privado")
                 .concatWith(Flux.error(new IllegalStateException("fallo interno"))));

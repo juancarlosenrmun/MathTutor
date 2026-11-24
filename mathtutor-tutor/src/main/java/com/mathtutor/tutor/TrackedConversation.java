@@ -42,7 +42,8 @@ public class TrackedConversation {
             var current = store.current(user, session);
             var run = current == null ? recognize(user, session, request, message) : current;
             boolean recognized = current == null && run != null;
-            var diagnosis=verification.verify(message, recognized ? null : run);
+            boolean requestingHelp = run != null && TutorConversation.needsHelp(message);
+            var diagnosis=verification.verify(message, recognized || requestingHelp ? null : run);
             var action = action(run, diagnosis);
             var recent = store.context(user, session);
             var history = boundedHistory(recent);
@@ -55,7 +56,7 @@ public class TrackedConversation {
             } else {
                 prepared = conversation.prepareExercise(user, session, message, history, run, diagnosis, action);
             }
-            boolean attempted = run != null && !recognized && isAttempt(message, run, diagnosis);
+            boolean attempted = run != null && !recognized && !requestingHelp && isAttempt(message, run, diagnosis);
             java.util.function.Consumer<String> finish=status -> {
                 if (saved.get()) return;
                 var usage=prepared.usage().get();
