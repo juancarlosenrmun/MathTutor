@@ -17,6 +17,7 @@ import java.util.*;
 /** UC-11/20/25: instantáneas independientes de JPA y reservas bajo bloqueo corto. */
 @Component @Transactional(readOnly = true)
 public class ConversationStoreAdapter implements ConversationStore {
+    private static final int CONTEXT_TURNS = 24;
     private final TutorSessionRepository sessions;
     private final PersonalDataStore personalData;
     private final ConversationTurnRepository turns;
@@ -96,9 +97,10 @@ public class ConversationStoreAdapter implements ConversationStore {
     }
     @Override public List<Entry> context(Long user, Long session) {
         owned(user,session);
-        var recent=new ArrayList<>(turns.findBySessionIdAndStatus(session,"COMPLETADO",page(0,10,"createdAt")).stream().map(this::entry).toList());
+        var recent=new ArrayList<>(turns.findBySessionIdAndStatus(session,"COMPLETADO",
+                page(0,CONTEXT_TURNS,"createdAt")).stream().map(this::entry).toList());
         Collections.reverse(recent);
-        if (recent.size() == 10) {
+        if (recent.size() == CONTEXT_TURNS) {
             var beginning = turns.findBySessionIdAndStatus(session, "COMPLETADO",
                     PageRequest.of(0, 2, Sort.by(Sort.Direction.ASC, "createdAt", "id")));
             var recentIds = recent.stream().map(Entry::id).collect(java.util.stream.Collectors.toSet());

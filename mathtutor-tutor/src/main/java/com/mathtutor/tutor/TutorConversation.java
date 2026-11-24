@@ -14,6 +14,7 @@ import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -40,13 +41,26 @@ public class TutorConversation {
                     + "|(?:ya )?se cumplen?)");
     private static final Pattern FOLLOW_UP = Pattern.compile(
             "(?:si|no|claro|vale|de acuerdo|entiendo|exacto|y ahora|y entonces|por que|como (?:asi|sigo|continuo)"
+                    + "|creo que (?:si|no)|depende|eso|(?:el|lo) mismo|(?:la|las|los) dos|ambos"
+                    + "|(?:el|la) (?:primer[oa]|segund[oa]|de la (?:derecha|izquierda))"
                     + "|se como seguir"
                     + "|puedes explicarlo(?: de nuevo| mejor)?|(?:dame|ponme|muestrame) (?:otro|un) ejemplo"
                     + "|(?:si,? )?(?:por favor|con un ejemplo)|(?:es|esta) correct[oa]|esta bien"
                     + "|y en (?:el (?:origen|cero)|(?:x\\s*=\\s*)?[+-]?\\d+(?:[.,]\\d+)?))");
     private static final Pattern REASONING_STEP = Pattern.compile(
-            "^(?:por la (?:izquierda|derecha)|me (?:sale|queda|da)|(?:primero |ahora )?(?:sustituyo|factorizo|comparo|simplifico))\\b"
+            "^(?:primero |ahora )?(?:sustituyo|factorizo|comparo|simplifico)\\b"
+                    + "|^(?:multiplico|sumo|resto|divido)\\b.*\\b(?:componentes?|coordenadas?|terminos?|factores?)\\b"
+                    + "|^(?:(?:me (?:sale|queda|da)|obtengo) )?(?:menos )?infinito$"
+                    + "|^por la (?:izquierda|derecha)\\b(?:$|.*(?:[0-9=]|\\b(?:cero|infinito|limites?)\\b))"
                     + "|\\b(?:ambos lados|los dos (?:lados|resultados)|coinciden los dos|cociente|limites? laterales?)\\b");
+    private static final String NUMBER = "[+−-]?\\d+(?:[.,]\\d+)?";
+    private static final String FUNCTION_AT_POINT = "\\b([a-z][a-z0-9_]{0,15})\\s*\\(\\s*(" + NUMBER + ")\\s*\\)";
+    private static final Pattern ASKED_POINT = Pattern.compile(FUNCTION_AT_POINT);
+    private static final Pattern FUNCTION_VALUE_REPLY = Pattern.compile(
+            "(?:(?:si|no)\\s*[,.:]?\\s+)?"
+                    + "(?:(?:uso|usamos|se usa|tomo|tomamos) (?:el|la) (?:primer[oa]?|segund[oa]|tercer[oa]?) "
+                    + "(?:intervalo|tramo|expresion|rama)(?: y |,\\s*))?"
+                    + FUNCTION_AT_POINT + "\\s*(?:=\\s*|(?:es igual(?: a)?|vale)\\s+)" + NUMBER);
     private final TutorSessions sessions;
     private final LlmGateway llm;
     private final RagRetriever retriever;
@@ -163,9 +177,11 @@ public class TutorConversation {
                     : "¿Qué condición has comprobado y qué resultado obtuviste?";
             return new Prepared(Flux.just(reply), recentTopic, false);
         }
+        boolean followUp = FOLLOW_UP.matcher(phrase).matches();
+        boolean evaluatedValue = hasRecentTopic && answersFunctionEvaluation(phrase, history);
         boolean continuation = hasRecentTopic
-                && (needsHelp || FOLLOW_UP.matcher(phrase).matches()
-                    || ((REASONING_STEP.matcher(phrase).find() || ExerciseVerification.symbolicAnswer(phrase))
+                && (needsHelp || followUp || evaluatedValue
+                    || ((REASONING_STEP.matcher(phrase).find() || ExerciseVerification.resultExpression(phrase) != null)
                         && !SyllabusTopics.hasOtherSubject(session.moduleCode(), normalized)));
         boolean theoretical = !continuation && action == null && exercise.isBlank()
                 && TheoreticalHints.requestsReasoning(normalized);
@@ -192,6 +208,10 @@ public class TutorConversation {
         try {
             chunks = retrieve(message, session.moduleCode(), searchTopic);
         } catch (RuntimeException retrievalFailure) {
+            if (localHint != null) return new Prepared(Flux.just(localHint), exerciseTopic, false);
+            if (continuation && (followUp || evaluatedValue)) {
+                return new Prepared(Flux.just("¿A qué paso de este ejercicio te refieres? Escribe qué has obtenido."), recentTopic, false);
+            }
             return prepareLocalNotes(message, session.moduleCode(), searchTopic, reference, fallback);
         }
         String topic = chunks.isEmpty() ? null : chunks.getFirst().topicCode();
@@ -228,6 +248,7 @@ public class TutorConversation {
                 + "como f(x) = x^2 o z = x^2 + y^2, usando * para multiplicar.";
         if (!history.isEmpty()) {
             constraints += " Conserva el enunciado y lo ya comprobado. Retoma el último paso pendiente sin volver al principio. "
+                    + "Si hay un resumen, úsalo para recuperar pasos anteriores y da prioridad a las correcciones más recientes. "
                     + "Distingue el objetivo del ejercicio del paso que se está discutiendo. "
                     + "Si el alumno está comprobando la continuidad, interpreta sus límites como límites de la función "
                     + "hasta que el diálogo pase al cociente incremental. "
@@ -236,6 +257,10 @@ public class TutorConversation {
         if (continuation && needsHelp) {
             constraints += " Ofrece una pista más concreta que la anterior. Explica cómo empezar con uno de los datos "
                     + "del ejercicio o con un ejemplo análogo y haz una pregunta breve sobre ese paso.";
+        }
+        if (continuation && followUp) {
+            constraints += " Interpreta la respuesta breve a partir de la última pregunta del tutor. Si puede referirse "
+                    + "a varios pasos, pide una aclaración concreta. No la tomes como prueba de que el ejercicio está resuelto.";
         }
         if (chunks.isEmpty()) {
             constraints += " Responde sobre el tema " + topic
@@ -261,6 +286,10 @@ public class TutorConversation {
 
     static boolean needsHelp(String message) {
         return NEEDS_HELP.matcher(shortPhrase(TheoreticalHints.normalize(message))).matches();
+    }
+
+    static boolean isFollowUp(String message) {
+        return FOLLOW_UP.matcher(shortPhrase(TheoreticalHints.normalize(message))).matches();
     }
 
     boolean isNewExercise(Long userId, Long sessionId, ConversationStore.Run run, String message) {
@@ -292,6 +321,33 @@ public class TutorConversation {
 
     private static String shortPhrase(String normalized) {
         return normalized.replaceFirst("^[¿¡]\\s*", "").replaceFirst("[?!.]+$", "").strip();
+    }
+
+    /** Reconoce la evaluación del mismo punto planteado por el tutor en la pregunta más reciente. */
+    private static boolean answersFunctionEvaluation(String phrase, List<String> history) {
+        if (history.isEmpty()) return false;
+        var answer = FUNCTION_VALUE_REPLY.matcher(withoutMathDelimiters(phrase));
+        if (!answer.matches()) return false;
+        String lastTurn = history.getLast();
+        int tutorStart = lastTurn.lastIndexOf("\nTutor: ");
+        int questionStart = lastTurn.lastIndexOf('¿');
+        if (tutorStart < 0 || questionStart < tutorStart) return false;
+        var asked = ASKED_POINT.matcher(withoutMathDelimiters(
+                TheoreticalHints.normalize(lastTurn.substring(questionStart))));
+        while (asked.find()) {
+            if (answer.group(1).equals(asked.group(1))
+                    && decimal(answer.group(2)).compareTo(decimal(asked.group(2))) == 0) return true;
+        }
+        return false;
+    }
+
+    private static String withoutMathDelimiters(String text) {
+        return text.replace("$", "").replace("\\(", "").replace("\\)", "")
+                .replace("\\left", "").replace("\\right", "");
+    }
+
+    private static BigDecimal decimal(String number) {
+        return new BigDecimal(number.replace(',', '.').replace('−', '-'));
     }
 
     /** @brief Ajusta la recuperación al tema identificado, además del módulo de la sesión. */

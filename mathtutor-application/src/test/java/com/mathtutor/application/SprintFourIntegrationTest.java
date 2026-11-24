@@ -219,7 +219,10 @@ class SprintFourIntegrationTest {
                 .contains("dentro del temario");
         var prompts = org.mockito.ArgumentCaptor.forClass(Prompt.class);
         verify(llm, times(steps.size())).stream(prompts.capture(), any());
-        assertThat(prompts.getValue().contextChunks()).anyMatch(chunk -> chunk.contains(steps.getFirst()));
+        assertThat(prompts.getValue().contextChunks()).anyMatch(chunk -> chunk.contains("Resumen de turnos anteriores")
+                && chunk.contains(steps.getFirst()) && chunk.contains(steps.get(2))
+                && chunk.contains("Alumno: " + steps.get(steps.size() - 2))
+                && !chunk.contains("¿Quién ganó el partido?"));
         assertThat(prompts.getValue().contextChunks()).anyMatch(chunk -> chunk.contains(run.statement()));
         assertThat(prompts.getAllValues().get(2).constraints()).contains("Distingue el objetivo", "límites de la función");
         assertThat(store.select(user, session, null, run.statement(), "sign(x)").id()).isEqualTo(run.id());

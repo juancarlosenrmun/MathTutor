@@ -82,7 +82,62 @@ La base conserva **30/30**, cinco UC y 33/33 puntos integrados en DEV. La amplia
 - [x] Verificación Java y cobertura JaCoCo/V8 en umbral
 - [ ] CI verde e integración de `fix/tutor-visor-sidebar` en DEV
 
+## Conversaciones simuladas y avance del ejercicio
+
+- [x] Implementación del seguimiento contextual y la verificación de respuestas declaradas en lenguaje natural
+- [x] Pruebas de caja blanca de clasificación y recuperación de contexto
+- [x] Pruebas de caja negra de conversación, persistencia y estadística de avance
+- [x] Cobertura en umbral (JaCoCo y V8)
+- [ ] CI verde e integración de `s04-entrenamiento-tutor` en DEV
+
+## Resumen del historial conversacional
+
+- [x] Resumen acotado y últimos turnos en el contexto del LLM
+- [x] Caja blanca de longitud, selección y conversaciones cortas
+- [x] Caja negra de conversación larga por HTTP/SSE
+- [x] Cobertura JaCoCo en umbral
+- [ ] CI verde e integración en DEV
+
 ## Notas de iteración
+
+### 2026-11-24 17:07 · Resumen del historial conversacional
+
+- [[Casos de uso#UC-20|UC-20]]. El backend presenta al modelo los seis turnos recientes y hasta seis extractos de turnos anteriores, con prioridad para los primeros intercambios y los pasos verificados. La lectura está acotada a los últimos 24 turnos completados y al inicio de la sesión. El resumen se prepara para la misma llamada de generación.
+- El límite de texto del historial baja de unos 15.800 a menos de 10.000 caracteres. La estimación corresponde a caracteres del historial. Pendiente la medición del consumo de tokens con el proveedor real.
+- Dos comprobaciones de caja blanca, una nueva y otra ampliada, y una regresión de caja negra de 13 turnos por HTTP/SSE. Pasaron 1.207 pruebas Java sin omisiones. JaCoCo del tutor: 99,21 % de líneas y 93,50 % de ramas. Persistencia: 92,48 % y 80,93 %. Política pedagógica: 100 % en ambas. PostgreSQL/pgvector verificado.
+- Diseño registrado en DOC (`fd24820`). Pendientes CI remota e integración en DEV. Checklist del resumen **4/5**, total del sprint **46/50**, estado `en curso`.
+
+### Plan del resumen conversacional
+
+1. Ampliar la lectura acotada de turnos completados para recuperar los necesarios antes de la ventana reciente de [[Casos de uso#UC-20|UC-20]].
+2. Preparar un resumen extractivo en Java que conserve el comienzo y dé prioridad a pasos verificados. Adjuntar los seis turnos más recientes y el estado del ejercicio a la única llamada al LLM.
+3. Verificar la longitud y el orden del contexto y reproducir por HTTP/SSE una conversación larga con un paso anterior a la ventana reciente.
+
+### 2026-11-24 16:51 · El tutor retoma el valor pedido en su ejemplo
+
+- [[Casos de uso#UC-20|UC-20]]. Reproducido el rechazo de «Sí, f(2) = 5» tras una pregunta de continuidad. «Usamos el segundo intervalo y f(2) es igual 5» también perdía el contexto cuando la búsqueda de apuntes quedaba vacía. La clasificación recupera ahora el tema si la respuesta da un valor para la misma función y punto de la última pregunta del tutor.
+- [[Casos de uso#UC-11|UC-11]] y [[Casos de uso#UC-25|UC-25]]. La prueba HTTP comprobó que ambos turnos guardan el tema, que el ejemplo conversacional no crea un ejercicio y que sigue rechazándose una petición ajena añadida a la respuesta.
+- Tres casos de caja blanca y uno de caja negra. `check jacocoAggregateReport` en verde con 1.206 Java, sin fallos ni omisiones. JaCoCo del tutor 99,18 % de líneas y 93,75 % de ramas. Política pedagógica al 100 % en ambas. Integraciones PostgreSQL/pgvector verificadas con generador simulado.
+- Pendientes CI remota e integración. Checklist de la ampliación **4/5**, total **42/45**, estado `en curso`.
+
+### 2026-11-24 16:38 · Conversaciones simuladas y avance
+
+- Rama `s04-entrenamiento-tutor`, creada desde DEV actualizada. [[Casos de uso#UC-20|UC-20]] recupera el ejercicio ante respuestas breves como «La de la derecha» y pide concreción si fallan los embeddings. [[Casos de uso#UC-17|UC-17]] verifica expresiones afirmadas como «Me sale 6*x» y distingue las frases condicionales. [[Casos de uso#UC-25|UC-25]] evita sumar intentos por aclaraciones reconocidas o por turnos rechazados.
+- La prueba de [[Casos de uso#UC-11|UC-11]] comprobó el estado público tras cada turno y la estadística docente: un paso verificado dejó el avance en 50 %, un error lo conservó y el resultado final verificado cerró el ejercicio al 100 %. Repetir el envío con el mismo UUID conserva el recuento.
+- Gradle ejecutó 1.202 pruebas Java y 129 Node en verde, incluidas tres pruebas nuevas de caja blanca y seis recorridos HTTP/SSE de caja negra (29 turnos). Integraciones PostgreSQL/pgvector sin omisiones. JaCoCo del tutor: 99,16 % de líneas y 94,39 % de ramas. Política pedagógica: 100 % en ambas. V8: 93,84 % y 88,46 %.
+- Pendientes: evaluación con un proveedor real, ampliación del corpus para ajuste de pesos, CI remota e integración en DEV. Checklist de esta ampliación **4/5**, total **42/45** y estado `en curso`.
+
+### Plan de la rama de entrenamiento conversacional
+
+1. Simular diálogos completos en español con ejercicios de los tres bloques. Etiquetar cada turno y reservar conversaciones completas para verificar el cambio sin usarlas como ejemplos del tutor.
+2. Ejecutar las simulaciones contra el servicio HTTP/SSE con CAS y PostgreSQL/pgvector reales. Usar un generador simulado y comprobar el veredicto, los intentos y el avance después de cada mensaje.
+3. Corregir las regresiones reproducidas en [[Casos de uso#UC-20|UC-20]] y [[Casos de uso#UC-17|UC-17]]. Mantener en el backend el registro de estado y avance de [[Casos de uso#UC-25|UC-25]] y su lectura en [[Casos de uso#UC-11|UC-11]]. Las comprobaciones cruzadas de rechazo aprovechan [[Casos de uso#UC-21|UC-21]] sin ampliar el filtro ni la cuota.
+
+#### Corpus conversacional
+
+`mathtutor-application/src/test/resources/tutor-conversations.jsonl` contiene seis conversaciones sintéticas en español, redactadas para esta iteración. Hay tres conversaciones de desarrollo y tres de validación, con 29 turnos del alumno en total: 11 claros, seis ambiguos, cuatro erróneos, cinco fuera de contexto y tres de cierre. Los identificadores y enunciados de las conversaciones son distintos. Cada fila contiene `messages` con roles `user` y `assistant` y `expected` con las expectativas de estado, veredicto, intentos y avance. Las respuestas de referencia ilustran la guía socrática. La prueba envía únicamente los mensajes del alumno y comprueba el contrato de la aplicación sin usar el texto de referencia para simular la respuesta.
+
+El corpus utiliza mensajes con roles y queda pendiente elegir el modelo, su plantilla de chat y la configuración de entrenamiento. Para comparar modelos se conservan los diálogos de validación completos y se mide por separado el rechazo incorrecto, el rechazo de desvíos y la concordancia del avance. Este corpus inicial contiene únicamente datos sintéticos.
 
 ### 2026-11-18 00:46 · Arranque local con IA y README
 
