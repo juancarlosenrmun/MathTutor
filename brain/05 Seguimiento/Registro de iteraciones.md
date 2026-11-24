@@ -1,3 +1,9 @@
+## 2026-11-24 15:12 · Sprint 10 · Relleno del plano tangente
+
+- [[Casos de uso#UC-31|UC-31]]. El plano tangente dibuja un relleno rosa translúcido bajo el contorno y las diagonales. El relleno usa las mismas esquinas y se desplaza con el punto de tangencia en el tutor y el laboratorio.
+- Caja blanca: 1 prueba nueva de geometría, transparencia y movimiento. Gradle ejecutó 129 pruebas Node en verde, con V8 al 94,08 % de líneas y 88,40 % de ramas. Caja negra: 1 comprobación de píxeles nueva en Chrome con WebGL2 confirma que se siguen viendo los colores de la superficie a través del plano.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Pendientes CI remota e integración en `DEV`. Véase [[Sprint 10]].
+
 ## 2026-11-24 15:07 · Sprint 10 · Visor de conversación, cierre y seguimiento docente
 
 - [[Casos de uso#UC-17|UC-17]], [[Casos de uso#UC-20|UC-20]] y [[Casos de uso#UC-24|UC-24]]. El CAS cierra los ejercicios procedimentales al verificar el resultado. El alumno puede cerrar un ejercicio sin referencia simbólica con el botón o con «Ejercicio completado». El cierre se guarda y habilita otro ejercicio en la sesión. La práctica guiada espera el cierre y la sesión puede retomar un ejercicio inactivo.
