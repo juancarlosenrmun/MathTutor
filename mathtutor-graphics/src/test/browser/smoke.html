@@ -65,7 +65,20 @@ try {
   if (readTangentPixels() === firstLine) throw new Error('La recta no sigue el punto');
   viewer.setSurface(surface('x^2+y^2', -1, 1, -1, 1, 16, [0.5, -0.5]));
   readTangentPixels();
-  viewer.setSurface(surface('x+y', -1, 1, -1, 1, 16, [0, 0]));
+  const sloped = surface('x+y', -1, 1, -1, 1, 16);
+  viewer.setSurface(sloped);
+  gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  const beforeFill = pixels.slice();
+  viewer.updateTangency(sloped.tangentAt([0, 0]));
+  readTangentPixels();
+  let blended = 0;
+  for (let i = 0; i < pixels.length; i += 4) {
+    const [r, g, b] = beforeFill.subarray(i, i + 3);
+    if (g <= 70 || g <= r || g <= b) continue;
+    const expected = [r * .72 + 255 * .28, g * .72 + 97 * .28, b * .72 + 184 * .28];
+    if (expected.every((value, channel) => Math.abs(pixels[i + channel] - value) <= 3)) blended++;
+  }
+  if (blended < 100) throw new Error('El interior del plano no se mezcla con la superficie');
   const rectangle = canvas.getBoundingClientRect();
   for (const value of ['surface', 'plane']) {
     viewer.selectionMode = {value};

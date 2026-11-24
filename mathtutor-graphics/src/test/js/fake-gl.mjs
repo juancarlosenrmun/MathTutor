@@ -3,7 +3,7 @@ export function fakeGl(overrides = {}) {
   const calls = [];
   const gl = { calls, VERTEX_SHADER: 1, FRAGMENT_SHADER: 2, COMPILE_STATUS: 3, LINK_STATUS: 4,
     ARRAY_BUFFER: 5, STATIC_DRAW: 6, FLOAT: 7, DEPTH_TEST: 8, COLOR_BUFFER_BIT: 16,
-    DEPTH_BUFFER_BIT: 32, LINES: 9,
+    DEPTH_BUFFER_BIT: 32, LINES: 9, TRIANGLES: 10, BLEND: 0x0BE2, SRC_ALPHA: 0x0302, ONE_MINUS_SRC_ALPHA: 0x0303, ONE: 1,
     createShader: () => ({}), getShaderParameter: () => true,
     createProgram: () => ({}), getProgramParameter: () => true,
     createBuffer: () => ({}), createVertexArray: () => ({}), getUniformLocation: () => ({}),
@@ -11,6 +11,6 @@ export function fakeGl(overrides = {}) {
   for (const name of ['shaderSource', 'compileShader', 'attachShader', 'linkProgram', 'deleteShader',
     'deleteProgram', 'deleteBuffer', 'deleteVertexArray', 'bindBuffer', 'bufferData', 'bufferSubData', 'bindVertexArray',
     'enableVertexAttribArray', 'vertexAttribPointer', 'viewport', 'clearColor', 'clear', 'enable', 'disable',
-    'useProgram', 'uniformMatrix4fv', 'uniform1i', 'drawArrays']) gl[name] = (...args) => calls.push([name, ...args]);
+    'useProgram', 'uniformMatrix4fv', 'uniform1i', 'uniform1f', 'blendFuncSeparate', 'drawArrays']) gl[name] = (...args) => calls.push([name, ...args]);
   return Object.assign(gl, overrides);
 }

@@ -137,10 +137,9 @@ export function planeTangent(evaluate, point, bounds) {
   }
   const [a, b] = extent(x, xMin, xMax);
   const [c, d] = extent(y, yMin, yMax);
-  const corners = [[a, c], [b, c], [b, d], [a, d]];
-  const lines = [0, 1, 1, 2, 2, 3, 3, 0, 0, 2, 1, 3].map(i => {
-    const [u, v] = corners[i];
-    return [u, v, value + dx * (u - x) + dy * (v - y)];
-  });
-  return { point, value, dx, dy, lines };
+  const corners = [[a, c], [b, c], [b, d], [a, d]].map(([u, v]) =>
+    [u, v, value + dx * (u - x) + dy * (v - y)]);
+  const lines = [0, 1, 1, 2, 2, 3, 3, 0, 0, 2, 1, 3].map(i => corners[i]);
+  const fill = [0, 1, 2, 0, 2, 3].map(i => corners[i]);
+  return { point, value, dx, dy, lines, fill };
 }

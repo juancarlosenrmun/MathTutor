@@ -18,10 +18,11 @@ precision mediump float;
 in vec3 vertexColor;
 in vec2 surfacePosition;
 uniform bool surfaceMaterial;
+uniform float opacity;
 out vec4 fragmentColor;
 void main() {
   if (!surfaceMaterial) {
-    fragmentColor = vec4(vertexColor, 1.0);
+    fragmentColor = vec4(vertexColor, opacity);
     return;
   }
   // Textura de cuadrícula declarada en las coordenadas matemáticas del plano XY.
@@ -35,6 +36,10 @@ void main() {
   fragmentColor = vec4(albedo * (0.42 + 0.58 * diffuse), 1.0);
 }`;
 
+const surfaceOverlayCapacity = 12 + 6;
+const overlayVertices = tangent => [...(tangent?.fill ?? []), ...(tangent?.lines ?? [])]
+  .flatMap(vertex => [...vertex, 1, 0.38, 0.72]);
+
 /** Pipeline WebGL2 propio. El VAO mantiene aislado el formato de los ejes. */
 export class ShaderPipeline {
   constructor(gl) {
@@ -43,6 +48,7 @@ export class ShaderPipeline {
       this.program = linkProgram(gl, vertexSource, fragmentSource);
       this.matrixLocation = gl.getUniformLocation(this.program, 'viewProjection');
       this.materialLocation = gl.getUniformLocation(this.program, 'surfaceMaterial');
+      this.opacityLocation = gl.getUniformLocation(this.program, 'opacity');
       this.vao = gl.createVertexArray();
       this.buffer = gl.createBuffer();
       gl.bindVertexArray(this.vao);
@@ -97,15 +103,16 @@ export class ShaderPipeline {
     this.surfaceCount = vertices.length / 6;
     this.lineCount = 0;
     this.areaCount = 0;
-    this.upload(vertices, mesh.tangent, selection, 12);
+    this.upload(vertices, mesh.tangent, selection, surfaceOverlayCapacity);
   }
 
-  /** @brief Guarda al final del VBO las aristas de la tangente como guía superpuesta. */
+  /** @brief Guarda al final del VBO el relleno y las aristas de la tangente. */
   upload(positions, tangent, selection, overlayCapacity) {
-    const overlay = tangent?.lines.flatMap(vertex => [...vertex, 1, 0.38, 0.72]) ?? [];
+    const overlay = overlayVertices(tangent);
     this.tangentStart = 6 + positions.length / 6;
-    this.tangentCount = overlay.length / 6;
-    this.selectionIndex = selection ? this.tangentStart + this.tangentCount : null;
+    this.fillCount = tangent?.fill?.length ?? 0;
+    this.tangentCount = tangent?.lines.length ?? 0;
+    this.selectionIndex = selection ? this.tangentStart + overlay.length / 6 : null;
     const buffer = new Float32Array(this.axes.length + positions.length + (overlayCapacity + 1) * 6);
     buffer.set(this.axes);
     buffer.set(positions, this.axes.length);
@@ -118,20 +125,22 @@ export class ShaderPipeline {
   /** @brief Actualiza la recta o el plano tangente en el espacio reservado del VBO. */
   updateTangent(tangent) {
     if (!tangent) {
+      this.fillCount = 0;
       this.tangentCount = 0;
       this.selectionIndex = null;
       return;
     }
-    this.tangentCount = tangent.lines.length;
     this.updateSecant(tangent);
   }
 
   /** @brief Actualiza los vértices de la tangente o secante y, si existe, su punto móvil. */
   updateSecant(line) {
-    const vertices = line.lines.flatMap(vertex => [...vertex, 1, 0.38, 0.72]);
+    const vertices = overlayVertices(line);
+    this.fillCount = line.fill?.length ?? 0;
+    this.tangentCount = line.lines.length;
     const point = line.point?.length === 3 ? line.point : null;
     if (point) vertices.push(...point, 1, 0.94, 0.45);
-    this.selectionIndex = point ? this.tangentStart + this.tangentCount : null;
+    this.selectionIndex = point ? this.tangentStart + this.fillCount + this.tangentCount : null;
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
     this.gl.bufferSubData(this.gl.ARRAY_BUFFER, this.tangentStart * 6 * Float32Array.BYTES_PER_ELEMENT,
       new Float32Array(vertices));
@@ -163,6 +172,7 @@ export class ShaderPipeline {
     gl.bindVertexArray(this.vao);
     gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
     gl.uniform1i(this.materialLocation, 0);
+    gl.uniform1f(this.opacityLocation, 1);
     gl.drawArrays(gl.LINES, 0, 6);
     if (this.lineCount) gl.drawArrays(gl.LINES, 6, this.lineCount);
     if (this.areaCount) gl.drawArrays(gl.TRIANGLES, 6 + this.lineCount, this.areaCount);
@@ -178,7 +188,15 @@ export class ShaderPipeline {
         gl.bindVertexArray(this.vao);
       }
       gl.disable(gl.DEPTH_TEST);
-      if (this.tangentCount) gl.drawArrays(gl.LINES, this.tangentStart, this.tangentCount);
+      if (this.fillCount) {
+        gl.enable(gl.BLEND);
+        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.uniform1f(this.opacityLocation, 0.28);
+        gl.drawArrays(gl.TRIANGLES, this.tangentStart, this.fillCount);
+        gl.uniform1f(this.opacityLocation, 1);
+        gl.disable(gl.BLEND);
+      }
+      if (this.tangentCount) gl.drawArrays(gl.LINES, this.tangentStart + this.fillCount, this.tangentCount);
       if (this.selectionIndex != null) gl.drawArrays(gl.POINTS, this.selectionIndex, 1);
       gl.enable(gl.DEPTH_TEST);
     }
