@@ -1,5 +1,7 @@
 # Progreso global
 
+Sprint 10 · notación vectorial y peticiones de ayuda (2026-11-24 12:00). Fix **4/5**, checklist **17/20** y estado **en curso**. Verificado con Gradle, Chrome y Google AI Studio. Pendientes CI remota e integración en `DEV`. Véase [[Sprint 10]].
+
 Sprint 10 · seguimiento del diálogo y coordenada de tangencia (2026-11-24 11:28). Fix **4/5**, checklist **17/20** y estado **en curso**. Verificado con Gradle, Chrome y Google AI Studio. Pendientes CI remota e integración en `DEV`. Véase [[Sprint 10]].
 
 Sprint 10 · fix del tutor y el visor (2026-11-24 10:57). Fix **4/5**, checklist **17/20** y estado **en curso**. Gradle, JaCoCo, V8 y Chrome con Google AI Studio verificados. Pendientes CI remota e integración en `DEV`. Véase [[Sprint 10]].
@@ -48,6 +50,6 @@ Publicación (2026-11-16 22:39): [PR #8 hacia DEV](https://github.com/juancarlos
 | [[Sprint 07\|S7]] | Hito: todos los Must completados; evaluación y selección por intersección | 31 | 3/3 elementos (31/31 pts), checklist 20/20 | completado ([PR #23](https://github.com/juancarlosenrmun/MathTutor/pull/23)) |
 | [[Sprint 08\|S8]] | Should restantes y administración | 32 | 6/6 elementos (32/32 pts), checklist 35/35 | completado ([PR #24](https://github.com/juancarlosenrmun/MathTutor/pull/24)) |
 | [[Sprint 09\|S9]] | Could (1) | 29 | 6/6 elementos (29/29 pts), checklist 35/35 | completado ([PR #25](https://github.com/juancarlosenrmun/MathTutor/pull/25)) |
-| [[Sprint 10\|S10]] | Contingencia y Could (2) | 21 | 1/2 elementos cerrados (13/21 pts), ambos integrados, fix del tutor y visor, incluido el seguimiento del diálogo, 4/5, checklist 17/20 | en curso ([PR #26](https://github.com/juancarlosenrmun/MathTutor/pull/26), mediciones de EN-06 y CI e integración del fix pendientes) |
+| [[Sprint 10\|S10]] | Contingencia y Could (2) | 21 | 1/2 elementos cerrados (13/21 pts), ambos integrados, fix del tutor y visor, incluidos el seguimiento del diálogo y la notación de Métodos 3D, 4/5, checklist 17/20 | en curso ([PR #26](https://github.com/juancarlosenrmun/MathTutor/pull/26), mediciones de EN-06 y CI e integración del fix pendientes) |
 
 La revisión final del frontend se verificó localmente en `Frontend`. Su CI e integración en `DEV` están pendientes. Véase [[Registro de iteraciones]].

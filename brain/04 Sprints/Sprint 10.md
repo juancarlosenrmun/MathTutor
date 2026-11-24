@@ -42,13 +42,21 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 
 ## Fix del tutor y el visor
 
-- [x] Ejercicios inéditos del módulo, continuidad del diálogo, visor contraído y deslizadores con la coordenada de tangencia implementados.
-- [x] Caja blanca del flujo sin coincidencias, filtro de temario, tema del turno anterior y movimiento del punto sin otra petición.
-- [x] Caja negra en Chrome con Google AI Studio, seguimiento de una conversación, curva y superficie. Confirmado el rechazo de una consulta ajena al módulo.
+- [x] Ejercicios inéditos, seguimiento del diálogo y peticiones de ayuda, notación vectorial y visor con deslizadores implementados.
+- [x] Caja blanca del flujo sin coincidencias, filtro de temario, tema del turno anterior, ayuda sin consumir intentos, MathML y movimiento del punto sin otra petición.
+- [x] Caja negra en Chrome con Google AI Studio, seguimiento en Funciones y Métodos 3D, notación vectorial, curva y superficie. Confirmado el rechazo de una consulta ajena al módulo.
 - [x] Cobertura JaCoCo y V8 en umbral y verificación Gradle en verde.
 - [ ] CI remota e integración del fix en `DEV`.
 
 ## Notas de iteración
+
+### 2026-11-24 12:00 · Notación vectorial y peticiones de ayuda en Métodos 3D
+
+- [[Casos de uso#UC-16|UC-16]]. Los mensajes enviados y recuperados representan los vectores de la base y el producto vectorial con MathML. La representación conserva el texto original del turno.
+- [[Casos de uso#UC-20|UC-20]]. «No lo sé» conserva el ejercicio activo y no consume intentos ni activa el diagnóstico simbólico. El tutor usa el tema y el historial para ofrecer una pista más concreta. Si faltan apuntes al reconocer un ejercicio, utiliza su pista del banco cuando existe.
+- 3 casos Java unitarios, 1 prueba HTTP y 1 caso Node nuevos. Chrome con Google AI Studio reprodujo los tres turnos y comprobó los dos subíndices, el signo × y el avance de la pista.
+- Gradle pasó con 1.185 pruebas Java y 128 Node. JaCoCo del tutor 99,22 % de líneas y 95,07 % de ramas. V8 94,99 % y 89,44 %.
+- Checklist **17/20**, fix **4/5**, estado `en curso`. Pendientes CI remota, integración en `DEV` y las mediciones de EN-06 ya anotadas. Véase [[Registro de iteraciones]].
 
 ### 2026-11-24 11:28 · Seguimiento del diálogo y coordenada de tangencia
 

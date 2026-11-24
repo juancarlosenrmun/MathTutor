@@ -1,3 +1,11 @@
+## 2026-11-24 12:00 · Sprint 10 · Notación vectorial y ayuda en Métodos 3D
+
+- **Petición**. Corregir la representación de `e_1 \times e_2` y el rechazo de «no lo se» durante el ejercicio.
+- **Implementación**. MathML para los vectores canónicos y su producto en el envío y el historial. Petición de ayuda dentro del ejercicio activo sin consumir intentos, con una pista que se apoya en el turno anterior.
+- **Caja blanca**. 3 casos Java nuevos. Gradle pasó con 1.185 pruebas Java y 128 Node. JaCoCo del tutor 99,22 % de líneas y 95,07 % de ramas. V8 94,99 % y 89,44 %.
+- **Caja negra**. 1 regresión HTTP y 1 caso Node de representación nuevos. Chrome con Google AI Studio reprodujo la conversación y verificó la fórmula y la pista.
+- **Pendiente**. CI remota e integración en `DEV`. Checklist **17/20**, fix **4/5**, estado `en curso`. Véase [[Sprint 10]].
+
 ## 2026-11-24 11:28 · Sprint 10 · Seguimiento del diálogo y coordenada de tangencia
 
 - **Petición**. Corregir el rechazo de «Una fucnión polinomica siempre es continua y derivable» tras hablar de continuidad y mostrar el valor de la barra de la recta tangente.
