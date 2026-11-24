@@ -2,7 +2,7 @@
 sprint: S8
 objetivo: Should restantes y administración
 puntos: 32
-estado: en curso
+estado: completado
 ---
 # Sprint 08 · Should restantes y administración
 
@@ -28,51 +28,57 @@ UC-05 y EN-07 deben estar terminados antes de abrir a alumnado real. UC-10 usa d
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-06 · Desactivar o anonimizar un perfil
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-07 · Cambiar el rol de un usuario
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-08 · Iniciar el restablecimiento de contraseña de un usuario
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### UC-10 · Consultar estadística de ejercicios comenzados, completados y abandonados
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### EN-07 · Accesibilidad, teclado, alternativa textual y navegadores
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ## Definición de hecho del sprint
-- [ ] Todos los elementos completos
-- [ ] Build y CI en verde
+- [x] Todos los elementos completos
+- [x] Build y CI en verde
 - [x] Cobertura en umbral verificada
-- [ ] Velocidad real medida y anotada en [[Registro de iteraciones]]
+- [x] Velocidad real medida y anotada en [[Registro de iteraciones]]
 - [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+### 2026-11-24 10:18 · Revisión final del frontend
+
+- Base integrada en `DEV` mediante la [PR #24](https://github.com/juancarlosenrmun/MathTutor/pull/24), merge `221af34` y CI en verde.
+- Espacios por rol, administración, estadísticas y cuenta revisados con las pruebas de accesibilidad.
+- Checklist del sprint **35/35**. La revisión de interfaz queda en `Frontend`, con CI e integración propias pendientes. Véase [[Registro de iteraciones]].
 
 - UC-05 usa una descarga JSON de la cuenta autenticada y suprime los registros propios en PostgreSQL. Para suprimir la cuenta del último administrador debe existir otro administrador activo.
 - UC-06 y UC-07 vuelven a validar los permisos del operador bajo bloqueo. UC-08 reutiliza la cola SMTP y necesita la configuración de correo del despliegue. UC-10 cuenta los ejercicios iniciados y separa activos, completados y abandonados por módulo y tema.

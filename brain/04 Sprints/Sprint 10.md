@@ -24,14 +24,14 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ### EN-06 · Pruebas de rendimiento y carga
 - [x] Implementación
 - [x] Pruebas de caja blanca
 - [x] Pruebas de caja negra
 - [x] Cobertura en umbral (≥ 80 % líneas, ≥ 70 % ramas)
-- [ ] Integrado en la rama principal
+- [x] Integrado en la rama principal
 
 ## Definición de hecho del sprint
 - [ ] Todos los elementos completos
@@ -41,6 +41,12 @@ UC-34 completa el cuarto incremento gráfico; EN-06 mide rendimiento con el sist
 - [x] [[Progreso global]] actualizado
 
 ## Notas de iteración
+
+### 2026-11-24 10:18 · Revisión final del frontend
+
+- Base integrada en `DEV` mediante la [PR #26](https://github.com/juancarlosenrmun/MathTutor/pull/26), merge `e4a1ea1` y CI en verde.
+- Contraste verificado en laboratorio y tutor. EN-06 sigue pendiente de las mediciones de RNF-01 con proveedor real y de RNF-02 con GPU integrada.
+- Checklist del sprint **13/15**. La revisión de interfaz queda en `Frontend`, con CI e integración propias pendientes. Véase [[Registro de iteraciones]].
 
 - UC-34 añade el control **Realzar contraste** al visor del laboratorio y del tutor. El render a textura aplica el efecto a la escena y conserva las guías y el marcador en su propia capa.
 - EN-06 mide HTTP/SSE sobre PostgreSQL con `./gradlew :mathtutor-application:test --tests '*TutorLoadTest'`. Las 30 conversaciones entran en el generador simulado antes de liberar su respuesta. Se observan Hikari y `pg_stat_activity` durante la espera.

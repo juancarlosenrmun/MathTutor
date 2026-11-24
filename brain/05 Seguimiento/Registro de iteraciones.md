@@ -1,3 +1,12 @@
+## 2026-11-24 10:18 · Sprints 05–10 · Frontend final
+
+- **Petición**. Crear y activar `Frontend` desde `DEV`, ejecutar `find-skills` para frontend e integrar las capacidades de los sprints 5 a 10 en el rediseño.
+- **Implementado**. Inicio, tutor, laboratorio, recuperación y espacios por rol revisados. Selección del banco del módulo con previsualización del enunciado en el borrador, reutilizando el contrato de ejercicios. Controles plegables de curvas y superficies. Retirados la expresión fija de ejemplo, el código de metadatos del historial sin consumidores y los estilos duplicados. Se usaron `frontend-design` y `frontend-ui-engineering` disponibles en el entorno.
+- **Caja blanca y cobertura**. Una regresión nueva para elegir un enunciado duplicado por ID, iniciar el ejercicio al enviar y limpiar la selección al cambiar de conversación. Dos pruebas de navegación actualizadas. Gradle pasó con 1.170 pruebas Java y 126 Node. JaCoCo en umbral en los ocho módulos. V8 registró 95,50 % de líneas y 90,36 % de ramas.
+- **Caja negra**. Contrato Chromium con banco, plano tangente y contraste compartido. Playwright verificó teclado, alternativa textual, móvil, administración, estadísticas y datos de cuenta en Chrome, Edge, Firefox y WebKit. En Chrome se verificaron las animaciones y el movimiento reducido.
+- **Integración y velocidad**. PR #21 a #26 fusionadas en `DEV`, con CI verde. Entrega registrada de 29, 32, 31, 32 y 29 puntos en [[Sprint 05]], [[Sprint 06]], [[Sprint 07]], [[Sprint 08]] y [[Sprint 09]]. [[Sprint 10]] tiene UC-34 cerrado y las mediciones de EN-06 pendientes.
+- **Pendiente**. CI e integración de la revisión de interfaz en `DEV`. EN-06 mantiene pendientes la GPU integrada y el proveedor LLM real.
+
 ## 2026-11-24 09:54 · Sprint 10 · Reintento de Safari nativo
 
 - **Petición**. Revisar el fallo en el job de Safari `xcode-27` de la PR #26.

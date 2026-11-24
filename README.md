@@ -55,52 +55,81 @@ npx skills list
 
 ## 🏗️ Build y tests
 
-### Ejecutar la aplicación con IA en local (Windows PowerShell)
+### Ejecutar la aplicación con IA en local
 
-Abre PowerShell **en la raíz del proyecto**, donde están `gradlew.bat`, `docker-compose.yml` y `.env`. Necesitas Docker Desktop iniciado, Java 21 y una clave válida de Google AI Studio en el archivo local `.env`:
+Necesitas **Java 21**, Docker con el motor iniciado y una clave de Google AI Studio con acceso a los modelos configurados. En Windows puedes usar Docker Desktop; en Linux/macOS, Docker Engine o Desktop con Compose v2. Los comandos se ejecutan desde la raíz del repositorio y no contienen rutas del equipo. No necesitas instalar Gradle.
 
-```dotenv
-GOOGLE_AI_API_KEY=tu_clave_local
-```
+**Primera vez en cada dispositivo:** genera el archivo privado de configuración.
 
-No publiques ese archivo ni copies la clave a los comandos. Si aún no tienes una, puedes crearla en [Google AI Studio](https://aistudio.google.com/app/apikey).
+Windows PowerShell:
 
 ```powershell
-docker compose up -d --wait postgres
-if ($LASTEXITCODE -ne 0) { throw 'PostgreSQL no está disponible. Comprueba Docker Desktop.' }
-
-# Secreto JWT temporal para esta ejecución; no se muestra ni se guarda en el repositorio.
-$startupBytes = New-Object byte[] 48
-$startupRng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-$startupRng.GetBytes($startupBytes)
-$startupRng.Dispose()
-$env:JWT_SECRET = [Convert]::ToBase64String($startupBytes)
-
-$env:SPRING_PROFILES_ACTIVE = 'dev,google-ai-studio,notes-indexing'
-.\gradlew.bat :mathtutor-application:bootRun --args="--spring.config.import=optional:file:../.env[.properties]"
+.\gradlew.bat initLocalEnv
 ```
 
-**La ruta `../.env` es necesaria con `bootRun`**: Gradle ejecuta la aplicación desde `mathtutor-application`, por lo que la importación predeterminada de `.env` no encuentra el archivo de la raíz. El perfil `notes-indexing` carga los apuntes y activa también `spring-ai-pgvector`; activar solo este último no ejecuta la indexación. Mantén los tres perfiles indicados para usar PostgreSQL, el modelo real y los apuntes.
+Linux/macOS:
 
-Al terminar el arranque, abre [MathTutor en local](http://localhost:8080/visor/index.html), inicia sesión como alumno —o regístrate si aún no tienes cuenta— y entra en **Tutor**. Selecciona **Funciones** y prueba «¿Qué es la continuidad de una función?» o pulsa **Pregunta de ejemplo del módulo**. Una entrada fuera del temario puede rechazarse sin llamar a la IA; eso no indica que el proveedor esté desconectado.
+```bash
+./gradlew initLocalEnv
+```
 
-La primera indexación puede tardar varios minutos según la cuota del proveedor. Si el índice ya contiene los apuntes vigentes, el arranque los reutiliza. En otra terminal puedes comprobar el servicio:
+Abre `.env` y configura `GOOGLE_AI_API_KEY`. Si reutilizas una base PostgreSQL existente, ajusta también `POSTGRES_PASSWORD`, `POSTGRES_USER`, `POSTGRES_DB` y el puerto para que coincidan con ella. Conserva el `JWT_SECRET` generado. No necesitas escribir ninguna contraseña en la terminal.
+
+**Cada vez que quieras arrancar el tutor con IA**, inicia Docker y ejecuta un solo comando desde la raíz:
+
+Windows PowerShell:
+
+```powershell
+.\gradlew.bat localAi
+```
+
+Linux/macOS:
+
+```bash
+./gradlew localAi
+```
+
+El comando inicia PostgreSQL, espera a que esté disponible y arranca la aplicación con IA y apuntes indexados. No necesitas generar un JWT temporal ni exportar los perfiles a mano. Una vez preparado `.env`, no vuelvas a generarlo para cada arranque.
+
+`initLocalEnv` crea `.env` a partir de `.env.example`, con contraseña de PostgreSQL y secreto JWT aleatorios propios del dispositivo. Si `.env` ya existe, lo conserva sin cambios: añade manualmente las variables que falten. Este archivo está excluido de Git; no copies claves a los comandos ni lo publiques.
+
+Variables de `.env`:
+
+| Variable | Uso |
+|---|---|
+| `POSTGRES_HOST` | Servidor PostgreSQL; `localhost` con Docker local. |
+| `POSTGRES_PORT` | Puerto del dispositivo; `5432` por defecto. Cámbialo si está ocupado. |
+| `POSTGRES_DB` / `POSTGRES_USER` | Base y usuario de este dispositivo. |
+| `POSTGRES_PASSWORD` | Contraseña local, sin valor público de respaldo. |
+| `JWT_SECRET` | Secreto JWT local de al menos 32 caracteres. |
+| `GOOGLE_AI_API_KEY` | Clave privada de [Google AI Studio](https://aistudio.google.com/app/apikey). |
+| `GOOGLE_AI_CHAT_MODEL` / `GOOGLE_AI_EMBEDDING_MODEL` | Modelos disponibles para tu clave; comprueba su acceso en Google AI Studio. |
+| `GOOGLE_AI_MAX_REQUESTS_PER_MINUTE` | Ajusta el límite a la cuota de tu proyecto. |
+
+Usa el formato del ejemplo: `NOMBRE=valor`, sin comillas ni prefijo `export`; evita barras invertidas (el archivo se interpreta como propiedades Java). Los secretos generados ya son compatibles. Las variables de la terminal tienen prioridad sobre `.env`; comprueba que no contengan credenciales de otro dispositivo.
+
+`localAi` valida las variables, inicia PostgreSQL+pgvector con Docker Compose, espera su disponibilidad y arranca el tutor con los perfiles `dev,google-ai-studio,notes-indexing`. El grupo `notes-indexing` activa también `spring-ai-pgvector`. El archivo se resuelve desde la raíz tanto con `bootRun` como con `localAi`; ya no necesitas el argumento `../.env`.
+
+Abre [MathTutor en local](http://localhost:8080/visor/index.html), regístrate o inicia sesión y entra en **Tutor**. Las cuentas pertenecen a la base de datos de cada equipo. Selecciona **Funciones** y prueba la pregunta de ejemplo del módulo. La primera indexación puede tardar según la cuota de Google; las siguientes reutilizan el índice si los apuntes no han cambiado. No hay cambio automático al proveedor simulado cuando falla Google.
+
+Puedes comprobar el servicio con `Invoke-RestMethod http://localhost:8080/actuator/health` en PowerShell o `curl http://localhost:8080/actuator/health` en Linux/macOS. Un estado `UP` verifica la aplicación y PostgreSQL; una respuesta del tutor comprueba además el acceso a la IA. Si el puerto HTTP está ocupado, define `SERVER_PORT` en la terminal antes de arrancar.
+
+Si ya tenías un volumen PostgreSQL, **conserva en `.env` la contraseña y el usuario con los que se inicializó**. Cambiar `.env` no cambia las credenciales almacenadas en ese volumen. No borres el volumen para corregir una contraseña: contiene tus cuentas y conversaciones.
+
+Para usar un PostgreSQL+pgvector que ya tengas disponible, configura su host, puerto y credenciales y omite el arranque de Docker:
+
+```powershell
+.\gradlew.bat localAi -PskipLocalPostgres
+```
+
+En Linux/macOS: `./gradlew localAi -PskipLocalPostgres`.
+ Para probar otro archivo local puedes usar `'-PlocalEnvFile=ruta/archivo.env'` (entre comillas en PowerShell). Para detener el tutor pulsa `Ctrl+C`; Docker puede detenerse con `docker compose stop postgres`.
+
 
 | Rol | Correo | Contraseña |
 |---|---|---|
 | Administrador | admin.pruebas@mathtutor.local | Tutor2026!c202e820c1 |
 | Alumno | alumno.pruebas@mathtutor.local | Tutor2026!fb88a58225 |
-
-```powershell
-(Invoke-RestMethod 'http://localhost:8080/actuator/health').status
-# Debe mostrar UP. Comprueba también una respuesta del tutor para verificar la IA.
-```
-
-El chat usa `GOOGLE_AI_CHAT_MODEL` (por defecto `gemini-3.5-flash-lite`) y los embeddings usan `GOOGLE_AI_EMBEDDING_MODEL` (por defecto `gemini-embedding-001`). Puedes definir esos valores y `GOOGLE_AI_MAX_REQUESTS_PER_MINUTE` en `.env`; el límite debe ajustarse a la cuota de tu proyecto en Google AI Studio. Las variables de entorno de la terminal tienen prioridad sobre el archivo.
-
-Si aparece `Google AI Studio API key must be set`, comprueba que `.env` existe en la raíz y que has copiado el argumento `--spring.config.import` completo. Los errores HTTP de cuota o del proveedor deben revisarse en Google AI Studio; el servicio no cambia al modelo simulado cuando está activo `google-ai-studio`.
-
-Para detener la aplicación, pulsa `Ctrl+C`; PostgreSQL puede pararse con `docker compose stop postgres`. Al cerrar la terminal desaparece el secreto JWT temporal; la clave de IA permanece en el archivo `.env` local.
 
 ### Alternativa: ejecutar el JAR desde la raíz
 
